@@ -1,0 +1,122 @@
+{% load static %}
+
+<style>
+    .file-display-component {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .file-display-component h3 {
+        color: var(--md3-on-surface);
+        font-weight: 600;
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .files-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin: var(--md3-spacing-lg) 0;
+    }
+    
+    .file-item {
+        display: block;
+        text-decoration: none;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        text-align: center;
+        background-color: var(--md3-surface-container-lowest);
+        transition: all 0.2s ease;
+        color: var(--md3-on-surface);
+    }
+    
+    .file-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--md3-elevation-2);
+        text-decoration: none;
+        color: var(--md3-on-surface);
+        background-color: var(--md3-surface-container-low);
+        border-color: var(--md3-outline);
+    }
+    
+    .file-icon {
+        font-size: 2rem;
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .file-icon .fa-file-pdf {
+        color: var(--md3-error);
+    }
+    
+    .file-icon .fa-file-word {
+        color: var(--md3-primary);
+    }
+    
+    .file-icon .fa-file-excel {
+        color: var(--md3-success);
+    }
+    
+    .file-icon .fa-file-archive {
+        color: var(--md3-warning);
+    }
+    
+    .file-icon .fa-file-alt {
+        color: var(--md3-primary);
+    }
+    
+    .file-name {
+        margin-bottom: var(--md3-spacing-md);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+    }
+    
+    .file-download-indicator {
+        font-size: 0.75rem;
+        color: var(--md3-primary);
+        font-weight: 500;
+    }
+    
+    .no-files {
+        text-align: center;
+        padding: var(--md3-spacing-xl);
+        color: var(--md3-on-surface-variant);
+        background-color: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-lg);
+    }
+</style>
+
+<div class="file-display-component">
+    <h3>{{ title|default:"文件展示" }}</h3>
+    
+    {% if files %}
+        <div class="files-grid">
+            {% for file in files %}
+                <a href="{{ file.url }}" class="file-item" download="{{ file.name }}">
+                    <div class="file-icon">
+                        {% if file.type == 'pdf' %}
+                            <i class="fas fa-file-pdf"></i>
+                        {% elif file.type == 'doc' or file.type == 'docx' %}
+                            <i class="fas fa-file-word"></i>
+                        {% elif file.type == 'xls' or file.type == 'xlsx' %}
+                            <i class="fas fa-file-excel"></i>
+                        {% elif file.type == 'zip' or file.type == 'rar' %}
+                            <i class="fas fa-file-archive"></i>
+                        {% else %}
+                            <i class="fas fa-file-alt"></i>
+                        {% endif %}
+                    </div>
+                    <div class="file-name">{{ file.name }}</div>
+                    <div class="file-download-indicator">点击下载</div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-files">
+            <p>暂无文件</p>
+        </div>
+    {% endif %}
+</div>

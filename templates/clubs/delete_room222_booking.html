@@ -1,0 +1,117 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}取消预约{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-shell { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+    .page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .page-title { font-size: 22px; font-weight: 700; letter-spacing: 0.2px; color: var(--md3-on-surface); display: flex; align-items: center; gap: 8px; }
+
+    .card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 18px;
+        box-shadow: var(--md3-elevation-1);
+        padding: 20px 20px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .alert {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .detail-card {
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 14px;
+        padding: 14px 16px;
+        background: var(--md3-surface);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .detail-row { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--md3-outline-variant); padding-bottom: 10px; }
+    .detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .detail-label { color: var(--md3-on-surface-variant); font-weight: 600; font-size: 13px; }
+    .detail-value { color: var(--md3-on-surface); font-weight: 600; font-size: 14px; text-align: right; }
+
+    .actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 999px; border: 1px solid transparent; font-weight: 600; font-size: 14px; text-decoration: none; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease; }
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--md3-elevation-2); }
+    .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border-color: var(--md3-outline-variant); }
+    .btn-danger { background: var(--md3-error); color: var(--md3-on-error); }
+
+    @media (max-width: 640px) {
+        .page-shell { padding: 20px 12px 32px; }
+        .detail-row { flex-direction: column; align-items: flex-start; text-align: left; }
+        .detail-value { text-align: left; }
+        .actions { flex-direction: column-reverse; align-items: stretch; }
+        .btn { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="material-icons">delete</span>
+            取消预约
+        </h1>
+    </div>
+
+    <div class="card">
+        <div class="alert">
+            <span class="material-icons" style="font-size:20px;">warning</span>
+            <div>
+                确认取消？操作不可撤销，时间段将立即释放给其他人。
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <div class="detail-row">
+                <span class="detail-label">日期时间</span>
+                <span class="detail-value">{{ booking.booking_date|date:'Y年m月d日' }} {{ booking.start_time|date:'H:i' }} - {{ booking.end_time|date:'H:i' }}</span>
+            </div>
+            {% if booking.club %}
+            <div class="detail-row">
+                <span class="detail-label">预约社团</span>
+                <span class="detail-value">{{ booking.club.name }}</span>
+            </div>
+            {% endif %}
+            <div class="detail-row">
+                <span class="detail-label">使用目的</span>
+                <span class="detail-value">{{ booking.purpose }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">预计人数</span>
+                <span class="detail-value">{{ booking.participant_count }} 人</span>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="actions">
+                <a href="{% url 'clubs:my_room222_bookings' %}" class="btn btn-secondary">
+                    <span class="material-icons">arrow_back</span> 返回
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <span class="material-icons">delete_forever</span> 确认取消
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

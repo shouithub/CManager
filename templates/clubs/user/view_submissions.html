@@ -1,0 +1,211 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}年审记录 - {{ club.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-lg);
+    }
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <span class="material-icons">assignment</span>
+    <h1>年审记录 - {{ club.name }}</h1>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>提交历史</h3>
+    </div>
+
+    {% if submissions %}
+    <div class="submissions-container">
+        {% for submission in submissions %}
+        <div class="year-submission">
+            <h4>{{ submission.submission_year }} 年年审</h4>
+            
+            <div class="info-row">
+                <div>
+                    <strong>提交时间:</strong> {{ submission.submitted_at|date:"Y-m-d H:i" }}
+                </div>
+                <div>
+                    <strong>提交次数:</strong> 
+                    第 {{ submission.resubmission_attempt }} 次
+                    {% if submission.resubmission_attempt > 1 %}
+                        <span style="color: var(--md3-error); font-weight: 500;">(已重新提交)</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>状态:</strong> 
+                    <span class="status-badge {{ submission.status }}">
+                        {{ submission.get_status_display }}
+                    </span>
+                </div>
+                {% if submission.reviewed_at %}
+                <div>
+                    <strong>最终审核时间:</strong> {{ submission.reviewed_at|date:"Y-m-d H:i" }}
+                </div>
+                {% endif %}
+                {% if submission.status == 'approved' or submission.status == 'rejected' %}
+                <div>
+                    <strong>已读状态:</strong> 
+                    <span class="status-read {% if submission.is_read_by_president %}read{% else %}unread{% endif %}">
+                        {% if submission.is_read_by_president %}已读{% else %}未读{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                {% if submission.status == 'pending' %}
+                <div>
+                    <form action="{% url 'clubs:cancel_submission' submission.id %}" method="post" onsubmit="return confirm('确定要取消此年审请求吗？所有已上传的文件将被删除，此操作不可恢复。')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-error">
+                            ❌ 取消提交
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- 审核记录卡片横向排列 -->
+            {% if submission.reviews.all %}
+            <div class="reviews-section" style="margin-bottom: 20px;">
+                <p style="margin-bottom: 10px; font-weight: bold;">审核记录:</p>
+                <div class="reviews-grid" style="display: flex; flex-wrap: wrap; gap: 15px;">
+                    {% for review in submission.reviews.all %}
+                    <div class="review-card" style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef; min-width: 220px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <span style="font-weight: bold; font-size: 14px;">{% if review.reviewer %}{{ review.reviewer.profile.get_full_name }}{% else %}未设置{% endif %}</span>
+                            <span style="font-size: 12px; color: #666;">{{ review.reviewed_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        <div style="font-size: 12px; background-color: {% if review.status == 'approved' %}#d4edda{% elif review.status == 'rejected' %}#f8d7da{% else %}#e9ecef{% endif %}; color: {% if review.status == 'approved' %}#155724{% elif review.status == 'rejected' %}#721c24{% else %}#495057{% endif %}; padding: 2px 6px; border-radius: 3px; display: inline-block;">
+                            {% if review.status == 'approved' %}通过{% elif review.status == 'rejected' %}拒绝{% else %}{{ review.status }}{% endif %}
+                        </div>
+                        {% if review.comment %}
+                        <div style="margin-top: 5px; font-size: 14px; color: #555;">{{ review.comment }}</div>
+                        {% endif %}
+                        
+                        <!-- 显示被拒绝的材料 -->
+                        {% if review.status == 'rejected' and review.rejected_materials %}
+                        <div style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border: 1px solid #f8d7da; border-radius: 4px;">
+                            <div style="margin-bottom: 8px; font-weight: bold; color: #721c24; font-size: 14px;">
+                                <span class="material-icons" style="vertical-align: middle; font-size: 1em;">warning</span> 被拒绝的材料:
+                            </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">
+                                {% for material in review.rejected_materials %}
+                                <span style="font-size: 12px; background-color: #f8d7da; color: #721c24; padding: 3px 8px; border-radius: 3px;">
+                                    {% if material == 'self_assessment_form' %}自查表{% endif %}
+                                    {% if material == 'club_constitution' %}社团章程{% endif %}
+                                    {% if material == 'leader_learning_work_report' %}负责人学习及工作情况表{% endif %}
+                                    {% if material == 'annual_activity_list' %}社团年度活动清单{% endif %}
+                                    {% if material == 'advisor_performance_report' %}指导教师履职情况表{% endif %}
+                                    {% if material == 'financial_report' %}年度财务情况表{% endif %}
+                                    {% if material == 'member_composition_list' %}社团成员构成表{% endif %}
+                                    {% if material == 'new_media_account_report' %}新媒体账号及运维情况表{% endif %}
+                                    {% if material == 'other_materials' %}其他材料{% endif %}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            <!-- 重新提交按钮 -->
+                            <div style="text-align: right;">
+                                    <a href="{% url 'clubs:submit_review' club.id %}?resubmit={{ submission.id }}" class="btn btn-danger btn-sm">
+                                        🔄 更改并重新提交
+                                    </a>
+                                </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- 下载按钮横向排列 -->
+            <div class="download-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <!-- 按照要求的顺序显示材料 -->
+                {% if submission.self_assessment_form %}
+                <a href="{{ submission.self_assessment_form.url }}" class="btn btn-primary" download>
+                    <span class="material-icons" style="vertical-align: middle;">assignment</span> 自查表
+                </a>
+                {% endif %}
+                {% if submission.club_constitution %}
+                <a href="{{ submission.club_constitution.url }}" class="btn btn-primary" download>
+                    📑 社团章程
+                </a>
+                {% endif %}
+                {% if submission.leader_learning_work_report %}
+                <a href="{{ submission.leader_learning_work_report.url }}" class="btn btn-primary" download>
+                    <span class="material-icons">person</span> 负责人学习及工作情况表
+                </a>
+                {% endif %}
+                {% if submission.annual_activity_list %}
+                <a href="{{ submission.annual_activity_list.url }}" class="btn btn-primary" download>
+                    📅 社团年度活动清单
+                </a>
+                {% endif %}
+                {% if submission.advisor_performance_report %}
+                <a href="{{ submission.advisor_performance_report.url }}" class="btn btn-primary" download>
+                    <span class="material-icons">school</span> 指导教师履职情况表
+                </a>
+                {% endif %}
+                {% if submission.financial_report %}
+                <a href="{{ submission.financial_report.url }}" class="btn btn-primary" download>
+                    <span class="material-icons" style="vertical-align: middle;">attach_money</span> 年度财务情况表
+                </a>
+                {% endif %}
+                {% if submission.member_composition_list %}
+                <a href="{{ submission.member_composition_list.url }}" class="btn btn-primary" download>
+                    <span class="material-icons" style="vertical-align: middle;">group</span> 社团成员构成表
+                </a>
+                {% endif %}
+                {% if submission.new_media_account_report %}
+                <a href="{{ submission.new_media_account_report.url }}" class="btn btn-primary" download>
+                    📱 新媒体账号及运维情况表
+                </a>
+                {% endif %}
+                {% if submission.other_materials %}
+                <a href="{{ submission.other_materials.url }}" class="btn btn-primary" download>
+                    📦 其他材料
+                </a>
+                {% endif %}
+                
+                <!-- 合并下载和ZIP打包下载按钮 -->
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd; width: 100%;">
+
+                    <a href="{% url 'clubs:zip_review_docs' submission.id %}" class="btn btn-primary" style="margin-bottom: 10px; width: 100%;">
+                        🗜️ 打包所有材料为ZIP文件
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: #666; padding: 20px; text-align: center;">暂无年审提交记录</p>
+    {% endif %}
+
+    <div style="margin-top: 20px;">
+        <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-primary">返回</a>
+    </div>
+</div>
+{% endblock %}

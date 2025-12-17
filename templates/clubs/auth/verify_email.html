@@ -1,0 +1,53 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}邮箱验证{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">邮箱验证</h4>
+                    
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <div class="alert alert-info" role="alert">
+                        <p class="mb-1"><strong>验证码已发送到：</strong> {{ email }}</p>
+                        <p class="mb-0"><strong>过期时间：</strong> {{ expires_at|date:"Y-m-d H:i" }}</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="code">请输入验证码</label>
+                            <input type="text" class="form-control form-control-lg" id="code" name="code" 
+                                   placeholder="6位数字" maxlength="6" required autofocus>
+                            <small class="form-text text-muted">验证码为6位数字，有效期为15分钟</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">验证</button>
+                    </form>
+
+                    <hr>
+
+                    <p class="text-center text-muted mb-2">没有收到验证码？</p>
+                    <form method="get" action="{% url 'clubs:resend_verification_code' %}" class="text-center">
+                        <button type="submit" class="btn btn-link">重新发送验证码</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

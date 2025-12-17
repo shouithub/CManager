@@ -1,0 +1,51 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}社长变更历史 - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>👔 社长变更历史 - {{ club.name }}</h3>
+    </div>
+
+    {% if leader_changes %}
+    <div class="list-item">
+        {% for change in leader_changes %}
+        <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+            <div class="list-item-info">
+                <h4>{{ change.old_leader_name }} → {{ change.new_leader_name }}</h4>
+                <p><strong>申请时间:</strong> {{ change.submitted_at|date:"Y-m-d H:i" }}</p>
+                <p><strong>原社长学号:</strong> {{ change.old_leader_id }}</p>
+                <p><strong>新社长学号:</strong> {{ change.new_leader_id }}</p>
+                <p><strong>变更原因:</strong> {{ change.change_reason }}</p>
+                <p><strong>状态:</strong> 
+                    <span class="status-badge {{ change.status }}">
+                        {{ change.get_status_display }}
+                    </span>
+                </p>
+                {% if change.reviewer_comment %}
+                <p><strong>审核意见:</strong> {{ change.reviewer_comment }}</p>
+                {% endif %}
+                {% if change.reviewed_at %}
+                <p><strong>审核时间:</strong> {{ change.reviewed_at|date:"Y-m-d H:i" }}</p>
+                {% endif %}
+            </div>
+            <div class="list-item-actions">
+                {% if change.attachment %}
+                <a href="{{ change.attachment.url }}" class="btn btn-primary" download>
+                    📎 证明文件
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: #666; padding: 20px; text-align: center;">暂无社长变更记录</p>
+    {% endif %}
+
+    <div style="margin-top: 20px;">
+        <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-primary">返回</a>
+    </div>
+</div>
+{% endblock %}

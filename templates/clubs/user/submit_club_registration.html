@@ -1,0 +1,135 @@
+{% extends 'clubs/base.html' %}
+
+{% block content %}
+<div class="container mt-5 card shadow">
+        <div class="card-header">
+            <h3><span class="material-icons" style="vertical-align: middle;">assignment</span> 提交社团注册材料</h3>
+        </div>
+        
+        <!-- 提交说明 -->
+        <div style="background-color: #d1ecf1; padding: 15px; border-radius: 4px; margin: 15px; border: 1px solid #bee5eb;">
+            <h5 style="margin-top: 0; color: #0c5460;">ℹ️ 提交说明</h5>
+            <p>请下载相应模板并填写完整后上传。所有标记为<span style="color: red;">*</span>的字段为必填项。</p>
+            <p><strong>注意：</strong>所有文件必须为Word格式(.doc或.docx)。</p>
+        </div>
+        
+        <!-- 模板下载提示 - 按板块分类 -->
+        {% if registration_templates %}
+        <div style="background-color: #e8f4f8; padding: 15px; border-radius: 4px; margin: 15px;">
+            <h4 style="margin-top: 0;">📄 可用模板</h4>
+            
+            <!-- 注册申请表单模板 -->
+            <div style="margin: 10px 0;">
+                <h5 style="margin: 5px 0; color: #0066cc;"><span class="material-icons" style="vertical-align: middle; font-size: 1em;">assignment</span> 注册申请表单模板</h5>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    {% for template in registration_templates %}
+                        <li>
+                            <a href="{{ template.file.url }}" download>{{ template.name }}</a>
+                            {% if template.description %} - {{ template.description }}{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+
+
+            <div class="card-body">
+                <!-- 社团注册申请表 -->
+                <div class="form-group mb-5">
+                    <label for="registration_form" class="form-label" style="font-weight: bold; color: #333;">
+                        📄 1. 社团注册申请表 <span class="text-danger">*</span>
+                    </label>
+                    <input type="file" name="registration_form" id="registration_form" class="form-control" required accept=".doc,.docx">
+                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
+                </div>
+                
+                <!-- 学生社团基础信息表 -->
+                <div class="form-group mb-5">
+                    <label for="basic_info_form" class="form-label" style="font-weight: bold; color: #333;">
+                        ℹ️ 2. 学生社团基础信息表 <span class="text-danger">*</span>
+                    </label>
+                    <input type="file" name="basic_info_form" id="basic_info_form" class="form-control" required accept=".doc,.docx">
+                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
+                </div>
+                
+                <!-- 三会费表或免收会费说明书 -->
+                <div class="form-group mb-5">
+                    <label for="membership_fee_form" class="form-label" style="font-weight: bold; color: #333;">
+                        <span class="material-icons" style="vertical-align: middle; font-size: 1em;">attach_money</span> 3. 会费表或免收会费说明书 <span class="text-danger">*</span>
+                    </label>
+                    <input type="file" name="membership_fee_form" id="membership_fee_form" class="form-control" required accept=".doc,.docx">
+                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
+                </div>
+                
+                <!-- 选填的社团主要负责人变动申请 -->
+                <div class="form-group mb-5">
+                    <label for="leader_change_application" class="form-label" style="font-weight: bold; color: #333;">
+                        <span class="material-icons">person</span> 4. 社团主要负责人变动申请（选填）
+                    </label>
+                    <input type="file" name="leader_change_application" id="leader_change_application" class="form-control" accept=".doc,.docx">
+                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
+                </div>
+                
+                <!-- 选填的社团大会会议记录 -->
+                <div class="form-group mb-5">
+                    <label for="meeting_minutes" class="form-label" style="font-weight: bold; color: #333;">
+                        <span class="material-icons" style="vertical-align: middle; font-size: 1em;">edit</span> 5. 社团大会会议记录（选填）
+                    </label>
+                    <input type="file" name="meeting_minutes" id="meeting_minutes" class="form-control" accept=".doc,.docx">
+                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
+                </div>
+                
+                <!-- 选填的社团名称变更申请表 -->
+                <div class="form-group mb-5">
+                    <label for="name_change_application" class="form-label" style="font-weight: bold; color: #333;">
+                        📛 6. 社团名称变更申请表（选填）
+                    </label>
+                    <input type="file" name="name_change_application" id="name_change_application" class="form-control" accept=".doc,.docx">
+                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
+                </div>
+                
+                <!-- 选填的社团指导老师变动申请表 -->
+                <div class="form-group mb-5">
+                    <label for="advisor_change_application" class="form-label" style="font-weight: bold; color: #333;">
+                        <span class="material-icons">school</span> 7. 社团指导老师变动申请表（选填）
+                    </label>
+                    <input type="file" name="advisor_change_application" id="advisor_change_application" class="form-control" accept=".doc,.docx">
+                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
+                </div>
+                
+                <!-- 选填的社团业务指导单位变动申请表 -->
+                <div class="form-group mb-5">
+                    <label for="business_advisor_change_application" class="form-label" style="font-weight: bold; color: #333;">
+                        🏢 8. 社团业务指导单位变动申请表（选填）
+                    </label>
+                    <input type="file" name="business_advisor_change_application" id="business_advisor_change_application" class="form-control" accept=".doc,.docx">
+                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
+                </div>
+                
+                <!-- 新媒体平台建立申请表 -->
+                <div class="form-group mb-5">
+                    <label for="new_media_application" class="form-label" style="font-weight: bold; color: #333;">
+                        💻 9. 新媒体平台建立申请表（选填）
+                    </label>
+                    <input type="file" name="new_media_application" id="new_media_application" class="form-control" accept=".doc,.docx">
+                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary btn-lg" style="background-color: #0066cc; border-color: #0066cc;">
+                        <i class="fas fa-paper-plane"></i> 提交注册
+                    </button>
+                    <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-times"></i> 取消
+                    </a>
+                </div>
+            </div>
+
+
+    </form>
+</div>
+{% endblock %}

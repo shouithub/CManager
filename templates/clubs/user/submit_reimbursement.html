@@ -1,0 +1,387 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}提交报销材料 - {{ club.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@media (max-width: 768px) {
+    .submit-container {
+        padding: var(--md3-spacing-lg) !important;
+    }
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .template-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* MD3 提交页面样式 */
+.submit-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--md3-spacing-2xl);
+    box-sizing: border-box;
+}
+
+/* 页面标题 */
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    margin-bottom: var(--md3-spacing-xl);
+    padding-bottom: var(--md3-spacing-lg);
+    border-bottom: 2px solid var(--md3-outline-variant);
+}
+
+.page-title .material-icons {
+    font-size: 2.5rem;
+    color: var(--md3-primary);
+}
+
+.page-title h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+}
+
+/* 信息卡片 */
+.info-card {
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-xl);
+    margin-bottom: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.info-card.info {
+    background: var(--md3-primary-container);
+    border-color: var(--md3-primary);
+}
+
+.info-card h5 {
+    margin: 0 0 var(--md3-spacing-md) 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+}
+
+.info-card.info h5 {
+    color: var(--md3-on-primary-container);
+}
+
+.info-card.info h5 .material-icons {
+    color: var(--md3-on-primary-container);
+}
+
+.info-card p {
+    margin: 0 0 var(--md3-spacing-sm) 0;
+    line-height: 1.5;
+}
+
+.info-card ul {
+    margin: var(--md3-spacing-sm) 0 0 0;
+    padding-left: var(--md3-spacing-xl);
+}
+
+.info-card li {
+    margin-bottom: var(--md3-spacing-xs);
+}
+
+/* 表单卡片 */
+.form-card {
+    background: var(--md3-surface-container-low);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.form-card h3 {
+    margin: 0 0 var(--md3-spacing-lg) 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+}
+
+.form-card h3 .material-icons {
+    color: var(--md3-primary);
+}
+
+/* 表单网格 */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--md3-spacing-lg);
+    margin-bottom: var(--md3-spacing-xl);
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 表单组 */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--md3-spacing-xs);
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-xs);
+}
+
+.form-group label .material-icons {
+    font-size: 1.125rem;
+    color: var(--md3-primary);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    padding: var(--md3-spacing-md);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    background: var(--md3-surface-container-highest);
+    color: var(--md3-on-surface);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--md3-primary);
+    box-shadow: 0 0 0 2px var(--md3-primary-container);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-group small {
+    font-size: 0.75rem;
+    color: var(--md3-on-surface-variant);
+    margin-top: var(--md3-spacing-xs);
+}
+
+/* 按钮组 */
+.button-group {
+    display: flex;
+    gap: var(--md3-spacing-md);
+    justify-content: flex-end;
+    padding-top: var(--md3-spacing-lg);
+    border-top: 1px solid var(--md3-outline-variant);
+}
+
+.btn {
+    padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+    border: none;
+    border-radius: var(--md3-radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+}
+
+.btn-primary:hover {
+    background: var(--md3-primary-hover);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.btn-success {
+    background: var(--md3-tertiary);
+    color: var(--md3-on-tertiary);
+}
+
+.btn-success:hover {
+    background: var(--md3-tertiary-hover);
+    box-shadow: var(--md3-elevation-2);
+}
+
+/* 错误消息 */
+.message {
+    padding: var(--md3-spacing-md);
+    border-radius: var(--md3-radius-md);
+    margin-bottom: var(--md3-spacing-md);
+    font-size: 0.875rem;
+}
+
+.message.error {
+    background: var(--md3-error-container);
+    color: var(--md3-on-error-container);
+    border: 1px solid var(--md3-error);
+}
+
+/* 模板网格 */
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--md3-spacing-md);
+    margin-top: var(--md3-spacing-md);
+}
+
+.template-item {
+    background: var(--md3-surface-container-highest);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-md);
+    padding: var(--md3-spacing-md);
+    transition: all 0.2s ease;
+}
+
+.template-item:hover {
+    box-shadow: var(--md3-elevation-2);
+    border-color: var(--md3-primary);
+}
+
+.template-item a {
+    color: var(--md3-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.template-item a:hover {
+    text-decoration: underline;
+}
+
+.template-item p {
+    margin: var(--md3-spacing-xs) 0 0 0;
+    font-size: 0.75rem;
+    color: var(--md3-on-surface-variant);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="submit-container">
+    <!-- 页面标题 -->
+    <div class="page-title">
+        <span class="material-icons">attach_money</span>
+        <h1>提交报销材料 - {{ club.name }}</h1>
+    </div>
+
+    <!-- 错误消息 -->
+    {% if errors %}
+    {% for error in errors %}
+    <div class="message error">
+        <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">error</span>
+        {{ error }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- 模板下载提示 -->
+    {% if templates %}
+    <div class="info-card info">
+        <h5>
+            <span class="material-icons">description</span>
+            可用模板
+        </h5>
+        <p>请下载并使用以下模板填写报销材料：</p>
+        <div class="template-grid">
+            {% for template in templates %}
+            <div class="template-item">
+                <a href="{{ template.file.url }}" download>
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 4px;">download</span>
+                    {{ template.name }}
+                </a>
+                {% if template.description %}
+                <p>{{ template.description }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 表单卡片 -->
+    <div class="form-card">
+        <h3>
+            <span class="material-icons">edit</span>
+            报销信息填写
+        </h3>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="submission_date">
+                        <span class="material-icons">today</span>
+                        报销日期 *
+                    </label>
+                    <input type="date" id="submission_date" name="submission_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reimbursement_amount">
+                        <span class="material-icons">attach_money</span>
+                        报销金额 (¥) *
+                    </label>
+                    <input type="number" id="reimbursement_amount" name="reimbursement_amount"
+                           step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="description">
+                        <span class="material-icons">description</span>
+                        报销说明 *
+                    </label>
+                    <textarea id="description" name="description" required
+                              placeholder="请详细说明报销事由和明细"></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="receipt_file">
+                        <span class="material-icons">receipt</span>
+                        报销凭证 (Word) *
+                    </label>
+                    <input type="file" id="receipt_file" name="receipt_file"
+                           accept=".doc,.docx" required>
+                    <small>支持格式: Word (.doc, .docx)</small>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-primary">
+                    <span class="material-icons">arrow_back</span>
+                    返回
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <span class="material-icons">send</span>
+                    提交报销
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,622 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}编辑个人信息 - CManager{% endblock %}
+
+{% block extra_css %}
+<style>
+@media (max-width: 768px) {
+    .profile-container {
+        padding: var(--md3-spacing-lg) !important;
+    }
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .profile-form-row {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* MD3 个人资料页面样式 */
+.profile-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--md3-spacing-2xl);
+    box-sizing: border-box;
+}
+
+/* 页面标题 */
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    margin-bottom: var(--md3-spacing-xl);
+    padding-bottom: var(--md3-spacing-lg);
+    border-bottom: 2px solid var(--md3-outline-variant);
+}
+
+.page-title .material-icons {
+    font-size: 2.5rem;
+    color: var(--md3-primary);
+}
+
+.page-title h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+}
+
+.page-title .subtitle {
+    margin: var(--md3-spacing-xs) 0 0 0;
+    font-size: 0.875rem;
+    color: var(--md3-on-surface-variant);
+    font-weight: 400;
+}
+
+/* 信息卡片 */
+.info-card {
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-xl);
+    margin-bottom: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.info-card.error {
+    background: var(--md3-error-container);
+    border-color: var(--md3-error);
+}
+
+.info-card h5 {
+    margin: 0 0 var(--md3-spacing-md) 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+}
+
+.info-card.error h5 {
+    color: var(--md3-on-error-container);
+}
+
+.info-card.error h5 .material-icons {
+    color: var(--md3-on-error-container);
+}
+
+.info-card p {
+    margin: 0 0 var(--md3-spacing-sm) 0;
+    line-height: 1.5;
+}
+
+/* 表单卡片 */
+.form-card {
+    background: var(--md3-surface-container-low);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.form-card h3 {
+    margin: 0 0 var(--md3-spacing-lg) 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+}
+
+.form-card h3 .material-icons {
+    color: var(--md3-primary);
+}
+
+/* 表单组 */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--md3-spacing-xs);
+    margin-bottom: var(--md3-spacing-lg);
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-xs);
+}
+
+.form-group label .material-icons {
+    font-size: 1.125rem;
+    color: var(--md3-primary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: var(--md3-spacing-md);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    background: var(--md3-surface-container-highest);
+    color: var(--md3-on-surface);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--md3-primary);
+    box-shadow: 0 0 0 2px var(--md3-primary-container);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-group small {
+    font-size: 0.75rem;
+    color: var(--md3-on-surface-variant);
+    margin-top: var(--md3-spacing-xs);
+}
+
+/* 表单网格 */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--md3-spacing-lg);
+    margin-bottom: var(--md3-spacing-xl);
+}
+
+.profile-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--md3-spacing-lg);
+    margin-bottom: var(--md3-spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .form-grid,
+    .profile-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 字段集 */
+.fieldset {
+    margin-bottom: var(--md3-spacing-xl);
+    padding: var(--md3-spacing-lg);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-md);
+    background: var(--md3-surface-container-highest);
+}
+
+.fieldset.readonly-section {
+    background: var(--md3-surface-container);
+}
+
+.fieldset legend {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    padding: 0 var(--md3-spacing-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-xs);
+}
+
+.fieldset legend .material-icons {
+    font-size: 1.125rem;
+    color: var(--md3-primary);
+}
+
+/* 只读字段 */
+.readonly-field {
+    padding: var(--md3-spacing-md);
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-md);
+    color: var(--md3-on-surface);
+    font-size: 0.875rem;
+}
+
+/* 复选框组 */
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--md3-spacing-sm);
+    padding: var(--md3-spacing-md);
+    background: var(--md3-surface-container-highest);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--md3-primary);
+}
+
+.checkbox-group label {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--md3-on-surface);
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+/* 状态徽章 */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--md3-spacing-xs);
+    padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+    border-radius: var(--md3-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.pending {
+    background: var(--md3-tertiary-container);
+    color: var(--md3-on-tertiary-container);
+}
+
+.status-badge.approved {
+    background: var(--md3-primary-container);
+    color: var(--md3-on-primary-container);
+}
+
+.status-badge.rejected {
+    background: var(--md3-error-container);
+    color: var(--md3-on-error-container);
+}
+
+/* 按钮组 */
+.button-group {
+    display: flex;
+    gap: var(--md3-spacing-md);
+    justify-content: flex-end;
+    padding-top: var(--md3-spacing-lg);
+    border-top: 1px solid var(--md3-outline-variant);
+}
+
+.btn {
+    padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+    border: none;
+    border-radius: var(--md3-radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+}
+
+.btn-primary:hover {
+    background: var(--md3-primary-hover);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.btn-outlined {
+    background: transparent;
+    color: var(--md3-primary);
+    border: 1px solid var(--md3-outline);
+}
+
+.btn-outlined:hover {
+    background: var(--md3-primary-container);
+    border-color: var(--md3-primary);
+}
+
+/* 提示信息 */
+.info-notice {
+    background: var(--md3-primary-container);
+    border: 1px solid var(--md3-primary);
+    border-radius: var(--md3-radius-md);
+    padding: var(--md3-spacing-md);
+    margin-top: var(--md3-spacing-xl);
+    font-size: 0.875rem;
+    color: var(--md3-on-primary-container);
+}
+
+.info-notice strong {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-xs);
+    margin-bottom: var(--md3-spacing-xs);
+}
+
+.info-notice .material-icons {
+    font-size: 1rem;
+}
+
+/* 错误消息 */
+.message {
+    padding: var(--md3-spacing-md);
+    border-radius: var(--md3-radius-md);
+    margin-bottom: var(--md3-spacing-md);
+    font-size: 0.875rem;
+}
+
+.message.error {
+    background: var(--md3-error-container);
+    color: var(--md3-on-error-container);
+    border: 1px solid var(--md3-error);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- 页面标题 -->
+    <div class="page-title">
+        <span class="material-icons">person</span>
+        <h1>编辑个人信息</h1>
+        <p class="subtitle">用户名：<strong>{{ user.username }}</strong></p>
+    </div>
+
+    <!-- 消息显示 -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="info-card{% if message.tags == 'error' %} error{% endif %}">
+        <h5>
+            <span class="material-icons">
+                {% if message.tags == 'error' %}error{% else %}info{% endif %}
+            </span>
+            {% if message.tags == 'error' %}错误{% else %}提示{% endif %}
+        </h5>
+        <p>{{ message }}</p>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- 表单卡片 -->
+    <div class="form-card">
+        <h3>
+            <span class="material-icons">assignment</span>
+            个人基本信息
+        </h3>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- 基本信息 -->
+            <div class="fieldset">
+                <legend>
+                    <span class="material-icons">person</span>
+                    基本信息
+                </legend>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="real_name">
+                            <span class="material-icons">person</span>
+                            真实姓名 *
+                        </label>
+                        <input
+                            type="text"
+                            id="real_name"
+                            name="real_name"
+                            value="{{ profile.real_name }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="student_id">
+                            <span class="material-icons">school</span>
+                            学号 *
+                        </label>
+                        <input
+                            type="text"
+                            id="student_id"
+                            name="student_id"
+                            value="{{ profile.student_id }}"
+                            required
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- 联系方式 -->
+            <div class="fieldset">
+                <legend>
+                    <span class="material-icons">phone</span>
+                    联系方式
+                </legend>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="email">
+                            <span class="material-icons">email</span>
+                            邮箱 (可选)
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value="{{ user.email }}"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">
+                            <span class="material-icons">phone</span>
+                            电话 *
+                        </label>
+                        <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            value="{{ profile.phone }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wechat">
+                            <span class="material-icons">chat</span>
+                            微信 *
+                        </label>
+                        <input
+                            type="text"
+                            id="wechat"
+                            name="wechat"
+                            value="{{ profile.wechat }}"
+                            required
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- 信息公开设置 -->
+            <div class="fieldset readonly-section">
+                <legend>
+                    <span class="material-icons">lock</span>
+                    信息公开设置
+                </legend>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input
+                            type="checkbox"
+                            id="is_info_public"
+                            name="is_info_public"
+                            {% if profile.is_info_public %}checked{% endif %}
+                        >
+                        <label for="is_info_public">
+                            <strong>公开我的个人信息</strong>
+                        </label>
+                    </div>
+                    <small>
+                        <span class="material-icons" style="font-size: 14px; vertical-align: middle;">check_circle</span> 勾选后，您的个人电话和邮箱将对所有用户可见<br>
+                        <span class="material-icons" style="font-size: 14px; vertical-align: middle;">cancel</span> 不勾选则仅对干事、管理员和社团内部人员可见
+                    </small>
+                </div>
+            </div>
+
+            <!-- 政治身份信息 (仅社长和干事需要) -->
+            {% if profile.role == 'president' or profile.role == 'staff' %}
+            <div class="fieldset">
+                <legend>
+                    <span class="material-icons">flag</span>
+                    政治身份
+                </legend>
+
+                <div class="form-group">
+                    <label for="political_status">
+                        <span class="material-icons">flag</span>
+                        政治面貌 *
+                    </label>
+                    <select
+                        id="political_status"
+                        name="political_status"
+                        required
+                    >
+                        <option value="">-- 请选择政治面貌 --</option>
+                        <option value="communist_party_member" {% if profile.political_status == 'communist_party_member' %}selected{% endif %}>中共党员</option>
+                        <option value="communist_party_probationary" {% if profile.political_status == 'communist_party_probationary' %}selected{% endif %}>中共预备党员</option>
+                        <option value="communist_youth_league" {% if profile.political_status == 'communist_youth_league' %}selected{% endif %}>共青团员</option>
+                        <option value="revolutionary_committee" {% if profile.political_status == 'revolutionary_committee' %}selected{% endif %}>民革党员</option>
+                        <option value="china_democratic_league" {% if profile.political_status == 'china_democratic_league' %}selected{% endif %}>民盟盟员</option>
+                        <option value="democratic_national_construction" {% if profile.political_status == 'democratic_national_construction' %}selected{% endif %}>民建会员</option>
+                        <option value="china_peasants_workers_democratic" {% if profile.political_status == 'china_peasants_workers_democratic' %}selected{% endif %}>农工党党员</option>
+                        <option value="china_council_for_promoting" {% if profile.political_status == 'china_council_for_promoting' %}selected{% endif %}>致公党党员</option>
+                        <option value="jiusanshe" {% if profile.political_status == 'jiusanshe' %}selected{% endif %}>九三学社社员</option>
+                        <option value="taiwan_democratic_self_government" {% if profile.political_status == 'taiwan_democratic_self_government' %}selected{% endif %}>台盟盟员</option>
+                        <option value="non_party_personage" {% if profile.political_status == 'non_party_personage' %}selected{% endif %}>无党派人士</option>
+                        <option value="progressive" {% if profile.political_status == 'progressive' %}selected{% endif %}>入党积极分子</option>
+                        <option value="non_member" {% if profile.political_status == 'non_member' %}selected{% endif %}>群众</option>
+                    </select>
+                    <small>请准确填写您的政治身份</small>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 角色和状态信息 (只读) -->
+            <div class="fieldset readonly-section">
+                <legend>
+                    <span class="material-icons">info</span>
+                    账户信息 (只读)
+                </legend>
+
+                <div class="profile-form-row">
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <div class="readonly-field">
+                            {{ user.username }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>当前角色</label>
+                        <div class="readonly-field">
+                            {% if profile.role == 'president' %}社长{% elif profile.role == 'staff' %}干事{% elif profile.role == 'admin' %}管理员{% else %}未设定{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if profile.role == 'staff' %}
+                <div class="form-group">
+                    <label>申请状态</label>
+                    <div class="readonly-field">
+                        {% if profile.status == 'pending' %}
+                            <span class="status-badge pending">
+                                <span class="material-icons" style="font-size: 14px;">schedule</span>
+                                待审核
+                            </span>
+                        {% elif profile.status == 'approved' %}
+                            <span class="status-badge approved">
+                                <span class="material-icons" style="font-size: 14px;">check_circle</span>
+                                已批准
+                            </span>
+                        {% elif profile.status == 'rejected' %}
+                            <span class="status-badge rejected">
+                                <span class="material-icons" style="font-size: 14px;">cancel</span>
+                                已拒绝
+                            </span>
+                        {% else %}
+                            {{ profile.get_status_display }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="button-group">
+                <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-outlined">
+                    <span class="material-icons">arrow_back</span>
+                    取消
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">save</span>
+                    保存修改
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="info-notice">
+        <strong>
+            <span class="material-icons">info</span>
+            提示：
+        </strong>
+        标记为 <span style="color: var(--md3-error);">*</span> 的字段为必填项。修改个人信息后，系统将自动保存您的更改。
+    </div>
+</div>
+{% endblock %}

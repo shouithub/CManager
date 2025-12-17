@@ -1,0 +1,349 @@
+{% comment %}
+统一审核表单组件
+参数:
+- show_rejected_materials: 是否显示被拒绝材料选择面板 (布尔值)
+- materials_list: 材料列表,格式为 [{'field_name': 'xxx', 'label': 'xxx', 'icon': 'xxx'}, ...]
+- cancel_url: 取消按钮返回链接 (字符串)
+{% endcomment %}
+
+<style>
+.review-decision-buttons {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    justify-content: center;
+}
+
+.decision-btn {
+    flex: 1;
+    padding: 16px 24px;
+    border: 2px solid var(--md3-outline);
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--md3-surface-container);
+    color: var(--md3-on-surface);
+}
+
+.decision-btn:hover {
+    box-shadow: var(--md3-elevation-2);
+    transform: translateY(-2px);
+}
+
+.decision-btn.approve-btn {
+    background: var(--md3-success-container);
+    color: var(--md3-on-success-container);
+    border-color: var(--md3-success);
+}
+
+.decision-btn.reject-btn {
+    background: var(--md3-error-container);
+    color: var(--md3-on-error-container);
+    border-color: var(--md3-error);
+}
+
+.decision-btn.expanded {
+    flex: 0 1 70%;
+    padding: 20px 32px;
+    font-size: 18px;
+}
+
+.decision-btn.expanded .material-icons {
+    font-size: 24px;
+}
+
+.decision-btn .material-icons {
+    font-size: 20px;
+}
+
+/* 隐藏隐藏的select */
+#review_status {
+    display: none;
+}
+
+/* 材料选择面板 */
+.rejected-materials-panel {
+    background: var(--md3-error-container);
+    border: 2px solid var(--md3-error);
+    border-radius: 12px;
+    padding: 0;
+    margin-top: 16px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rejected-materials-panel.show {
+    max-height: 600px;
+    opacity: 1;
+    padding: 16px;
+}
+
+.rejected-materials-panel h5 {
+    color: var(--md3-on-error-container);
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--md3-on-error-container);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+.checkbox-label:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--md3-error);
+}
+
+.checkbox-label .material-icons {
+    font-size: 16px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline);
+    border-radius: 8px;
+    color: var(--md3-on-surface);
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 100px;
+    transition: all 0.2s ease;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--md3-primary);
+    box-shadow: 0 0 0 3px var(--md3-primary-container);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.btn-primary, .btn-secondary {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+}
+
+.btn-primary:hover {
+    background: var(--md3-primary-dim);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.btn-secondary {
+    background: var(--md3-surface-container-high);
+    color: var(--md3-on-surface);
+    border: 1px solid var(--md3-outline);
+}
+
+.btn-secondary:hover {
+    background: var(--md3-surface-container-highest);
+    box-shadow: var(--md3-elevation-1);
+}
+</style>
+
+<div class="review-form-section">
+    <h2 class="section-title">
+        <span class="material-icons">assignment_turned_in</span>
+        审核结果
+    </h2>
+    
+    <form method="POST" id="review_form">
+        {% csrf_token %}
+        
+        <!-- 隐藏的select用于form提交 -->
+        <select id="review_status" name="review_status" required style="display: none;">
+            <option value=""></option>
+            <option value="approved">approved</option>
+            <option value="rejected">rejected</option>
+        </select>
+        
+        <!-- 按钮式决定UI -->
+        <div class="review-decision-buttons">
+            <button type="button" class="decision-btn approve-btn" id="approve_btn" onclick="selectDecision('approved')">
+                <span class="material-icons">check_circle</span>
+                <span>通过</span>
+            </button>
+            <button type="button" class="decision-btn reject-btn" id="reject_btn" onclick="selectDecision('rejected')">
+                <span class="material-icons">cancel</span>
+                <span>拒绝</span>
+            </button>
+        </div>
+        
+        <!-- 被拒绝材料选择面板 -->
+        {% if show_rejected_materials and materials_list %}
+        <div id="rejected_materials_section" class="rejected-materials-panel">
+            <h5>
+                <span class="material-icons">error</span>
+                选择被拒绝的材料
+            </h5>
+            <div class="checkbox-grid">
+                {% for material in materials_list %}
+                <label class="checkbox-label">
+                    <input type="checkbox" name="rejected_materials" value="{{ material.field_name }}">
+                    <span>{{ material.label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- 审核意见 -->
+        <div class="form-group">
+            <label for="review_comment" class="form-label">审核意见</label>
+            <textarea 
+                id="review_comment" 
+                name="review_comment" 
+                class="form-textarea" 
+                placeholder="请输入您的审核意见...（拒绝时必填）"
+                rows="4"
+            ></textarea>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            <button type="submit" class="btn-primary" id="submit_btn" style="display: none;">
+                <span class="material-icons">send</span>
+                提交审核
+            </button>
+            <a href="{% url cancel_url %}" class="btn-secondary">
+                <span class="material-icons">arrow_back</span>
+                返回
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+let selectedDecision = null;
+
+function selectDecision(decision) {
+    const approveBtn = document.getElementById('approve_btn');
+    const rejectBtn = document.getElementById('reject_btn');
+    const rejectedMaterialsSection = document.getElementById('rejected_materials_section');
+    const submitBtn = document.getElementById('submit_btn');
+    const reviewStatus = document.getElementById('review_status');
+    
+    // 移除之前的expanded类
+    approveBtn.classList.remove('expanded');
+    rejectBtn.classList.remove('expanded');
+    
+    // 添加expanded类到选中的按钮
+    if (decision === 'approved') {
+        approveBtn.classList.add('expanded');
+        selectedDecision = 'approved';
+        reviewStatus.value = 'approved';
+        
+        // 隐藏材料选择面板
+        if (rejectedMaterialsSection) {
+            rejectedMaterialsSection.classList.remove('show');
+        }
+        
+        // 显示提交按钮
+        submitBtn.style.display = 'flex';
+        
+    } else if (decision === 'rejected') {
+        rejectBtn.classList.add('expanded');
+        selectedDecision = 'rejected';
+        reviewStatus.value = 'rejected';
+        
+        // 显示材料选择面板
+        if (rejectedMaterialsSection) {
+            rejectedMaterialsSection.classList.add('show');
+        }
+        
+        // 显示提交按钮
+        submitBtn.style.display = 'flex';
+    }
+}
+
+// 表单提交验证
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('review_form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const reviewStatus = document.getElementById('review_status').value;
+            const comment = document.getElementById('review_comment').value.trim();
+            
+            if (!reviewStatus) {
+                e.preventDefault();
+                alert('请先选择审核决定(通过或拒绝)!');
+                return false;
+            }
+            
+            if (reviewStatus === 'rejected' && comment === '') {
+                e.preventDefault();
+                alert('拒绝时必须填写审核意见!');
+                document.getElementById('review_comment').focus();
+                return false;
+            }
+            
+            return true;
+        });
+    }
+});
+</script>

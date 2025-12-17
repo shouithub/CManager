@@ -1,0 +1,833 @@
+{% extends 'clubs/base.html' %}
+{% load custom_filters %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<style>
+    /* MD3通用审核页面样式（紧凑版） */
+    .review-container { max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-xl); }
+    .review-header { padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); }
+    .review-header h1 { margin: 0; color: var(--md3-on-surface); font-size: 1.75rem; font-weight: 400; line-height: 2.25rem; letter-spacing: 0; display: flex; align-items: center; gap: var(--md3-spacing-md); }
+    .info-card { background: var(--md3-surface-container-low); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); border: 1px solid var(--md3-outline-variant); }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--md3-spacing-md); }
+    .info-item { display: flex; flex-direction: column; gap: 4px; }
+    .info-label { color: var(--md3-on-surface-variant); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-value { color: var(--md3-on-surface); font-size: 14px; font-weight: 500; }
+    .staff-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--md3-info-container); color: var(--md3-on-info-container); padding: 8px 16px; border-radius: var(--md3-radius-full); font-size: 13px; font-weight: 500; margin-top: var(--md3-spacing-md); border: 2px solid var(--md3-primary); }
+    .materials-section, .review-records-section, .review-form-section { background: var(--md3-surface-container-lowest); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
+    .section-title { color: var(--md3-on-surface); font-size: 18px; font-weight: 600; margin: 0 0 var(--md3-spacing-lg) 0; display: flex; align-items: center; gap: var(--md3-spacing-md); padding-bottom: var(--md3-spacing-md); border-bottom: 2px solid var(--md3-outline-variant); }
+    .materials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--md3-spacing-md); }
+    .material-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); transition: all 0.2s ease; display: flex; flex-direction: column; gap: var(--md3-spacing-md); }
+    .material-card:hover { background: var(--md3-surface-container-high); box-shadow: var(--md3-elevation-2); transform: translateY(-2px); }
+    .material-title { color: var(--md3-on-surface); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; margin: 0; }
+    .material-title .material-icons { font-size: 20px; color: var(--md3-primary); }
+    .download-btn { background: var(--md3-primary); color: var(--md3-on-primary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .download-btn:hover { background: var(--md3-primary-dim); box-shadow: var(--md3-elevation-2); }
+    
+    /* 预览按钮样式 */
+    .preview-btn { background: var(--md3-secondary); color: var(--md3-on-secondary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .preview-btn:hover { background: var(--md3-secondary-dim); box-shadow: var(--md3-elevation-2); }
+    
+    /* 文件操作按钮容器 */
+    .file-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .file-actions .preview-btn, .file-actions .download-btn { flex: 1; min-width: 120px; }
+    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--md3-surface-container); border-radius: var(--md3-radius-md); overflow: hidden; box-shadow: var(--md3-elevation-1); }
+    .data-table thead { background: var(--md3-surface-container-high); }
+    .data-table th { color: var(--md3-on-surface-variant); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--md3-outline-variant); }
+    .data-table td { color: var(--md3-on-surface); padding: 12px 16px; border-bottom: 1px solid var(--md3-outline-variant); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover { background: var(--md3-surface-container-low); }
+    .review-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: var(--md3-radius-full); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    .review-badge.approved { background: var(--md3-success-container); color: var(--md3-on-success-container); }
+    .review-badge.rejected { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+    .review-badge.pending { background: var(--md3-warning-container); color: var(--md3-on-warning-container); }
+    .review-stats { margin-top: var(--md3-spacing-md); padding: var(--md3-spacing-md); background: var(--md3-surface-container-low); border-radius: var(--md3-radius-md); color: var(--md3-on-surface-variant); font-size: 14px; }
+    .form-group { margin-bottom: var(--md3-spacing-lg); }
+    .form-label { display: block; color: var(--md3-on-surface); font-weight: 500; margin-bottom: var(--md3-spacing-sm); font-size: 14px; }
+    .form-select, .form-textarea { width: 100%; padding: 12px 16px; background: var(--md3-surface-container); border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-md); color: var(--md3-on-surface); font-family: inherit; font-size: 14px; transition: all 0.2s ease; }
+    .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--md3-primary); box-shadow: 0 0 0 3px var(--md3-primary-container); }
+    .form-textarea { resize: vertical; min-height: 100px; }
+    
+    /* 审核决定按钮样式 */
+    .decision-buttons-container {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        margin-top: var(--md3-spacing-md);
+    }
+    
+    .decision-btn {
+        flex: 1;
+        padding: 16px 24px;
+        border: 2px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: var(--md3-surface-container);
+        color: var(--md3-on-surface);
+    }
+    
+    .decision-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .decision-btn.approve-btn {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+        border-color: var(--md3-success);
+    }
+    
+    .decision-btn.reject-btn {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border-color: var(--md3-error);
+    }
+    
+    .decision-btn.expanded {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border-color: var(--md3-primary);
+        padding: 20px 32px;
+    }
+    
+    .decision-btn.approve-btn.expanded {
+        background: #4CAF50;
+        border-color: #4CAF50;
+        color: white;
+    }
+    
+    .decision-btn.reject-btn.expanded {
+        background: #f44336;
+        border-color: #f44336;
+        color: white;
+    }
+    
+    /* 拒绝材料面板样式 */
+    .rejected-materials-panel {
+        background: var(--md3-error-container);
+        border: 2px solid var(--md3-error);
+        border-radius: var(--md3-radius-lg);
+        padding: 0;
+        margin-top: var(--md3-spacing-md);
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .rejected-materials-panel.show {
+        max-height: 600px;
+        opacity: 1;
+        padding: var(--md3-spacing-lg);
+    }
+    
+    .rejected-materials-panel h5 {
+        color: var(--md3-on-error-container);
+        margin: 0 0 var(--md3-spacing-md) 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--md3-spacing-md); }
+    .checkbox-label { display: flex; align-items: center; gap: var(--md3-spacing-sm); color: var(--md3-on-error-container); font-size: 14px; cursor: pointer; padding: 8px; border-radius: var(--md3-radius-sm); transition: background 0.2s ease; }
+    .checkbox-label:hover { background: rgba(0,0,0,0.05); }
+    .checkbox-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+    .btn-primary { background: var(--md3-primary); color: var(--md3-on-primary); border: none; padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { background: var(--md3-primary-dim); box-shadow: var(--md3-elevation-2); }
+    .btn-danger { background: #f44336; color: white; border: none; padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
+    .btn-danger:hover { background: #d32f2f; box-shadow: var(--md3-elevation-2); }
+    .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border: 1px solid var(--md3-outline); padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .btn-secondary:hover { background: var(--md3-surface-container-highest); box-shadow: var(--md3-elevation-1); }
+    .action-buttons { display: flex; gap: var(--md3-spacing-lg); flex-wrap: wrap; margin-top: var(--md3-spacing-lg); }
+    
+    /* 时间轴样式 - MD3优化 */
+    .timeline-container { 
+        position: relative; 
+        padding-left: 48px; 
+        margin-top: var(--md3-spacing-lg);
+        /* 隐藏滚动条 */
+        overflow-x: hidden;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
+    .timeline-container::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+    .timeline-line { 
+        position: absolute; 
+        left: 23px; 
+        top: 0; 
+        bottom: 0; 
+        width: 3px; 
+        background: var(--md3-outline); 
+        border-radius: var(--md3-radius-sm);
+        opacity: 0.5;
+    }
+    .timeline-item { 
+        position: relative; 
+        margin-bottom: var(--md3-spacing-xl); 
+        padding: var(--md3-spacing-xl); 
+        background: var(--md3-surface-container); 
+        border-radius: var(--md3-radius-xl); 
+        border: 1px solid var(--md3-outline-variant); 
+        box-shadow: var(--md3-elevation-1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* 防止内容溢出导致滚动条 */
+        overflow: hidden;
+        word-wrap: break-word;
+    }
+    .timeline-item:hover {
+        box-shadow: var(--md3-elevation-2);
+        border-color: var(--md3-primary);
+        transform: translateX(4px);
+    }
+    .timeline-item::before { 
+        content: ''; 
+        position: absolute; 
+        left: -33px; 
+        top: 24px; 
+        width: 18px; 
+        height: 18px; 
+        border-radius: 50%; 
+        background: var(--md3-surface); 
+        border: 4px solid var(--md3-primary); 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        z-index: 1;
+    }
+    .timeline-item.approved::before { border-color: #4CAF50; background: #4CAF50; box-shadow: 0 2px 12px rgba(76, 175, 80, 0.4); }
+    .timeline-item.rejected::before { border-color: #f44336; background: #f44336; box-shadow: 0 2px 12px rgba(244, 67, 54, 0.4); }
+    .timeline-header { 
+        display: flex; 
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg); 
+        padding-bottom: var(--md3-spacing-md);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+    .timeline-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-sm);
+        flex-wrap: wrap;
+    }
+    .timeline-reviewer { 
+        display: flex; 
+        align-items: center; 
+        gap: var(--md3-spacing-sm); 
+        font-weight: 600; 
+        font-size: 16px;
+        color: var(--md3-on-surface); 
+    }
+    .timeline-reviewer .material-icons { 
+        font-size: 24px; 
+        color: var(--md3-primary);
+        background: var(--md3-primary-container);
+        padding: 6px;
+        border-radius: var(--md3-radius-full);
+    }
+    .timeline-time { 
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--md3-on-surface-variant); 
+        font-size: 13px; 
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    .timeline-time .material-icons {
+        font-size: 16px;
+    }
+    .timeline-decision { 
+        display: inline-flex; 
+        align-items: center; 
+        gap: 8px; 
+        padding: 8px 16px; 
+        border-radius: var(--md3-radius-full); 
+        font-weight: 600; 
+        font-size: 14px; 
+        box-shadow: var(--md3-elevation-1);
+    }
+    .timeline-decision.approved { 
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); 
+        color: #2e7d32; 
+        border: 1px solid #81c784;
+    }
+    .timeline-decision.rejected { 
+        background: linear-gradient(135deg, var(--md3-error-container) 0%, #ffcdd2 100%); 
+        color: var(--md3-on-error-container); 
+        border: 1px solid #ef5350;
+    }
+    .timeline-comment { 
+        color: var(--md3-on-surface); 
+        line-height: 1.7; 
+        margin-top: var(--md3-spacing-md); 
+        padding: var(--md3-spacing-md);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-md);
+        border-left: 3px solid var(--md3-primary);
+        font-size: 14px;
+    }
+    .timeline-materials { 
+        margin-top: var(--md3-spacing-lg); 
+        padding: var(--md3-spacing-lg); 
+        background: linear-gradient(135deg, var(--md3-error-container) 0%, #ffebee 100%); 
+        border-radius: var(--md3-radius-lg); 
+        border: 1px solid var(--md3-error);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .timeline-materials-title { 
+        font-size: 14px; 
+        font-weight: 600; 
+        color: var(--md3-on-error-container); 
+        margin-bottom: var(--md3-spacing-md); 
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .timeline-materials-title::before {
+        font-family: 'Material Icons';
+        font-size: 18px;
+    }
+    .timeline-materials-list { display: flex; flex-wrap: wrap; gap: var(--md3-spacing-sm); }
+    .timeline-material-chip { 
+        display: inline-flex; 
+        align-items: center; 
+        gap: 6px; 
+        padding: 6px 12px; 
+        background: var(--md3-surface); 
+        border-radius: var(--md3-radius-md); 
+        font-size: 13px; 
+        font-weight: 500;
+        color: var(--md3-on-surface); 
+        border: 1px solid var(--md3-outline);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .review-stats { 
+        margin-bottom: var(--md3-spacing-xl); 
+        padding: var(--md3-spacing-lg); 
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-tertiary-container) 100%); 
+        border-radius: var(--md3-radius-xl); 
+        color: var(--md3-on-primary-container); 
+        font-size: 15px; 
+        font-weight: 500;
+        text-align: center; 
+        box-shadow: var(--md3-elevation-1);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    .review-stats strong {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--md3-primary);
+    }
+    
+    @media (max-width: 768px) { 
+        .review-container { 
+            padding: var(--md3-spacing-md); 
+            max-width: 100%;
+        } 
+        
+        .review-header {
+            padding: var(--md3-spacing-lg);
+            margin-bottom: var(--md3-spacing-lg);
+        }
+        
+        .review-header h1 {
+            font-size: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .review-header h1 .material-icons {
+            font-size: 24px;
+        }
+        
+        .info-card,
+        .materials-section,
+        .review-form-section {
+            padding: var(--md3-spacing-lg);
+            margin-bottom: var(--md3-spacing-lg);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            gap: var(--md3-spacing-sm);
+        }
+        
+        .section-title .material-icons {
+            font-size: 20px;
+        }
+        
+        .materials-grid { 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: var(--md3-spacing-sm);
+        }
+        
+        .info-grid { 
+            grid-template-columns: 1fr; 
+            gap: var(--md3-spacing-md);
+        }
+        
+        .material-card {
+            padding: var(--md3-spacing-sm);
+        }
+        
+        .material-title {
+            font-size: 12px;
+            gap: 4px;
+        }
+        
+        .material-title .material-icons {
+            font-size: 16px;
+        }
+        
+        .download-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            gap: 4px;
+        }
+        
+        .download-btn .material-icons {
+            font-size: 16px;
+        }
+        
+        .decision-buttons-container {
+            flex-direction: column;
+            gap: var(--md3-spacing-md);
+        }
+        
+        .decision-btn {
+            padding: 14px 20px;
+            font-size: 15px;
+        }
+        
+        .decision-btn.expanded {
+            padding: 16px 24px;
+        }
+        
+        .decision-btn .material-icons {
+            font-size: 20px;
+        }
+        
+        .checkbox-grid {
+            grid-template-columns: 1fr;
+            gap: var(--md3-spacing-sm);
+        }
+        
+        .checkbox-label {
+            font-size: 13px;
+        }
+        
+        .form-label {
+            font-size: 13px;
+        }
+        
+        .form-textarea {
+            font-size: 14px;
+            padding: 10px 12px;
+        }
+        
+        .action-buttons { 
+            flex-direction: column;
+            gap: var(--md3-spacing-md);
+        } 
+        
+        .action-buttons button, 
+        .action-buttons a { 
+            width: 100%; 
+            justify-content: center;
+            padding: 12px 24px;
+        }
+        
+        .btn-primary,
+        .btn-danger,
+        .btn-secondary {
+            font-size: 14px;
+            padding: 12px 24px;
+        }
+        
+        .timeline-container { 
+            padding-left: 32px; 
+            margin-top: var(--md3-spacing-md); 
+        } 
+        
+        .timeline-line { 
+            left: 15px; 
+            width: 2px; 
+        } 
+        
+        .timeline-item { 
+            padding: var(--md3-spacing-md); 
+            font-size: 14px;
+            margin-bottom: var(--md3-spacing-lg);
+        } 
+        
+        .timeline-item:hover { 
+            transform: none; 
+        }
+        
+        .timeline-item::before { 
+            left: -23px; 
+            width: 14px; 
+            height: 14px; 
+            border-width: 3px; 
+            top: 16px; 
+        } 
+        
+        .timeline-header { 
+            gap: var(--md3-spacing-sm); 
+            padding-bottom: var(--md3-spacing-sm);
+            margin-bottom: var(--md3-spacing-md);
+        }
+        
+        .timeline-header-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+        
+        .timeline-reviewer { 
+            font-size: 14px; 
+        }
+        
+        .timeline-reviewer .material-icons { 
+            font-size: 20px; 
+            padding: 4px; 
+        }
+        
+        .timeline-time { 
+            font-size: 12px;
+            gap: 4px;
+        }
+        
+        .timeline-time .material-icons {
+            font-size: 14px;
+        }
+        
+        .timeline-decision { 
+            font-size: 12px; 
+            padding: 6px 12px;
+            gap: 6px;
+        }
+        
+        .timeline-decision .material-icons {
+            font-size: 14px !important;
+        }
+        
+        .timeline-comment { 
+            font-size: 13px; 
+            padding: var(--md3-spacing-sm);
+            line-height: 1.6;
+        }
+        
+        .timeline-materials { 
+            padding: var(--md3-spacing-md); 
+            margin-top: var(--md3-spacing-md); 
+        }
+        
+        .timeline-materials-title { 
+            font-size: 12px;
+            margin-bottom: var(--md3-spacing-sm);
+        }
+        
+        .timeline-materials-title::before { 
+            font-size: 16px; 
+        }
+        
+        .timeline-materials-list {
+            gap: 6px;
+        }
+        
+        .timeline-material-chip { 
+            font-size: 11px; 
+            padding: 4px 8px;
+            gap: 4px;
+        }
+        
+        .timeline-material-chip .material-icons { 
+            font-size: 12px !important;
+        }
+        
+        .review-stats { 
+            margin-bottom: var(--md3-spacing-lg); 
+            padding: var(--md3-spacing-md);
+            font-size: 13px;
+        }
+        
+        .review-stats strong { 
+            font-size: 16px; 
+        }
+        
+        .rejected-materials-panel {
+            padding: var(--md3-spacing-md);
+        }
+        
+        .rejected-materials-panel.show {
+            padding: var(--md3-spacing-md);
+        }
+        
+        .rejected-materials-panel h5 {
+            font-size: 14px;
+            margin-bottom: var(--md3-spacing-sm);
+        }
+    }
+</style>
+
+<div class="review-container">
+    <div class="review-header">
+        <h1>
+            <span class="material-icons">
+                {% if request_type == 'submission' %}assignment
+                {% elif request_type == 'registration' %}new_releases
+                {% elif request_type == 'club_registration_submission' %}flag
+                {% elif request_type == 'reimbursement' %}account_balance_wallet
+                {% else %}rate_review{% endif %}
+            </span>
+            {{ title }}
+        </h1>
+    </div>
+
+    <!-- 基本信息卡片 -->
+    <div class="info-card">
+        <div class="info-grid">
+            {% if submission %}
+                <div class="info-item">
+                    <span class="info-label">社团名称</span>
+                    <span class="info-value">{{ submission.club.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">提交时间</span>
+                    <span class="info-value">{{ submission.submitted_at|date:"Y-m-d H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">提交次数</span>
+                    <span class="info-value">
+                        第 {{ submission.resubmission_attempt }} 次提交
+                        {% if submission.resubmission_attempt > 1 %}
+                            <span style="color: var(--md3-error);">(已重新提交)</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">当前状态</span>
+                    <span class="info-value">
+                        <span class="review-badge {{ submission.status }}">{{ submission.get_status_display }}</span>
+                    </span>
+                </div>
+                {% if submission.club %}
+                <div class="staff-chip" style="grid-column: 1/-1;">
+                    <span class="material-icons" style="font-size: 16px;">assignment_ind</span>
+                    <span>
+                        负责干事: 
+                        {% for relation in submission.club.responsible_staff.all %}
+                            {% if relation.is_active %}
+                                {% if relation.staff.real_name %}{{ relation.staff.real_name }}{% elif relation.staff.user.username %}{{ relation.staff.user.username }}{% else %}未知用户{% endif %}{% if not forloop.last %}, {% endif %}
+                            {% endif %}
+                        {% empty %}未分配
+                        {% endfor %}
+                    </span>
+                </div>
+                {% endif %}
+            {% elif registration %}
+                <div class="info-item">
+                    <span class="info-label">{% if registration.club %}社团名称{% else %}申请社团{% endif %}</span>
+                    <span class="info-value">{% if registration.club %}{{ registration.club.name }}{% else %}{{ registration.club_name }}{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">提交时间</span>
+                    <span class="info-value">{{ registration.submitted_at|date:"Y-m-d H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">提交次数</span>
+                    <span class="info-value">
+                        第 {{ registration.resubmission_attempt }} 次提交
+                        {% if registration.resubmission_attempt > 1 %}
+                            <span style="color: var(--md3-error);">(已重新提交)</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">当前状态</span>
+                    <span class="info-value">
+                        <span class="review-badge {{ registration.status }}">{{ registration.get_status_display }}</span>
+                    </span>
+                </div>
+                {% if registration.club %}
+                <div class="staff-chip" style="grid-column: 1/-1;">
+                    <span class="material-icons" style="font-size: 16px;">assignment_ind</span>
+                    <span>
+                        负责干事: 
+                        {% for relation in registration.club.responsible_staff.all %}
+                            {% if relation.is_active %}
+                                {% if relation.staff.real_name %}{{ relation.staff.real_name }}{% elif relation.staff.user.username %}{{ relation.staff.user.username }}{% else %}未知用户{% endif %}{% if not forloop.last %}, {% endif %}
+                            {% endif %}
+                        {% empty %}未分配
+                        {% endfor %}
+                    </span>
+                </div>
+                {% endif %}
+            {% elif reimbursement %}
+                <div class="info-item">
+                    <span class="info-label">社团名称</span>
+                    <span class="info-value">{{ reimbursement.club.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">申请人</span>
+                    <span class="info-value">{% if reimbursement.club.president %}{{ reimbursement.club.president.username }}{% else %}未设置{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">报销金额</span>
+                    <span class="info-value">¥{{ reimbursement.reimbursement_amount }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">当前状态</span>
+                    <span class="info-value">
+                        <span class="review-badge {{ reimbursement.status }}">{{ reimbursement.get_status_display }}</span>
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 提交材料区域 -->
+    {% if submission_files %}
+    <div class="materials-section">
+        <h2 class="section-title">
+            <span class="material-icons">folder_open</span>
+            提交的材料
+        </h2>
+        <div class="materials-grid">
+            {% for file in submission_files %}
+            <div class="material-card">
+                <p class="material-title">
+                    <span class="material-icons">description</span>
+                    {{ file.name }}
+                </p>
+                <div class="file-actions">
+                    <a href="{{ file.url }}" class="download-btn" download title="下载文件">
+                        下载
+                    </a>
+                    <button onclick="previewFile('{{ file.url }}', '{{ file.name }}')" class="preview-btn" title="在线预览">
+                        预览
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- 合并下载按钮 -->
+        {% if request_type == 'submission' and submission %}
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
+            <a href="{% url 'clubs:zip_review_docs' submission.id %}" class="download-btn" style="width: 100%;">
+                🗜️ 打包所有材料为ZIP文件
+            </a>
+        </div>
+        {% elif request_type == 'registration' and registration %}
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
+            <a href="{% url 'clubs:zip_registration_docs' registration.id %}" class="download-btn" style="width: 100%;">
+                🗜️ 打包所有材料为ZIP文件
+            </a>
+        </div>
+        {% elif request_type == 'reimbursement' and reimbursement %}
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
+            <a href="{% url 'clubs:zip_reimbursement_docs' reimbursement.id %}" class="download-btn" style="width: 100%;">
+                🗜️ 打包所有材料为ZIP文件
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- 审核表单 -->
+    <!-- 总是显示时间轴（如果有审核记录） -->
+    {% if existing_reviews %}
+    {% if approved_count is not None and rejected_count is not None %}
+    <div class="review-stats">当前已有 <strong>{{ approved_count }}</strong> 人批准，<strong>{{ rejected_count }}</strong> 人拒绝</div>
+    {% endif %}
+    <div class="timeline-container" style="margin-bottom: var(--md3-spacing-xl);">
+        <div class="timeline-line"></div>
+        {% for review in existing_reviews %}
+        <div class="timeline-item {{ review.status }}">
+            <div class="timeline-header">
+                <div class="timeline-header-row">
+                    <div class="timeline-reviewer">
+                        <span class="material-icons">person</span>
+                        <span>{{ review.reviewer.profile.get_full_name|default:review.reviewer.username }}</span>
+                    </div>
+                    <div class="timeline-time">
+                        <span class="material-icons">schedule</span>
+                        <span>{{ review.reviewed_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                <div class="timeline-decision {{ review.status }}">
+                    <span class="material-icons" style="font-size: 16px;">
+                        {% if review.status == 'approved' %}check_circle{% else %}cancel{% endif %}
+                    </span>
+                    <span>{{ review.get_status_display }}</span>
+                </div>
+            </div>
+            {% if review.comment %}
+            <div class="timeline-comment">{{ review.comment }}</div>
+            {% endif %}
+            {% if review.rejected_materials %}
+            <div class="timeline-materials">
+                <div class="timeline-materials-title">被拒绝的材料：</div>
+                <div class="timeline-materials-list">
+                    {% for material in review.rejected_materials %}
+                    <span class="timeline-material-chip">
+                        {{ material|material_name }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 如果用户还没审核过，显示审核表单 -->
+    {% if not user_has_reviewed %}
+    {% include 'clubs/components/review_form.html' with show_rejected_materials=True materials_list=materials_list cancel_url='clubs:staff_dashboard' %}
+    {% else %}
+    <!-- 已审核：显示返回按钮 -->
+    <div class="action-buttons">
+        <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+            <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+            返回列表
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function previewFile(fileUrl, fileName) {
+    // 获取当前域名
+    const currentDomain = window.location.origin;
+    
+    // 如果文件URL是相对路径，转换为完整URL
+    let fullUrl = fileUrl;
+    if (fileUrl.startsWith('/')) {
+        fullUrl = currentDomain + fileUrl;
+    } else if (!fileUrl.startsWith('http')) {
+        fullUrl = currentDomain + '/' + fileUrl;
+    }
+    
+    // 使用 Office 365 Online 预览服务
+    const encodedUrl = encodeURIComponent(fullUrl);
+    const previewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
+    
+    // 在新标签页打开
+    window.open(previewUrl, '_blank');
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,334 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-hans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5, user-scalable=yes">
+    <meta name="color-scheme" content="light dark">
+    <meta name="format-detection" content="telephone=no">
+    <title>{% block title %}社团管理系统{% endblock %}</title>
+    <link href="https://cdn.bootcss.com/material-design-icons/3.0.1/iconfont/material-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20251207">
+    <style>
+        /* 防止移动设备自动缩放 */
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+        body {
+            position: relative;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+    <script src="{% static 'js/theme-toggle.js' %}"></script>
+</head>
+<body>
+    <!-- 遮罩层 (移动端) -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <!-- 左侧导航栏 -->
+    <nav class="sidebar-nav" id="sidebar">
+        <!-- 头部 -->
+        <div class="sidebar-header">
+            <span class="logo-icon"><span class="material-icons" style="font-size: 1.5em;">flag</span></span>
+            <h1>社团管理系统</h1>
+        </div>
+        
+        <!-- 导航菜单 -->
+        <div class="sidebar-menu">
+            {% if user.is_authenticated %}
+                <!-- 通用导航 -->
+                <div class="sidebar-menu-section">
+                    <div class="sidebar-menu-title">主要功能</div>
+                    <a href="{% url 'clubs:index' %}" class="sidebar-menu-item">
+                        <span class="icon"><span class="material-icons">home</span></span>
+                        <span>首页</span>
+                    </a>
+                    <a href="{% url 'clubs:public_activities' %}" class="sidebar-menu-item">
+                        <span class="icon"><span class="material-icons">event</span></span>
+                        <span>活动</span>
+                    </a>
+                    
+                    {% if user.profile.role == 'admin' %}
+                        <a href="{% url 'clubs:admin_dashboard' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">settings</span></span>
+                            <span>管理后台</span>
+                        </a>
+                        <a href="{% url 'clubs:manage_users' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">group</span></span>
+                            <span>用户管理</span>
+                        </a>
+                        <a href="{% url 'clubs:staff_dashboard' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">check_circle</span></span>
+                            <span>审核中心</span>
+                        </a>
+                        <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">business_center</span></span>
+                            <span>社团管理</span>
+                        </a>
+                        <a href="{% url 'clubs:publish_announcement' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">book</span></span>
+                            <span>发布公告</span>
+                        </a>
+                    {% elif user.profile.role == 'staff' %}
+                        <a href="{% url 'clubs:staff_dashboard' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">check_circle</span></span>
+                            <span>审核中心</span>
+                        </a>
+                        <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">business_center</span></span>
+                            <span>社团管理</span>
+                        </a>
+                    {% elif user.profile.role == 'teacher' %}
+                        <a href="{% url 'clubs:teacher_dashboard' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">school</span></span>
+                            <span>工作台</span>
+                        </a>
+                    {% elif user.profile.role == 'president' %}
+                        <a href="{% url 'clubs:user_dashboard' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">folder</span></span>
+                            <span>我的社团</span>
+                        </a>
+                        <a href="{% url 'clubs:approval_center' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">check_circle</span></span>
+                            <span>审批中心</span>
+                            {% if unread_approval_counts.total > 0 %}
+                            <span class="badge-count">{{ unread_approval_counts.total }}</span>
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <!-- 普通用户只能看到活动列表 -->
+                    {% endif %}
+                </div>
+                
+                <!-- 222房间借用 - 仅社长和干事可见 -->
+                {% if user.profile.role == 'president' or user.profile.role == 'staff' or user.profile.role == 'admin' %}
+                <div class="sidebar-menu-section">
+                    <div class="sidebar-menu-title">房间管理</div>
+                    <a href="{% url 'clubs:room222_calendar' %}" class="sidebar-menu-item">
+                        <span class="icon"><span class="material-icons">event</span></span>
+                        <span>222房间日历</span>
+                    </a>
+                    <a href="{% url 'clubs:submit_room222_booking' %}" class="sidebar-menu-item">
+                        <span class="icon"><span class="material-icons">add_circle</span></span>
+                        <span>预约房间</span>
+                    </a>
+                    <a href="{% url 'clubs:my_room222_bookings' %}" class="sidebar-menu-item">
+                        <span class="icon"><span class="material-icons">list</span></span>
+                        <span>我的预约</span>
+                    </a>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <!-- 底部 (用户信息) -->
+        {% if user.is_authenticated %}
+        <div class="sidebar-footer">
+            <div class="sidebar-user" onclick="toggleUserDropdown()">
+                <div class="sidebar-user-avatar">
+                    <span class="material-icons">person</span>
+                </div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">{{ user.username }}</div>
+                    <div class="sidebar-user-role">
+                        {% if user.profile.role == 'admin' %}
+                            管理员
+                        {% elif user.profile.role == 'staff' %}
+                            干事
+                        {% elif user.profile.role == 'teacher' %}
+                            老师
+                        {% elif user.profile.role == 'president' %}
+                            社长
+                        {% else %}
+                            普通用户
+                        {% endif %}
+                    </div>
+                </div>
+                <span class="dropdown-arrow">▲</span>
+            </div>
+            
+            <div class="sidebar-user-dropdown" id="userDropdown">
+                <a href="{% url 'clubs:change_account_settings' %}">
+                    <span><span class="material-icons" style="vertical-align: middle;">lock</span></span>
+                    <span>修改账户设置</span>
+                </a>
+                <a href="{% url 'clubs:edit_profile' %}">
+                    <span><span class="material-icons" style="vertical-align: middle;">person</span></span>
+                    <span>修改个人信息</span>
+                </a>
+                <a href="{% url 'clubs:logout' %}" class="logout">
+                    <span><span class="material-icons" style="vertical-align: middle;">lock_open</span></span>
+                    <span>登出</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-theme-toggle" onclick="toggleTheme()" title="切换主题">
+                <span id="theme-icon">🌙</span>
+                <span class="theme-text">切换主题</span>
+            </div>
+        </div>
+        {% endif %}
+    </nav>
+    
+    <!-- 主内容区 -->
+    <div class="main-wrapper" id="mainWrapper">
+        <div class="main-content">
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+        
+        <footer>
+            <p>上海海洋大学社团管理服务中心 技术支持</p>
+        </footer>
+    </div>
+    
+    <!-- 底部导航栏 (移动端) -->
+    {% if user.is_authenticated %}
+    <nav class="bottom-nav">
+        <div class="bottom-nav-items">
+            <a href="{% url 'clubs:index' %}" class="bottom-nav-item">
+                <span class="icon"><span class="material-icons">home</span></span>
+                <span>首页</span>
+            </a>
+            
+            {% if user.profile.role == 'admin' %}
+                <a href="{% url 'clubs:admin_dashboard' %}" class="bottom-nav-item">
+                    <span class="icon"><span class="material-icons">settings</span></span>
+                    <span>管理</span>
+                </a>
+                <a href="{% url 'clubs:staff_dashboard' %}" class="bottom-nav-item">
+                    <span class="icon"><span class="material-icons">check_circle</span></span>
+                    <span>审核</span>
+                </a>
+                <a href="{% url 'clubs:staff_management' %}" class="bottom-nav-item">
+                    <span class="icon"><span class="material-icons">business_center</span></span>
+                    <span>社团</span>
+                </a>
+            {% elif user.profile.role == 'staff' %}
+                <a href="{% url 'clubs:staff_dashboard' %}" class="bottom-nav-item">
+                    <span class="icon"><span class="material-icons">check_circle</span></span>
+                    <span>审核</span>
+                </a>
+                <a href="{% url 'clubs:staff_management' %}" class="bottom-nav-item">
+                    <span class="icon"><span class="material-icons">business_center</span></span>
+                    <span>社团</span>
+                </a>
+            {% elif user.profile.role == 'teacher' %}
+                <a href="{% url 'clubs:teacher_dashboard' %}" class="bottom-nav-item">
+                    <span class="icon"><span class="material-icons">school</span></span>
+                    <span>工作台</span>
+                </a>
+                <a href="{% url 'clubs:public_activities' %}" class="bottom-nav-item">
+                    <span class="icon"><span class="material-icons">event</span></span>
+                    <span>活动</span>
+                </a>
+            {% elif user.profile.role == 'president' %}
+                <a href="{% url 'clubs:user_dashboard' %}" class="bottom-nav-item">
+                    <span class="icon"><span class="material-icons">folder</span></span>
+                    <span>我的</span>
+                </a>
+                <a href="{% url 'clubs:approval_center' %}" class="bottom-nav-item">
+                    <span class="icon"><span class="material-icons">check_circle</span></span>
+                    <span>审批</span>
+                </a>
+            {% else %}
+                <!-- 普通用户 -->
+                <a href="{% url 'clubs:public_activities' %}" class="bottom-nav-item">
+                    <span class="icon"><span class="material-icons">event</span></span>
+                    <span>活动</span>
+                </a>
+            {% endif %}
+            
+            <a href="javascript:void(0)" class="bottom-nav-item" onclick="toggleSidebar()">
+                <span class="icon"><span class="material-icons">person</span></span>
+                <span>我</span>
+            </a>
+        </div>
+    </nav>
+    {% endif %}
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        // 防止移动设备自动缩放
+        document.addEventListener('DOMContentLoaded', function() {
+            // 确保没有子元素超出视口宽度
+            const checkOverflow = function() {
+                const body = document.body;
+                const html = document.documentElement;
+                
+                if (body.scrollWidth > window.innerWidth) {
+                    // 找出导致溢出的元素
+                    const elements = document.querySelectorAll('*');
+                    elements.forEach(el => {
+                        const rect = el.getBoundingClientRect();
+                        if (rect.right > window.innerWidth || rect.left < 0) {
+                            // 确保元素在视口内
+                            if (el.style.overflow !== 'auto' && el.style.overflow !== 'scroll') {
+                                el.style.maxWidth = '100vw';
+                                el.style.overflowX = 'hidden';
+                            }
+                        }
+                    });
+                }
+            };
+            
+            // 首次加载时检查
+            checkOverflow();
+            
+            // 窗口大小改变时检查
+            window.addEventListener('resize', checkOverflow);
+        });
+
+        // 切换侧边栏显示/隐藏
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        // 切换用户下拉菜单
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('active');
+        }
+        
+        // 点击侧边栏外部关闭
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            const userDropdown = document.getElementById('userDropdown');
+            const userButton = event.target.closest('.sidebar-user');
+            
+            // 关闭用户下拉菜单
+            if (userDropdown && !userButton && userDropdown.classList.contains('active')) {
+                userDropdown.classList.remove('active');
+            }
+        });
+        
+        // 高亮当前页面
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const menuItems = document.querySelectorAll('.sidebar-menu-item, .bottom-nav-item');
+            
+            menuItems.forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

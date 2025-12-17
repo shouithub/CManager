@@ -1,0 +1,369 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}提交社长换届申请{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+    }
+    
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+    }
+    
+    .form-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .form-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+    }
+    
+    .form-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .form-section {
+        margin-bottom: var(--md3-spacing-2xl);
+        padding-bottom: var(--md3-spacing-2xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+    
+    .form-section:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .form-section h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: var(--md3-spacing-lg);
+        color: var(--md3-primary);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .form-section h2 .material-icons {
+        font-size: 1.5rem;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-group label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+    }
+    
+    .form-group label .required {
+        color: var(--md3-error);
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        background: var(--md3-surface-container-highest);
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+    
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .file-upload-area {
+        border: 2px dashed var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-xl);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: var(--md3-surface-container-highest);
+    }
+    
+    .file-upload-area:hover {
+        border-color: var(--md3-primary);
+        background: var(--md3-primary-container);
+    }
+    
+    .file-upload-area .material-icons {
+        font-size: 3rem;
+        color: var(--md3-primary);
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .file-upload-area p {
+        margin: 0;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .form-group input[type="file"] {
+        display: none;
+    }
+    
+    .error-list {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .error-list ul {
+        margin: 0;
+        padding-left: var(--md3-spacing-lg);
+    }
+    
+    .error-list li {
+        margin-bottom: var(--md3-spacing-sm);
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        justify-content: center;
+        margin-top: var(--md3-spacing-2xl);
+    }
+    
+    .form-actions .btn {
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        text-decoration: none;
+    }
+    
+    .form-actions .btn .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    .info-box {
+        background: var(--md3-info-container);
+        color: var(--md3-on-info-container);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .info-box .material-icons {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .officer-info {
+        background: var(--md3-surface-container-low);
+        border-left: 4px solid var(--md3-primary);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-lg);
+        margin-top: var(--md3-spacing-md);
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+        .form-container {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .form-header h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <!-- 页面标题 -->
+    <div class="form-header">
+        <span class="material-icons">swap_horiz</span>
+        <h1>提交社长换届申请</h1>
+    </div>
+    
+    <!-- 提示信息 -->
+    <div class="info-box">
+        <div>
+            <strong>社长换届申请说明：</strong>
+            <p style="margin: 0.5rem 0 0 0;">从社团现有成员中选择新社长，并提交详细申请表。申请通过后，新社长信息将在系统中更新。</p>
+        </div>
+    </div>
+    
+    <!-- 错误提示 -->
+    {% if errors %}
+    <div class="error-list">
+        <strong>请修正以下错误：</strong>
+        <ul>
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    
+    <!-- 表单 -->
+    <form method="post" enctype="multipart/form-data" class="form-card">
+        {% csrf_token %}
+        
+        <!-- 原社长信息 -->
+        <div class="form-section">
+            <h2><span class="material-icons">person</span> 原社长信息</h2>
+            <p style="color: var(--md3-on-surface-variant); margin-bottom: 1rem;">系统自动填充，无需修改</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>现任社长</label>
+                    <input type="text" value="{% if user.profile.real_name %}{{ user.profile.real_name }}{% else %}{{ user.username }}{% endif %}" disabled>
+                </div>
+                <div class="form-group">
+                    <label>所属社团</label>
+                    <input type="text" value="{{ club.name }}" disabled>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 新社长信息 -->
+        <div class="form-section">
+            <h2><span class="material-icons">person_add</span> 新社长信息</h2>
+            <p style="color: var(--md3-on-surface-variant); margin-bottom: 1rem;">从所有社长中选择</p>
+            
+            <div class="form-row">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="new_president_officer_id">选择新社长 <span class="required">*</span></label>
+                    <select id="new_president_officer_id" name="new_president_officer_id" required onchange="updateOfficerInfo()">
+                        <option value="">-- 请选择 --</option>
+                        {% for officer in club_officers %}
+                        <option value="{{ officer.id }}" data-name="{% if officer.user_profile.real_name %}{{ officer.user_profile.real_name }}{% endif %}" data-student-id="{{ officer.user_profile.student_id }}" data-phone="{{ officer.user_profile.phone }}" data-position="{{ officer.get_position_display }}">
+                            {% if officer.user_profile.real_name %}{{ officer.user_profile.real_name }}{% else %}{{ officer.user_profile.user.username }}{% endif %} ({{ officer.get_position_display }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 选中后显示的信息 -->
+            <div id="officer-info-container" style="display: none;">
+                <div class="officer-info">
+                    <p><strong>姓名：</strong><span id="info-name">-</span></p>
+                    <p><strong>学号：</strong><span id="info-student-id">-</span></p>
+                    <p><strong>电话：</strong><span id="info-phone">-</span></p>
+                    <p><strong>职位：</strong><span id="info-position">-</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 换届信息 -->
+        <div class="form-section">
+            <h2><span class="material-icons">event</span> 换届信息</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="transition_date">换届日期 <span class="required">*</span></label>
+                    <input type="date" id="transition_date" name="transition_date" required value="{{ transition_date }}">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="transition_reason">换届原因 <span class="required">*</span></label>
+                    <textarea id="transition_reason" name="transition_reason" required placeholder="详细说明换届的原因和背景...">{{ transition_reason }}</textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 附件上传 -->
+        <div class="form-section">
+            <h2><span class="material-icons">attach_file</span> 附件上传</h2>
+            
+            <div class="form-row">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="transition_form">社团主要负责人变动申请表 <span class="required">*</span></label>
+                    <label for="transition_form" class="file-upload-area">
+                        <span class="material-icons">cloud_upload</span>
+                        <p>点击选择文件或拖放文件</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">支持 Word(.docx) 和 PDF 文件</p>
+                    </label>
+                    <input type="file" id="transition_form" name="transition_form" required accept=".docx,.pdf">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <span class="material-icons">check_circle</span> 提交申请
+            </button>
+            <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-outlined">
+                <span class="material-icons">cancel</span> 返回
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function updateOfficerInfo() {
+    const select = document.getElementById('new_president_officer_id');
+    const container = document.getElementById('officer-info-container');
+    
+    if (select.value === '') {
+        container.style.display = 'none';
+    } else {
+        const option = select.options[select.selectedIndex];
+        document.getElementById('info-name').textContent = option.dataset.name || option.text.split('(')[0].trim();
+        document.getElementById('info-student-id').textContent = option.dataset.studentId || '-';
+        document.getElementById('info-phone').textContent = option.dataset.phone || '-';
+        document.getElementById('info-position').textContent = option.dataset.position || '-';
+        container.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

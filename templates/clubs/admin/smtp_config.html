@@ -1,0 +1,479 @@
+{% extends 'clubs/base.html' %}
+{% load custom_filters %}
+
+{% block title %}SMTP邮箱配置{% endblock %}
+
+{% block content %}
+<style>
+.smtp-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.md3-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+}
+
+.md3-header h1 {
+    font-size: 32px;
+    font-weight: 500;
+    margin: 0;
+    color: var(--md-sys-color-on-background, #1c1b1f);
+}
+
+.md3-card {
+    background: var(--md-sys-color-surface, #fffbfe);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    transition: box-shadow 0.3s ease;
+}
+
+.md3-card:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+
+.config-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.config-card {
+    background: var(--md-sys-color-surface-container, #f7f2fa);
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 4px solid var(--md-sys-color-primary, #6750a4);
+    transition: all 0.3s ease;
+}
+
+.config-card.active {
+    border-left-color: var(--md-sys-color-tertiary, #7d5260);
+    background: var(--md-sys-color-tertiary-container, #ffd8e4);
+}
+
+.config-card:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.config-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 12px;
+}
+
+.config-provider {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface, #1c1b1f);
+}
+
+.config-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.config-status.active {
+    background: var(--md-sys-color-on-tertiary, #fff);
+    color: var(--md-sys-color-tertiary, #7d5260);
+}
+
+.config-status.inactive {
+    background: var(--md-sys-color-surface-variant, #e7e0ec);
+    color: var(--md-sys-color-on-surface-variant, #49454f);
+}
+
+.config-details {
+    font-size: 13px;
+    color: var(--md-sys-color-on-surface-variant, #49454f);
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.config-details div {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.config-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.error-alert {
+    background: var(--md-sys-color-error-container, #f9dedc);
+    border-left: 4px solid var(--md-sys-color-error, #b3261e);
+    color: var(--md-sys-color-on-error-container, #410e0b);
+    padding: 16px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+}
+
+.error-alert ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.form-section {
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+}
+
+.form-section h2 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 24px;
+    color: var(--md-sys-color-on-background, #1c1b1f);
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-background, #1c1b1f);
+    margin-bottom: 8px;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--md-sys-color-outline, #79747e);
+    border-radius: 4px;
+    font-size: 14px;
+    background: var(--md-sys-color-surface, #fffbfe);
+    color: var(--md-sys-color-on-surface, #1c1b1f);
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary, #6750a4);
+    box-shadow: 0 0 0 3px var(--md-sys-color-primary-container, #eaddff);
+}
+
+.form-input::placeholder {
+    color: var(--md-sys-color-on-surface-variant, #49454f);
+}
+
+.form-helper {
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant, #49454f);
+    margin-top: 4px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.form-row.full {
+    grid-template-columns: 1fr;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 4px;
+    background: var(--md-sys-color-surface-container, #f7f2fa);
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.checkbox-group label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: var(--md-sys-color-primary, #6750a4);
+    color: var(--md-sys-color-on-primary, #fff);
+}
+
+.btn-primary:hover {
+    background: var(--md-sys-color-primary, #6750a4);
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(103, 80, 164, 0.3);
+}
+
+.btn-secondary {
+    background: var(--md-sys-color-secondary-container, #e8def8);
+    color: var(--md-sys-color-on-secondary-container, #1d192b);
+}
+
+.btn-secondary:hover {
+    background: var(--md-sys-color-secondary-container, #e8def8);
+    opacity: 0.9;
+}
+
+.btn-success {
+    background: var(--md-sys-color-tertiary, #7d5260);
+    color: var(--md-sys-color-on-tertiary, #fff);
+}
+
+.btn-success:hover {
+    opacity: 0.9;
+}
+
+.btn-danger {
+    background: var(--md-sys-color-error, #b3261e);
+    color: var(--md-sys-color-on-error, #fff);
+}
+
+.btn-danger:hover {
+    opacity: 0.9;
+}
+
+.btn-sm {
+    padding: 6px 16px;
+    font-size: 13px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--md-sys-color-on-surface-variant, #49454f);
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+}
+
+.empty-state-text {
+    font-size: 16px;
+    margin-bottom: 24px;
+}
+</style>
+
+<div class="smtp-container">
+    <div class="md3-header">
+        <h1>SMTP邮箱配置管理</h1>
+        <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-secondary">返回</a>
+    </div>
+
+    {% if errors %}
+    <div class="error-alert">
+        <ul>
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- 现有配置列表 -->
+    {% if configs %}
+    <div class="md3-card">
+        <h2 style="margin: 0 0 16px 0; font-size: 18px;">已有配置</h2>
+        <div class="config-list">
+            {% for config in configs %}
+            <div class="config-card {% if config.is_active %}active{% endif %}">
+                <div class="config-card-header">
+                    <span class="config-provider">{{ config.get_provider_display }}</span>
+                    <span class="config-status {% if config.is_active %}active{% else %}inactive{% endif %}">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></span>
+                        {% if config.is_active %}激活中{% else %}未激活{% endif %}
+                    </span>
+                </div>
+                <div class="config-details">
+                    <div>
+                        <span style="font-weight: 500;">服务器：</span>
+                        <span>{{ config.smtp_host }}:{{ config.smtp_port }}</span>
+                    </div>
+                    <div>
+                        <span style="font-weight: 500;">邮箱：</span>
+                        <span>{{ config.sender_email }}</span>
+                    </div>
+                    <div>
+                        <span style="font-weight: 500;">加密：</span>
+                        <span>{% if config.use_tls %}TLS{% else %}无{% endif %}</span>
+                    </div>
+                </div>
+                <div class="config-actions">
+                    {% if not config.is_active %}
+                    <form method="post" style="display:inline; flex: 1;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="activate">
+                        <input type="hidden" name="config_id" value="{{ config.id }}">
+                        <button type="submit" class="btn btn-success btn-sm" style="width: 100%;">激活</button>
+                    </form>
+                    {% endif %}
+                    <form method="post" style="display:inline; flex: 1;" 
+                          onsubmit="return confirm('确定要删除此配置吗？');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="config_id" value="{{ config.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm" style="width: 100%;">删除</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="md3-card">
+        <div class="empty-state">
+            <div class="empty-state-icon">📧</div>
+            <div class="empty-state-text">暂无SMTP配置</div>
+            <p style="color: var(--md-sys-color-on-surface-variant, #49454f); margin-bottom: 24px;">
+                请创建一个新的SMTP配置以启用邮件发送功能
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 创建新配置表单 -->
+    <div class="md3-card form-section">
+        <h2>创建新的SMTP配置</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="provider">邮箱服务商 *</label>
+                    <select class="form-select" id="provider" name="provider" required 
+                            onchange="fillSmtpDefaults(this.value)">
+                        <option value="">-- 请选择 --</option>
+                        <option value="qq">QQ邮箱</option>
+                        <option value="163">163邮箱</option>
+                        <option value="outlook">Outlook</option>
+                        <option value="gmail">Gmail</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                    <div class="form-helper">选择邮箱服务商后将自动填充相应配置</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="sender_email">发送邮箱地址 *</label>
+                    <input type="email" class="form-input" id="sender_email" name="sender_email" 
+                           value="{{ form_data.sender_email }}" required
+                           placeholder="example@qq.com">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="smtp_host">SMTP服务器地址 *</label>
+                    <input type="text" class="form-input" id="smtp_host" name="smtp_host" 
+                           value="{{ form_data.smtp_host }}" required
+                           placeholder="smtp.qq.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="smtp_port">SMTP端口 *</label>
+                    <input type="number" class="form-input" id="smtp_port" name="smtp_port" 
+                           value="{{ form_data.smtp_port }}" required
+                           placeholder="587" min="1" max="65535">
+                </div>
+            </div>
+
+            <div class="form-group form-row full">
+                <label class="form-label" for="sender_password">邮箱密码/授权码 *</label>
+                <input type="password" class="form-input" id="sender_password" name="sender_password" required
+                       placeholder="请输入邮箱密码或授权码">
+                <div class="form-helper">某些邮箱需要使用授权码而非密码（如QQ邮箱需要16位授权码）</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="use_tls" name="use_tls" 
+                           {% if form_data.use_tls or not form_data %}checked{% endif %}>
+                    <label for="use_tls">使用TLS加密</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="is_active" name="is_active">
+                    <label for="is_active">创建后立即激活</label>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">
+                    <span>✓</span> 创建配置
+                </button>
+                <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-secondary">
+                    <span>←</span> 返回
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function fillSmtpDefaults(provider) {
+    const defaults = {
+        qq: {
+            smtp_host: 'smtp.qq.com',
+            smtp_port: 587
+        },
+        163: {
+            smtp_host: 'smtp.163.com',
+            smtp_port: 994
+        },
+        outlook: {
+            smtp_host: 'smtp-mail.outlook.com',
+            smtp_port: 587
+        },
+        gmail: {
+            smtp_host: 'smtp.gmail.com',
+            smtp_port: 587
+        }
+    };
+
+    if (defaults[provider]) {
+        document.getElementById('smtp_host').value = defaults[provider].smtp_host;
+        document.getElementById('smtp_port').value = defaults[provider].smtp_port;
+    }
+}
+</script>
+{% endblock %}

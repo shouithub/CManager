@@ -1,0 +1,771 @@
+﻿{% extends 'clubs/base.html' %}
+
+{% block title %}用户注册{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--md3-spacing-2xl) var(--md3-spacing-lg);
+        background: linear-gradient(135deg, var(--md3-surface) 0%, var(--md3-surface-container) 100%);
+    }
+    
+    .auth-card {
+        width: 100%;
+        max-width: 760px;
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-3xl);
+        padding: var(--md3-spacing-3xl);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .auth-header {
+        text-align: center;
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+    
+    .auth-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto var(--md3-spacing-lg);
+        background: var(--md3-primary-container);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .auth-icon .material-icons {
+        font-size: 3rem;
+        color: var(--md3-primary);
+    }
+    
+    .auth-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-sm) 0;
+    }
+    
+    .auth-subtitle {
+        font-size: 0.938rem;
+        color: var(--md3-on-surface-variant);
+        margin: 0;
+    }
+    
+    /* 注册类型选择 */
+    .register-type-selector {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .register-type-card {
+        position: relative;
+        padding: 1.5rem;
+        border: 2px solid var(--md3-outline-variant);
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+        background: var(--md3-surface-container);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 140px;
+    }
+    
+    .register-type-card:hover {
+        border-color: var(--md3-primary);
+        background: var(--md3-primary-container);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .register-type-card.active {
+        border-color: var(--md3-primary);
+        border-width: 3px;
+        background: var(--md3-primary-container);
+        box-shadow: 0 0 0 4px rgba(103, 80, 164, 0.15);
+    }
+    
+    .register-type-card input[type="radio"] {
+        opacity: 0;
+        position: absolute;
+        width: 0;
+        height: 0;
+    }
+    
+    .register-type-icon {
+        font-size: 3rem;
+        line-height: 1;
+        margin-bottom: 0.75rem;
+    }
+    
+    .register-type-title {
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: var(--md3-on-surface);
+        margin-bottom: 0.25rem;
+    }
+    
+    .register-type-desc {
+        font-size: 0.813rem;
+        color: var(--md3-on-surface-variant);
+        margin: 0;
+    }
+    
+    .auth-form {
+        display: grid;
+        /* 两列布局，列最小宽度保证输入框不会太窄 */
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+        gap: 1rem 1.25rem;
+        margin-top: 0.5rem;
+    }
+    
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-field.full-width {
+        grid-column: 1 / -1;
+    }
+    
+    .form-field label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .form-field label .material-icons {
+        font-size: 1.125rem;
+        color: var(--md3-primary);
+    }
+    
+    .form-field label .required {
+        color: var(--md3-error);
+        margin-left: 2px;
+    }
+    
+    .form-field input,
+    .form-field select {
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--md3-outline-variant);
+        border-radius: 12px;
+        font-size: 1rem;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        font-family: inherit;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        line-height: 1.5;
+    }
+    
+    .form-field input:focus,
+    .form-field select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        background: var(--md3-surface-container-highest);
+        box-shadow: 0 0 0 3px rgba(103, 80, 164, 0.1);
+    }
+    
+    .form-field input::placeholder {
+        color: var(--md3-on-surface-variant);
+        opacity: 0.6;
+    }
+    
+    .field-hint {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-top: 0.25rem;
+    }
+    
+    .field-hint .material-icons {
+        font-size: 0.875rem;
+    }
+    
+    /* 邮箱验证组件 */
+    .email-verification-group {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-end;
+        width: 100%;
+        grid-column: 1 / -1;
+    }
+    
+    .email-verification-group .form-field {
+        flex: 1;
+        margin: 0;
+    }
+    
+    .btn-send-code {
+        padding: 0.875rem 1.5rem;
+        background: var(--md3-tertiary);
+        color: var(--md3-on-tertiary);
+        border: none;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+        height: 3.375rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+    }
+    
+    .btn-send-code:hover {
+        background: var(--md3-tertiary);
+        opacity: 0.85;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-send-code:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .verification-code-input {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .verification-code-input input {
+        width: 100%;
+    }
+    
+    .role-info {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xs);
+        margin-top: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md);
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.813rem;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .role-info-item {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+    }
+    
+    .role-info-item .material-icons {
+        font-size: 1rem;
+        color: var(--md3-primary);
+    }
+    
+    .role-selection-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .role-input-and-info {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+    
+    .role-input-and-info select {
+        flex: 0 0 240px;
+        max-width: 360px;
+        min-width: 180px;
+    }
+    
+    .role-input-and-info .role-info {
+        flex: 1;
+        margin-top: 0;
+    }
+    
+    .auth-submit {
+        grid-column: 1 / -1;
+        margin-top: 0.5rem;
+        padding: 1rem 2rem;
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auth-submit:hover {
+        background: var(--md3-primary);
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .auth-submit:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin: var(--md3-spacing-xl) 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+    }
+    
+    .auth-divider::before,
+    .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--md3-outline-variant);
+    }
+    
+    .auth-link {
+        text-align: center;
+        font-size: 0.938rem;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .auth-link a {
+        color: var(--md3-primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .auth-link a:hover {
+        text-decoration: underline;
+    }
+    
+    .message-container {
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .message {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-lg);
+        font-size: 0.938rem;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-sm);
+    }
+    
+    .message.error {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border: 1px solid var(--md3-error);
+    }
+    
+    .message .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    .hidden-section {
+        display: none;
+    }
+    
+    .hidden-section.show {
+        display: block;
+    }
+    
+    .form-field select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%2349454F' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        padding-right: 2.5rem;
+    }
+
+    /* 强制在较宽屏幕下学号与政治面貌并排 */
+    @media (min-width: 520px) {
+        #studentIdGroup { grid-column: 1; }
+        #politicalStatusGroup { grid-column: 2; }
+        #studentIdGroup, #politicalStatusGroup {
+            align-self: start;
+        }
+    }
+
+    .register-type-card input[type="radio"] {
+        opacity: 0;
+        position: absolute;
+        width: 0;
+        height: 0;
+    }
+    @media (max-width: 480px) {
+        .auth-container {
+            padding: var(--md3-spacing-lg) var(--md3-spacing-md);
+        }
+        
+        .auth-card {
+            padding: var(--md3-spacing-2xl) var(--md3-spacing-lg);
+            border-radius: var(--md3-radius-2xl);
+        }
+        
+        .auth-form {
+            grid-template-columns: 1fr;
+        }
+        
+        .register-type-selector {
+            grid-template-columns: 1fr;
+        }
+        
+        .auth-icon {
+            width: 64px;
+            height: 64px;
+        }
+        
+        .auth-icon .material-icons {
+            font-size: 2.5rem;
+        }
+        
+        .auth-title {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-icon">
+                <span class="material-icons">person_add</span>
+            </div>
+            <h1 class="auth-title">创建账户</h1>
+            <p class="auth-subtitle">加入社团管理系统</p>
+        </div>
+        
+        {% if errors %}
+        <div class="message-container">
+            {% for error in errors %}
+            <div class="message error">
+                <span class="material-icons">error</span>
+                <span>{{ error }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- 注册类型选择 -->
+        <div class="register-type-selector">
+            <label class="register-type-card" id="type_user">
+                <input type="radio" name="register_type" value="user" checked>
+                <div class="register-type-icon">👤</div>
+                <div class="register-type-title">普通用户</div>
+                <div class="register-type-desc">普通成员注册</div>
+            </label>
+            <label class="register-type-card" id="type_organization">
+                <input type="radio" name="register_type" value="organization">
+                <div class="register-type-icon">👥</div>
+                <div class="register-type-title">社团干部</div>
+                <div class="register-type-desc">社长或干事</div>
+            </label>
+        </div>
+
+        <form method="post" class="auth-form" id="registerForm">
+            {% csrf_token %}
+            
+            <!-- 公共字段 -->
+            <div class="form-field">
+                <label for="username">
+                    <span class="material-icons">account_circle</span>
+                    <span>用户名</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="text" id="username" name="username" value="{{ form_data.username }}" placeholder="3-30个字符" required autocomplete="username">
+                <span class="field-hint">用于登录的唯一标识</span>
+            </div>
+            
+            <div class="form-field">
+                <label for="real_name">
+                    <span class="material-icons">person</span>
+                    <span>真实姓名</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="text" id="real_name" name="real_name" value="{{ form_data.real_name }}" placeholder="请输入真实姓名" required>
+            </div>
+
+            <div class="form-field full-width">
+                <label for="email">
+                    <span class="material-icons">email</span>
+                    <span>邮箱</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="email" id="email" name="email" value="{{ form_data.email }}" placeholder="your@email.com" autocomplete="email" required>
+                <span class="field-hint" id="emailHint">用于接收验证码和通知</span>
+            </div>
+
+            <div class="email-verification-group full-width hidden-section" id="codeGroup">
+                <div class="form-field" style="flex: 1; margin: 0;">
+                    <label for="verification_code">
+                        <span>验证码</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" id="verification_code" name="verification_code" placeholder="输入验证码" maxlength="6">
+                    <span class="field-hint">请输入发送到邮箱的6位验证码</span>
+                </div>
+                <button type="button" class="btn-send-code" id="sendCodeBtn" onclick="sendVerificationCode()">发送验证码</button>
+            </div>
+
+            <div class="form-field">
+                <label for="password">
+                    <span class="material-icons">lock</span>
+                    <span>密码</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="password" id="password" name="password" placeholder="至少6个字符" required autocomplete="new-password">
+            </div>
+
+            <div class="form-field">
+                <label for="password_confirm">
+                    <span class="material-icons">lock</span>
+                    <span>确认密码</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="password" id="password_confirm" name="password_confirm" placeholder="再次输入密码" required autocomplete="new-password">
+            </div>
+
+            <!-- 社团干部字段 -->
+            <div class="form-field full-width hidden-section" id="roleGroup">
+                 <div class="role-selection-container">
+                    <label for="role">
+                        <span class="material-icons">work</span>
+                        <span>角色</span>
+                        <span class="required">*</span>
+                    </label>
+                    <div class="role-input-and-info">
+                        <select id="role" name="role">
+                            <option value="">请选择角色</option>
+                            <option value="president" {% if form_data.role == 'president' %}selected{% endif %}>社长</option>
+                            <option value="staff" {% if form_data.role == 'staff' %}selected{% endif %}>干事</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-field hidden-section" id="studentIdGroup">
+                <label for="student_id">
+                    <span class="material-icons">school</span>
+                    <span>学号</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="text" id="student_id" name="student_id" value="{{ form_data.student_id }}" placeholder="请输入学号">
+            </div>
+
+            <div class="form-field hidden-section" id="politicalStatusGroup">
+                <label for="political_status">
+                    <span class="material-icons">account_balance</span>
+                    <span>政治面貌</span>
+                    <span class="required" id="political_status_required">*</span>
+                </label>
+                <select id="political_status" name="political_status">
+                    <option value="">请选择政治面貌</option>
+                    <option value="01" {% if form_data.political_status == '01' %}selected{% endif %}>中国共产党党员</option>
+                    <option value="02" {% if form_data.political_status == '02' %}selected{% endif %}>中国共产党预备党员</option>
+                    <option value="03" {% if form_data.political_status == '03' %}selected{% endif %}>中国共产主义青年团团员</option>
+                    <option value="04" {% if form_data.political_status == '04' %}selected{% endif %}>中国国民党革命委员会党员</option>
+                    <option value="05" {% if form_data.political_status == '05' %}selected{% endif %}>中国民主同盟盟员</option>
+                    <option value="06" {% if form_data.political_status == '06' %}selected{% endif %}>中国民主建国会会员</option>
+                    <option value="07" {% if form_data.political_status == '07' %}selected{% endif %}>中国民主促进会会员</option>
+                    <option value="08" {% if form_data.political_status == '08' %}selected{% endif %}>中国农工民主党党员</option>
+                    <option value="09" {% if form_data.political_status == '09' %}selected{% endif %}>中国致公党党员</option>
+                    <option value="10" {% if form_data.political_status == '10' %}selected{% endif %}>九三学社社员</option>
+                    <option value="11" {% if form_data.political_status == '11' %}selected{% endif %}>台湾民主自治同盟盟员</option>
+                    <option value="12" {% if form_data.political_status == '12' %}selected{% endif %}>无党派民主人士</option>
+                    <option value="13" {% if form_data.political_status == '13' %}selected{% endif %}>群众</option>
+                </select>
+            </div>
+
+            <!-- 共同字段 -->
+            <div class="form-field">
+                <label for="phone">
+                    <span class="material-icons">phone</span>
+                    <span>电话</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="tel" id="phone" name="phone" value="{{ form_data.phone }}" placeholder="联系电话" required autocomplete="tel">
+            </div>
+            
+            <div class="form-field">
+                <label for="wechat">
+                    <span class="material-icons">chat</span>
+                    <span>微信</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="text" id="wechat" name="wechat" value="{{ form_data.wechat }}" placeholder="微信账号" required>
+            </div>
+
+            <button type="submit" class="auth-submit">
+                <span class="material-icons">account_box</span>
+                <span>立即注册</span>
+            </button>
+        </form>
+
+        <div class="auth-divider">
+            <span>已有账户？</span>
+        </div>
+
+        <p class="auth-link">
+            <a href="{% url 'clubs:login' %}">立即登录</a>
+        </p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeOrgBtn = document.getElementById('type_organization');
+    const typeUserBtn = document.getElementById('type_user');
+    const roleGroup = document.getElementById('roleGroup');
+    const studentIdGroup = document.getElementById('studentIdGroup');
+    const politicalStatusGroup = document.getElementById('politicalStatusGroup');
+    const codeGroup = document.getElementById('codeGroup');
+    const roleSelect = document.getElementById('role');
+    const politicalStatusSelect = document.getElementById('political_status');
+    const registerTypeInputs = document.querySelectorAll('input[name="register_type"]');
+    
+    // 默认设置为普通用户，显示验证码字段
+    codeGroup.classList.add('show');
+    document.getElementById('verification_code').required = true;
+    
+    // 初始化状态（修复刷新后状态不一致的问题）
+    const checkedInput = document.querySelector('input[name="register_type"]:checked');
+    if (checkedInput) {
+        // 延迟触发以确保DOM完全就绪
+        setTimeout(() => {
+            checkedInput.dispatchEvent(new Event('change'));
+        }, 0);
+    }
+    
+    // 注册类型切换
+    registerTypeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // 更新卡片样式
+            document.querySelectorAll('.register-type-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            if (this.checked) {
+                this.parentElement.classList.add('active');
+            }
+            
+            // 显示/隐藏相关字段
+            if (this.value === 'organization') {
+                // 社团干部
+                roleGroup.classList.add('show');
+                studentIdGroup.classList.add('show');
+                politicalStatusGroup.classList.add('show');
+                codeGroup.classList.remove('show');
+                
+                document.getElementById('student_id').required = true;
+                roleSelect.required = true;
+                document.getElementById('verification_code').required = false;
+                updatePoliticalStatusRequirement();
+            } else {
+                // 普通用户
+                roleGroup.classList.remove('show');
+                studentIdGroup.classList.remove('show');
+                politicalStatusGroup.classList.remove('show');
+                codeGroup.classList.add('show');
+                
+                document.getElementById('student_id').required = false;
+                roleSelect.required = false;
+                politicalStatusSelect.required = false;
+                document.getElementById('verification_code').required = true;
+            }
+        });
+    });
+    
+    function updatePoliticalStatusRequirement() {
+        if (roleSelect.value === 'president') {
+            politicalStatusSelect.required = true;
+        } else {
+            politicalStatusSelect.required = false;
+        }
+    }
+    
+    roleSelect.addEventListener('change', updatePoliticalStatusRequirement);
+});
+
+let codeCountdown = 0;
+
+function sendVerificationCode() {
+    const email = document.getElementById('email').value;
+    const btn = document.getElementById('sendCodeBtn');
+    
+    if (!email) {
+        alert('请先输入邮箱地址');
+        return;
+    }
+    
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('邮箱格式不正确');
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.textContent = '发送中...';
+    
+    // 模拟发送验证码（实际需要后端支持）
+    fetch('{% url "clubs:resend_verification_code" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({email: email})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('验证码已发送到邮箱，请检查收件箱');
+            document.getElementById('codeGroup').classList.add('show');
+            
+            codeCountdown = 60;
+            btn.textContent = `60秒后重试`;
+            const timer = setInterval(() => {
+                codeCountdown--;
+                btn.textContent = `${codeCountdown}秒后重试`;
+                if (codeCountdown <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.textContent = '重新发送';
+                }
+            }, 1000);
+        } else {
+            alert(data.message || '发送失败，请重试');
+            btn.disabled = false;
+            btn.textContent = '发送验证码';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('请求失败，请检查网络连接');
+        btn.disabled = false;
+        btn.textContent = '发送验证码';
+    });
+}
+</script>
+{% endblock %}

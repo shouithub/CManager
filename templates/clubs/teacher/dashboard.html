@@ -1,0 +1,373 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}教师工作台 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="content-header">
+        <div class="header-top">
+            <div class="header-title">
+                <span class="material-icons header-icon">school</span>
+                <h1>教师工作台</h1>
+            </div>
+        </div>
+        <p>管理您负责的社团和活动审核</p>
+    </div>
+
+    <!-- 我的社团 -->
+    <section class="dashboard-section">
+        <div class="section-header">
+            <span class="material-icons section-icon">library_books</span>
+            <h2>我的社团</h2>
+        </div>
+        {% if assigned_clubs %}
+            <div class="clubs-grid">
+                {% for club in assigned_clubs %}
+                    <div class="club-card">
+                        <div class="club-header">
+                            <h3>{{ club.name }}</h3>
+                            <span class="club-status status-{{ club.status }}">
+                                {{ club.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="club-info">
+                            <div class="info-item">
+                                <span class="material-icons">person</span>
+                                <span>社长：{{ club.president.profile.get_full_name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="material-icons">group</span>
+                                <span>成员数：{{ club.members_count }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="material-icons">event</span>
+                                <span>成立于：{{ club.founded_date|date:"Y年m月d日" }}</span>
+                            </div>
+                        </div>
+                        <div class="club-actions">
+                            <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-secondary">
+                                <span class="material-icons">visibility</span>
+                                <span>查看详情</span>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="material-icons empty-icon">info</span>
+                <p>您还未被分配负责任何社团</p>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- 活动审核 -->
+    <section class="dashboard-section">
+        <div class="section-header">
+            <span class="material-icons section-icon">rate_review</span>
+            <h2>活动审核</h2>
+            <div class="section-actions">
+                <a href="{% url 'clubs:teacher_review_history' %}" class="btn btn-secondary btn-sm">
+                    <span class="material-icons">history</span>
+                    <span>审核历史</span>
+                </a>
+            </div>
+        </div>
+        {% if pending_activities %}
+            <div class="activities-table">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>社团</th>
+                            <th>活动名称</th>
+                            <th>活动类型</th>
+                            <th>活动日期</th>
+                            <th>活动地点</th>
+                            <th>干事审核</th>
+                            <th>提交时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in pending_activities %}
+                            <tr>
+                                <td>{{ activity.club.name }}</td>
+                                <td><strong>{{ activity.activity_name }}</strong></td>
+                                <td>{{ activity.get_activity_type_display }}</td>
+                                <td>{{ activity.activity_date|date:"Y-m-d" }}</td>
+                                <td>{{ activity.activity_location }}</td>
+                                <td>
+                                    {% if activity.staff_approved == True %}
+                                        <span class="status-badge status-approved">已批准</span>
+                                    {% elif activity.staff_approved == False %}
+                                        <span class="status-badge status-rejected">已拒绝</span>
+                                    {% else %}
+                                        <span class="status-badge status-pending">待审核</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ activity.submitted_at|date:"Y-m-d H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'clubs:teacher_review_activity' activity.id %}" class="btn btn-primary btn-sm">
+                                        <span class="material-icons">rate_review</span>
+                                        <span>审核</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="material-icons empty-icon">check_circle</span>
+                <p>暂无待审核的活动申请</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+/* ============================================================================
+ * Material Design 3 - 教师工作台样式
+ * ============================================================================ */
+
+.main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--md3-spacing-lg);
+}
+
+.content-header {
+    margin-bottom: 2.5rem;
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-icon {
+    font-size: 3rem;
+    color: var(--md3-primary);
+}
+
+.content-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--md3-on-surface);
+    margin: 0;
+}
+
+.content-header p {
+    font-size: 1rem;
+    color: var(--md3-on-surface-variant);
+    margin: 0.5rem 0 0 0;
+}
+
+/* 仪表板区块 */
+.dashboard-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--md3-primary-container);
+}
+
+.section-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.section-icon {
+    font-size: 1.75rem;
+    color: var(--md3-primary);
+}
+
+.dashboard-section h2 {
+    font-size: 1.375rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    margin: 0;
+}
+
+/* 社团网格 */
+.clubs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+    background: var(--md3-surface-container);
+    border-radius: var(--md3-radius-xl);
+    padding: 1.5rem;
+    box-shadow: var(--md3-elevation-1);
+    transition: all 0.3s ease;
+}
+
+.club-card:hover {
+    box-shadow: var(--md3-elevation-3);
+}
+
+.club-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.club-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    margin: 0;
+    flex: 1;
+}
+
+.club-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--md3-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.club-status.status-active {
+    background: var(--md3-tertiary-container);
+    color: var(--md3-on-tertiary-container);
+}
+
+.club-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--md3-on-surface-variant);
+}
+
+.info-item .material-icons {
+    font-size: 1.125rem;
+    color: var(--md3-primary);
+}
+
+.club-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.activities-table {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--md3-surface-container);
+    border-radius: var(--md3-radius-lg);
+    overflow: hidden;
+}
+
+.data-table thead {
+    background: var(--md3-surface-container-high);
+}
+
+.data-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    border-bottom: 2px solid var(--md3-outline-variant);
+}
+
+.data-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--md3-outline-variant);
+    color: var(--md3-on-surface-variant);
+}
+
+.data-table tbody tr:hover {
+    background: var(--md3-surface-container-highest);
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--md3-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.status-badge.status-approved {
+    background: var(--md3-tertiary-container);
+    color: var(--md3-on-tertiary-container);
+}
+
+.status-badge.status-rejected {
+    background: var(--md3-error-container);
+    color: var(--md3-on-error-container);
+}
+
+.status-badge.status-pending {
+    background: var(--md3-secondary-container);
+    color: var(--md3-on-secondary-container);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--md3-on-surface-variant);
+    background: var(--md3-surface-container);
+    border-radius: var(--md3-radius-xl);
+}
+
+.empty-state .empty-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+    margin-bottom: 1rem;
+    color: var(--md3-primary);
+}
+
+@media (max-width: 900px) {
+    .clubs-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .clubs-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .data-table {
+        font-size: 0.875rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}

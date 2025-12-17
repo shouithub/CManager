@@ -1,0 +1,177 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}社团管理{% endblock %}
+
+{% block extra_css %}
+<style>
+    .management-shell { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
+    
+    .management-header { margin-bottom: 24px; }
+    .management-title { font-size: 26px; font-weight: 700; color: var(--md3-on-surface); display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .management-subtitle { font-size: 14px; color: var(--md3-on-surface-variant); }
+
+    .control-panel { display: grid; gap: 16px; margin-bottom: 24px; }
+    .control-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 16px; padding: 18px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+    .control-card h3 { margin: 0; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex: 1 1 100%; }
+    
+    .control-group { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%; border-bottom: 1px solid var(--md3-outline-variant); padding-bottom: 12px; }
+    .control-group:last-child { border-bottom: none; padding-bottom: 0; }
+    .control-label { color: var(--md3-on-surface-variant); font-weight: 600; font-size: 14px; min-width: 100px; }
+    .control-button-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; }
+    
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; border: 1px solid transparent; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: none; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--md3-elevation-2); }
+    .btn-primary { background: var(--md3-primary); color: var(--md3-on-primary); }
+    .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border-color: var(--md3-outline-variant); }
+    .btn-success { background: var(--md3-tertiary); color: var(--md3-on-tertiary); }
+
+    .section-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 18px; margin-bottom: 24px; overflow: hidden; }
+    .section-header { padding: 16px 20px; background: var(--md3-surface-container-low); border-bottom: 1px solid var(--md3-outline-variant); }
+    .section-title { margin: 0; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .section-body { padding: 20px; }
+    .section-description { color: var(--md3-on-surface-variant); font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+
+    .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+    .action-card { background: var(--md3-surface-container-low); border: 1px solid var(--md3-outline-variant); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: all 0.2s ease; }
+    .action-card:hover { background: var(--md3-surface-container-high); box-shadow: var(--md3-elevation-2); transform: translateY(-2px); }
+    .action-card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--md3-primary-container); color: var(--md3-on-primary-container); }
+    .action-card-title { font-size: 16px; font-weight: 600; color: var(--md3-on-surface); }
+    .action-card-desc { font-size: 13px; color: var(--md3-on-surface-variant); line-height: 1.5; }
+    .action-card-btn { align-self: flex-start; }
+
+    @media (max-width: 900px) {
+        .management-shell { padding: 20px 16px 48px; }
+        .action-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+        .control-card { padding: 16px; }
+        .control-group { flex-direction: column; align-items: stretch; gap: 8px; padding-bottom: 16px; margin-bottom: 4px; }
+        .control-label { width: 100%; min-width: 0; margin-bottom: 4px; font-size: 13px; }
+        .control-button-group { width: 100%; flex-direction: column; gap: 8px; }
+        .control-button-group form { width: 100%; }
+        .control-button-group .btn,
+        .control-group > .btn { width: 100% !important; justify-content: center; }
+        .btn { font-size: 13px; padding: 10px 14px; }
+        .action-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="management-shell">
+    <div class="management-header">
+        <h1 class="management-title">
+            <span class="material-icons">business_center</span> 社团管理
+        </h1>
+        <p class="management-subtitle">管理社团功能、模板和用户信息</p>
+    </div>
+
+    <!-- 功能控制 -->
+    <div class="control-panel">
+        <div class="control-card">
+            <h3><span class="material-icons">settings</span> 功能控制</h3>
+            
+            <div class="control-group">
+                <span class="control-label">年审功能:</span>
+                <div class="control-button-group">
+                    <form method="post" action="{% url 'clubs:toggle_all_review_enabled' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn {% if all_review_enabled %}btn-secondary{% else %}btn-primary{% endif %}">
+                            <span class="material-icons">{% if all_review_enabled %}lock{% else %}lock_open{% endif %}</span>
+                            {% if all_review_enabled %}关闭{% else %}开启{% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <span class="control-label">社团注册:</span>
+                <div class="control-button-group">
+                    <form method="post" action="{% url 'clubs:toggle_registration_enabled' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn {% if all_registration_enabled %}btn-secondary{% else %}btn-primary{% endif %}">
+                            <span class="material-icons">{% if all_registration_enabled %}lock{% else %}lock_open{% endif %}</span>
+                            {% if all_registration_enabled %}关闭{% else %}开启{% endif %}
+                        </button>
+                    </form>
+                </div>
+                {% if active_registration_period %}
+                <span style="font-size: 13px; color: var(--md3-on-surface-variant);">注册周期: 第{{ active_registration_period.period_number }}次</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理功能 -->
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title"><span class="material-icons">dashboard</span> 管理功能</h3>
+        </div>
+        <div class="section-body">
+            <div class="action-grid">
+                <div class="action-card">
+                    <div class="action-card-icon">
+                        <span class="material-icons" style="font-size: 28px;">note</span>
+                    </div>
+                    <div class="action-card-title">上传模板</div>
+                    <div class="action-card-desc">上传和管理社团材料提交使用的模板文件</div>
+                    <a href="{% url 'clubs:upload_template' %}" class="btn btn-primary action-card-btn">
+                        <span class="material-icons">flag</span> 管理模板
+                    </a>
+                </div>
+
+                <div class="action-card">
+                    <div class="action-card-icon">
+                        <span class="material-icons" style="font-size: 28px;">group</span>
+                    </div>
+                    <div class="action-card-title">查看用户名单</div>
+                    <div class="action-card-desc">查看所有用户的详细信息和联系方式</div>
+                    <a href="{% url 'clubs:staff_view_users' %}" class="btn btn-secondary action-card-btn">
+                        <span class="material-icons">list</span> 用户名单
+                    </a>
+                </div>
+
+                <div class="action-card">
+                    <div class="action-card-icon">
+                        <span class="material-icons" style="font-size: 28px;">assignment_ind</span>
+                    </div>
+                    <div class="action-card-title">管理负责社团</div>
+                    <div class="action-card-desc">分配和管理干事负责的社团列表</div>
+                    <a href="{% url 'clubs:manage_staff_clubs' %}" class="btn btn-success action-card-btn">
+                        <span class="material-icons">edit</span> 负责社团
+                    </a>
+                </div>
+
+                <div class="action-card">
+                    <div class="action-card-icon">
+                        <span class="material-icons" style="font-size: 28px;">check_circle</span>
+                    </div>
+                    <div class="action-card-title">审核中心</div>
+                    <div class="action-card-desc">查看和处理待审核的社团材料和申请</div>
+                    <a href="{% url 'clubs:staff_dashboard' %}" class="btn btn-primary action-card-btn">
+                        <span class="material-icons">rate_review</span> 审核材料
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速链接 -->
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title"><span class="material-icons">link</span> 快速链接</h3>
+        </div>
+        <div class="section-body">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                <a href="{% url 'clubs:index' %}" class="btn btn-secondary">
+                    <span class="material-icons">home</span> 返回首页
+                </a>
+                <a href="{% url 'clubs:staff_dashboard' %}" class="btn btn-secondary">
+                    <span class="material-icons">check_circle</span> 审核中心
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

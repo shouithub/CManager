@@ -1,0 +1,419 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}用户名单 - CManager{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+    <div class="header-card">
+        <div class="header-left">
+            <div class="header-icon">
+                <span class="material-icons">group</span>
+            </div>
+            <div>
+                <h1>系统用户名单</h1>
+                <p>查看专用，无编辑权限</p>
+            </div>
+        </div>
+        <div class="header-chip">
+            <span class="material-icons">people</span>
+            <span>总计 {{ total_users }} 人</span>
+        </div>
+    </div>
+
+    <div class="card md3-card">
+        <form method="get" class="search-form">
+            <div class="form-field">
+                <label>关键词</label>
+                <div class="input-wrapper">
+                    <span class="material-icons">search</span>
+                    <input 
+                        type="text" 
+                        name="search" 
+                        placeholder="搜索用户名、邮箱"
+                        value="{{ search }}"
+                    >
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label>角色</label>
+                <div class="select-wrapper">
+                    <select name="role">
+                        <option value="">所有角色</option>
+                        <option value="president" {% if role == 'president' %}selected{% endif %}>社长</option>
+                        <option value="staff" {% if role == 'staff' %}selected{% endif %}>干事</option>
+                        <option value="admin" {% if role == 'admin' %}selected{% endif %}>管理员</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="md3-btn primary">
+                    <span class="material-icons">tune</span>
+                    筛选
+                </button>
+                <a href="?" class="md3-btn ghost">
+                    <span class="material-icons">refresh</span>
+                    重置
+                </a>
+            </div>
+        </form>
+    </div>
+
+    {% if users %}
+    <div class="card md3-card">
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>邮箱</th>
+                        <th>全名</th>
+                        <th>电话</th>
+                        <th>微信</th>
+                        <th>政治面貌</th>
+                        <th>角色</th>
+                        <th>状态</th>
+                        <th>加入时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td class="text-strong" data-label="用户名">{{ user.username }}</td>
+                        <td data-label="邮箱">{{ user.email|default:'--' }}</td>
+                        <td data-label="全名">{{ user.profile.get_full_name|default:"--" }}</td>
+                        <td data-label="电话">{{ user.profile.phone|default:"--" }}</td>
+                        <td data-label="微信">{{ user.profile.wechat|default:"--" }}</td>
+                        <td data-label="政治面貌">
+                            {% if user.profile.role == 'president' or user.profile.role == 'staff' %}
+                                {{ user.profile.get_political_status_display|default:"未填写" }}
+                            {% else %}
+                                <span class="text-muted">--</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="角色">
+                            {% if user.profile.role == 'president' %}
+                                <span class="chip role president"><span class="material-icons">flag</span>社长</span>
+                            {% elif user.profile.role == 'staff' %}
+                                <span class="chip role staff"><span class="material-icons">assignment_ind</span>干事</span>
+                            {% elif user.profile.role == 'admin' %}
+                                <span class="chip role admin"><span class="material-icons">security</span>管理员</span>
+                            {% else %}
+                                <span class="chip role unknown"><span class="material-icons">help</span>未设定</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="状态">
+                            {% if user.profile.role == 'staff' %}
+                                {% if user.profile.status == 'pending' %}
+                                    <span class="chip status pending"><span class="material-icons">hourglass_bottom</span>待审核</span>
+                                {% elif user.profile.status == 'approved' %}
+                                    <span class="chip status approved"><span class="material-icons">check_circle</span>已批准</span>
+                                {% elif user.profile.status == 'rejected' %}
+                                    <span class="chip status rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                                {% else %}
+                                    <span class="chip status unknown"><span class="material-icons">help</span>未知</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="chip status approved"><span class="material-icons">check_circle</span>已激活</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="加入时间">{{ user.date_joined|date:"Y-m-d" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="info-banner">
+            <span class="material-icons">info</span>
+            该页面为查看专用，不支持编辑。如需修改用户信息，请联系管理员。
+        </div>
+    </div>
+    {% else %}
+    <div class="card md3-card empty-state">
+        <span class="material-icons">search_off</span>
+        <p>未找到匹配的用户</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.page-shell {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--md3-spacing-xl);
+}
+
+.header-card {
+    background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+    border-radius: var(--md3-radius-xl);
+    padding: var(--md3-spacing-xl);
+    margin-bottom: var(--md3-spacing-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--md3-elevation-1);
+    border: 1px solid var(--md3-outline-variant);
+    gap: var(--md3-spacing-lg);
+    flex-wrap: wrap;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+}
+
+.header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--md3-radius-full);
+    background: var(--md3-surface);
+    display: grid;
+    place-items: center;
+    color: var(--md3-primary);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.header-left h1 {
+    margin: 0;
+    color: var(--md3-on-primary-container);
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.header-left p {
+    margin: 4px 0 0;
+    color: var(--md3-on-primary-container);
+    opacity: 0.85;
+}
+
+.header-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--md3-surface);
+    color: var(--md3-primary);
+    padding: 10px 16px;
+    border-radius: var(--md3-radius-full);
+    font-weight: 600;
+    box-shadow: var(--md3-elevation-2);
+    border: 1px solid var(--md3-outline-variant);
+}
+
+.md3-card {
+    background: var(--md3-surface-container-lowest);
+    border-radius: var(--md3-radius-xl);
+    padding: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+    border: 1px solid var(--md3-outline-variant);
+    margin-bottom: var(--md3-spacing-xl);
+}
+
+.search-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--md3-spacing-lg);
+    align-items: end;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--md3-spacing-sm);
+}
+
+.form-field label {
+    font-weight: 600;
+    color: var(--md3-on-surface);
+}
+
+.input-wrapper,
+.select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-wrapper:focus-within,
+.select-wrapper:focus-within {
+    border-color: var(--md3-primary);
+    box-shadow: 0 0 0 3px var(--md3-primary-container);
+}
+
+.input-wrapper input,
+.select-wrapper select {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    color: var(--md3-on-surface);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--md3-spacing-md);
+    align-items: center;
+}
+
+.md3-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: var(--md3-radius-full);
+    border: 1px solid transparent;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.md3-btn.primary {
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+    border-color: var(--md3-primary);
+}
+
+.md3-btn.ghost {
+    background: var(--md3-surface-container);
+    color: var(--md3-on-surface);
+    border-color: var(--md3-outline-variant);
+}
+
+.md3-btn:hover {
+    box-shadow: var(--md3-elevation-2);
+    transform: translateY(-1px);
+}
+
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+
+.data-table thead th {
+    background: var(--md3-surface-container-highest);
+    color: var(--md3-on-surface);
+    padding: 12px 12px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--md3-outline-variant);
+}
+
+.data-table tbody td {
+    padding: 12px 12px;
+    border-bottom: 1px solid var(--md3-outline-variant);
+    color: var(--md3-on-surface);
+    font-size: 13px;
+    word-break: break-all;
+}
+
+.data-table tbody tr:hover {
+    background: var(--md3-surface-container-low);
+}
+
+.text-strong { font-weight: 700; }
+.text-muted { color: var(--md3-on-surface-variant); }
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--md3-radius-full);
+    font-weight: 600;
+    font-size: 12px;
+    border: 1px solid var(--md3-outline-variant);
+    background: var(--md3-surface);
+    color: var(--md3-on-surface);
+    white-space: normal;
+}
+
+.chip.role.president { background: var(--md3-info-container); color: var(--md3-on-info-container); }
+.chip.role.staff { background: var(--md3-success-container); color: var(--md3-on-success-container); }
+.chip.role.admin { background: var(--md3-warning-container); color: var(--md3-on-warning-container); }
+.chip.role.unknown { background: var(--md3-surface-container-high); color: var(--md3-on-surface-variant); }
+
+.chip.status.pending { background: var(--md3-warning-container); color: var(--md3-on-warning-container); }
+.chip.status.approved { background: var(--md3-success-container); color: var(--md3-on-success-container); }
+.chip.status.rejected { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+.chip.status.unknown { background: var(--md3-surface-container-high); color: var(--md3-on-surface-variant); }
+
+.info-banner {
+    margin-top: var(--md3-spacing-lg);
+    padding: var(--md3-spacing-md);
+    background: var(--md3-primary-container);
+    color: var(--md3-on-primary-container);
+    border-radius: var(--md3-radius-lg);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--md3-outline-variant);
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--md3-on-surface-variant);
+    gap: 8px;
+}
+
+.empty-state .material-icons {
+    font-size: 48px;
+    color: var(--md3-primary);
+}
+
+@media (max-width: 768px) {
+    .page-shell { padding: var(--md3-spacing-lg); }
+    .header-card { padding: var(--md3-spacing-lg); }
+    .md3-card { padding: var(--md3-spacing-lg); }
+    .form-actions { flex-direction: column; align-items: stretch; }
+    .md3-btn { justify-content: center; }
+    .table-wrapper { overflow-x: visible; }
+    .data-table { min-width: unset; font-size: 13px; border-collapse: separate; border-spacing: 0; }
+    .data-table thead { display: none; }
+    .data-table tbody tr {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-md);
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        box-shadow: var(--md3-elevation-1);
+    }
+    .data-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 0;
+        border: none;
+        align-items: center;
+    }
+    .data-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--md3-on-surface-variant);
+        margin-right: 8px;
+    }
+    .data-table tbody tr:hover { background: var(--md3-surface); }
+    .chip { width: auto; }
+}
+</style>
+{% endblock %}

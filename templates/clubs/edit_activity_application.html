@@ -1,0 +1,349 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}编辑活动信息 - 社团管理系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-lg);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .page-header .material-icons {
+        font-size: 2rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+    }
+
+    .form-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-2xl);
+        box-shadow: var(--md3-elevation-1);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .form-group {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-on-surface);
+        font-size: 0.875rem;
+        font-weight: 500;
+        letter-spacing: 0.1px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+        background: var(--md3-surface-container-highest);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--md3-spacing-lg);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        justify-content: flex-end;
+        margin-top: var(--md3-spacing-2xl);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .btn-primary:hover {
+        background: var(--md3-primary);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .btn-secondary {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+
+    .btn-secondary:hover {
+        background: var(--md3-secondary);
+        color: var(--md3-on-secondary);
+        text-decoration: none;
+    }
+
+    .errors {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-xl);
+        border-left: 4px solid var(--md3-error);
+    }
+
+    .errors h3 {
+        margin: 0 0 var(--md3-spacing-sm) 0;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .errors ul {
+        margin: 0;
+        padding-left: var(--md3-spacing-lg);
+    }
+
+    @media (max-width: 768px) {
+        .edit-container {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <div class="page-header">
+        <span class="material-icons">edit</span>
+        <h1>编辑活动信息</h1>
+    </div>
+
+    {% if errors %}
+    <div class="errors">
+        <h3>请修正以下错误：</h3>
+        <ul>
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="activity_name" class="form-label">活动名称 *</label>
+                <input 
+                    type="text" 
+                    id="activity_name" 
+                    name="activity_name" 
+                    class="form-input" 
+                    value="{{ activity_name|default:activity.activity_name }}" 
+                    required 
+                    maxlength="200"
+                >
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="activity_type" class="form-label">活动类型 *</label>
+                    <select id="activity_type" name="activity_type" class="form-select" required>
+                        <option value="">请选择活动类型</option>
+                        {% for value, display in activity.ACTIVITY_TYPE_CHOICES %}
+                            <option value="{{ value }}" {% if value == activity_type|default:activity.activity_type %}selected{% endif %}>{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="expected_participants" class="form-label">预计参与人数</label>
+                    <input 
+                        type="number" 
+                        id="expected_participants" 
+                        name="expected_participants" 
+                        class="form-input" 
+                        value="{{ expected_participants|default:activity.expected_participants }}" 
+                        min="0"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="activity_description" class="form-label">活动描述 *</label>
+                <textarea 
+                    id="activity_description" 
+                    name="activity_description" 
+                    class="form-textarea" 
+                    required 
+                    placeholder="请详细描述活动内容、目的和安排..."
+                >{{ activity_description|default:activity.activity_description }}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="activity_date" class="form-label">活动日期 *</label>
+                    <input 
+                        type="date" 
+                        id="activity_date" 
+                        name="activity_date" 
+                        class="form-input" 
+                        value="{{ activity_date|default:activity.activity_date|date:'Y-m-d' }}" 
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="budget" class="form-label">活动预算（元）</label>
+                    <input 
+                        type="number" 
+                        id="budget" 
+                        name="budget" 
+                        class="form-input" 
+                        value="{{ budget|default:activity.budget }}" 
+                        min="0" 
+                        step="0.01"
+                    >
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="activity_time_start" class="form-label">开始时间 *</label>
+                    <input 
+                        type="time" 
+                        id="activity_time_start" 
+                        name="activity_time_start" 
+                        class="form-input" 
+                        value="{{ activity_time_start|default:activity.activity_time_start|time:'H:i' }}" 
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="activity_time_end" class="form-label">结束时间 *</label>
+                    <input 
+                        type="time" 
+                        id="activity_time_end" 
+                        name="activity_time_end" 
+                        class="form-input" 
+                        value="{{ activity_time_end|default:activity.activity_time_end|time:'H:i' }}" 
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="activity_location" class="form-label">活动地点 *</label>
+                <input 
+                    type="text" 
+                    id="activity_location" 
+                    name="activity_location" 
+                    class="form-input" 
+                    value="{{ activity_location|default:activity.activity_location }}" 
+                    required 
+                    maxlength="200"
+                >
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="contact_person" class="form-label">联系人 *</label>
+                    <input 
+                        type="text" 
+                        id="contact_person" 
+                        name="contact_person" 
+                        class="form-input" 
+                        value="{{ contact_person|default:activity.contact_person }}" 
+                        required 
+                        maxlength="100"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="contact_phone" class="form-label">联系电话</label>
+                    <input 
+                        type="tel" 
+                        id="contact_phone" 
+                        name="contact_phone" 
+                        class="form-input" 
+                        value="{{ contact_phone|default:activity.contact_phone }}" 
+                        maxlength="20"
+                    >
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="{% url 'clubs:public_activities' %}" class="btn btn-secondary">
+                    <span class="material-icons">cancel</span>
+                    <span>取消</span>
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">save</span>
+                    <span>保存修改</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

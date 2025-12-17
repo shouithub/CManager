@@ -1,0 +1,232 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}审核历史 - 教师工作台{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-lg);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .page-header-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+
+    .page-header-title .material-icons {
+        font-size: 2rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header-title h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .data-table th {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        padding: var(--md3-spacing-lg);
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.875rem;
+        letter-spacing: 0.1px;
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .data-table td {
+        padding: var(--md3-spacing-lg);
+        color: var(--md3-on-surface);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        vertical-align: top;
+    }
+
+    .data-table tr:hover {
+        background: var(--md3-surface-container-low);
+    }
+
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .status-badge.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .status-badge .material-icons {
+        font-size: 1rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .empty-state .material-icons {
+        font-size: 4rem;
+        opacity: 0.4;
+        margin-bottom: 1rem;
+        color: var(--md3-outline);
+    }
+
+    .empty-state p {
+        font-size: 1.125rem;
+        font-weight: 500;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        border-radius: var(--md3-radius-full);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+        background: var(--md3-secondary);
+        color: var(--md3-on-secondary);
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .history-container {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--md3-spacing-md);
+        }
+
+        .page-header-title h1 {
+            font-size: 1.5rem;
+        }
+
+        .data-table {
+            font-size: 0.875rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: var(--md3-spacing-md);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <div class="page-header">
+        <div class="page-header-title">
+            <span class="material-icons">history</span>
+            <h1>活动审核历史</h1>
+        </div>
+        <a href="{% url 'clubs:teacher_dashboard' %}" class="btn-back">
+            <span class="material-icons">arrow_back</span>
+            <span>返回工作台</span>
+        </a>
+    </div>
+
+    {% if reviewed_activities %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>社团名称</th>
+                        <th>活动名称</th>
+                        <th>活动日期</th>
+                        <th>审核结果</th>
+                        <th>审核时间</th>
+                        <th>审核意见</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in reviewed_activities %}
+                    <tr>
+                        <td><strong>{{ activity.club.name }}</strong></td>
+                        <td>{{ activity.activity_name }}</td>
+                        <td>{{ activity.activity_date|date:"Y-m-d" }}</td>
+                        <td>
+                            {% if activity.teacher_approved %}
+                                <span class="status-badge approved">
+                                    <span class="material-icons">check_circle</span>
+                                    已批准
+                                </span>
+                            {% else %}
+                                <span class="status-badge rejected">
+                                    <span class="material-icons">cancel</span>
+                                    已拒绝
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ activity.teacher_reviewed_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if activity.teacher_comment %}
+                                {{ activity.teacher_comment|truncatewords:15 }}
+                            {% else %}
+                                <span style="color: var(--md3-on-surface-variant); font-style: italic;">无意见</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <span class="material-icons">history</span>
+            <p>暂无审核记录</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

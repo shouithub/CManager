@@ -1,0 +1,139 @@
+{% extends "clubs/user/base.html" %}
+{% load custom_filters %}
+{% load static %}
+{% get_media_prefix as MEDIA_URL %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">{{ club.name }} - 报销历史</h2>
+        </div>
+        <div class="card-body">
+            {% if reimbursements %}  
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>报销日期</th>
+                            <th>报销金额</th>
+                            <th>描述</th>
+                            <th>状态</th>
+                            <th>提交时间</th>
+                            <th>提交次数</th>
+                            <th>审核时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reimbursement in reimbursements %}
+                        <tr>
+                            <td>{{ reimbursement.submission_date }}</td>
+                            <td>¥{{ reimbursement.reimbursement_amount }}</td>
+                            <td>{{ reimbursement.description|truncatechars:50 }}</td>
+                            <td>
+                                {% if reimbursement.status == 'pending' %}
+                                    <span class="badge badge-warning">待审核</span>
+                                {% elif reimbursement.status == 'approved' %}
+                                    <span class="badge badge-success">已批准</span>
+                                {% elif reimbursement.status == 'rejected' %}
+                                    <span class="badge badge-danger">被拒绝</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ reimbursement.submitted_at|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                第 {{ reimbursement.resubmission_attempt }} 次
+                                {% if reimbursement.resubmission_attempt > 1 %}
+                                    <span style="color: #dc3545; font-weight: 500;">(重新提交)</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reimbursement.reviewed_at %}
+                                    {{ reimbursement.reviewed_at|date:"Y-m-d H:i" }}
+                                {% else %}
+                                    - 
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- 折叠面板按钮 -->
+                                <button class="btn btn-sm btn-info" type="button" data-toggle="collapse" data-target="#reimbursement-{{ reimbursement.id }}" aria-expanded="false" aria-controls="reimbursement-{{ reimbursement.id }}">
+                                    查看详情
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- 折叠面板内容 -->
+                        <tr>
+                            <td colspan="7">
+                                <div class="collapse" id="reimbursement-{{ reimbursement.id }}">
+                                    <div class="card card-body mt-2">
+                                        <h5>详细信息</h5>
+                                        <p><strong>报销日期:</strong> {{ reimbursement.submission_date }}</p>
+                                        <p><strong>报销金额:</strong> ¥{{ reimbursement.reimbursement_amount }}</p>
+                                        <p><strong>描述:</strong> {{ reimbursement.description }}</p>
+                                        <p><strong>状态:</strong>
+                                            {% if reimbursement.status == 'pending' %}
+                                                <span class="badge badge-warning">待审核</span>
+                                            {% elif reimbursement.status == 'approved' %}
+                                                <span class="badge badge-success">已批准</span>
+                                            {% elif reimbursement.status == 'rejected' %}
+                                                <span class="badge badge-danger">被拒绝</span>
+                                            {% endif %}
+                                        </p>
+                                        <p><strong>提交时间:</strong> {{ reimbursement.submitted_at|date:"Y-m-d H:i" }}</p>
+                                        {% if reimbursement.reviewed_at %}
+                                            <p><strong>审核时间:</strong> {{ reimbursement.reviewed_at|date:"Y-m-d H:i" }}</p>
+                                        {% endif %}
+                                        {% if reimbursement.reviewer_comment %}
+                                            <p><strong>审核意见:</strong> {{ reimbursement.reviewer_comment }}</p>
+                                        {% endif %}
+                                        
+                                        <h6 class="mt-3">提交的文件</h6>
+                                        <!-- 文件列表 - 左右两列布局 -->
+                                        <div class="materials-list">
+                                            {% if reimbursement.receipt_file %}
+                                              {% with extension=reimbursement.receipt_file.url|get_file_extension %}
+                                              <div class="material-item">
+                                                 <div class="card" style="width: 100%;">
+                                                     <div class="card-body">
+                                                         <h6 class="card-title">收据/发票</h6>
+                                                         <a href="{% url 'clubs:download_file' %}?file_path={{ reimbursement.receipt_file.url|urlencode }}&filename={{ club.name|add:'-收据发票'|add:extension|urlencode }}" class="btn btn-primary btn-sm" target="_blank">下载</a>
+                                                     </div>
+                                                 </div>
+                                              </div>
+                                              {% endwith %}
+                                              {% endif %}
+                                              {% if reimbursement.proof_document %}
+                                              {% with extension=reimbursement.proof_document.url|get_file_extension %}
+                                              <div class="material-item">
+                                                 <div class="card" style="width: 100%;">
+                                                     <div class="card-body">
+                                                         <h6 class="card-title">支持文件</h6>
+                                                         <a href="{% url 'clubs:download_file' %}?file_path={{ reimbursement.proof_document.url|urlencode }}&filename={{ club.name|add:'-支持文件'|add:extension|urlencode }}" class="btn btn-primary btn-sm" target="_blank">下载</a>
+                                                     </div>
+                                                 </div>
+                                              </div>
+                                              {% endwith %}
+                                              {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <p>暂无报销记录</p>
+                </div>
+            {% endif %}
+            
+            <!-- 返回按钮 -->
+            <div class="mt-4">
+                <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-secondary">返回社团详情</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

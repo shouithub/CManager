@@ -1,0 +1,269 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}审核社团注册申请{% endblock %}
+
+{% block content %}
+<style>
+    /* 复用MD3样式（紧凑版） */
+    .review-container { max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-xl); }
+    .review-header { padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); }
+    .review-header h1 { margin: 0; color: var(--md3-on-surface); font-size: 1.75rem; font-weight: 400; line-height: 2.25rem; letter-spacing: 0; display: flex; align-items: center; gap: var(--md3-spacing-md); }
+    .info-card, .club-info-card, .description-card, .materials-section, .review-records-section, .review-form-section, .status-display { background: var(--md3-surface-container-low); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--md3-spacing-md); }
+    .info-item { display: flex; flex-direction: column; gap: 4px; }
+    .info-label { color: var(--md3-on-surface-variant); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-value { color: var(--md3-on-surface); font-size: 14px; font-weight: 500; }
+    .staff-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--md3-info-container); color: var(--md3-on-info-container); padding: 8px 16px; border-radius: var(--md3-radius-full); font-size: 13px; font-weight: 500; margin-top: var(--md3-spacing-md); }
+    .section-title { color: var(--md3-on-surface); font-size: 18px; font-weight: 600; margin: 0 0 var(--md3-spacing-lg) 0; display: flex; align-items: center; gap: var(--md3-spacing-md); padding-bottom: var(--md3-spacing-md); border-bottom: 2px solid var(--md3-outline-variant); }
+    .club-info-table { width: 100%; border-collapse: collapse; }
+    .club-info-table tr { border-bottom: 1px solid var(--md3-outline-variant); }
+    .club-info-table tr:last-child { border-bottom: none; }
+    .club-info-table td { padding: 12px 0; color: var(--md3-on-surface); }
+    .club-info-table td:first-child { font-weight: 600; width: 30%; }
+    .description-text { white-space: pre-wrap; word-wrap: break-word; color: var(--md3-on-surface); line-height: 1.6; }
+    .materials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--md3-spacing-md); }
+    .material-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); transition: all 0.2s ease; display: flex; flex-direction: column; gap: var(--md3-spacing-md); }
+    .material-card:hover { background: var(--md3-surface-container-high); box-shadow: var(--md3-elevation-2); transform: translateY(-2px); }
+    .material-title { color: var(--md3-on-surface); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; margin: 0; }
+    .material-title .material-icons { font-size: 20px; color: var(--md3-primary); }
+    .download-btn { background: var(--md3-primary); color: var(--md3-on-primary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .download-btn:hover { background: var(--md3-primary-dim); box-shadow: var(--md3-elevation-2); }
+    .preview-btn { background: var(--md3-secondary); color: var(--md3-on-secondary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .preview-btn:hover { background: var(--md3-secondary-dim); box-shadow: var(--md3-elevation-2); }
+    .file-actions { display: flex; gap: var(--md3-spacing-sm); width: 100%; }
+    .file-actions .preview-btn,
+    .file-actions .download-btn { flex: 1; }
+    .file-actions button:not(:last-child),
+    .file-actions a:not(:last-child) { margin-right: 0; }
+    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--md3-surface-container); border-radius: var(--md3-radius-md); overflow: hidden; box-shadow: var(--md3-elevation-1); }
+    .data-table thead { background: var(--md3-surface-container-high); }
+    .data-table th { color: var(--md3-on-surface-variant); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--md3-outline-variant); }
+    .data-table td { color: var(--md3-on-surface); padding: 12px 16px; border-bottom: 1px solid var(--md3-outline-variant); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover { background: var(--md3-surface-container-low); }
+    .review-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: var(--md3-radius-full); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    .review-badge.approved { background: var(--md3-success-container); color: var(--md3-on-success-container); }
+    .review-badge.rejected { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+    .review-badge.pending { background: var(--md3-warning-container); color: var(--md3-on-warning-container); }
+    .review-stats { margin-top: var(--md3-spacing-md); padding: var(--md3-spacing-md); background: var(--md3-surface-container-low); border-radius: var(--md3-radius-md); color: var(--md3-on-surface-variant); font-size: 14px; }
+    .form-group { margin-bottom: var(--md3-spacing-lg); }
+    .form-label { display: block; color: var(--md3-on-surface); font-weight: 500; margin-bottom: var(--md3-spacing-sm); font-size: 14px; }
+    .form-select, .form-textarea { width: 100%; padding: 12px 16px; background: var(--md3-surface-container); border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-md); color: var(--md3-on-surface); font-family: inherit; font-size: 14px; transition: all 0.2s ease; }
+    .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--md3-primary); box-shadow: 0 0 0 3px var(--md3-primary-container); }
+    .form-textarea { resize: vertical; min-height: 100px; }
+    .action-buttons { display: flex; gap: var(--md3-spacing-md); margin-top: var(--md3-spacing-xl); }
+    .btn-primary { background: var(--md3-primary); color: var(--md3-on-primary); border: none; padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { background: var(--md3-primary-dim); box-shadow: var(--md3-elevation-2); }
+    .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border: 1px solid var(--md3-outline); padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .btn-secondary:hover { background: var(--md3-surface-container-highest); box-shadow: var(--md3-elevation-1); }
+    @media (max-width: 768px) { .review-container { padding: var(--md3-spacing-md); } .materials-grid, .info-grid { grid-template-columns: 1fr; } .action-buttons { flex-direction: column; } .action-buttons button, .action-buttons a { width: 100%; justify-content: center; } }
+</style>
+
+<div class="review-container">
+    <div class="review-header">
+        <h1>
+            <span class="material-icons">flag</span>
+            审核社团注册申请
+        </h1>
+    </div>
+
+    <!-- 基本信息 -->
+    <div class="info-card">
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">社团名称</span>
+                <span class="info-value">{% if registration.club %}{{ registration.club.name|default:"未设置" }}{% else %}未设置{% endif %}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">申请时间</span>
+                <span class="info-value">{{ registration.submitted_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">当前状态</span>
+                <span class="info-value">
+                    <span class="review-badge {{ registration.status }}">{{ registration.get_status_display|default:"未设置" }}</span>
+                </span>
+            </div>
+        </div>
+        <div class="staff-chip">
+            <span class="material-icons" style="font-size: 16px;">assignment_ind</span>
+            <span>
+                负责干事: 
+                {% if registration.club %}
+                    {% for relation in registration.club.responsible_staff.all %}
+                        {% if relation.is_active %}
+                            {% if relation.staff.real_name %}{{ relation.staff.real_name }} (学号: {{ relation.staff.student_id }}){% elif relation.staff.user.username %}{{ relation.staff.user.username }}{% else %}未知用户{% endif %}{% if not forloop.last %}, {% endif %}
+                        {% endif %}
+                    {% empty %}未分配
+                    {% endfor %}
+                {% else %}未分配{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- 社团详细信息 -->
+    <div class="club-info-card">
+        <h2 class="section-title">
+            <span class="material-icons">info</span>
+            社团基本信息
+        </h2>
+        <table class="club-info-table">
+            <tr>
+                <td><strong>社团名称:</strong></td>
+                <td>{% if registration.club %}{{ registration.club.name|default:"未设置" }}{% else %}未设置{% endif %}</td>
+            </tr>
+            <tr>
+                <td><strong>成立日期:</strong></td>
+                <td>{% if registration.club %}{{ registration.club.founded_date|date:"Y-m-d"|default:"未设置" }}{% else %}未设置{% endif %}</td>
+            </tr>
+            <tr>
+                <td><strong>社长邮箱:</strong></td>
+                <td>{{ registration.requested_by.email|default:"未设置" }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 社团简介 -->
+    <div class="description-card">
+        <h2 class="section-title">
+            <span class="material-icons">description</span>
+            社团简介
+        </h2>
+        <p class="description-text">{% if registration.club %}{{ registration.club.description|default:"无" }}{% else %}无{% endif %}</p>
+    </div>
+
+    <!-- 上传材料 -->
+    <div class="materials-section">
+        <h2 class="section-title">
+            <span class="material-icons">folder_open</span>
+            上传的材料
+        </h2>
+        <div class="materials-grid">
+            {% for material in registration.materials.all %}
+            <div class="material-card">
+                <p class="material-title">
+                    <span class="material-icons">description</span>
+                    {{ material.material_type|default:"材料" }}
+                </p>
+                <div class="file-actions">
+                    <a href="{{ material.file.url }}" class="download-btn" download title="下载文件">
+                        下载
+                    </a>
+                    <button onclick="previewFile('{{ material.file.url }}', '{{ material.material_type }}')" class="preview-btn" title="在线预览">
+                        预览
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: var(--md3-on-surface-variant); grid-column: 1/-1; text-align: center;">暂无材料</p>
+            {% endfor %}
+        </div>
+        
+        <!-- 合并下载按钮 -->
+        {% if registration.materials.exists %}
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
+            <a href="{% url 'clubs:zip_registration_docs' registration.id %}" style="background: var(--md3-primary); color: var(--md3-on-primary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                🗜️ 打包所有材料为ZIP文件
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 审核记录 -->
+    <div class="review-records-section">
+        <h2 class="section-title">
+            <span class="material-icons">history</span>
+            审核记录
+        </h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>审核人</th>
+                    <th>审核结果</th>
+                    <th>审核时间</th>
+                    <th>审核意见</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if registration.reviews.all %}
+                    {% for review in registration.reviews.all %}
+                    <tr>
+                        <td>{% if review.reviewer %}{{ review.reviewer.username|default:"未设置" }}{% else %}未设置{% endif %}</td>
+                        <td><span class="review-badge {{ review.status }}">{{ review.get_status_display|default:"未设置" }}</span></td>
+                        <td>{{ review.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</td>
+                        <td>{{ review.comment|default:"无" }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="4" style="text-align: center; color: var(--md3-on-surface-variant);">暂无审核记录</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+        <div class="review-stats">当前已有 <strong>{{ approved_count }}</strong> 人批准，<strong>{{ rejected_count }}</strong> 人拒绝</div>
+    </div>
+
+    <!-- 审核表单 -->
+    {% if registration.status == 'pending' and not has_reviewed %}
+    <div class="review-form-section">
+        <h2 class="section-title">
+            <span class="material-icons">rate_review</span>
+            提交审核意见
+        </h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="decision" class="form-label">审核决定 *</label>
+                <select id="decision" name="review_status" class="form-select" required>
+                    <option value="">-- 请选择 --</option>
+                    <option value="approved">✅ 通过</option>
+                    <option value="rejected">❌ 拒绝</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="review_comment" class="form-label">审核意见</label>
+                <textarea id="review_comment" name="review_comment" class="form-textarea" placeholder="请输入审核意见（拒绝时必填）" rows="4"></textarea>
+            </div>
+            <div class="action-buttons">
+                <button type="submit" class="btn-primary">
+                    <span class="material-icons" style="font-size: 18px;">send</span>
+                    提交审核
+                </button>
+                <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+                    <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+                    返回列表
+                </a>
+            </div>
+        </form>
+    </div>
+    {% else %}
+    <div class="status-display">
+        <p><strong>审核状态:</strong> <span class="review-badge {{ registration.status }}">{{ registration.get_status_display|default:"未设置" }}</span></p>
+        {% if registration.reviewed_at %}
+        <p><strong>审核时间:</strong> {{ registration.reviewed_at|date:"Y-m-d H:i" }}</p>
+        {% endif %}
+        <div class="action-buttons">
+            <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+                <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+                返回列表
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function previewFile(fileUrl, fileName) {
+    const currentDomain = window.location.origin;
+    let fullUrl = fileUrl;
+    if (fileUrl.startsWith('/')) {
+        fullUrl = currentDomain + fileUrl;
+    } else if (!fileUrl.startsWith('http')) {
+        fullUrl = currentDomain + '/' + fileUrl;
+    }
+    const encodedUrl = encodeURIComponent(fullUrl);
+    const previewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
+    window.open(previewUrl, '_blank');
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,353 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}审核干事申请 - CManager{% endblock %}
+
+{% block content %}
+<div class="review-container">
+    <div class="page-header">
+        <h1>📋 审核干事申请</h1>
+    </div>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+            <h3>👤 申请人信息</h3>
+        </div>
+        
+        <div style="padding: 2rem;">
+            <!-- 申请人基本信息卡片 -->
+            <div class="info-card" style="margin-bottom: 2rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                    <div class="info-item">
+                        <div class="label">用户名</div>
+                        <div class="value">{{ user.username }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">姓名</div>
+                        <div class="value">{{ profile.get_full_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">学号</div>
+                        <div class="value">{{ profile.student_id }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">邮箱</div>
+                        <div class="value">{{ user.email|default:"未填写" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">电话</div>
+                        <div class="value">{{ profile.phone|default:"未填写" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">微信</div>
+                        <div class="value">{{ profile.wechat|default:"未填写" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">政治面貌</div>
+                        <div class="value">{{ profile.get_political_status_display|default:"未填写" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">申请角色</div>
+                        <div class="value">
+                            <span class="role-badge staff">干事 (Staff)</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">申请时间</div>
+                        <div class="value">{{ user.date_joined|date:"Y-m-d H:i" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">申请状态</div>
+                        <div class="value">
+                            {% if profile.status == 'pending' %}
+                                <span class="status-badge pending">待审核</span>
+                            {% elif profile.status == 'approved' %}
+                                <span class="status-badge approved">已批准</span>
+                            {% elif profile.status == 'rejected' %}
+                                <span class="status-badge rejected">已拒绝</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 角色说明 -->
+            <div class="role-description-card" style="background-color: #f0f8ff; border-left: 4px solid #0066cc; padding: 1.5rem; border-radius: 4px; margin-bottom: 2rem;">
+                <h4 style="margin-top: 0; color: #0066cc;">🔨 干事角色权限说明</h4>
+                <ul style="margin: 0; padding-left: 1.5rem; color: #333;">
+                    <li>审核社团注册申请</li>
+                    <li>审核年审材料提交</li>
+                    <li>审核报销申请</li>
+                    <li>审核社长变更申请</li>
+                    <li>查看和下载模板文件</li>
+                    <li>上传新的审核模板</li>
+                    <li>导出社团名单</li>
+                    <li>统一管理年审功能开关</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 审核表单 -->
+    <div class="card">
+        <div class="card-header">
+            <h3>✅ 审核决定</h3>
+        </div>
+        
+        <form method="post" style="padding: 2rem;">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>请选择审核结果 <span class="required">*</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" name="decision" value="approved" class="review-decision-btn approve">
+                        <div>
+                            <strong style="color: #28a745;">✓ 批准申请</strong>
+                            <div style="font-size: 0.85rem; color: #666; margin-top: 3px;">该用户将获得干事权限并可立即开始工作</div>
+                        </div>
+                    </button>
+                    
+                    <button type="submit" name="decision" value="rejected" class="review-decision-btn reject">
+                        <div>
+                            <strong style="color: #dc3545;">✗ 拒绝申请</strong>
+                            <div style="font-size: 0.85rem; color: #666; margin-top: 3px;">该用户的申请将被驳回并可重新申请</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="review_comment">审核备注（可选）</label>
+                <textarea 
+                    id="review_comment" 
+                    name="review_comment" 
+                    rows="4"
+                    placeholder="输入审核意见或拒绝理由..."
+                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box; font-family: inherit;"
+                ></textarea>
+                <small style="color: #999; display: block; margin-top: 5px;">
+                    如拒绝申请，建议填写拒绝理由，申请人将看到此备注
+                </small>
+            </div>
+            
+            <!-- 提示信息 -->
+            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 12px; border-radius: 4px; margin: 15px 0;">
+                <strong>⚠️ 重要提示：</strong>请仔细审核申请人信息，确保填写完整准确。此操作将直接影响该用户的权限配置。
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div style="display: flex; gap: 10px; margin-top: 2rem;">
+                <button type="submit" class="btn btn-success" style="flex: 1; padding: 12px; background-color: #5cb85c; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    ✓ 提交审核结果
+                </button>
+                <a href="{% url 'clubs:manage_users' %}" style="flex: 1; padding: 12px; background-color: #6c757d; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                    ← 返回管理
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.required {
+    color: #d9534f;
+}
+
+.info-card {
+    background: #f9f9f9;
+    padding: 1rem;
+    border-radius: 4px;
+    border-left: 4px solid #ddd;
+}
+
+.info-item {
+    padding: 0.5rem;
+}
+
+.info-item .label {
+    font-size: 0.85rem;
+    color: #999;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.info-item .value {
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.role-badge.staff {
+    background: #e8f5e9;
+    color: #009933;
+}
+
+.status-badge {
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-badge.pending {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.status-badge.approved {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-badge.rejected {
+    background-color: #dc3545;
+    color: white;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-success {
+    background: #5cb85c;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #4cae4c;
+}
+
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    padding: 15px 20px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    border-radius: 8px 8px 0 0;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 28px;
+}
+
+/* 审核决定按钮样式 */
+.review-decision-btn {
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+    padding: 1.5rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+}
+
+.review-decision-btn:hover {
+    border-color: #999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.review-decision-btn.approve {
+    color: #28a745;
+    border-color: #28a745;
+}
+
+.review-decision-btn.approve:hover {
+    background-color: #d4edda;
+    border-color: #28a745;
+}
+
+.review-decision-btn.reject {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.review-decision-btn.reject:hover {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px !important;
+    }
+    
+    .info-card {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .role-description-card ul {
+        margin-left: 1rem;
+    }
+    
+    .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+</style>
+</style>
+{% endblock %}

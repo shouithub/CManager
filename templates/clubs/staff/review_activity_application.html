@@ -1,0 +1,987 @@
+{% extends 'clubs/base.html' %}
+{% load custom_filters %}
+
+{% block title %}审核活动申请{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== MD3 完整重构 ===== */
+    
+    :root {
+        /* MD3 间距系统 */
+        --md3-spacing-xs: 4px;
+        --md3-spacing-sm: 8px;
+        --md3-spacing-md: 12px;
+        --md3-spacing-lg: 16px;
+        --md3-spacing-xl: 24px;
+        --md3-spacing-2xl: 32px;
+    }
+    
+    body {
+        background: var(--md3-surface);
+    }
+
+    .review-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        box-sizing: border-box;
+    }
+    
+    /* ===== 页面顶部标题栏 ===== */
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl) var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
+    
+    /* ===== 卡片容器 MD3 风格 ===== */
+    .card {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .card:hover {
+        box-shadow: var(--md3-elevation-3);
+        background: var(--md3-surface-container);
+    }
+    
+    /* ===== 卡片标题 ===== */
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+    
+    .card-header .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
+    
+    /* ===== 信息网格布局 ===== */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md);
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-md);
+        border: 1px solid var(--md3-outline-variant);
+        transition: all 0.2s ease;
+    }
+    
+    .info-item:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+    }
+    
+    .info-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        word-break: break-word;
+        line-height: 1.5;
+    }
+    
+    /* ===== 状态徽章 ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 600;
+        width: fit-content;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .status-badge.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+    
+    .status-badge.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .status-badge.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    .status-badge .material-icons {
+        font-size: 1rem;
+    }
+    
+    /* ===== 详细信息表格 ===== */
+    .detail-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .detail-table tr {
+        border-bottom: 1px solid var(--md3-outline-variant);
+        transition: background-color 0.2s ease;
+    }
+    
+    .detail-table tr:hover {
+        background: var(--md3-surface-container-highest);
+    }
+    
+    .detail-table tr:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-table td {
+        padding: var(--md3-spacing-lg) 0;
+        color: var(--md3-on-surface);
+    }
+    
+    .detail-table td:first-child {
+        font-weight: 600;
+        width: 25%;
+        color: var(--md3-primary);
+        padding-right: var(--md3-spacing-xl);
+    }
+    
+    /* ===== 活动详情网格布局 ===== */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
+    }
+    
+    .detail-item:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-2px);
+    }
+    
+    .detail-label {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .detail-label .material-icons {
+        font-size: 1rem;
+        color: var(--md3-primary);
+    }
+    
+    .detail-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        word-break: break-word;
+        line-height: 1.6;
+    }
+    
+    .contact-phone {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    /* ===== 详情描述部分 ===== */
+    .detail-section {
+        margin-top: var(--md3-spacing-xl);
+        padding-top: var(--md3-spacing-xl);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .detail-section .detail-label.full-width {
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .detail-description {
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        line-height: 1.8;
+        word-break: break-word;
+        white-space: pre-wrap;
+    }
+    
+    /* ===== 附件网格 ===== */
+    .material-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: var(--md3-spacing-lg);
+    }
+    
+    .material-card {
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
+        cursor: default;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .material-card:hover {
+        background: var(--md3-surface-container-high);
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-4px);
+        border-color: var(--md3-primary);
+    }
+    
+    .material-icon {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .material-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        margin: 0;
+    }
+    
+    /* ===== 文件操作 ===== */
+    .file-actions {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+        width: 100%;
+    }
+    
+    .file-actions .download-btn,
+    .file-actions .preview-btn {
+        flex: 1;
+        margin: 0;
+    }
+    
+    /* ===== 下载和预览按钮 ===== */
+    .download-btn,
+    .preview-btn {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-xs);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .download-btn:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .preview-btn {
+        background: var(--md3-secondary);
+        color: var(--md3-on-secondary);
+    }
+    
+    .preview-btn:hover {
+        background: var(--md3-secondary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    /* ===== 表单元素 ===== */
+    .form-group {
+        margin-bottom: var(--md3-spacing-lg);
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
+    
+    .form-select,
+    .form-textarea {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+    }
+    
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+        background: var(--md3-surface-container-highest);
+    }
+    
+    .form-textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    /* ===== 教师审核结果 ===== */
+    .review-status-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-lg);
+    }
+    
+    .status-display {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .teacher-comment {
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-secondary-container);
+        border-left: 4px solid var(--md3-secondary);
+        border-radius: var(--md3-radius-md);
+    }
+    
+    .comment-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-secondary-container);
+        margin-bottom: var(--md3-spacing-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .comment-content {
+        font-size: 1rem;
+        color: var(--md3-on-secondary-container);
+        line-height: 1.6;
+        word-break: break-word;
+        white-space: normal;
+    }
+    
+    .no-review-yet {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-warning-container);
+        border-radius: var(--md3-radius-md);
+        color: var(--md3-on-warning-container);
+    }
+    
+    .no-review-yet .material-icons {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .no-review-yet p {
+        margin: 0;
+        font-weight: 500;
+    }
+    
+    /* ===== 按钮组 ===== */
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        justify-content: flex-end;
+        margin-top: var(--md3-spacing-2xl);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-full);
+        border: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    /* ===== 响应式设计 ===== */
+    @media (max-width: 768px) {
+        .review-container {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+            padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        }
+        
+        .card {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .detail-table td {
+            padding: var(--md3-spacing-md) 0;
+        }
+        
+        .detail-table td:first-child {
+            width: 40%;
+        }
+        
+        .material-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .file-actions {
+            flex-direction: column;
+        }
+    }
+    
+    /* ===== 暗色主题适配 ===== */
+    @media (prefers-color-scheme: dark) {
+        .card {
+            background: var(--md3-surface-container);
+        }
+        
+        .info-item {
+            background: var(--md3-surface-container-low);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-container">
+    <!-- ===== 页面顶部标题栏 ===== -->
+    <div class="page-header">
+        <span class="material-icons">event_note</span>
+        <h1>审核活动申请</h1>
+    </div>
+    
+    <!-- ===== 基本信息卡片 ===== -->
+    <div class="card">
+        <div class="card-header">
+            <span class="material-icons">info</span>
+            <h2>基本信息</h2>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">社团名称</span>
+                <span class="info-value">{{ activity.club.name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">社长</span>
+                <span class="info-value">
+                    {% if activity.club.president %}
+                        {{ activity.club.president.get_full_name|default:activity.club.president.username }}
+                    {% else %}
+                        未设置
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">提交时间</span>
+                <span class="info-value">{{ activity.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">提交次数</span>
+                <span class="info-value">
+                    第 {{ activity.resubmission_attempt }} 次提交
+                    {% if activity.resubmission_attempt > 1 %}
+                        <span style="color: var(--md3-error);">(已重新提交)</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">当前状态</span>
+                <span class="status-badge {{ activity.status }}">
+                    <span class="material-icons">
+                        {% if activity.status == 'approved' %}check_circle{% elif activity.status == 'rejected' %}cancel{% else %}schedule{% endif %}
+                    </span>
+                    {{ activity.get_status_display }}
+                </span>
+            </div>
+        </div>
+        
+        {% if activity.club.responsible_staff.all %}
+        <div class="info-item">
+            <span class="info-label">负责干事</span>
+            <span class="info-value">
+                {% for relation in activity.club.responsible_staff.all %}
+                    {% if relation.is_active %}
+                        {{ relation.staff.real_name|default:relation.staff.user.username }}{% if not forloop.last %}, {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- ===== 活动详情卡片 ===== -->
+    <div class="card">
+        <div class="card-header">
+            <span class="material-icons">description</span>
+            <h2>活动详情</h2>
+        </div>
+        
+        <div class="detail-grid">
+            <div class="detail-item">
+                <span class="detail-label">
+                    活动名称
+                </span>
+                <span class="detail-value">{{ activity.activity_name }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    活动类型
+                </span>
+                <span class="detail-value">{{ activity.get_activity_type_display }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    活动日期
+                </span>
+                <span class="detail-value">{{ activity.activity_date }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    活动地点
+                </span>
+                <span class="detail-value">{{ activity.activity_location }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    联系人
+                </span>
+                <span class="detail-value">{{ activity.contact_person }} <span class="contact-phone">({{ activity.contact_phone }})</span></span>
+            </div>
+        </div>
+        
+        <div class="detail-section">
+            <div class="detail-label full-width">
+                <span class="material-icons">description</span>
+                活动描述
+            </div>
+            <div class="detail-description">{{ activity.activity_description }}</div>
+        </div>
+    </div>
+    
+    <!-- ===== 附件材料卡片 ===== -->
+    {% if activity.application_form %}
+    <div class="card">
+        <div class="card-header">
+            <span class="material-icons">attach_file</span>
+            <h2>附件材料</h2>
+        </div>
+        
+        <div class="material-grid">
+            <div class="material-card">
+                <span class="material-icons material-icon">description</span>
+                <p class="material-name">活动申请表</p>
+                <div class="file-actions">
+                    <a href="{{ activity.application_form.url }}" class="download-btn" target="_blank" title="下载文件">
+                        下载
+                    </a>
+                    <button type="button" class="preview-btn" onclick="previewFile('{{ activity.application_form.url }}', '活动申请表'); event.stopPropagation();" title="在线预览">
+                        预览
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- ===== 教师审核结果卡片 ===== -->
+    <div class="card">
+        <div class="card-header">
+            <span class="material-icons">school</span>
+            <h2>教师审核结果</h2>
+        </div>
+        
+        {% if activity.teacher_approved is not None %}
+            <div class="review-status-container">
+                <div class="status-display">
+                    {% if activity.teacher_approved %}
+                        <div class="status-badge approved">
+                            <span class="material-icons">check_circle</span>
+                            <span>已批准</span>
+                        </div>
+                    {% else %}
+                        <div class="status-badge rejected">
+                            <span class="material-icons">cancel</span>
+                            <span>已拒绝</span>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if activity.teacher_comment %}
+                <div class="teacher-comment">
+                    <div class="comment-label">教师审核意见</div>
+                    <div class="comment-content">
+                        {{ activity.teacher_comment }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="no-review-yet">
+                <span class="material-icons">schedule</span>
+                <p>教师尚未审核此申请</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- ===== 干事审核表单 ===== -->
+    <div class="card">
+        <div class="card-header">
+            <span class="material-icons">rate_review</span>
+            <h2>干事审核</h2>
+        </div>
+        
+        <form method="post" id="review_form">
+            {% csrf_token %}
+            
+            <div class="review-decision-buttons">
+                <button type="button" class="decision-btn approve-btn" id="approve_btn" onclick="selectDecision('approve')">
+                    <span class="material-icons">check_circle</span>
+                    批准活动
+                </button>
+                <button type="button" class="decision-btn reject-btn" id="reject_btn" onclick="selectDecision('reject')">
+                    <span class="material-icons">cancel</span>
+                    拒绝活动
+                </button>
+            </div>
+            
+            <input type="hidden" name="action" id="action_field" value="">
+            
+            <div class="form-group">
+                <label for="comment" class="form-label">审核意见</label>
+                <textarea 
+                    id="comment" 
+                    name="comment" 
+                    class="form-textarea" 
+                    placeholder="请输入您的审核意见...（拒绝时必填）"
+                    rows="4"
+                ></textarea>
+            </div>
+            
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary" id="submit_btn" style="display: none;">
+                    <span class="material-icons">send</span>
+                    提交审核
+                </button>
+                <a href="{% url 'clubs:staff_dashboard' %}" class="btn btn-secondary">
+                    <span class="material-icons">arrow_back</span>
+                    返回
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function previewFile(fileUrl, fileName) {
+    const currentDomain = window.location.origin;
+    let fullUrl = fileUrl;
+    if (fileUrl.startsWith('/')) {
+        fullUrl = currentDomain + fileUrl;
+    } else if (!fileUrl.startsWith('http')) {
+        fullUrl = currentDomain + '/' + fileUrl;
+    }
+    const encodedUrl = encodeURIComponent(fullUrl);
+    const previewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
+    window.open(previewUrl, '_blank');
+}
+
+let selectedDecision = null;
+
+function selectDecision(decision) {
+    const approveBtn = document.getElementById('approve_btn');
+    const rejectBtn = document.getElementById('reject_btn');
+    const submitBtn = document.getElementById('submit_btn');
+    const actionField = document.getElementById('action_field');
+    
+    approveBtn.classList.remove('expanded');
+    rejectBtn.classList.remove('expanded');
+    
+    if (decision === 'approve') {
+        approveBtn.classList.add('expanded');
+        selectedDecision = 'approve';
+        actionField.value = 'approve';
+        submitBtn.style.display = 'flex';
+    } else if (decision === 'reject') {
+        rejectBtn.classList.add('expanded');
+        selectedDecision = 'reject';
+        actionField.value = 'reject';
+        submitBtn.style.display = 'flex';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('review_form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const action = document.getElementById('action_field').value;
+            const comment = document.getElementById('comment').value.trim();
+            
+            if (!action) {
+                e.preventDefault();
+                alert('请先选择审核决定(批准或拒绝)!');
+                return false;
+            }
+            
+            if (action === 'reject' && comment === '') {
+                e.preventDefault();
+                alert('拒绝时必须填写审核意见!');
+                document.getElementById('comment').focus();
+                return false;
+            }
+            
+            return true;
+        });
+    }
+});
+</script>
+
+<style>
+.review-decision-buttons {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    justify-content: center;
+}
+
+.decision-btn {
+    flex: 1;
+    padding: 16px 24px;
+    border: 2px solid var(--md3-outline);
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--md3-surface-container);
+    color: var(--md3-on-surface);
+}
+
+.decision-btn:hover {
+    box-shadow: var(--md3-elevation-2);
+    transform: translateY(-2px);
+}
+
+.decision-btn.approve-btn {
+    background: var(--md3-success-container);
+    color: var(--md3-on-success-container);
+    border-color: var(--md3-success);
+}
+
+.decision-btn.reject-btn {
+    background: var(--md3-error-container);
+    color: var(--md3-on-error-container);
+    border-color: var(--md3-error);
+}
+
+.decision-btn.expanded {
+    flex: 0 1 70%;
+    padding: 20px 32px;
+    font-size: 18px;
+}
+
+.decision-btn.expanded .material-icons {
+    font-size: 24px;
+}
+
+.decision-btn .material-icons {
+    font-size: 20px;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    margin-bottom: 8px;
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--md3-outline-variant);
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--md3-surface);
+    color: var(--md3-on-surface);
+    resize: vertical;
+    transition: border-color 0.2s ease;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--md3-primary);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+}
+
+.alert {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.alert-info {
+    background: var(--md3-tertiary-container);
+    color: var(--md3-on-tertiary-container);
+    border: 1px solid var(--md3-tertiary);
+}
+
+.alert .material-icons {
+    font-size: 24px;
+}
+
+.alert p {
+    margin: 4px 0;
+}
+</style>
+
+{% endblock %}
+

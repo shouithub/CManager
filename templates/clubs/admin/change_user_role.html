@@ -1,0 +1,262 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}修改用户角色 - CManager{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>🔧 修改用户角色</h1>
+    </div>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if errors %}
+    <div class="error-list">
+        {% for error in errors %}
+        <div class="message error">{{ error }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <!-- 用户信息卡片 -->
+        <div class="user-info-card" style="margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 2rem;"><span class="material-icons" style="font-size: 2rem;">person</span></div>
+                <div>
+                    <div class="label">用户名</div>
+                    <div style="font-size: 1.3rem; font-weight: bold;">{{ user.username }}</div>
+                    <div class="label" style="margin-top: 0.5rem;">邮箱</div>
+                    <div style="color: #666;">{{ user.email }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 角色修改表单 -->
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>当前角色</label>
+                <div style="padding: 0.75rem; background: #f5f5f5; border-radius: 0.25rem; margin-bottom: 1rem;">
+                    {% if profile %}
+                        {% if profile.role == 'president' %}
+                            <span class="role-badge president">社长 (President)</span>
+                        {% elif profile.role == 'staff' %}
+                            <span class="role-badge staff">干事 (Staff)</span>
+                        {% elif profile.role == 'admin' %}
+                            <span class="role-badge admin">管理员 (Admin)</span>
+                        {% else %}
+                            <span class="role-badge unknown">未设定</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="role-badge unknown">未设定</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="role">修改为新角色 <span class="required">*</span></label>
+                <select id="role" name="new_role" required>
+                    <option value="">-- 请选择 --</option>
+                    <option value="president">
+                        社长 (President) - 可以创建社团、提交材料
+                    </option>
+                    <option value="staff">
+                        干事 (Staff) - 可以审核材料、上传模板
+                    </option>
+                    <option value="admin">
+                        管理员 (Admin) - 拥有全部权限
+                    </option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="reason">修改原因（可选）</label>
+                <textarea 
+                    id="reason" 
+                    name="reason" 
+                    rows="3"
+                    placeholder="输入修改此用户角色的原因（用于记录）"
+                ></textarea>
+            </div>
+            
+            <!-- 角色说明 -->
+            <div class="role-info">
+                <h4>角色权限说明</h4>
+                <div class="role-description">
+                    <div class="role-item">
+                        <h5>👑 社长 (President)</h5>
+                        <ul>
+                            <li>创建并管理社团</li>
+                            <li>提交年审材料</li>
+                            <li>提交报销申请</li>
+                            <li>申请社长变更</li>
+                            <li>查看申请状态和拒绝原因</li>
+                        </ul>
+                    </div>
+                    <div class="role-item">
+                        <h5>🔨 干事 (Staff)</h5>
+                        <ul>
+                            <li>审核社团注册申请</li>
+                            <li>审核年审材料</li>
+                            <li>审核报销申请</li>
+                            <li>审核社长变更申请</li>
+                            <li>上传材料模板</li>
+                        </ul>
+                    </div>
+                    <div class="role-item">
+                        <h5>🛡️ 管理员 (Admin)</h5>
+                        <ul>
+                            <li>拥有干事的所有权限</li>
+                            <li>管理用户和修改用户角色</li>
+                            <li>发布系统公告</li>
+                            <li>查看系统统计数据</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-warning">
+                    ⚠️ 确认修改角色
+                </button>
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
+                    取消
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.required {
+    color: #d9534f;
+}
+
+.user-info-card {
+    padding: 1.5rem;
+    background: #f9f9f9;
+    border-left: 4px solid #0066cc;
+    border-radius: 0.25rem;
+}
+
+.user-info-card .label {
+    font-size: 0.85rem;
+    color: #999;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.role-badge.president {
+    background: #e3f2fd;
+    color: #0066cc;
+}
+
+.role-badge.staff {
+    background: #e8f5e9;
+    color: #009933;
+}
+
+.role-badge.admin {
+    background: #fff3e0;
+    color: #ff6600;
+}
+
+.role-badge.unknown {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.role-info {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: #f5f5f5;
+    border-radius: 0.25rem;
+}
+
+.role-info h4 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.role-description {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.role-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    border-left: 4px solid #ddd;
+}
+
+.role-item h5 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.role-item ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.role-item li {
+    margin: 0.3rem 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.form-actions .btn {
+    padding: 0.75rem 1.5rem;
+}
+
+.btn-warning {
+    background: #f0ad4e;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-warning:hover {
+    background: #ec971f;
+}
+
+@media (max-width: 768px) {
+    .role-description {
+        grid-template-columns: 1fr;
+    }
+    
+    .user-info-card {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

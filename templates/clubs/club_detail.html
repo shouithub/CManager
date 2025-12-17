@@ -1,0 +1,475 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}社团详情{% endblock %}
+
+{% block extra_css %}
+<style>
+    html, body {
+        height: 100%;
+    }
+    
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .main-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .container {
+        flex: 1;
+    }
+    
+    footer {
+        margin-top: auto !important;
+    }
+    
+    .club-detail-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        width: 100%;
+    }
+    
+    /* 页面标题 */
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+    }
+    
+    .page-title .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .page-title h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    /* 信息网格 */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+    
+    .info-card {
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .info-card:hover {
+        background: var(--md3-surface-container-high);
+        box-shadow: var(--md3-elevation-1);
+        transform: translateY(-2px);
+    }
+    
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .info-card-header .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .info-card-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.1px;
+    }
+    
+    .info-card-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-top: var(--md3-spacing-sm);
+    }
+    
+    /* 社团介绍卡片 */
+    .description-card {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        padding: var(--md3-spacing-2xl);
+        border-radius: var(--md3-radius-xl);
+        margin-bottom: var(--md3-spacing-2xl);
+        border: 1px solid var(--md3-secondary);
+    }
+    
+    .description-card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .description-card-header .material-icons {
+        font-size: 1.75rem;
+        color: var(--md3-on-secondary-container);
+    }
+    
+    .description-card-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .description-card-content {
+        font-size: 1rem;
+        line-height: 1.75;
+        color: var(--md3-on-secondary-container);
+    }
+    
+    /* 干部卡片 */
+    .officers-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        margin-bottom: var(--md3-spacing-2xl);
+        overflow: hidden;
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .officers-card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-high);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+    
+    .officers-card-header .material-icons {
+        font-size: 1.75rem;
+        color: var(--md3-primary);
+    }
+    
+    .officers-card-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    /* 表格样式 */
+    .officers-table-wrapper {
+        overflow-x: auto;
+    }
+    
+    .officers-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .officers-table thead {
+        background: var(--md3-surface-container-highest);
+    }
+    
+    .officers-table th {
+        padding: var(--md3-spacing-lg);
+        text-align: left;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid var(--md3-outline);
+    }
+    
+    .officers-table td {
+        padding: var(--md3-spacing-lg);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        color: var(--md3-on-surface);
+    }
+    
+    .officers-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+    
+    .officers-table tbody tr:hover {
+        background: var(--md3-surface-container-high);
+    }
+    
+    .officers-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    /* 快速操作卡片 */
+    .actions-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        overflow: hidden;
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .actions-card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-high);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+    
+    .actions-card-header .material-icons {
+        font-size: 1.75rem;
+        color: var(--md3-primary);
+    }
+    
+    .actions-card-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    .actions-card-body {
+        padding: var(--md3-spacing-xl);
+    }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--md3-spacing-md);
+    }
+    
+    .action-buttons .btn {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        font-weight: 500;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .action-buttons .btn:hover {
+        text-decoration: none;
+    }
+    
+    .action-buttons .btn .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 900px) {
+        .club-detail-page {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-title {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-title h1 {
+            font-size: 1.5rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+        
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 600px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .officers-table {
+            font-size: 0.875rem;
+        }
+        
+        .officers-table th,
+        .officers-table td {
+            padding: var(--md3-spacing-md);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="club-detail-page">
+        <!-- 页面标题 -->
+        <div class="page-title">
+            <span class="material-icons">flag</span>
+            <h1>{{ club.name }}</h1>
+        </div>
+
+        <!-- 基本信息网格 -->
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-card-header">
+                    <span class="material-icons">event</span>
+                    <span class="info-card-label">成立日期</span>
+                </div>
+                <div class="info-card-value">{{ club.founded_date }}</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-card-header">
+                    <span class="material-icons">group</span>
+                    <span class="info-card-label">成员数</span>
+                </div>
+                <div class="info-card-value">{{ club.members_count }} 人</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-card-header">
+                    <span class="material-icons">show_chart</span>
+                    <span class="info-card-label">状态</span>
+                </div>
+                <div class="info-card-value">
+                    <span class="status-badge {% if club.status == 'active' %}badge-info{% elif club.status == 'inactive' %}badge-warning{% else %}badge-danger{% endif %}">
+                        {% if club.status == 'active' %}活跃{% elif club.status == 'inactive' %}不活跃{% else %}停止{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 社团介绍 -->
+        {% if club.description %}
+        <div class="description-card">
+            <div class="description-card-header">
+                <span class="material-icons">description</span>
+                <h2>社团介绍</h2>
+            </div>
+            <div class="description-card-content">
+                {{ club.description }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 当前干部信息 -->
+        {% if officers %}
+        <div class="officers-card">
+            <div class="officers-card-header">
+                <span class="material-icons">people</span>
+                <h2>当前干部</h2>
+            </div>
+            <div class="officers-table-wrapper">
+                <table class="officers-table">
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>学号</th>
+                            <th>职位</th>
+                            <th>任命日期</th>
+                            <th>联系电话</th>
+                            <th>邮箱</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for officer in officers %}
+                        <tr>
+                            <td><strong>{{ officer.user_profile.get_full_name }}</strong></td>
+                            <td>{{ officer.user_profile.student_id }}</td>
+                            <td>
+                                <span class="badge badge-info">{{ officer.get_position_display }}</span>
+                            </td>
+                            <td>{{ officer.appointed_date }}</td>
+                            <td>
+                                {% if officer.position == 'president' %}
+                                    {% if is_president or user.profile.role == 'staff' or user.is_superuser or officer.user_profile.is_info_public %}
+                                        {{ officer.user_profile.phone }}
+                                    {% else %}
+                                        未公开
+                                    {% endif %}
+                                {% else %}
+                                    {{ officer.user_profile.phone }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if officer.position == 'president' %}
+                                    {% if is_president or user.profile.role == 'staff' or user.is_superuser or officer.user_profile.is_info_public %}
+                                        {{ officer.user_profile.user.email }}
+                                    {% else %}
+                                        未公开
+                                    {% endif %}
+                                {% else %}
+                                    {{ officer.user_profile.user.email }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 快速操作 -->
+        <div class="actions-card">
+            <div class="actions-card-header">
+                <span class="material-icons">flash_on</span>
+                <h2>快速操作</h2>
+            </div>
+            <div class="actions-card-body">
+                <div class="action-buttons">
+                    {% if is_president or user.profile.role == 'staff' or user.is_superuser %}
+                        {% if is_president %}
+                        {% if club.registration_enabled %}
+                        <a href="{% url 'clubs:submit_club_registration' club.id %}" class="btn btn-primary">
+                            <span class="material-icons">add_circle</span> 提交社团注册
+                        </a>
+                        {% else %}
+                        <span class="btn btn-outlined" style="opacity: 0.5; cursor: not-allowed;" title="注册功能未开启">
+                            <span class="material-icons">block</span> 注册未开启
+                        </span>
+                        {% endif %}
+                        <a href="{% url 'clubs:submit_reimbursement' club.id %}" class="btn btn-info">
+                            <span class="material-icons">attach_money</span> 报销申请
+                        </a>
+                        <a href="{% url 'clubs:submit_activity_application' club.id %}" class="btn btn-primary">
+                            <span class="material-icons">event</span> 活动申请
+                        </a>
+                        <a href="{% url 'clubs:submit_president_transition' club.id %}" class="btn btn-warning">
+                            <span class="material-icons">swap_horiz</span> 社长换届
+                        </a>
+                        {% endif %}
+                        {% if user.profile.role == 'staff' or user.is_superuser %}
+                        <a href="{% url 'clubs:change_club_status' club.id %}" class="btn btn-warning">
+                            <span class="material-icons">sync</span> 改变状态
+                        </a>
+                        <a href="{% url 'clubs:direct_edit_club_info' club.id %}" class="btn btn-primary">
+                            <span class="material-icons">edit</span> 直接修改
+                        </a>
+                        <a href="{% url 'clubs:delete_club' club.id %}" class="btn btn-danger">
+                            <span class="material-icons">delete</span> 删除社团
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                    <a href="{% url 'clubs:index' %}" class="btn btn-text">
+                        <span class="material-icons">arrow_back</span> 返回列表
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

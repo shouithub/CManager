@@ -1,0 +1,443 @@
+{% extends 'clubs/base.html' %}
+{% load custom_filters %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-xl);
+    }
+
+    /* 页面头部 */
+    .detail-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+
+    .detail-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .detail-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    /* 信息卡片 */
+    .info-card {
+        background: var(--md3-surface-container-low);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--md3-spacing-lg);
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xs);
+    }
+
+    .info-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.15px;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        font-weight: 500;
+    }
+
+    /* 状态徽章 */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: 6px 12px;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        width: fit-content;
+    }
+
+    .status-badge.approved {
+        background-color: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .status-badge.rejected {
+        background-color: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .status-badge.pending {
+        background-color: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+
+    /* 时间轴样式 */
+    .timeline-section {
+        background: var(--md3-surface-container-lowest);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-xl);
+        margin-top: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .timeline-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-lg) 0;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        padding-bottom: var(--md3-spacing-md);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+
+    .timeline-title .material-icons {
+        color: var(--md3-primary);
+    }
+
+    /* 时间轴容器 */
+    .timeline-container {
+        position: relative;
+        padding-left: 48px;
+        margin-top: var(--md3-spacing-lg);
+    }
+
+    .timeline-line {
+        position: absolute;
+        left: 23px;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--md3-outline);
+        border-radius: var(--md3-radius-sm);
+        opacity: 0.5;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-lg);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .timeline-item:hover {
+        box-shadow: var(--md3-elevation-2);
+        border-color: var(--md3-primary);
+        transform: translateX(4px);
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -33px;
+        top: 20px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--md3-surface);
+        border: 4px solid var(--md3-primary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 1;
+    }
+
+    .timeline-item.approved::before {
+        border-color: #4CAF50;
+        background: #4CAF50;
+        box-shadow: 0 2px 12px rgba(76, 175, 80, 0.4);
+    }
+
+    .timeline-item.rejected::before {
+        border-color: #f44336;
+        background: #f44336;
+        box-shadow: 0 2px 12px rgba(244, 67, 54, 0.4);
+    }
+
+    .timeline-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-md);
+    }
+
+    .timeline-time {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .timeline-status {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: 4px 10px;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .timeline-status.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .timeline-status.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .timeline-status.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+
+    .timeline-reviewer {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface);
+        font-weight: 500;
+        margin-bottom: var(--md3-spacing-md);
+    }
+
+    .timeline-comment {
+        padding: var(--md3-spacing-md);
+        background: var(--md3-surface-container-high);
+        border-left: 3px solid var(--md3-primary);
+        border-radius: var(--md3-radius-sm);
+        color: var(--md3-on-surface);
+        font-size: 0.9375rem;
+        line-height: 1.6;
+    }
+
+    .timeline-comment.rejected {
+        background: var(--md3-error-container);
+        border-left-color: var(--md3-error);
+        color: var(--md3-on-error-container);
+    }
+
+    /* 空状态 */
+    .empty-state {
+        text-align: center;
+        padding: var(--md3-spacing-2xl);
+        color: var(--md3-on-surface-variant);
+    }
+
+    .empty-state .material-icons {
+        font-size: 3rem;
+        opacity: 0.5;
+        margin-bottom: var(--md3-spacing-md);
+    }
+
+    .empty-state p {
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* 返回按钮 */
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-full);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin-bottom: var(--md3-spacing-xl);
+        cursor: pointer;
+    }
+
+    .back-button:hover {
+        background: var(--md3-primary-container);
+        border-color: var(--md3-primary);
+        color: var(--md3-on-primary-container);
+    }
+
+    .back-button .material-icons {
+        font-size: 1.25rem;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+        .detail-container {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-header h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <!-- 返回按钮 -->
+    <a href="javascript:history.back()" class="back-button">
+        <span class="material-icons">arrow_back</span>
+        返回
+    </a>
+
+    <!-- 页面标题 -->
+    <div class="detail-header">
+        {% if item_type == 'annual_review' %}
+            <span class="material-icons">assignment</span>
+            <h1>年审记录详情</h1>
+        {% elif item_type == 'registration' %}
+            <span class="material-icons">add_circle</span>
+            <h1>社团注册详情</h1>
+        {% elif item_type == 'application' %}
+            <span class="material-icons">business</span>
+            <h1>新社团申请详情</h1>
+        {% elif item_type == 'info_change' %}
+            <span class="material-icons">edit</span>
+            <h1>社团信息修改详情</h1>
+        {% elif item_type == 'reimbursement' %}
+            <span class="material-icons">receipt</span>
+            <h1>报销申请详情</h1>
+        {% elif item_type == 'activity_application' %}
+            <span class="material-icons">event</span>
+            <h1>活动申请详情</h1>
+        {% elif item_type == 'president_transition' %}
+            <span class="material-icons">person_add</span>
+            <h1>社长换届详情</h1>
+        {% endif %}
+    </div>
+
+    <!-- 基本信息卡片 -->
+    <div class="info-card">
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">社团名称</span>
+                <span class="info-value">
+                    {% if item_type == 'application' %}
+                        {{ item.club_name }}
+                    {% else %}
+                        {{ item.club.name }}
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">当前状态</span>
+                <span class="status-badge {% if item.status == 'approved' %}approved{% elif item.status == 'rejected' %}rejected{% elif item.status == 'pending' %}pending{% endif %}">
+                    {% if item.status == 'approved' %}
+                        <span class="material-icons">check_circle</span>
+                        已批准
+                    {% elif item.status == 'rejected' %}
+                        <span class="material-icons">cancel</span>
+                        已拒绝
+                    {% elif item.status == 'pending' %}
+                        <span class="material-icons">schedule</span>
+                        待审核
+                    {% endif %}
+                </span>
+            </div>
+
+            {% if item_type == 'annual_review' %}
+            <div class="info-item">
+                <span class="info-label">年份</span>
+                <span class="info-value">{{ item.submission_year }}</span>
+            </div>
+            {% endif %}
+
+            <div class="info-item">
+                <span class="info-label">提交时间</span>
+                <span class="info-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 审核历史时间轴 -->
+    <div class="timeline-section">
+        <h3 class="timeline-title">
+            <span class="material-icons">history</span>
+            审核历史
+        </h3>
+
+        {% if reviews %}
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+            {% for review in reviews %}
+            <div class="timeline-item {% if review.status == 'approved' %}approved{% elif review.status == 'rejected' %}rejected{% endif %}">
+                <div class="timeline-header">
+                    <span class="timeline-time">{{ review.reviewed_at|date:"Y-m-d H:i" }}</span>
+                    <span class="timeline-status {% if review.status == 'approved' %}approved{% elif review.status == 'rejected' %}rejected{% elif review.status == 'pending' %}pending{% endif %}">
+                        {% if review.status == 'approved' %}
+                            <span class="material-icons" style="font-size: 0.875rem;">check_circle</span>
+                            已批准
+                        {% elif review.status == 'rejected' %}
+                            <span class="material-icons" style="font-size: 0.875rem;">cancel</span>
+                            已拒绝
+                        {% elif review.status == 'pending' %}
+                            <span class="material-icons" style="font-size: 0.875rem;">schedule</span>
+                            待处理
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if review.reviewer %}
+                <div class="timeline-reviewer">
+                    审核者：<strong>{{ review.reviewer.profile.get_full_name }}</strong>
+                </div>
+                {% else %}
+                <div class="timeline-reviewer">
+                    审核者：<strong>系统管理员</strong>
+                </div>
+                {% endif %}
+
+                {% if review.comment or review.reviewer_comment %}
+                <div class="timeline-comment {% if review.status == 'rejected' %}rejected{% endif %}">
+                    <strong>审核意见：</strong><br>
+                    {{ review.comment|linebreaks }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="material-icons">history</span>
+            <p>暂无审核历史记录</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

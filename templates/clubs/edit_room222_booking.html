@@ -1,0 +1,182 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}编辑预约{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-shell { max-width: 880px; margin: 0 auto; padding: 24px 16px 40px; }
+    .page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .page-title { font-size: 22px; font-weight: 700; letter-spacing: 0.2px; color: var(--md3-on-surface); display: flex; align-items: center; gap: 8px; }
+
+    .card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 18px;
+        box-shadow: var(--md3-elevation-1);
+        padding: 18px 20px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .info-box {
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        font-size: 14px;
+        line-height: 1.5;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .section-title { font-weight: 700; color: var(--md3-on-surface); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .label { font-size: 13px; font-weight: 600; color: var(--md3-on-surface); }
+    .label .required { color: var(--md3-error); }
+
+    .control {
+        width: 100%;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 12px;
+        padding: 11px 14px;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        font-size: 14px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    select.control {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%236750a4' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 20px;
+        padding-right: 40px;
+        cursor: pointer;
+    }
+
+    .control:focus { outline: none; border-color: var(--md3-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 20%, transparent); }
+    textarea.control { min-height: 110px; resize: vertical; font-family: inherit; }
+
+    .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 999px; border: 1px solid transparent; font-weight: 600; font-size: 14px; text-decoration: none; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease; }
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--md3-elevation-2); }
+    .btn-primary { background: var(--md3-primary); color: var(--md3-on-primary); }
+    .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border-color: var(--md3-outline-variant); }
+
+    @media (max-width: 720px) {
+        .page-shell { padding: 20px 12px 32px; }
+        .form-row { grid-template-columns: 1fr; }
+        .actions { flex-direction: column-reverse; align-items: stretch; }
+        .btn { justify-content: center; width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="material-icons">edit</span>
+            编辑预约
+        </h1>
+    </div>
+
+    <div class="card">
+        <div class="info-box">
+            <span class="material-icons" style="font-size:20px;">info</span>
+            <div>修改预约时间时会自动检查冲突，若与其他预约重叠将无法保存。</div>
+        </div>
+
+        <form method="post" id="bookingForm">
+            {% csrf_token %}
+
+            <div class="section-title">
+                <span class="material-icons" style="font-size:20px;">event</span> 基本信息
+            </div>
+
+            <div class="field">
+                <label class="label">预约类型</label>
+                <select name="club_id" class="control">
+                    <option value="">个人预约</option>
+                    {% for club in user_clubs %}
+                    <option value="{{ club.id }}" {% if booking.club.id == club.id %}selected{% endif %}>
+                        {{ club.name }} - 社团预约
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label class="label">借用日期 <span class="required">*</span></label>
+                <input type="date" name="booking_date" class="control" value="{{ booking.booking_date|date:'Y-m-d' }}" required>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label class="label">开始时间 <span class="required">*</span></label>
+                    <input type="time" name="start_time" id="startTime" class="control" value="{{ booking.start_time|date:'H:i' }}" required>
+                </div>
+                <div class="field">
+                    <label class="label">结束时间 <span class="required">*</span></label>
+                    <input type="time" name="end_time" id="endTime" class="control" value="{{ booking.end_time|date:'H:i' }}" required>
+                </div>
+            </div>
+
+            <div class="section-title" style="margin-top:4px;">
+                <span class="material-icons" style="font-size:20px;">note</span> 使用详情
+            </div>
+
+            <div class="field">
+                <label class="label">使用目的 <span class="required">*</span></label>
+                <textarea name="purpose" class="control" placeholder="请简要说明房间使用目的..." required>{{ booking.purpose }}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label class="label">预计使用人数 <span class="required">*</span></label>
+                    <input type="number" name="participant_count" class="control" min="1" value="{{ booking.participant_count }}" required>
+                </div>
+                <div class="field">
+                    <label class="label">联系电话 <span class="required">*</span></label>
+                    <input type="tel" name="contact_phone" class="control" value="{{ booking.contact_phone }}" required>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">特殊需求</label>
+                <textarea name="special_requirements" class="control" placeholder="如需要投影仪、音响等设备，请在此说明...">{{ booking.special_requirements }}</textarea>
+            </div>
+
+            <div class="actions">
+                <a href="{% url 'clubs:my_room222_bookings' %}" class="btn btn-secondary">
+                    <span class="material-icons">arrow_back</span> 取消
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">save</span> 保存修改
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+
+        if (startTime >= endTime) {
+            e.preventDefault();
+            alert('结束时间必须晚于开始时间！');
+            return false;
+        }
+    });
+</script>
+{% endblock %}

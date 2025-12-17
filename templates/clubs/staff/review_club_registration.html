@@ -1,0 +1,176 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}审核社团申请{% endblock %}
+
+{% block content %}
+<style>
+    /* MD3样式（简化版） */
+    .review-container { max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-xl); }
+    .review-header { padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); }
+    .review-header h1 { margin: 0; color: var(--md3-on-surface); font-size: 1.75rem; font-weight: 400; line-height: 2.25rem; letter-spacing: 0; display: flex; align-items: center; gap: var(--md3-spacing-md); }
+    .info-card, .club-info-card, .description-card, .review-form-section, .status-display { background: var(--md3-surface-container-low); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--md3-spacing-md); }
+    .info-item { display: flex; flex-direction: column; gap: 4px; }
+    .info-label { color: var(--md3-on-surface-variant); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-value { color: var(--md3-on-surface); font-size: 14px; font-weight: 500; }
+    .section-title { color: var(--md3-on-surface); font-size: 18px; font-weight: 600; margin: 0 0 var(--md3-spacing-lg) 0; display: flex; align-items: center; gap: var(--md3-spacing-md); padding-bottom: var(--md3-spacing-md); border-bottom: 2px solid var(--md3-outline-variant); }
+    .club-info-table { width: 100%; border-collapse: collapse; }
+    .club-info-table tr { border-bottom: 1px solid var(--md3-outline-variant); }
+    .club-info-table tr:last-child { border-bottom: none; }
+    .club-info-table td { padding: 12px 0; color: var(--md3-on-surface); }
+    .club-info-table td:first-child { font-weight: 600; width: 30%; }
+    .description-text { white-space: pre-wrap; word-wrap: break-word; color: var(--md3-on-surface); line-height: 1.6; }
+    .review-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: var(--md3-radius-full); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    .review-badge.approved { background: var(--md3-success-container); color: var(--md3-on-success-container); }
+    .review-badge.rejected { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+    .review-badge.pending { background: var(--md3-warning-container); color: var(--md3-on-warning-container); }
+    .form-group { margin-bottom: var(--md3-spacing-lg); }
+    .form-label { display: block; color: var(--md3-on-surface); font-weight: 500; margin-bottom: var(--md3-spacing-sm); font-size: 14px; }
+    .form-select, .form-textarea { width: 100%; padding: 12px 16px; background: var(--md3-surface-container); border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-md); color: var(--md3-on-surface); font-family: inherit; font-size: 14px; transition: all 0.2s ease; }
+    .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--md3-primary); box-shadow: 0 0 0 3px var(--md3-primary-container); }
+    .form-textarea { resize: vertical; min-height: 100px; }
+    .action-buttons { display: flex; gap: var(--md3-spacing-md); margin-top: var(--md3-spacing-xl); }
+    .btn-primary { background: var(--md3-primary); color: var(--md3-on-primary); border: none; padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { background: var(--md3-primary-dim); box-shadow: var(--md3-elevation-2); }
+    .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border: 1px solid var(--md3-outline); padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .btn-secondary:hover { background: var(--md3-surface-container-highest); box-shadow: var(--md3-elevation-1); }
+    .materials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--md3-spacing-lg); }
+    .material-item { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); transition: all 0.2s ease; }
+    .material-item:hover { box-shadow: var(--md3-elevation-1); transform: translateY(-1px); }
+    .material-header { display: flex; align-items: center; gap: var(--md3-spacing-md); margin-bottom: var(--md3-spacing-md); }
+    .material-header .material-icons { color: var(--md3-primary); font-size: 24px; }
+    .material-label { color: var(--md3-on-surface); font-weight: 500; font-size: 16px; }
+    .material-actions { display: flex; gap: var(--md3-spacing-sm); }
+    .btn-small { padding: 8px 16px; font-size: 12px; border-radius: var(--md3-radius-md); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+    .btn-small .material-icons { font-size: 16px; }
+    @media (max-width: 768px) { .review-container { padding: var(--md3-spacing-md); } .info-grid { grid-template-columns: 1fr; } .action-buttons { flex-direction: column; } .action-buttons button, .action-buttons a { width: 100%; justify-content: center; } .materials-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="review-container">
+    <div class="review-header">
+        <h1>
+            <span class="material-icons">new_releases</span>
+            审核社团申请
+        </h1>
+    </div>
+
+    <!-- 基本信息 -->
+    <div class="info-card">
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">申请社团</span>
+                <span class="info-value">{{ registration.club_name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">申请人</span>
+                <span class="info-value">{% if registration.requested_by %}{{ registration.requested_by.username|default:'未设置' }}{% else %}未设置{% endif %} ({{ registration.president_email }})</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">申请时间</span>
+                <span class="info-value">{{ registration.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">当前状态</span>
+                <span class="info-value">
+                    <span class="review-badge {{ registration.status }}">{{ registration.get_status_display }}</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 社团详细信息 -->
+    <div class="club-info-card">
+        <h2 class="section-title">
+            <span class="material-icons">info</span>
+            社团基本信息
+        </h2>
+        <table class="club-info-table">
+            <tr>
+                <td><strong>社团名称:</strong></td>
+                <td>{{ registration.club_name }}</td>
+            </tr>
+            <tr>
+                <td><strong>成立日期:</strong></td>
+                <td>{{ registration.founded_date }}</td>
+            </tr>
+            <tr>
+                <td><strong>社长:</strong></td>
+                <td>{{ registration.president_name }} (学号: {{ registration.president_id }})</td>
+            </tr>
+            <tr>
+                <td><strong>社长邮箱:</strong></td>
+                <td>{{ registration.president_email }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 社团介绍 -->
+    <div class="description-card">
+        <h2 class="section-title">
+            <span class="material-icons">description</span>
+            社团介绍
+        </h2>
+        <p class="description-text">{{ registration.description }}</p>
+    </div>
+
+    <!-- 上传材料 -->
+    {% if materials_list %}
+    <div class="info-card">
+        <h2 class="section-title">
+            <span class="material-icons">attach_file</span>
+            上传材料
+        </h2>
+        <div class="materials-grid">
+            {% for material in materials_list %}
+            <div class="material-item">
+                <div class="material-header">
+                    <span class="material-icons">{{ material.icon }}</span>
+                    <span class="material-label">{{ material.label }}</span>
+                </div>
+                <div class="material-actions">
+                    <a href="{{ material.file.url }}" target="_blank" class="btn-secondary btn-small">
+                        查看
+                    </a>
+                    <a href="{{ material.file.url }}" download class="btn-secondary btn-small">
+                        下载
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- 合并下载按钮 -->
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
+            <a href="{% url 'clubs:zip_registration_docs' registration.id %}" style="background: var(--md3-primary); color: var(--md3-on-primary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                🗜️ 打包所有材料为ZIP文件
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 审核表单或状态显示 -->
+    {% if registration.status == 'pending' %}
+    {% include 'clubs/components/review_form.html' with show_rejected_materials=True materials_list=materials_list cancel_url='clubs:staff_dashboard' %}
+    {% else %}
+    <div class="status-display">
+        <p><strong>审核状态:</strong> <span class="review-badge {{ registration.status }}">{{ registration.get_status_display }}</span></p>
+        {% if registration.reviewed_at %}
+        <p><strong>审核时间:</strong> {{ registration.reviewed_at|date:"Y-m-d H:i" }}</p>
+        {% endif %}
+        {% if registration.reviewer_comment %}
+        <p><strong>审核意见:</strong></p>
+        <div style="padding: var(--md3-spacing-md); background: var(--md3-surface-container); border-left: 3px solid var(--md3-primary); border-radius: var(--md3-radius-md); margin-top: var(--md3-spacing-sm);">
+            {{ registration.reviewer_comment }}
+        </div>
+        {% endif %}
+        <div class="action-buttons">
+            <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+                <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+                返回列表
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

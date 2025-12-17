@@ -1,0 +1,504 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}用户管理{% endblock %}
+
+{% block extra_css %}
+<style>
+    .users-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        box-sizing: border-box;
+    }
+    
+    /* 页面标题 */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-tertiary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .header-content .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .header-text h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    .header-text p {
+        margin: var(--md3-spacing-xs) 0 0 0;
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .stats-badge {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        color: var(--md3-primary);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .stats-badge .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    /* 搜索卡片 */
+    .search-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .search-form {
+        display: grid;
+        grid-template-columns: 2fr 1fr auto;
+        gap: var(--md3-spacing-md);
+        align-items: center;
+    }
+    
+    .form-input,
+    .form-select {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+    }
+    
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+    
+    .form-input::placeholder {
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .btn-search {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+    
+    .btn-search:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn-search .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    /* 表格卡片 */
+    .table-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+        overflow: hidden;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .data-table thead {
+        background: var(--md3-surface-container-high);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+    
+    .data-table th {
+        padding: var(--md3-spacing-lg);
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .data-table tbody tr {
+        border-bottom: 1px solid var(--md3-outline-variant);
+        transition: background-color 0.2s ease;
+    }
+    
+    .data-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .data-table tbody tr:hover {
+        background: var(--md3-surface-container-highest);
+    }
+    
+    .data-table td {
+        padding: var(--md3-spacing-lg);
+        font-size: 0.875rem;
+        color: var(--md3-on-surface);
+    }
+    
+    .data-table td strong {
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    /* 角色徽章 */
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .role-badge.president {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+    
+    .role-badge.staff {
+        background: var(--md3-tertiary-container);
+        color: var(--md3-on-tertiary-container);
+    }
+    
+    .role-badge.admin {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    .role-badge.unknown {
+        background: var(--md3-surface-container-highest);
+        color: var(--md3-on-surface-variant);
+    }
+    
+    /* 状态徽章 */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-badge.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+    
+    .status-badge.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .status-badge.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    .status-badge.unknown {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .status-badge .material-icons {
+        font-size: 1rem;
+    }
+    
+    /* 操作按钮 */
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+        flex-wrap: wrap;
+    }
+    
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+    
+    .btn-action .material-icons {
+        font-size: 1rem;
+    }
+    
+    .btn-action.review {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+    
+    .btn-action.review:hover {
+        background: var(--md3-warning);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-action.detail {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+    
+    .btn-action.detail:hover {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    /* 空状态 */
+    .empty-state {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-3xl);
+        text-align: center;
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .empty-state .material-icons {
+        font-size: 4rem;
+        color: var(--md3-on-surface-variant);
+        opacity: 0.5;
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .empty-state p {
+        margin: 0;
+        font-size: 1rem;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    /* 响应式 */
+    @media (max-width: 768px) {
+        .users-container {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .stats-badge {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .search-form {
+            grid-template-columns: 1fr;
+        }
+        
+        .table-card {
+            overflow-x: auto;
+        }
+        
+        .data-table {
+            min-width: 1000px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="users-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <div class="header-content">
+            <span class="material-icons">group</span>
+            <div class="header-text">
+                <h1>系统用户管理</h1>
+                <p>管理所有用户账户和权限</p>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: var(--md3-spacing-md);">
+            <div class="stats-badge">
+                <span class="material-icons">person</span>
+                <span>{{ total_users }} 个用户</span>
+            </div>
+            <a href="{% url 'clubs:create_teacher' %}" class="btn-search" style="background: var(--md3-tertiary); color: var(--md3-on-tertiary); text-decoration: none;">
+                <span class="material-icons">person_add</span>
+                创建新用户
+            </a>
+        </div>
+    </div>
+    
+    <!-- 搜索过滤 -->
+    <div class="search-card">
+        <form method="get" class="search-form">
+            <input 
+                type="text" 
+                name="search" 
+                class="form-input"
+                placeholder="🔍 搜索用户名、邮箱..." 
+                value="{{ search }}"
+            >
+            <select name="role" class="form-select">
+                <option value="">所有角色</option>
+                <option value="president" {% if role == 'president' %}selected{% endif %}>社长</option>
+                <option value="staff" {% if role == 'staff' %}selected{% endif %}>干事</option>
+                <option value="admin" {% if role == 'admin' %}selected{% endif %}>管理员</option>
+            </select>
+            <button type="submit" class="btn-search">
+                <span class="material-icons">search</span>
+                搜索
+            </button>
+        </form>
+    </div>
+    
+    <!-- 用户列表 -->
+    {% if users %}
+    <div class="table-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>用户名</th>
+                    <th>邮箱</th>
+                    <th>全名</th>
+                    <th>电话</th>
+                    <th>微信</th>
+                    <th>政治面貌</th>
+                    <th>角色</th>
+                    <th>状态</th>
+                    <th>加入时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td><strong>{{ user.username }}</strong></td>
+                    <td>{{ user.email|default:"--" }}</td>
+                    <td>{{ user.profile.get_full_name|default:"--" }}</td>
+                    <td>{{ user.profile.phone|default:"--" }}</td>
+                    <td>{{ user.profile.wechat|default:"--" }}</td>
+                    <td>
+                        {% if user.profile.role == 'president' or user.profile.role == 'staff' %}
+                            {{ user.profile.get_political_status_display|default:"未填写" }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.profile.role == 'president' %}
+                            <span class="role-badge president">社长</span>
+                        {% elif user.profile.role == 'staff' %}
+                            <span class="role-badge staff">干事</span>
+                        {% elif user.profile.role == 'admin' %}
+                            <span class="role-badge admin">管理员</span>
+                        {% else %}
+                            <span class="role-badge unknown">未设定</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.profile.role == 'staff' %}
+                            {% if user.profile.status == 'pending' %}
+                                <span class="status-badge pending">
+                                    <span class="material-icons">schedule</span>
+                                    待审核
+                                </span>
+                            {% elif user.profile.status == 'approved' %}
+                                <span class="status-badge approved">
+                                    <span class="material-icons">check_circle</span>
+                                    已批准
+                                </span>
+                            {% elif user.profile.status == 'rejected' %}
+                                <span class="status-badge rejected">
+                                    <span class="material-icons">cancel</span>
+                                    已拒绝
+                                </span>
+                            {% else %}
+                                <span class="status-badge unknown">未知</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="status-badge approved">
+                                <span class="material-icons">check_circle</span>
+                                已激活
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            {% if user.profile.role == 'staff' and user.profile.status == 'pending' %}
+                                <a href="{% url 'clubs:admin_review' user.id %}?type=staff_registration" class="btn-action review">
+                                    <span class="material-icons">assignment</span>
+                                    审核
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'clubs:admin_edit_user_account' user.id %}" class="btn-action detail">
+                                <span class="material-icons">visibility</span>
+                                详情
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="material-icons">search_off</span>
+        <p>未找到匹配的用户</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

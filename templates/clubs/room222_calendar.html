@@ -1,0 +1,798 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}222房间预约日历{% endblock %}
+
+{% block extra_css %}
+<style>
+
+    :root {
+        --calendar-accent: var(--md3-primary, #3f51b5);
+        --calendar-accent-soft: color-mix(in srgb, var(--calendar-accent) 15%, transparent);
+        --calendar-surface: var(--md3-surface, #fef7ff);
+        --calendar-outline: var(--md3-outline-variant, #cfc6db);
+        --calendar-radius: 18px;
+        --calendar-height: clamp(700px, 70vh, 1050px);
+        --calendar-font: 'Segoe UI', 'Noto Sans SC', 'Source Han Sans', system-ui, sans-serif;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .calendar-shell {
+        position: relative;
+        padding: 32px 24px 48px;
+        margin: 0 auto 40px;
+        max-width: 1280px;
+        font-family: var(--calendar-font);
+    }
+
+    .calendar-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 20px 28px;
+        border-radius: var(--calendar-radius);
+        background: var(--md3-surface-container-high, #f3edf7);
+        border: 1px solid var(--calendar-outline);
+        box-shadow: 0 3px 5px -1px rgba(0,0,0,0.2), 0 6px 10px 0 rgba(0,0,0,0.14);
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .date-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        min-width: 260px;
+        justify-content: center;
+    }
+
+    .current-date {
+        font-size: clamp(20px, 4vw, 26px);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        color: var(--md3-on-surface, #1b1c1f);
+        text-align: center;
+        flex: 1 1 auto;
+        white-space: nowrap;
+    }
+
+    .pill-btn {
+        border: none;
+        border-radius: 999px;
+        height: 40px;
+        padding: 0 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        text-decoration: none;
+    }
+
+    .pill-btn:visited,
+    .pill-btn:hover,
+    .pill-btn:focus,
+    .pill-btn:active,
+    .modal-btn,
+    .modal-btn:visited,
+    .modal-btn:hover,
+    .modal-btn:focus,
+    .modal-btn:active {
+        text-decoration: none;
+    }
+
+    .today-btn {
+        background: var(--md3-surface-container-high, #ecf0ff);
+        color: var(--md3-on-surface, #1b1c1f);
+        border: 1px solid var(--calendar-outline);
+    }
+
+    .today-btn.disabled {
+        opacity: 0.55;
+        pointer-events: none;
+    }
+
+    .nav-btn {
+        width: 40px;
+        padding: 0;
+        background: transparent;
+        color: var(--md3-on-surface, #1b1c1f);
+    }
+
+    .action-btn {
+        background: var(--calendar-accent);
+        color: var(--md3-on-primary, #fff);
+        box-shadow: none;
+    }
+
+    .action-btn.secondary {
+        background: var(--md3-secondary, #625b71);
+        color: var(--md3-on-secondary, #fff);
+    }
+
+    .pill-btn:hover,
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.24);
+        background: color-mix(in srgb, currentColor 8%, var(--calendar-accent));
+    }
+
+    .action-btn.secondary:hover {
+        background: color-mix(in srgb, var(--md3-secondary) 85%, #ffffff 15%);
+    }
+
+    .calendar-container {
+        margin-top: 24px;
+        border-radius: var(--calendar-radius);
+        background: var(--calendar-surface);
+        border: 1px solid var(--calendar-outline);
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        min-height: var(--calendar-height);
+    }
+
+    .time-column {
+        background: var(--md3-surface-container-low, #f7f2fb);
+        border-right: 1px solid var(--calendar-outline);
+    }
+
+    .time-slot {
+        position: relative;
+        padding: 14px 18px 10px 12px;
+        color: var(--md3-on-surface-variant, #4c536b);
+        border-bottom: 1px solid rgba(31, 31, 31, 0.08);
+        font-size: 12px;
+        text-align: right;
+    }
+
+    .time-slot .period-label {
+        display: block;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.7;
+    }
+
+    .events-column {
+        position: relative;
+        background: var(--md3-surface, #fef7ff);
+        overflow-y: auto;
+    }
+
+    .events-grid {
+        position: relative;
+        height: var(--calendar-height);
+    }
+
+    .grid-slot {
+        border-bottom: 1px solid rgba(31, 31, 31, 0.08);
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        z-index: 5;
+    }
+
+    .grid-slot:hover {
+        background: var(--md3-primary-container, rgba(103, 80, 164, 0.08));
+    }
+
+    .grid-slot:hover::after {
+        border-color: var(--md3-primary, #6750a4);
+        opacity: 0.8;
+    }
+
+    .grid-slot::after {
+        content: '';
+        position: absolute;
+        inset: 12px 28px;
+        border-radius: 12px;
+        border: 1px dashed var(--calendar-outline);
+        opacity: 0.5;
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+
+    .grid-slot .slot-hint {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: var(--md3-primary, #6750a4);
+        color: var(--md3-on-primary, #fff);
+        font-size: 13px;
+        font-weight: 500;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        z-index: 10;
+    }
+
+    .grid-slot:hover .slot-hint {
+        opacity: 1;
+    }
+
+    /* 已被预约覆盖的时段不显示点击提示 */
+    .grid-slot.has-booking {
+        cursor: default;
+    }
+
+    .grid-slot.has-booking:hover {
+        background: transparent;
+    }
+
+    .grid-slot.has-booking:hover::after {
+        border-color: var(--calendar-outline);
+        opacity: 0.5;
+    }
+
+    .grid-slot.has-booking .slot-hint {
+        display: none;
+    }
+
+    .event-card {
+        position: absolute;
+        left: 28px;
+        right: 28px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        background: var(--md3-primary-container, #d7e2ff);
+        color: var(--md3-on-primary-container, #001a40);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        cursor: pointer;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        z-index: 10;
+        box-sizing: border-box;
+        min-height: 38px;
+    }
+
+    .event-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 35px 45px -30px rgba(11, 95, 255, 0.85);
+    }
+
+    .event-time {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        opacity: 0.95;
+        white-space: nowrap;
+        padding: 4px 10px;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--md3-primary) 12%, transparent);
+    }
+
+    .event-text {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .event-title {
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.2;
+        color: var(--md3-on-primary-container, #001a40);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1 1 auto;
+    }
+
+    .event-subtitle {
+        font-size: 13px;
+        color: var(--md3-on-primary-container, #001a40);
+        opacity: 0.75;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 30%;
+        flex: 0 0 auto;
+    }
+
+    .empty-state {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: calc(100% - 48px);
+        padding: 72px 16px;
+        text-align: center;
+        color: var(--md3-on-surface-variant, #635b70);
+        background: transparent;
+        border-radius: 24px;
+        border: none;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .empty-state .material-icons {
+        font-size: 72px;
+        color: var(--calendar-accent);
+        opacity: 0.25;
+        margin-bottom: 16px;
+    }
+
+    .event-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: color-mix(in srgb, var(--md3-surface) 60%, rgba(0,0,0,0.45));
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+    }
+
+    .event-modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: var(--md3-surface-container-highest, #ece6f0);
+        border-radius: 24px;
+        width: min(520px, 92vw);
+        max-height: 85vh;
+        overflow: hidden;
+        border: 1px solid var(--calendar-outline);
+        box-shadow: 0 8px 10px rgba(0,0,0,0.24);
+    }
+
+    .modal-header,
+    .modal-footer {
+        padding: 24px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--calendar-outline);
+    }
+
+    .modal-title {
+        font-size: 24px;
+        font-weight: 600;
+    }
+
+    .close-btn {
+        border: none;
+        background: transparent;
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        color: var(--md3-on-surface-variant, #4c536b);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .close-btn:hover {
+        background: var(--calendar-accent-soft);
+    }
+
+    .modal-body {
+        padding: 24px 32px 32px;
+        overflow-y: auto;
+        max-height: 60vh;
+    }
+
+    .modal-detail {
+        display: flex;
+        gap: 16px;
+        padding: 16px 0;
+        border-bottom: 1px solid rgba(31, 31, 31, 0.08);
+    }
+
+    .modal-detail:last-child {
+        border-bottom: none;
+    }
+
+    .modal-detail .material-icons {
+        color: var(--calendar-accent);
+    }
+
+    .detail-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--md3-on-surface-variant, #5d6274);
+        margin-bottom: 4px;
+    }
+
+    .detail-value {
+        font-size: 15px;
+        color: var(--md3-on-surface, #1b1c1f);
+        line-height: 1.5;
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--calendar-outline);
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .modal-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 10px 22px;
+        font-weight: 600;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .modal-btn.primary {
+        background: var(--md3-primary, #6750a4);
+        color: var(--md3-on-primary, #fff);
+    }
+
+    .modal-btn.error {
+        background: var(--md3-error, #ba1a1a);
+        color: var(--md3-on-error, #fff);
+    }
+
+    @media (max-width: 900px) {
+        .calendar-shell {
+            padding: 24px 16px 32px;
+            --calendar-height: clamp(620px, 80vh, 900px);
+        }
+
+        .calendar-grid {
+            grid-template-columns: 80px 1fr;
+        }
+
+        .calendar-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+
+        .toolbar-left,
+        .toolbar-right {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .date-group {
+            width: 100%;
+        }
+
+        .event-card {
+            left: 20px;
+            right: 20px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .calendar-shell {
+            padding: 16px 12px 28px;
+            --calendar-height: 720px;
+        }
+
+        .calendar-toolbar {
+            padding: 16px;
+            gap: 8px;
+        }
+
+        .toolbar-left,
+        .toolbar-right {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+
+        .date-group {
+            flex-direction: row;
+            justify-content: center;
+            min-width: 0;
+            gap: 4px;
+            flex-wrap: nowrap;
+        }
+
+        .current-date {
+            font-size: 20px;
+        }
+
+        .pill-btn,
+        .action-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .calendar-grid {
+            grid-template-columns: 56px 1fr;
+            min-height: 580px;
+        }
+
+        .time-column {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+        }
+
+        .time-slot {
+            padding: 10px 6px 8px 0;
+            font-size: 10px;
+        }
+
+        .events-grid {
+            height: var(--calendar-height);
+        }
+
+        .event-card {
+            left: 12px;
+            right: 12px;
+            padding: 8px 10px;
+            border-radius: 12px;
+        }
+
+        .event-time {
+            font-size: 11px;
+        }
+
+        .empty-state {
+            top: 28%;
+            transform: translate(-50%, -20%);
+            width: calc(100% - 32px);
+            padding: 48px 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calendar-shell">
+    <div class="calendar-toolbar">
+        <div class="toolbar-left">
+            <a href="{% url 'clubs:room222_calendar' %}" class="pill-btn today-btn{% if is_today %} disabled{% endif %}" {% if is_today %}aria-disabled="true"{% endif %}>今天</a>
+            <div class="date-group" role="group" aria-label="日期切换">
+                <a href="?date={{ prev_date|date:'Y-m-d' }}" class="pill-btn nav-btn" title="前一天">
+                    <span class="material-icons">chevron_left</span>
+                </a>
+                <span class="current-date">{{ view_date|date:'Y年n月j日' }}</span>
+                <a href="?date={{ next_date|date:'Y-m-d' }}" class="pill-btn nav-btn" title="后一天">
+                    <span class="material-icons">chevron_right</span>
+                </a>
+            </div>
+        </div>
+        <div class="toolbar-right">
+            <a href="{% url 'clubs:my_room222_bookings' %}" class="pill-btn action-btn secondary">
+                <span class="material-icons">event_note</span>
+                我的预约
+            </a>
+            {% if user.profile.role == 'staff' or user.profile.role == 'admin' or user.is_superuser %}
+            <a href="{% url 'clubs:export_room222_bookings_weekly' %}?week_start={{ week_start|date:'Y-m-d' }}" class="pill-btn action-btn secondary">
+                <span class="material-icons">file_download</span>
+                导出周表
+            </a>
+            {% endif %}
+            <a href="{% url 'clubs:submit_room222_booking' %}" class="pill-btn action-btn">
+                <span class="material-icons">add</span>
+                新建预约
+            </a>
+        </div>
+    </div>
+
+    <div class="calendar-container">
+        <div class="calendar-grid">
+            <div class="time-column" style="height: var(--calendar-height);">
+                {% for slot in time_slots %}
+                <div class="time-slot" style="height: calc(var(--calendar-height) * {{ slot.height_percent }} / 100);">
+                    <span>{{ slot.start|time:'H:i' }} - {{ slot.end|time:'H:i' }}</span>
+                    <span class="period-label">{{ slot.label }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="events-column">
+                <div class="events-grid">
+                    {% for slot in time_slots %}
+                    <div class="grid-slot{% if slot.has_booking %} has-booking{% endif %}" 
+                         style="height: calc(var(--calendar-height) * {{ slot.height_percent }} / 100);"
+                         {% if not slot.has_booking %}onclick="bookTimeSlot('{{ slot.start|time:"H:i" }}', '{{ slot.end|time:"H:i" }}')"{% endif %}
+                         title="{% if slot.has_booking %}该时段已有预约{% else %}点击预约 {{ slot.label }}{% endif %}">
+                        <span class="slot-hint">
+                            <span class="material-icons" style="font-size: 18px;">add</span>
+                            预约此时段
+                        </span>
+                    </div>
+                    {% endfor %}
+
+                    {% for booking_data in bookings %}
+                    <div class="event-card" style="top: calc(var(--calendar-height) * {{ booking_data.top_percent }} / 100); height: calc(var(--calendar-height) * {{ booking_data.height_percent }} / 100);" onclick="showEventDetails({{ booking_data.booking.id }})">
+                        <span class="event-time">{{ booking_data.booking.start_time|time:'H:i' }} - {{ booking_data.booking.end_time|time:'H:i' }}</span>
+                        <div class="event-text">
+                            <span class="event-title">
+                                {% if booking_data.booking.club %}
+                                    {{ booking_data.booking.club.name }}
+                                {% else %}
+                                    {{ booking_data.booking.purpose|truncatewords:6 }}
+                                {% endif %}
+                            </span>
+                            <span class="event-subtitle">{{ booking_data.booking.user.profile.get_full_name }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <span class="material-icons">event_available</span>
+                        <p>今日暂无预约，点击右上角立刻创建吧。</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="event-modal" id="eventModal" onclick="if(event.target === this) closeEventModal()">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title" id="modalTitle">预约详情</div>
+            <button class="close-btn" type="button" onclick="closeEventModal()">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-footer" id="modalFooter"></div>
+    </div>
+</div>
+
+<script>
+    // 全局函数 - 需要在 onclick 调用之前定义
+    function bookTimeSlot(startTime, endTime) {
+        const currentDate = '{{ view_date|date:"Y-m-d" }}';
+        const baseUrl = '{% url "clubs:submit_room222_booking" %}';
+        const params = new URLSearchParams();
+        params.set('date', currentDate);
+        params.set('start_time', startTime);
+        params.set('end_time', endTime);
+        window.location.href = baseUrl + '?' + params.toString();
+    }
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const bookingsData = {
+        {% for booking_data in bookings %}
+        {{ booking_data.booking.id }}: {
+            id: {{ booking_data.booking.id }},
+            date: '{{ booking_data.booking.booking_date|date:"Y年m月d日" }}',
+            startTime: '{{ booking_data.booking.start_time|time:"H:i" }}',
+            endTime: '{{ booking_data.booking.end_time|time:"H:i" }}',
+            club: {% if booking_data.booking.club %}'{{ booking_data.booking.club.name|escapejs }}'{% else %}null{% endif %},
+            user: '{{ booking_data.booking.user.profile.get_full_name|escapejs }}',
+            purpose: '{{ booking_data.booking.purpose|default:""|escapejs }}',
+            participantCount: {{ booking_data.booking.participant_count }},
+            contactPhone: '{{ booking_data.booking.contact_phone|default:""|escapejs }}',
+            specialRequirements: '{{ booking_data.booking.special_requirements|default:""|escapejs }}',
+            canEdit: {{ booking_data.can_edit|yesno:"true,false" }},
+            canDelete: {{ booking_data.can_delete|yesno:"true,false" }}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+
+    function showEventDetails(bookingId) {
+        const booking = bookingsData[bookingId];
+        if (!booking) return;
+
+        document.getElementById('modalTitle').textContent = booking.club || '个人预约';
+
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = `
+            <div class="modal-detail">
+                <span class="material-icons">event</span>
+                <div>
+                    <div class="detail-label">预约日期</div>
+                    <div class="detail-value">${booking.date}</div>
+                </div>
+            </div>
+            <div class="modal-detail">
+                <span class="material-icons">schedule</span>
+                <div>
+                    <div class="detail-label">时间段</div>
+                    <div class="detail-value">${booking.startTime} - ${booking.endTime}</div>
+                </div>
+            </div>
+            <div class="modal-detail">
+                <span class="material-icons">person</span>
+                <div>
+                    <div class="detail-label">预约人</div>
+                    <div class="detail-value">${booking.user}</div>
+                </div>
+            </div>
+            <div class="modal-detail">
+                <span class="material-icons">phone</span>
+                <div>
+                    <div class="detail-label">联系电话</div>
+                    <div class="detail-value">${booking.contactPhone || '—'}</div>
+                </div>
+            </div>
+            <div class="modal-detail">
+                <span class="material-icons">description</span>
+                <div>
+                    <div class="detail-label">使用目的</div>
+                    <div class="detail-value">${booking.purpose || '—'}</div>
+                </div>
+            </div>
+            <div class="modal-detail">
+                <span class="material-icons">group</span>
+                <div>
+                    <div class="detail-label">预计人数</div>
+                    <div class="detail-value">${booking.participantCount} 人</div>
+                </div>
+            </div>
+            ${booking.specialRequirements ? `
+            <div class="modal-detail">
+                <span class="material-icons">info</span>
+                <div>
+                    <div class="detail-label">特殊需求</div>
+                    <div class="detail-value">${booking.specialRequirements}</div>
+                </div>
+            </div>` : ''}
+        `;
+
+        const modalFooter = document.getElementById('modalFooter');
+        modalFooter.innerHTML = `
+            ${booking.canEdit ? `
+                <a class="modal-btn primary" href="/clubs/room222/edit-booking/${booking.id}/">
+                    <span class="material-icons">edit</span>
+                    编辑
+                </a>` : ''}
+            ${booking.canDelete ? `
+                <a class="modal-btn error" href="/clubs/room222/delete-booking/${booking.id}/">
+                    <span class="material-icons">delete</span>
+                    删除
+                </a>` : ''}
+        `;
+
+        document.getElementById('eventModal').classList.add('active');
+    }
+
+    function closeEventModal() {
+        document.getElementById('eventModal').classList.remove('active');
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeEventModal();
+        }
+    });
+</script>
+{% endblock %}

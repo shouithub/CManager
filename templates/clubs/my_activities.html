@@ -1,0 +1,446 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}我的活动 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <span class="material-icons">bookmark</span>
+        <h1>我的活动</h1>
+        <div class="quick-actions">
+            <a href="{% url 'clubs:public_activities' %}" class="action-btn">
+                <span class="material-icons">event_note</span>
+                <span>全部活动</span>
+            </a>
+        </div>
+    </div>
+
+    {% if participations %}
+        <div class="activities-grid">
+            {% for participation in participations %}
+                {% with activity=participation.activity %}
+                    <div class="activity-card">
+                        <div class="activity-card-header">
+                            <div class="activity-header-content">
+                                <h3 class="activity-name">{{ activity.activity_name }}</h3>
+                                <span class="activity-club">{{ activity.club.name }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-card-body">
+                            <div class="activity-details">
+                                <div class="activity-detail-item">
+                                    <span class="material-icons detail-icon">event</span>
+                                    <div class="detail-content">
+                                        <span class="detail-label">日期</span>
+                                        <span class="detail-value">{{ activity.activity_date|date:"Y年m月d日" }}</span>
+                                    </div>
+                                </div>
+                                <div class="activity-detail-item">
+                                    <span class="material-icons detail-icon">schedule</span>
+                                    <div class="detail-content">
+                                        <span class="detail-label">时间</span>
+                                        <span class="detail-value">{{ activity.activity_time_start|time:"H:i" }} - {{ activity.activity_time_end|time:"H:i" }}</span>
+                                    </div>
+                                </div>
+                                <div class="activity-detail-item">
+                                    <span class="material-icons detail-icon">location_on</span>
+                                    <div class="detail-content">
+                                        <span class="detail-label">地点</span>
+                                        <span class="detail-value">{{ activity.activity_location }}</span>
+                                    </div>
+                                </div>
+                                <div class="activity-detail-item">
+                                    <span class="material-icons detail-icon">group</span>
+                                    <div class="detail-content">
+                                        <span class="detail-label">人数</span>
+                                        <span class="detail-value">{{ activity.expected_participants }}人</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="activity-description">
+                                <span class="description-label">活动简介</span>
+                                <p>{{ activity.activity_description|truncatewords:30 }}</p>                       </div>
+                        </div>
+
+                        <div class="activity-card-footer">
+                            <div class="activity-contact">
+                                <div class="contact-item">
+                                    <span class="material-icons">person</span>
+                                    <span>{{ activity.contact_person }}</span>
+                                </div>
+                                <div class="contact-item">
+                                    <span class="material-icons">phone</span>
+                                    <span>{{ activity.contact_phone }}</span>
+                                </div>
+                            </div>
+                            <div class="participation-status">
+                                <span class="status-badge approved">
+                                    <span class="material-icons">check_circle</span>
+                                    已参加
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <span class="material-icons empty-icon">event_busy</span>
+            <p>您还没有参加任何活动</p>
+            <a href="{% url 'clubs:public_activities' %}" class="action-btn" style="margin-top: 2rem;">
+                <span class="material-icons">add</span>
+                <span>浏览活动</span>
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+/* ============================================================================
+ * Material Design 3 - 我的活动页面样式
+ * ============================================================================ */
+
+.main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--md3-spacing-lg);
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    margin-bottom: var(--md3-spacing-xl);
+}
+
+.page-header .material-icons {
+    font-size: 2.5rem;
+    color: var(--md3-primary);
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+}
+
+.quick-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    background: var(--md3-secondary-container);
+    color: var(--md3-on-secondary-container);
+    border-radius: var(--md3-radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.action-btn:hover {
+    background: var(--md3-secondary);
+    color: var(--md3-on-secondary);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.action-btn .material-icons {
+    font-size: 1.25rem;
+}
+
+/* 活动网格布局 */
+.activities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+/* 活动卡片 */
+.activity-card {
+    background: var(--md3-surface-container-low);
+    border-radius: var(--md3-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--md3-elevation-1);
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+.activity-card:hover {
+    box-shadow: var(--md3-elevation-3);
+    transform: translateY(-4px);
+}
+
+/* 卡片头部 */
+.activity-card-header {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+    position: relative;
+}
+
+.activity-header-content {
+    position: relative;
+    z-index: 2;
+}
+
+.activity-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+}
+
+.activity-club {
+    display: inline-block;
+    padding: 0.4rem 0.875rem;
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+    border-radius: var(--md3-radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* 卡片主体 */
+.activity-card-body {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 活动详情 */
+.activity-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.detail-icon {
+    color: var(--md3-primary);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--md3-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 0.95rem;
+    color: var(--md3-on-surface);
+    font-weight: 500;
+}
+
+/* 活动描述 */
+.activity-description {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--md3-surface);
+    border-radius: var(--md3-radius-md);
+    border-left: 4px solid var(--md3-secondary);
+}
+
+.description-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--md3-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.activity-description p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--md3-on-surface-variant);
+    line-height: 1.6;
+}
+
+/* 卡片底部 */
+.activity-card-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--md3-outline-variant);
+    background: var(--md3-surface-container-lowest);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-contact {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--md3-on-surface-variant);
+}
+
+.contact-item .material-icons {
+    font-size: 1.125rem;
+    color: var(--md3-tertiary);
+}
+
+/* 参加状态 */
+.participation-status {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--md3-radius-full);
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.status-badge.approved {
+    background: var(--md3-success-container);
+    color: var(--md3-on-success-container);
+}
+
+.status-badge .material-icons {
+    font-size: 1.125rem;
+}
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--md3-on-surface-variant);
+}
+
+.empty-state .empty-icon {
+    font-size: 5rem;
+    opacity: 0.4;
+    margin-bottom: 1rem;
+    color: var(--md3-outline);
+}
+
+.empty-state p {
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .main-content {
+        padding: var(--md3-spacing-md);
+    }
+
+    .content-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .activities-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding-bottom: 3rem;
+    }
+
+    .activity-name {
+        font-size: 1.125rem;
+    }
+
+    .activity-card-header {
+        padding: 1.25rem;
+    }
+
+    .activity-card-body {
+        padding: 1.25rem;
+        gap: 1.25rem;
+    }
+
+    .activity-card-footer {
+        padding: 1rem 1.25rem 1.5rem 1.25rem;
+    }
+
+    .activity-card {
+        margin-bottom: 0.5rem;
+    }
+
+    .activity-detail-item {
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .activities-grid {
+        gap: 0.75rem;
+    }
+
+    .activity-card {
+        border-radius: var(--md3-radius-md);
+    }
+
+    .activity-name {
+        font-size: 1rem;
+    }
+
+    .detail-label {
+        font-size: 0.7rem;
+    }
+
+    .detail-value {
+        font-size: 0.875rem;
+    }
+
+    .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .quick-actions {
+        width: 100%;
+    }
+
+    .action-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+</style>
+</div>
+{% endblock %}

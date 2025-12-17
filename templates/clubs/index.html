@@ -1,0 +1,667 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}首页 - 社团管理系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .home-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+    }
+    
+    /* 页面标题 */
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    /* 公告卡片 */
+    .announcement-section {
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+    
+    .announcement-card {
+        background: var(--md3-secondary-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-secondary);
+        margin-bottom: var(--md3-spacing-lg);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .announcement-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-md);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+    
+    .announcement-header .material-icons {
+        font-size: 1.75rem;
+        color: var(--md3-on-secondary-container);
+    }
+    
+    .announcement-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-secondary-container);
+    }
+    
+    .announcement-item {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline-variant);
+        transition: box-shadow 0.2s ease;
+    }
+    
+    .announcement-item:hover {
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .announcement-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .announcement-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-sm) 0;
+        line-height: 1.4;
+    }
+    
+    .announcement-date {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .announcement-date .material-icons {
+        font-size: 1rem;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .announcement-content {
+        color: var(--md3-on-surface);
+        line-height: 1.6;
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .announcement-attachment {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        background: var(--md3-tertiary-container);
+        border-radius: var(--md3-radius-md);
+        text-decoration: none;
+        color: var(--md3-on-tertiary-container);
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+    
+    .announcement-attachment:hover {
+        background: var(--md3-tertiary);
+        color: var(--md3-on-tertiary);
+        border-color: var(--md3-tertiary);
+    }
+    
+    .announcement-attachment .material-icons {
+        font-size: 1.125rem;
+    }
+    
+    /* 系统概览卡片 */
+    .overview-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+        margin-bottom: var(--md3-spacing-2xl);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+    }
+    
+    .overview-icon {
+        background: var(--md3-primary-container);
+        border-radius: var(--md3-radius-lg);
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .overview-icon .material-icons {
+        font-size: 2rem;
+        color: var(--md3-on-primary-container);
+    }
+    
+    .overview-content {
+        flex: 1;
+    }
+    
+    .overview-content h3 {
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    .overview-content p {
+        margin: 0;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .overview-stat {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--md3-primary);
+    }
+    
+    /* 社团列表 */
+    .clubs-section {
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-lg);
+    }
+    
+    .section-header .material-icons {
+        font-size: 1.75rem;
+        color: var(--md3-primary);
+    }
+    
+    .section-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    .clubs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: var(--md3-spacing-xl);
+    }
+    
+    .club-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .club-card:hover {
+        background: var(--md3-surface-container-high);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-4px);
+    }
+    
+    .club-card-header {
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-md);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+    
+    .club-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-sm) 0;
+    }
+    
+    .club-info {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .club-info-item {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        font-size: 0.875rem;
+    }
+    
+    .club-info-item .material-icons {
+        font-size: 1.125rem;
+        color: var(--md3-primary);
+    }
+    
+    .club-info-label {
+        color: var(--md3-on-surface-variant);
+        min-width: 60px;
+    }
+    
+    .club-info-value {
+        color: var(--md3-on-surface);
+        font-weight: 500;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-badge.active {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .status-badge.inactive {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+    
+    .status-badge.stopped {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    .status-badge .material-icons {
+        font-size: 0.875rem;
+    }
+    
+    .club-description {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: var(--md3-spacing-lg);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .club-actions {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-hover);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn .material-icons {
+        font-size: 1.125rem;
+    }
+    
+    /* 空状态 */
+    .empty-state {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-3xl);
+        text-align: center;
+        border: 2px dashed var(--md3-outline-variant);
+    }
+    
+    .empty-state .material-icons {
+        font-size: 4rem;
+        color: var(--md3-on-surface-variant);
+        opacity: 0.5;
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .empty-state p {
+        color: var(--md3-on-surface-variant);
+        font-size: 1rem;
+        margin: 0;
+    }
+    
+    .empty-state a {
+        color: var(--md3-primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .empty-state a:hover {
+        text-decoration: underline;
+    }
+    
+    /* 未登录状态样式 */
+    .login-prompt {
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-3xl);
+        padding: var(--md3-spacing-3xl) var(--md3-spacing-2xl);
+        text-align: center;
+        box-shadow: var(--md3-elevation-1);
+        margin: var(--md3-spacing-3xl) auto;
+        max-width: 600px;
+        overflow: hidden;
+    }
+    
+    .login-prompt-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto var(--md3-spacing-xl);
+        background: var(--md3-surface);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .login-prompt-icon .material-icons {
+        font-size: 3rem;
+        color: var(--md3-primary);
+    }
+    
+    .login-prompt-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .login-prompt-message {
+        font-size: 1rem;
+        color: var(--md3-on-surface-variant);
+        margin-bottom: var(--md3-spacing-2xl);
+        line-height: 1.5;
+    }
+    
+    .login-actions {
+        display: flex;
+        gap: var(--md3-spacing-lg);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .login-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-2xl);
+        border-radius: var(--md3-radius-full);
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 160px;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .login-btn .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    .login-btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+    
+    .login-btn-primary:hover {
+        background: var(--md3-primary);
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-2px);
+    }
+    
+    .login-btn-secondary {
+        background: var(--md3-surface);
+        color: var(--md3-primary);
+        border: 2px solid var(--md3-primary);
+    }
+    
+    .login-btn-secondary:hover {
+        background: var(--md3-primary-container);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .home-container {
+            padding: var(--md3-spacing-md);
+        }
+        
+        .page-header {
+            margin-bottom: var(--md3-spacing-lg);
+        }
+        
+        .page-header .material-icons {
+            font-size: 2rem;
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .login-prompt {
+            border-radius: var(--md3-radius-2xl);
+            padding: var(--md3-spacing-2xl) var(--md3-spacing-lg);
+            margin: var(--md3-spacing-xl) 0;
+            max-width: 100%;
+        }
+        
+        .login-prompt-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: var(--md3-spacing-lg);
+        }
+        
+        .login-prompt-icon .material-icons {
+            font-size: 2.5rem;
+        }
+        
+        .login-prompt-title {
+            font-size: 1.5rem;
+            margin-bottom: var(--md3-spacing-sm);
+        }
+        
+        .login-prompt-message {
+            font-size: 0.938rem;
+            margin-bottom: var(--md3-spacing-xl);
+        }
+        
+        .login-actions {
+            flex-direction: column;
+            gap: var(--md3-spacing-md);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        }
+        
+        .clubs-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .overview-card {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <span class="material-icons">home</span>
+        <h1>社团管理系统</h1>
+    </div>
+
+    {% if is_anonymous %}
+    <!-- 未登录提示 -->
+    <div class="login-prompt">
+        <div class="login-prompt-icon">
+            <span class="material-icons">lock_person</span>
+        </div>
+        <h2 class="login-prompt-title">欢迎来到社团管理系统</h2>
+        <p class="login-prompt-message">{{ message }}，登录后即可查看所有社团信息并进行管理操作</p>
+        <div class="login-actions">
+            <a href="{% url 'clubs:login' %}" class="login-btn login-btn-primary">
+                <span class="material-icons">person</span>
+                <span>立即登录</span>
+            </a>
+            <a href="{% url 'clubs:register' %}" class="login-btn login-btn-secondary">
+                <span class="material-icons">person_add</span>
+                <span>注册账号</span>
+            </a>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- 公告区 -->
+    {% if announcements %}
+    <div class="announcement-section">
+        <div class="announcement-card">
+            <div class="announcement-header">
+                <h3>最新公告</h3>
+            </div>
+            {% for announcement in announcements %}
+            <div class="announcement-item">
+                <h4 class="announcement-title">{{ announcement.title }}</h4>
+                <p class="announcement-date">
+                    <span class="material-icons">schedule</span>
+                    {{ announcement.published_at|date:"Y年m月d日 H:i" }}
+                </p>
+                <p class="announcement-content">{{ announcement.content|truncatewords:50 }}</p>
+                {% if announcement.attachment %}
+                <a href="{{ announcement.attachment.url }}" class="announcement-attachment">
+                    <span class="material-icons">attach_file</span>
+                    下载附件: {{ announcement.attachment.name|slice:"-30:" }}
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 系统概览 -->
+    <div class="overview-card">
+        <div class="overview-icon">
+            <span class="material-icons">show_chart</span>
+        </div>
+        <div class="overview-content">
+            <h3>系统概览</h3>
+            <p>欢迎使用社团管理系统！当前系统中共有 <span class="overview-stat">{{ total_clubs }}</span> 个社团</p>
+        </div>
+    </div>
+
+    <!-- 社团列表 -->
+    {% if clubs %}
+    <div class="clubs-section">
+        <div class="section-header">
+            <span class="material-icons">groups</span>
+            <h2>所有社团</h2>
+        </div>
+        
+        <div class="clubs-grid">
+            {% for club in clubs %}
+            <div class="club-card">
+                <div class="club-card-header">
+                    <h3 class="club-name">{{ club.name }}</h3>
+                    <span class="status-badge {% if club.status == 'active' %}active{% elif club.status == 'inactive' %}inactive{% else %}stopped{% endif %}">
+                        {% if club.status == 'active' %}
+                        <span class="material-icons">check_circle</span> 活跃
+                        {% elif club.status == 'inactive' %}
+                        <span class="material-icons">pause_circle</span> 不活跃
+                        {% else %}
+                        <span class="material-icons">cancel</span> 停止
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="club-info">
+                    <div class="club-info-item">
+                        <span class="material-icons">event</span>
+                        <span class="club-info-label">成立日期:</span>
+                        <span class="club-info-value">{{ club.founded_date }}</span>
+                    </div>
+                    <div class="club-info-item">
+                        <span class="material-icons">people</span>
+                        <span class="club-info-label">成员数:</span>
+                        <span class="club-info-value">{{ club.members_count }} 人</span>
+                    </div>
+                </div>
+                
+                {% if club.description %}
+                <p class="club-description">{{ club.description }}</p>
+                {% endif %}
+                
+                <div class="club-actions">
+                    <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-primary">
+                        <span class="material-icons">visibility</span> 查看详情
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="material-icons">groups</span>
+        <p>暂无社团信息，<a href="{% url 'clubs:register_club' %}">去申请新社团</a></p>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

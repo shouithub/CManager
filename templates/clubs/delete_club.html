@@ -1,0 +1,274 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}删除社团 - 社团管理系统{% endblock %}
+
+{% block extra_css %}
+<style>
+@media (max-width: 768px) {
+    .delete-container {
+        padding: var(--md3-spacing-lg) !important;
+    }
+    .warning-card {
+        padding: var(--md3-spacing-lg) !important;
+    }
+    .form-actions {
+        flex-direction: column !important;
+        gap: var(--md3-spacing-md) !important;
+    }
+}
+
+/* MD3 删除页面样式 */
+.delete-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--md3-spacing-2xl);
+    box-sizing: border-box;
+}
+
+/* 页面标题 */
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    margin-bottom: var(--md3-spacing-xl);
+    padding-bottom: var(--md3-spacing-lg);
+    border-bottom: 2px solid var(--md3-outline-variant);
+}
+
+.page-title .material-icons {
+    font-size: 2.5rem;
+    color: var(--md3-error);
+}
+
+.page-title h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+}
+
+/* 警告卡片 */
+.warning-card {
+    background: var(--md3-error-container);
+    border: 2px solid var(--md3-error);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-xl);
+    margin-bottom: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.warning-card .warning-header {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    margin-bottom: var(--md3-spacing-md);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--md3-on-error-container);
+}
+
+.warning-card .warning-header .material-icons {
+    font-size: 1.25rem;
+}
+
+.warning-card p {
+    margin: 0 0 var(--md3-spacing-sm) 0;
+    color: var(--md3-on-error-container);
+    line-height: 1.5;
+}
+
+.warning-card ul {
+    margin: var(--md3-spacing-sm) 0 0 0;
+    padding-left: var(--md3-spacing-xl);
+    color: var(--md3-on-error-container);
+}
+
+.warning-card li {
+    margin-bottom: var(--md3-spacing-xs);
+    line-height: 1.4;
+}
+
+/* 确认卡片 */
+.confirm-card {
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.confirm-card p {
+    margin: 0 0 var(--md3-spacing-lg) 0;
+    color: var(--md3-on-surface);
+    line-height: 1.5;
+}
+
+.confirm-card strong {
+    color: var(--md3-error);
+}
+
+/* 表单组 */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--md3-spacing-xs);
+    margin-bottom: var(--md3-spacing-lg);
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-xs);
+}
+
+.form-group label .material-icons {
+    font-size: 1.125rem;
+    color: var(--md3-error);
+}
+
+.form-group input {
+    padding: var(--md3-spacing-md);
+    border: 2px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    background: var(--md3-surface-container-highest);
+    color: var(--md3-on-surface);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--md3-error);
+    box-shadow: 0 0 0 2px var(--md3-error-container);
+}
+
+.form-group input::placeholder {
+    color: var(--md3-on-surface-variant);
+}
+
+/* 表单操作 */
+.form-actions {
+    display: flex;
+    gap: var(--md3-spacing-md);
+    justify-content: flex-start;
+    margin-top: var(--md3-spacing-xl);
+    padding-top: var(--md3-spacing-lg);
+    border-top: 1px solid var(--md3-outline-variant);
+}
+
+.btn {
+    padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+    border: none;
+    border-radius: var(--md3-radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    text-decoration: none;
+}
+
+.btn-danger {
+    background: var(--md3-error);
+    color: var(--md3-on-error);
+}
+
+.btn-danger:hover {
+    background: var(--md3-error-hover);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.btn-secondary {
+    background: var(--md3-surface-container-highest);
+    color: var(--md3-on-surface);
+    border: 1px solid var(--md3-outline);
+}
+
+.btn-secondary:hover {
+    background: var(--md3-surface-container);
+    border-color: var(--md3-outline-variant);
+}
+
+/* 返回链接 */
+.back-link {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--md3-spacing-xl);
+    padding-top: var(--md3-spacing-lg);
+    border-top: 1px solid var(--md3-outline-variant);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <!-- 页面标题 -->
+    <div class="page-title">
+        <span class="material-icons">delete_forever</span>
+        <h1>删除社团</h1>
+    </div>
+
+    <!-- 警告信息 -->
+    <div class="warning-card">
+        <div class="warning-header">
+            <span class="material-icons">warning</span>
+            危险操作！
+        </div>
+        <p>删除社团是不可逆转的操作，将导致以下后果：</p>
+        <ul>
+            <li>社团 <strong>{{ club.name }}</strong> 的所有基本信息将被永久删除</li>
+            <li>与该社团相关的所有年审记录将被清除</li>
+            <li>该社团的成员信息将被移除</li>
+            <li>该社团的社长变更记录将被清除</li>
+            <li>该社团的所有相关数据将被完整清除</li>
+            <li>此操作不可恢复</li>
+        </ul>
+    </div>
+
+    <!-- 确认表单 -->
+    <div class="confirm-card">
+        <p>请输入社团名称 <strong>{{ club.name }}</strong> 确认您要删除此社团：</p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="confirm_club_name">
+                    <span class="material-icons">edit</span>
+                    确认社团名称 *
+                </label>
+                <input
+                    type="text"
+                    id="confirm_club_name"
+                    name="confirm_club_name"
+                    required
+                    placeholder="输入社团名称以确认删除"
+                >
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">
+                    <span class="material-icons">delete</span>
+                    确认删除社团
+                </button>
+                <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-secondary">
+                    <span class="material-icons">close</span>
+                    取消
+                </a>
+            </div>
+        </form>
+
+        <div class="back-link">
+            <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-secondary">
+                <span class="material-icons">arrow_back</span>
+                返回社团详情
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

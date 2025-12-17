@@ -1,0 +1,627 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}活动列表 - 社团管理系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .home-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: clip;
+        overflow-y: visible;
+    }
+    
+    /* 页面标题 */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .page-header .title-section {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-left: var(--md3-spacing-lg);
+        padding-top: var(--md3-spacing-sm);
+    }
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <div class="page-header">
+        <div class="title-section">
+            <span class="material-icons">event_note</span>
+            <h1>活动列表</h1>
+        </div>
+        {% if user.is_authenticated %}
+        <div class="header-actions">
+            <a href="{% url 'clubs:my_activities' %}" class="btn btn-primary">
+                <span>我的活动</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if approved_activities %}
+        <div class="activities-grid">
+            {% for activity in approved_activities %}
+                <div class="activity-card">
+                    <div class="activity-card-header">
+                        <div class="activity-header-content">
+                            <h3 class="activity-name">{{ activity.activity_name }}</h3>
+                            <span class="activity-club">{{ activity.club.name }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-card-body">
+                        <div class="activity-details">
+                            <div class="activity-detail-item">
+                                <span class="material-icons detail-icon">event</span>
+                                <div class="detail-content">
+                                    <span class="detail-label">日期</span>
+                                    <span class="detail-value">{{ activity.activity_date|date:"Y年m月d日" }}</span>
+                                </div>
+                            </div>
+                            <div class="activity-detail-item">
+                                <span class="material-icons detail-icon">schedule</span>
+                                <div class="detail-content">
+                                    <span class="detail-label">时间</span>
+                                    <span class="detail-value">{{ activity.activity_time_start|time:"H:i" }} - {{ activity.activity_time_end|time:"H:i" }}</span>
+                                </div>
+                            </div>
+                            <div class="activity-detail-item">
+                                <span class="material-icons detail-icon">location_on</span>
+                                <div class="detail-content">
+                                    <span class="detail-label">地点</span>
+                                    <span class="detail-value">{{ activity.activity_location }}</span>
+                                </div>
+                            </div>
+                            <div class="activity-detail-item">
+                                <span class="material-icons detail-icon">group</span>
+                                <div class="detail-content">
+                                    <span class="detail-label">人数</span>
+                                    <span class="detail-value">{{ activity.expected_participants }}人</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="activity-description">
+                            <span class="description-label">活动简介</span>
+                            <p>{{ activity.activity_description|truncatewords:30 }}</p>
+                        </div>
+                    </div>
+
+                    <div class="activity-card-footer">
+                        <div class="activity-contact">
+                            <div class="contact-item">
+                                <span class="material-icons">person</span>
+                                <span>{{ activity.contact_person }}</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="material-icons">phone</span>
+                                <span>{{ activity.contact_phone }}</span>
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'clubs:join_activity' activity.id %}" class="btn-join-activity">
+                                    申请参加
+                                </a>
+                                {% if user.profile.role in 'admin,staff' or user == activity.club.president %}
+                                    <a href="{% url 'clubs:activity_participants' activity.id %}" class="btn-view-participants">
+                                        报名名单
+                                    </a>
+                                {% elif user.profile.role == 'teacher' and activity.club.id in user_assigned_clubs %}
+                                    <a href="{% url 'clubs:activity_participants' activity.id %}" class="btn-view-participants">
+                                        报名名单
+                                    </a>
+                                {% endif %}
+                                
+                                <!-- 编辑按钮：干事、管理员和负责老师可见 -->
+                                {% if user.profile.role in 'admin,staff' or user.profile.role == 'teacher' and activity.club.id in user_assigned_clubs %}
+                                    <a href="{% url 'clubs:edit_activity_application' activity.id %}" class="btn-edit-activity">
+                                        <span class="material-icons">edit</span>
+                                        编辑
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'clubs:login' %}" class="btn-join-activity btn-join-activity-disabled">
+                                    登录参加
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <span class="material-icons empty-icon">event_busy</span>
+            <p>暂无即将举办的活动</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+/* ============================================================================
+ * Material Design 3 - 活动列表页面样式
+ * ============================================================================ */
+
+.main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--md3-spacing-lg);
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    margin-bottom: var(--md3-spacing-xl);
+}
+
+.page-header .material-icons {
+    font-size: 2.5rem;
+    color: var(--md3-primary);
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+}
+
+.quick-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* 活动网格布局 */
+.activities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    /* 给卡片留出足够空间显示阴影和hover效果 */
+    padding: 0.5rem;
+    margin: 2rem -0.5rem 0 -0.5rem;
+}
+
+/* 活动卡片 */
+.activity-card {
+    background: var(--md3-surface-container-low);
+    border-radius: var(--md3-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--md3-elevation-1);
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.activity-card:hover {
+    box-shadow: var(--md3-elevation-3);
+    transform: translateY(-4px);
+    z-index: 10;
+}
+
+/* 卡片头部 */
+.activity-card-header {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+    position: relative;
+}
+
+.activity-header-content {
+    position: relative;
+    z-index: 2;
+}
+
+.activity-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+}
+
+.activity-club {
+    display: inline-block;
+    padding: 0.4rem 0.875rem;
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+    border-radius: var(--md3-radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* 卡片主体 */
+.activity-card-body {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 活动详情 */
+.activity-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.detail-icon {
+    color: var(--md3-primary);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--md3-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 0.95rem;
+    color: var(--md3-on-surface);
+    font-weight: 500;
+}
+
+/* 活动描述 */
+.activity-description {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--md3-surface);
+    border-radius: var(--md3-radius-md);
+    border-left: 4px solid var(--md3-secondary);
+}
+
+.description-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--md3-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.activity-description p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--md3-on-surface-variant);
+    line-height: 1.6;
+}
+
+/* 卡片底部 */
+.activity-card-footer {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+    border-top: 1px solid var(--md3-outline-variant);
+    background: var(--md3-surface-container-lowest);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.activity-contact {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--md3-on-surface-variant);
+}
+
+.contact-item .material-icons {
+    font-size: 1.125rem;
+    color: var(--md3-tertiary);
+}
+
+/* 操作按钮区域 */
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* 参加活动按钮 */
+.btn-join-activity {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+    border-radius: var(--md3-radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    cursor: pointer;
+    border: none;
+    min-width: 100px;
+    gap: 0.5rem;
+}
+
+.btn-join-activity:hover:not(.btn-join-activity-disabled) {
+    background: var(--md3-primary);
+    box-shadow: var(--md3-elevation-2);
+    transform: translateY(-2px);
+}
+
+.btn-join-activity-disabled {
+    background: var(--md3-outline-variant);
+    color: var(--md3-on-surface-variant);
+    cursor: default;
+}
+
+.btn-join-activity-disabled:hover {
+    background: var(--md3-outline-variant);
+    box-shadow: none;
+    transform: none;
+}
+
+/* 查看报名名单按钮 */
+.btn-view-participants {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    background: var(--md3-secondary);
+    color: var(--md3-on-secondary);
+    border-radius: var(--md3-radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    cursor: pointer;
+    border: none;
+    gap: 0.5rem;
+}
+
+.btn-view-participants:hover {
+    background: var(--md3-secondary);
+    box-shadow: var(--md3-elevation-2);
+    transform: translateY(-2px);
+}
+
+/* 编辑活动按钮 */
+.btn-edit-activity {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    background: var(--md3-tertiary);
+    color: var(--md3-on-tertiary);
+    border-radius: var(--md3-radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    cursor: pointer;
+    border: none;
+    gap: 0.5rem;
+}
+
+.btn-edit-activity:hover {
+    background: var(--md3-tertiary);
+    box-shadow: var(--md3-elevation-2);
+    transform: translateY(-2px);
+}
+
+.btn-edit-activity .material-icons {
+    font-size: 1rem;
+}
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--md3-on-surface-variant);
+}
+
+.empty-state .empty-icon {
+    font-size: 5rem;
+    opacity: 0.4;
+    margin-bottom: 1rem;
+    color: var(--md3-outline);
+}
+
+.empty-state p {
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (min-width: 769px) {
+    /* PC端样式 - 确保内容不会超出视口 */
+    .home-container {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
+    .activities-grid {
+        width: 100%;
+        overflow-x: hidden;
+    }
+    
+    .activity-card {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .activity-card-footer {
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: var(--md3-spacing-md);
+    }
+
+    .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .quick-actions {
+        width: 100%;
+    }
+
+    .content-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .activities-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .activity-name {
+        font-size: 1.125rem;
+    }
+
+    .activity-card-header {
+        padding: 1.25rem;
+    }
+
+    .activity-card-body {
+        padding: 1.25rem;
+        gap: 1.25rem;
+    }
+
+    .activity-card-footer {
+        padding: 1rem 1.25rem;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .activity-contact {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .action-buttons {
+        flex: 1;
+        min-width: 200px;
+        justify-content: flex-end;
+        padding-bottom: 0.5rem;
+    }
+
+    .btn-join-activity {
+        min-width: 90px;
+        padding: 0.6rem 1.25rem;
+        font-size: 0.8125rem;
+    }
+
+    .btn-view-participants {
+        min-width: 90px;
+        padding: 0.6rem 1.25rem;
+        font-size: 0.8125rem;
+    }
+
+    .activity-card {
+        margin-bottom: 0.5rem;
+    }
+
+    .activities-grid {
+        padding-bottom: 3rem;
+    }
+
+    .activity-detail-item {
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .activities-grid {
+        gap: 0.75rem;
+    }
+
+    .activity-card {
+        border-radius: var(--md3-radius-md);
+    }
+
+    .activity-name {
+        font-size: 1rem;
+    }
+
+    .detail-label {
+        font-size: 0.7rem;
+    }
+
+    .detail-value {
+        font-size: 0.875rem;
+    }
+}
+</style>
+</div>
+{% endblock %}

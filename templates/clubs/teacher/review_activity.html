@@ -1,0 +1,969 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}审核活动申请 - 社团管理系统{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== MD3 审核页面样式 ===== */
+.review-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--md3-spacing-xl);
+    min-height: 100vh;
+}
+
+/* 页面头部 */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--md3-spacing-2xl);
+    padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+    background: var(--md3-surface-container-low);
+    border-radius: var(--md3-radius-lg);
+    border: 1px solid var(--md3-outline-variant);
+}
+
+.page-header-title {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    margin: 0;
+}
+
+.page-header-title .material-icons {
+    font-size: 2rem;
+    color: var(--md3-primary);
+}
+
+.page-header-title h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+}
+
+/* 基本信息卡片 */
+.info-card {
+    background: var(--md3-surface-container-low);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-lg);
+    margin-bottom: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.info-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    margin-bottom: var(--md3-spacing-lg);
+    padding-bottom: var(--md3-spacing-md);
+    border-bottom: 2px solid var(--md3-outline-variant);
+}
+
+.info-card-header .material-icons {
+    font-size: 1.5rem;
+    color: var(--md3-primary);
+}
+
+.info-card-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--md3-spacing-lg);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--md3-spacing-xs);
+}
+
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--md3-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+}
+
+.info-value strong {
+    font-weight: 600;
+    color: var(--md3-primary);
+}
+
+.info-description {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--md3-on-surface);
+}
+
+/* 活动详情卡片 */
+.details-card {
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    margin-bottom: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+    overflow: hidden;
+}
+
+.details-card-section {
+    padding: var(--md3-spacing-lg);
+}
+
+.details-card-section + .details-card-section {
+    border-top: 1px solid var(--md3-outline-variant);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    margin: 0 0 var(--md3-spacing-md) 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+}
+
+.section-title .material-icons {
+    font-size: 1.25rem;
+    color: var(--md3-secondary);
+}
+
+/* 状态徽章 */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--md3-spacing-xs);
+    padding: 6px 12px;
+    border-radius: var(--md3-radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.approved {
+    background: var(--md3-success-container);
+    color: var(--md3-on-success-container);
+}
+
+.status-badge.rejected {
+    background: var(--md3-error-container);
+    color: var(--md3-on-error-container);
+}
+
+.status-badge.pending {
+    background: var(--md3-warning-container);
+    color: var(--md3-on-warning-container);
+}
+
+.status-badge .material-icons {
+    font-size: 1rem;
+}
+
+/* 审核状态卡片 */
+.status-card {
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    margin-bottom: var(--md3-spacing-xl);
+    overflow: hidden;
+    box-shadow: var(--md3-elevation-1);
+}
+
+.status-card-header {
+    padding: var(--md3-spacing-lg);
+    background: var(--md3-secondary-container);
+    border-bottom: 1px solid var(--md3-outline-variant);
+}
+
+.status-card-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--md3-on-secondary-container);
+}
+
+.status-card-header .material-icons {
+    font-size: 1.5rem;
+}
+
+.status-card-body {
+    padding: var(--md3-spacing-lg);
+}
+
+.status-container {
+    display: flex;
+    gap: var(--md3-spacing-md);
+    padding: var(--md3-spacing-lg);
+    background: var(--md3-surface-container-low);
+    border-radius: var(--md3-radius-md);
+}
+
+.status-container.approved {
+    background: var(--md3-success-container);
+}
+
+.status-container.rejected {
+    background: var(--md3-error-container);
+}
+
+.status-container.pending {
+    background: var(--md3-warning-container);
+}
+
+.status-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.status-container.approved .status-icon {
+    color: var(--md3-tertiary);
+}
+
+.status-container.rejected .status-icon {
+    color: var(--md3-error);
+}
+
+.status-container.pending .status-icon {
+    color: var(--md3-secondary);
+}
+
+.status-content {
+    flex: 1;
+}
+
+.status-title {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--md3-spacing-sm);
+}
+
+.status-container.approved .status-title {
+    color: var(--md3-on-success-container);
+}
+
+.status-container.rejected .status-title {
+    color: var(--md3-on-error-container);
+}
+
+.status-container.pending .status-title {
+    color: var(--md3-on-warning-container);
+}
+
+.status-detail {
+    margin: var(--md3-spacing-xs) 0;
+    font-size: 0.875rem;
+    color: var(--md3-on-surface-variant);
+}
+
+/* 审核表单 */
+.review-form-card {
+    background: var(--md3-surface-container-lowest);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    margin-bottom: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+    overflow: hidden;
+}
+
+.review-form-header {
+    padding: var(--md3-spacing-lg);
+    background: var(--md3-primary-container);
+    border-bottom: 1px solid var(--md3-outline-variant);
+}
+
+.review-form-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--md3-on-primary-container);
+}
+
+.review-form-header .material-icons {
+    font-size: 1.5rem;
+}
+
+.review-form-body {
+    padding: var(--md3-spacing-xl);
+}
+
+.form-group {
+    margin-bottom: var(--md3-spacing-lg);
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+    margin-bottom: var(--md3-spacing-sm);
+}
+
+.form-textarea {
+    width: 100%;
+    padding: var(--md3-spacing-md);
+    font-family: inherit;
+    font-size: 0.875rem;
+    background: var(--md3-surface-container);
+    color: var(--md3-on-surface);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    resize: vertical;
+    min-height: 120px;
+    transition: all 0.2s ease;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--md3-primary);
+    box-shadow: 0 0 0 3px var(--md3-primary-container);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--md3-spacing-md);
+    justify-content: flex-end;
+}
+
+/* 按钮样式 */
+.md3-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--md3-spacing-xs);
+    padding: 10px 24px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--md3-radius-full);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.md3-button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.md3-button:active {
+    transform: translateY(0);
+}
+
+.md3-button-primary {
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+}
+
+.md3-button-secondary {
+    background: var(--md3-secondary-container);
+    color: var(--md3-on-secondary-container);
+}
+
+.md3-button-success {
+    background: var(--md3-tertiary);
+    color: var(--md3-on-tertiary);
+}
+
+.md3-button-error {
+    background: var(--md3-error);
+    color: var(--md3-on-error);
+}
+
+.md3-button-outlined {
+    background: transparent;
+    color: var(--md3-primary);
+    border: 1px solid var(--md3-outline);
+}
+
+.md3-button .material-icons {
+    font-size: 1.125rem;
+}
+
+/* 下载按钮 */
+.download-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--md3-spacing-xs);
+    padding: 8px 16px;
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+    border-radius: var(--md3-radius-md);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.download-button:hover {
+    background: var(--md3-primary-dim);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.download-button .material-icons {
+    font-size: 1.125rem;
+}
+
+/* 附件材料块级布局 */
+.materials-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--md3-spacing-lg);
+}
+
+.material-block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--md3-spacing-lg);
+    background: var(--md3-surface-container-highest);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.material-block:hover {
+    background: var(--md3-surface-container-high);
+    box-shadow: var(--md3-elevation-3);
+    border-color: var(--md3-primary);
+    transform: translateY(-2px);
+}
+
+.material-header {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    flex: 1;
+    min-width: 0;
+}
+
+.material-icon {
+    font-size: 2rem;
+    color: var(--md3-primary);
+    flex-shrink: 0;
+}
+
+.material-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--md3-spacing-xs);
+    min-width: 0;
+}
+
+.material-name {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+    word-break: break-word;
+}
+
+.material-type {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--md3-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.material-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    flex-shrink: 0;
+    margin-left: var(--md3-spacing-lg);
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--md3-spacing-xs);
+    padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+    border: none;
+    border-radius: var(--md3-radius-md);
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: var(--md3-elevation-1);
+}
+
+.action-btn .material-icons {
+    font-size: 1.25rem;
+}
+
+.action-btn.download-btn {
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+}
+
+.action-btn.download-btn:hover {
+    background: var(--md3-primary-dim);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.action-btn.preview-btn {
+    background: var(--md3-secondary);
+    color: var(--md3-on-secondary);
+}
+
+.action-btn.preview-btn:hover {
+    background: var(--md3-secondary-dim);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.material-icon {
+    font-size: 24px;
+    margin-bottom: var(--md3-spacing-md);
+}
+
+.material-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+    margin-bottom: var(--md3-spacing-md);
+    word-break: break-all;
+}
+
+.material-download-text {
+    font-size: 13px;
+    color: var(--md3-primary);
+    font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .review-container {
+        padding: var(--md3-spacing-md);
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .page-header-title h1 {
+        font-size: 1.5rem;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .material-block {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .material-header {
+        width: 100%;
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .material-actions {
+        width: 100%;
+        margin-left: 0;
+        justify-content: space-between;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .md3-button {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+        <div class="page-header-title">
+            <span class="material-icons">rate_review</span>
+            <h1>审核活动申请</h1>
+        </div>
+        <a href="{% url 'clubs:teacher_dashboard' %}" class="md3-button md3-button-outlined">
+            <span class="material-icons">arrow_back</span>
+            <span>返回</span>
+        </a>
+    </div>
+
+    <!-- 基本信息卡片 -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <span class="material-icons">info</span>
+            <h2>基本信息</h2>
+        </div>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">社团名称</span>
+                <span class="info-value">{{ activity.club.name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">提交时间</span>
+                <span class="info-value">{{ activity.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">提交次数</span>
+                <span class="info-value">
+                    第 {{ activity.resubmission_attempt }} 次提交
+                    {% if activity.resubmission_attempt > 1 %}
+                        <span style="color: var(--md3-error);">(已重新提交)</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">当前状态</span>
+                <span class="status-badge {{ activity.status }}">
+                    <span class="material-icons">
+                        {% if activity.status == 'approved' %}check_circle
+                        {% elif activity.status == 'rejected' %}cancel
+                        {% else %}schedule{% endif %}
+                    </span>
+                    {{ activity.get_status_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 活动详情卡片 -->
+    <div class="details-card">
+        <div class="details-card-section">
+            <h3 class="section-title">
+                <span class="material-icons">event</span>
+                活动信息
+            </h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">活动名称</span>
+                    <span class="info-value"><strong>{{ activity.activity_name }}</strong></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">活动类型</span>
+                    <span class="info-value">{{ activity.get_activity_type_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">活动日期</span>
+                    <span class="info-value">{{ activity.activity_date|date:"Y年m月d日" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">活动时间</span>
+                    <span class="info-value">{{ activity.activity_time_start|time:"H:i" }} - {{ activity.activity_time_end|time:"H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">活动地点</span>
+                    <span class="info-value">{{ activity.activity_location }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">预计参与人数</span>
+                    <span class="info-value">{{ activity.expected_participants }} 人</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">活动预算</span>
+                    <span class="info-value">¥{{ activity.budget }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">联系人</span>
+                    <span class="info-value">{{ activity.contact_person }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">联系电话</span>
+                    <span class="info-value">{{ activity.contact_phone }}</span>
+                </div>
+                <div class="info-item full-width">
+                    <span class="info-label">活动描述</span>
+                    <p class="info-description">{{ activity.activity_description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 附件材料卡片 -->
+    {% if activity.application_form %}
+    <div class="info-card">
+        <div class="info-card-header">
+            <span class="material-icons">attach_file</span>
+            <h2>附件材料</h2>
+        </div>
+        
+        <div class="materials-container">
+            <div class="material-block">
+                <div class="material-header">
+                    <span class="material-icons material-icon">description</span>
+                    <div class="material-info">
+                        <p class="material-name">活动申请表</p>
+                        <p class="material-type">PDF / Word 文档</p>
+                    </div>
+                </div>
+                
+                <div class="material-actions">
+                    <button type="button" class="action-btn preview-btn" onclick="previewFile('{{ activity.application_form.url }}', '活动申请表'); event.stopPropagation();" title="在线预览">
+                        <span>预览</span>
+                    </button>
+                    <a href="{{ activity.application_form.url }}" class="action-btn download-btn" target="_blank" title="下载文件">
+                        <span>下载</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 干事审核状态卡片 -->
+    <div class="status-card">
+        <div class="status-card-header">
+            <h3>
+                <span class="material-icons">edit</span>
+                干事审核状态
+            </h3>
+        </div>
+        <div class="status-card-body">
+            {% if activity.staff_approved == True %}
+                <div class="status-container approved">
+                    <span class="material-icons status-icon">check_circle</span>
+                    <div class="status-content">
+                        <strong class="status-title">干事已批准</strong>
+                        <p class="status-detail">审核人：{{ activity.staff_reviewer.profile.get_full_name }}</p>
+                        <p class="status-detail">审核时间：{{ activity.staff_reviewed_at|date:"Y-m-d H:i" }}</p>
+                        {% if activity.staff_comment %}
+                            <p class="status-detail">审核意见：{{ activity.staff_comment }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% elif activity.staff_approved == False %}
+                <div class="status-container rejected">
+                    <span class="material-icons status-icon">cancel</span>
+                    <div class="status-content">
+                        <strong class="status-title">干事已拒绝</strong>
+                        <p class="status-detail">审核人：{{ activity.staff_reviewer.profile.get_full_name }}</p>
+                        <p class="status-detail">审核时间：{{ activity.staff_reviewed_at|date:"Y-m-d H:i" }}</p>
+                        {% if activity.staff_comment %}
+                            <p class="status-detail">审核意见：{{ activity.staff_comment }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="status-container pending">
+                    <span class="material-icons status-icon">schedule</span>
+                    <div class="status-content">
+                        <strong class="status-title">干事待审核</strong>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 老师审核表单 -->
+    {% if activity.staff_approved == True %}
+        <!-- 干事已批准 - 显示信息提示 -->
+        <div class="review-form-card">
+            <div class="review-form-header" style="background: var(--md3-tertiary-container);">
+                <h3 style="color: var(--md3-on-tertiary-container);">
+                    <span class="material-icons">info</span>
+                    审核说明
+                </h3>
+            </div>
+            <div class="review-form-body">
+                <div style="padding: var(--md3-spacing-lg); background: var(--md3-success-container); border-radius: var(--md3-radius-md); border-left: 4px solid var(--md3-tertiary);">
+                    <p style="margin: 0; color: var(--md3-on-success-container); font-size: 0.875rem; line-height: 1.6;">
+                        <strong>干事已批准此活动申请。</strong>作为老师，您可以在完全同意干事意见的情况下直接批准，或根据教学需要进行调整（如日期、地点、内容等）。如有任何疑问，可在审核意见中提出。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-form-card">
+            <div class="review-form-header">
+                <h3>
+                    <span class="material-icons">note</span>
+                    老师审核
+                </h3>
+            </div>
+            <div class="review-form-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="comment" class="form-label">审核意见（可选）</label>
+                        <textarea 
+                            id="comment" 
+                            name="comment" 
+                            class="form-textarea"
+                            placeholder="可输入您的审核意见或建议..."
+                            rows="4"
+                        ></textarea>
+                        <p style="margin: var(--md3-spacing-sm) 0 0 0; font-size: 0.75rem; color: var(--md3-on-surface-variant);">提示：如无特殊意见，可直接点击"批准"按钮</p>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" name="action" value="approve" class="md3-button md3-button-success">
+                            <span class="material-icons">check_circle</span>
+                            <span>批准</span>
+                        </button>
+                        <button type="submit" name="action" value="reject" class="md3-button md3-button-error">
+                            <span class="material-icons">cancel</span>
+                            <span>拒绝</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% elif activity.staff_approved == False %}
+        <!-- 干事已拒绝 - 显示拒绝原因和选项 -->
+        <div class="review-form-card">
+            <div class="review-form-header" style="background: var(--md3-error-container);">
+                <h3 style="color: var(--md3-on-error-container);">
+                    <span class="material-icons">warning</span>
+                    审核说明
+                </h3>
+            </div>
+            <div class="review-form-body">
+                <div style="padding: var(--md3-spacing-lg); background: var(--md3-error-container); border-radius: var(--md3-radius-md); border-left: 4px solid var(--md3-error);">
+                    <p style="margin: 0 0 var(--md3-spacing-sm) 0; color: var(--md3-on-error-container); font-size: 0.875rem; line-height: 1.6;">
+                        <strong>干事已拒绝此活动申请。</strong>社团可根据干事的意见修改后重新提交。
+                    </p>
+                    {% if activity.staff_comment %}
+                        <p style="margin: 0; padding: var(--md3-spacing-md); background: rgba(0, 0, 0, 0.1); border-radius: var(--md3-radius-sm); color: var(--md3-on-error-container); font-size: 0.875rem; line-height: 1.6;">
+                            <strong>干事意见：</strong>{{ activity.staff_comment }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="review-form-card">
+            <div class="review-form-header">
+                <h3>
+                    <span class="material-icons">edit_note</span>
+                    老师审核
+                </h3>
+            </div>
+            <div class="review-form-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="comment" class="form-label">审核意见</label>
+                        <textarea 
+                            id="comment" 
+                            name="comment" 
+                            class="form-textarea"
+                            placeholder="请输入您的审核意见..."
+                            rows="5"
+                        ></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" name="action" value="approve" class="md3-button md3-button-success">
+                            <span class="material-icons">check_circle</span>
+                            <span>批准</span>
+                        </button>
+                        <button type="submit" name="action" value="reject" class="md3-button md3-button-error">
+                            <span class="material-icons">cancel</span>
+                            <span>拒绝</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <!-- 干事待审核 - 显示正常审核表单 -->
+        <div class="review-form-card">
+            <div class="review-form-header" style="background: var(--md3-warning-container);">
+                <h3 style="color: var(--md3-on-warning-container);">
+                    <span class="material-icons">info</span>
+                    审核说明
+                </h3>
+            </div>
+            <div class="review-form-body">
+                <div style="padding: var(--md3-spacing-lg); background: var(--md3-warning-container); border-radius: var(--md3-radius-md); border-left: 4px solid var(--md3-secondary);">
+                    <p style="margin: 0; color: var(--md3-on-warning-container); font-size: 0.875rem; line-height: 1.6;">
+                        <strong>干事正在审核中。</strong>您可以先进行预审核，给出初步意见。最终审核结果将在干事审核完成后进行综合判断。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-form-card">
+            <div class="review-form-header">
+                <h3>
+                    <span class="material-icons">edit_note</span>
+                    老师审核
+                </h3>
+            </div>
+            <div class="review-form-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="comment" class="form-label">审核意见</label>
+                        <textarea 
+                            id="comment" 
+                            name="comment" 
+                            class="form-textarea"
+                            placeholder="请输入您的审核意见..."
+                            rows="5"
+                        ></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" name="action" value="approve" class="md3-button md3-button-success">
+                            <span class="material-icons">check_circle</span>
+                            <span>批准</span>
+                        </button>
+                        <button type="submit" name="action" value="reject" class="md3-button md3-button-error">
+                            <span class="material-icons">cancel</span>
+                            <span>拒绝</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function previewFile(fileUrl, fileName) {
+    const currentDomain = window.location.origin;
+    let fullUrl = fileUrl;
+    if (fileUrl.startsWith('/')) {
+        fullUrl = currentDomain + fileUrl;
+    } else if (!fileUrl.startsWith('http')) {
+        fullUrl = currentDomain + '/' + fileUrl;
+    }
+    const encodedUrl = encodeURIComponent(fullUrl);
+    const previewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
+    window.open(previewUrl, '_blank');
+}
+</script>
+{% endblock %}

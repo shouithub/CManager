@@ -1,0 +1,126 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}删除公告{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 3rem auto; padding: 20px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 style="margin: 0;">⚠️ 删除公告确认</h2>
+        </div>
+        
+        <div style="padding: 30px;">
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #856404;">
+                    <strong>⚠️ 警告:</strong> 此操作不可撤销，公告删除后无法恢复。
+                </p>
+            </div>
+
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ddd;">
+                <div style="margin-bottom: 15px;">
+                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">公告标题</div>
+                    <div style="font-weight: bold; color: #333; font-size: 1.1rem;">{{ announcement.title }}</div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">发布者</div>
+                    <div style="color: #333;">{{ announcement.created_by.profile.get_full_name|default:announcement.created_by.username }}</div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">发布时间</div>
+                    <div style="color: #333;">{{ announcement.published_at|default:announcement.created_at }}</div>
+                </div>
+                
+                <div>
+                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">状态</div>
+                    <div>
+                        {% if announcement.status == 'published' %}
+                            <span style="background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 3px;">已发布</span>
+                        {% elif announcement.status == 'draft' %}
+                            <span style="background: #e9ecef; color: #6c757d; padding: 3px 8px; border-radius: 3px;">草稿</span>
+                        {% else %}
+                            <span style="background: #f8d7da; color: #721c24; padding: 3px 8px; border-radius: 3px;">已归档</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" action="{% url 'clubs:delete_announcement' announcement.id %}" style="margin-bottom: 20px;">
+                {% csrf_token %}
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-danger" style="flex: 1; padding: 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                        🗑️ 确认删除
+                    </button>
+                    <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-secondary" style="flex: 1; padding: 12px; background-color: #6c757d; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1rem; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                        ✕ 取消
+                    </a>
+                </div>
+            </form>
+
+            <div style="background: #e7f3ff; border-left: 4px solid #0066cc; padding: 15px; border-radius: 4px;">
+                <p style="margin: 0; color: #0066cc;">
+                    <strong>💡 提示:</strong> 如果您只是想隐藏此公告，可以将其状态改为"已归档"而不是删除。
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn {
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    padding: 15px 20px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    border-radius: 8px 8px 0 0;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    div {
+        font-size: 0.95rem;
+    }
+    
+    button, a {
+        padding: 10px !important;
+    }
+}
+</style>
+{% endblock %}

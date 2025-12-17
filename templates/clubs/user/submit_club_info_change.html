@@ -1,0 +1,54 @@
+{% extends 'clubs/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">提交社团信息修改申请</h2>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3">当前社团信息</h4>
+                    <div class="bg-light p-3 rounded mb-4">
+                        <p><strong>社团名称：</strong>{{ club.name }}</p>
+                        <p><strong>社团介绍：</strong>{{ club.description|default:"暂无介绍" }}</p>
+                        <p><strong>成员数：</strong>{{ club.members_count }}</p>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label for="new_name">新社团名称（可选）</label>
+                            <input type="text" class="form-control" id="new_name" name="new_name" placeholder="保留原名称请留空">
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="new_description">新社团介绍（可选）</label>
+                            <textarea class="form-control" id="new_description" name="new_description" rows="4" placeholder="保留原介绍请留空">{{ club.description }}</textarea>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="new_members_count">新成员数（可选）</label>
+                            <input type="number" class="form-control" id="new_members_count" name="new_members_count" placeholder="保留原成员数请留空" min="1">
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="change_reason">变更原因 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="change_reason" name="change_reason" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="supporting_document">支持文件（可选）</label>
+                            <input type="file" class="form-control-file" id="supporting_document" name="supporting_document">
+                            <small class="form-text text-muted">可上传相关证明文件</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block">提交申请</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

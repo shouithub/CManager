@@ -1,0 +1,129 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}上传模板{% endblock %}
+
+{% block content %}
+<style>
+    .upload-form-container {
+        background-color: var(--md3-surface-container-lowest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .upload-form-container h3 {
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-xl) 0;
+        font-size: 1.25rem;
+    }
+    
+    .error-message {
+        background-color: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-lg);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .form-group {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .form-group label {
+        display: block;
+        color: var(--md3-on-surface);
+        font-weight: 500;
+        margin-bottom: var(--md3-spacing-md);
+        font-size: 0.95rem;
+    }
+    
+    .form-group input[type="text"],
+    .form-group select,
+    .form-group textarea,
+    .form-group input[type="file"] {
+        width: 100%;
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        background-color: var(--md3-surface-container-low);
+        color: var(--md3-on-surface);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+    
+    .form-group input[type="text"]:focus,
+    .form-group select:focus,
+    .form-group textarea:focus,
+    .form-group input[type="file"]:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: inset 0 0 0 1px var(--md3-primary);
+    }
+    
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .form-group small {
+        color: var(--md3-on-surface-variant);
+        display: block;
+        margin-top: var(--md3-spacing-sm);
+        font-size: 0.85rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: var(--md3-spacing-lg);
+        margin-top: var(--md3-spacing-xl);
+    }
+</style>
+
+<div class="upload-form-container">
+    <h3><span class="material-icons" style="vertical-align: middle;">upload_file</span> 上传材料模板</h3>
+    
+    {% if errors %}
+    {% for error in errors %}
+    <div class="error-message">{{ error }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="name">模板名称 *</label>
+            <input type="text" id="name" name="name" placeholder="例如: 2024年年审模板" required>
+        </div>
+
+        <div class="form-group">
+            <label for="template_type">模板类型 *</label>
+            <select id="template_type" name="template_type" required>
+                <option value="">-- 请选择 --</option>
+                {% for value, label in template_types %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="description">模板描述</label>
+            <textarea id="description" name="description" 
+                      placeholder="请描述模板的用途和要求"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="file">模板文件 (支持各类格式) *</label>
+            <input type="file" id="file" name="file" required>
+            <small>支持: Word、Excel、PDF 等任何格式</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success">上传模板</button>
+            <a href="{% url 'clubs:staff_dashboard' %}" class="btn btn-primary">返回</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

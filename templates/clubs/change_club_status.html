@@ -1,0 +1,318 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}改变社团状态{% endblock %}
+
+{% block extra_css %}
+<style>
+@media (max-width: 768px) {
+    .edit-container {
+        padding: var(--md3-spacing-lg) !important;
+    }
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* MD3 直接编辑页面样式 */
+.edit-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--md3-spacing-2xl);
+    box-sizing: border-box;
+}
+
+/* 页面标题 */
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    margin-bottom: var(--md3-spacing-xl);
+    padding-bottom: var(--md3-spacing-lg);
+    border-bottom: 2px solid var(--md3-outline-variant);
+}
+
+.page-title .material-icons {
+    font-size: 2.5rem;
+    color: var(--md3-primary);
+}
+
+.page-title h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+}
+
+/* 信息卡片 */
+.info-card {
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-xl);
+    margin-bottom: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.info-card.error {
+    background: var(--md3-error-container);
+    border-color: var(--md3-error);
+}
+
+.info-card h5 {
+    margin: 0 0 var(--md3-spacing-md) 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+}
+
+.info-card.error h5 {
+    color: var(--md3-on-error-container);
+}
+
+.info-card.error h5 .material-icons {
+    color: var(--md3-on-error-container);
+}
+
+.info-card ul {
+    margin: 0;
+    padding-left: var(--md3-spacing-xl);
+}
+
+/* 表单卡片 */
+.form-card {
+    background: var(--md3-surface-container-low);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.form-card h3 {
+    margin: 0 0 var(--md3-spacing-lg) 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+}
+
+.form-card h3 .material-icons {
+    color: var(--md3-primary);
+}
+
+/* 表单网格 */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--md3-spacing-lg);
+    margin-bottom: var(--md3-spacing-xl);
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 表单组 */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--md3-spacing-xs);
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-xs);
+}
+
+.form-group label .material-icons {
+    font-size: 1.125rem;
+    color: var(--md3-primary);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    padding: var(--md3-spacing-md);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    background: var(--md3-surface-container-highest);
+    color: var(--md3-on-surface);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--md3-primary);
+    box-shadow: 0 0 0 2px var(--md3-primary-container);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* 按钮组 */
+.button-group {
+    display: flex;
+    gap: var(--md3-spacing-md);
+    justify-content: flex-end;
+    padding-top: var(--md3-spacing-lg);
+    border-top: 1px solid var(--md3-outline-variant);
+}
+
+.btn {
+    padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+    border: none;
+    border-radius: var(--md3-radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+}
+
+.btn-primary:hover {
+    background: var(--md3-primary-hover);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.btn-outlined {
+    background: transparent;
+    color: var(--md3-primary);
+    border: 1px solid var(--md3-outline);
+}
+
+.btn-outlined:hover {
+    background: var(--md3-primary-container);
+    border-color: var(--md3-primary);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <!-- 页面标题 -->
+    <div class="page-title">
+        <span class="material-icons">edit</span>
+        <h1>改变社团状态</h1>
+    </div>
+
+    <!-- 社团信息卡片 -->
+    <div class="info-card">
+        <h5>
+            <span class="material-icons">group</span>
+            社团信息
+        </h5>
+        <div style="display: flex; flex-direction: column; gap: var(--md3-spacing-md);">
+            <div style="display: flex; gap: var(--md3-spacing-lg);">
+                <div>
+                    <div style="font-size: 0.875rem; font-weight: 500; color: var(--md3-on-surface-variant);">社团名称</div>
+                    <div style="font-size: 1rem; font-weight: 500; color: var(--md3-on-surface);">{{ club.name }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.875rem; font-weight: 500; color: var(--md3-on-surface-variant);">当前状态</div>
+                    <div style="margin-top: var(--md3-spacing-xs);">
+                        <span class="badge {% if club.status == 'active' %}badge-info{% elif club.status == 'inactive' %}badge-warning{% else %}badge-danger{% endif %}">
+                            {% if club.status == 'active' %}活跃{% elif club.status == 'inactive' %}不活跃{% else %}停止{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作反馈消息 -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="info-card {% if message.tags %}{{ message.tags }}{% if message.tags == 'error' %}error{% endif %}{% endif %}">
+            <h5>
+                {% if message.tags == 'success' %}
+                    <span class="material-icons">check_circle</span>
+                    操作成功
+                {% elif message.tags == 'error' %}
+                    <span class="material-icons">error</span>
+                    操作失败
+                {% else %}
+                    <span class="material-icons">info</span>
+                    提示
+                {% endif %}
+            </h5>
+            <ul>
+                <li>{{ message }}</li>
+            </ul>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- 表单卡片 -->
+    <div class="form-card">
+        <h3>
+            <span class="material-icons">edit</span>
+            选择新状态
+        </h3>
+
+        <form method="post" action="{% url 'clubs:change_club_status' club.id %}">
+            {% csrf_token %}
+
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <select id="status" name="status" required>
+                        <option value="">-- 请选择 --</option>
+                        {% for status_value, status_label in status_choices %}
+                            <option value="{{ status_value }}" {% if status_value == current_status %}selected disabled{% endif %}>
+                                {{ status_label }}
+                                {% if status_value == current_status %}(当前){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- 状态说明 -->
+            <div style="background: var(--md3-surface-container-high); border-left: 3px solid var(--md3-info); padding: var(--md3-spacing-lg); border-radius: var(--md3-radius-md); margin-bottom: var(--md3-spacing-lg); font-size: 0.875rem; color: var(--md3-on-surface);">
+                <p style="margin: 0 0 var(--md3-spacing-sm) 0; font-weight: 500;"><span class="material-icons" style="vertical-align: middle; font-size: 1rem; margin-right: 4px;">info</span>状态说明</p>
+                <ul style="margin: var(--md3-spacing-xs) 0 0 0; padding-left: var(--md3-spacing-xl);">
+                    <li><strong>活跃:</strong> 社团正常运营中，可以进行各项活动</li>
+                    <li><strong>不活跃:</strong> 社团暂时停止活动，但仍然存在</li>
+                    <li><strong>停止:</strong> 社团已停止运营，不再接受新活动</li>
+                </ul>
+            </div>
+
+            <div class="button-group">
+                <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-outlined">
+                    <span class="material-icons">arrow_back</span>
+                    取消
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">save</span>
+                    保存修改
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

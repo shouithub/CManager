@@ -1,0 +1,705 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}申请新社团 - CManager{% endblock %}
+
+{% block extra_css %}
+<style>
+@media (max-width: 768px) {
+    .register-container {
+        padding: var(--md3-spacing-lg) !important;
+    }
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .president-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* MD3 注册页面样式 */
+.register-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--md3-spacing-2xl);
+    box-sizing: border-box;
+}
+
+/* 页面标题 */
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    margin-bottom: var(--md3-spacing-xl);
+    padding-bottom: var(--md3-spacing-lg);
+    border-bottom: 2px solid var(--md3-outline-variant);
+}
+
+.page-title .material-icons {
+    font-size: 2.5rem;
+    color: var(--md3-primary);
+}
+
+.page-title h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+}
+
+/* 模板下载卡片 */
+.template-card {
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-xl);
+    margin-bottom: var(--md3-spacing-xl);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.template-card h4 {
+    margin: 0 0 var(--md3-spacing-md) 0;
+    color: var(--md3-on-surface);
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+}
+
+.template-card h4 .material-icons {
+    color: var(--md3-primary);
+}
+
+.template-list {
+    background: var(--md3-surface-container-low);
+    border-radius: var(--md3-radius-md);
+    padding: var(--md3-spacing-md);
+}
+
+.template-list h5 {
+    margin: 0 0 var(--md3-spacing-sm) 0;
+    color: var(--md3-on-surface);
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+}
+
+.template-list h5 .material-icons {
+    font-size: 1.25rem;
+    color: var(--md3-secondary);
+}
+
+.template-list ul {
+    margin: 0;
+    padding-left: var(--md3-spacing-lg);
+}
+
+.template-list li {
+    margin-bottom: var(--md3-spacing-xs);
+}
+
+.template-list a {
+    color: var(--md3-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.template-list a:hover {
+    text-decoration: underline;
+}
+
+/* 表单卡片 */
+.form-card {
+    background: var(--md3-surface-container);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-xl);
+    padding: var(--md3-spacing-2xl);
+    box-shadow: var(--md3-elevation-1);
+    margin-bottom: var(--md3-spacing-xl);
+}
+
+.section-title {
+    color: var(--md3-on-surface);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 var(--md3-spacing-xl) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    padding-bottom: var(--md3-spacing-md);
+    border-bottom: 2px solid var(--md3-outline-variant);
+}
+
+.section-title .material-icons {
+    color: var(--md3-primary);
+}
+
+/* 表单字段 */
+.form-field {
+    margin-bottom: var(--md3-spacing-lg);
+}
+
+.form-field label {
+    display: block;
+    color: var(--md3-on-surface);
+    font-weight: 500;
+    margin-bottom: var(--md3-spacing-sm);
+    font-size: 0.875rem;
+}
+
+.form-field label .required {
+    color: var(--md3-error);
+}
+
+.form-field input[type="text"],
+.form-field input[type="number"],
+.form-field input[type="date"],
+.form-field textarea,
+.form-field select {
+    width: 100%;
+    padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+    background: var(--md3-surface-container-high);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-lg);
+    color: var(--md3-on-surface);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+    outline: none;
+    border-color: var(--md3-primary);
+    box-shadow: 0 0 0 3px var(--md3-primary-container);
+}
+
+.form-field textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-field input[type="file"] {
+    padding: var(--md3-spacing-sm);
+    background: var(--md3-surface-container-high);
+    border: 2px dashed var(--md3-outline);
+    border-radius: var(--md3-radius-lg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-field input[type="file"]:hover {
+    border-color: var(--md3-primary);
+    background: var(--md3-primary-container);
+}
+
+.form-field input[type="file"]:focus {
+    outline: none;
+    border-color: var(--md3-primary);
+    box-shadow: 0 0 0 3px var(--md3-primary-container);
+}
+
+.field-help {
+    color: var(--md3-on-surface-variant);
+    font-size: 0.875rem;
+    margin-top: var(--md3-spacing-xs);
+    display: block;
+}
+
+/* 表单网格 */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--md3-spacing-lg);
+    margin-bottom: var(--md3-spacing-xl);
+}
+
+/* 社长信息卡片 */
+.president-card {
+    background: var(--md3-surface-container-low);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-lg);
+    transition: all 0.2s ease;
+}
+
+.president-card:hover {
+    background: var(--md3-surface-container);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.president-card.selected {
+    background: var(--md3-primary-container);
+    border-color: var(--md3-primary);
+}
+
+.president-name {
+    font-weight: 600;
+    color: var(--md3-on-surface);
+    margin-bottom: var(--md3-spacing-sm);
+}
+
+.president-detail {
+    color: var(--md3-on-surface-variant);
+    font-size: 0.875rem;
+    margin-bottom: var(--md3-spacing-xs);
+}
+
+.president-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--md3-spacing-lg);
+    margin-bottom: var(--md3-spacing-xl);
+}
+
+/* 选中社长信息 */
+.selected-president-card {
+    background: var(--md3-surface-container-low);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-lg);
+    padding: var(--md3-spacing-lg);
+    margin-bottom: var(--md3-spacing-xl);
+}
+
+.selected-president-card .president-name {
+    color: var(--md3-primary);
+    font-size: 1.125rem;
+}
+
+/* 表单操作按钮 */
+.form-actions {
+    display: flex;
+    gap: var(--md3-spacing-lg);
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-top: var(--md3-spacing-2xl);
+    padding-top: var(--md3-spacing-xl);
+    border-top: 1px solid var(--md3-outline-variant);
+}
+
+.btn {
+    padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+    border-radius: var(--md3-radius-full);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--md3-primary);
+    color: var(--md3-on-primary);
+}
+
+.btn-primary:hover {
+    background: var(--md3-primary-dim);
+    box-shadow: var(--md3-elevation-2);
+}
+
+.btn-secondary {
+    background: var(--md3-surface-container-high);
+    color: var(--md3-on-surface);
+    border: 1px solid var(--md3-outline);
+}
+
+.btn-secondary:hover {
+    background: var(--md3-surface-container-highest);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.btn-success {
+    background: var(--md3-success-container);
+    color: var(--md3-on-success-container);
+    border: 1px solid var(--md3-success);
+}
+
+.btn-success:hover {
+    background: var(--md3-success);
+    color: var(--md3-on-success);
+    box-shadow: var(--md3-elevation-2);
+}
+
+/* 消息样式 */
+.message {
+    padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+    border-radius: var(--md3-radius-lg);
+    margin-bottom: var(--md3-spacing-md);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--md3-spacing-sm);
+}
+
+.message.error {
+    background: var(--md3-error-container);
+    color: var(--md3-on-error-container);
+    border: 1px solid var(--md3-error);
+}
+
+.message .material-icons {
+    font-size: 1.25rem;
+    margin-top: 1px;
+}
+
+.message.success {
+    background: var(--md3-success-container);
+    color: var(--md3-on-success-container);
+    border: 1px solid var(--md3-success);
+}
+
+.message.warning {
+    background: var(--md3-warning-container);
+    color: var(--md3-on-warning-container);
+    border: 1px solid var(--md3-warning);
+}
+
+.message.info {
+    background: var(--md3-info-container);
+    color: var(--md3-on-info-container);
+    border: 1px solid var(--md3-info);
+}
+
+/* 分割线 */
+.section-divider {
+    margin: var(--md3-spacing-2xl) 0;
+    border: none;
+    border-top: 1px solid var(--md3-outline-variant);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <!-- 页面标题 -->
+    <div class="page-title">
+        <span class="material-icons">flag</span>
+        <h1>申请新社团</h1>
+    </div>
+
+    <!-- 模板下载提示 -->
+    {% if registration_templates %}
+    <div class="template-card">
+        <h4>
+            <span class="material-icons">description</span>
+            可用模板下载
+        </h4>
+        <div class="template-list">
+            <h5>
+                <span class="material-icons">school</span>
+                社团创建所需表格
+            </h5>
+            <ul>
+            {% for template in registration_templates %}
+                <li>
+                    <a href="{{ template.file.url }}" download>
+                        <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">download</span>
+                        {{ template.name }}
+                    </a>
+                    {% if template.description %} - {{ template.description }}{% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 消息显示 -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="message {{ message.tags }}">
+        <span class="material-icons">
+            {% if message.tags == 'error' %}error{% elif message.tags == 'success' %}check_circle{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
+        </span>
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if errors %}
+    {% for error in errors %}
+    <div class="message error">
+        <span class="material-icons">error</span>
+        {{ error }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- 注册表单 -->
+    <div class="form-card">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- 社团基本信息 -->
+            <h2 class="section-title">
+                <span class="material-icons">info</span>
+                社团基本信息
+            </h2>
+
+            <div class="form-grid">
+                <div class="form-field">
+                    <label for="name">
+                        社团名称
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        required
+                        maxlength="100"
+                        placeholder="输入社团名称"
+                        value="{{ form_data.name|default:'' }}"
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="founded_date">
+                        成立日期
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="date"
+                        id="founded_date"
+                        name="founded_date"
+                        required
+                        value="{{ form_data.founded_date|default:'' }}"
+                    >
+                </div>
+
+                <div class="form-field">
+                    <label for="members_count">
+                        社团人数
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="number"
+                        id="members_count"
+                        name="members_count"
+                        required
+                        min="1"
+                        placeholder="输入社团人数"
+                        value="{{ form_data.members_count|default:'' }}"
+                    >
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label for="description">社团介绍</label>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="4"
+                    placeholder="简要介绍社团的宗旨和活动"
+                >{{ form_data.description|default:'' }}</textarea>
+            </div>
+
+            <!-- 必传材料 -->
+            <h2 class="section-title">
+                必传材料
+            </h2>
+
+            <div class="form-grid">
+                <div class="form-field">
+                    <label for="establishment_application">
+                        社团成立申请书
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="file"
+                        id="establishment_application"
+                        name="establishment_application"
+                        required
+                        accept=".docx"
+                    >
+                    <span class="field-help">文件类型支持：.docx</span>
+                </div>
+
+                <div class="form-field">
+                    <label for="constitution_draft">
+                        社团章程草案
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="file"
+                        id="constitution_draft"
+                        name="constitution_draft"
+                        required
+                        accept=".docx"
+                    >
+                    <span class="field-help">文件类型支持：.docx</span>
+                </div>
+
+                <div class="form-field">
+                    <label for="three_year_plan">
+                        社团三年发展规划
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="file"
+                        id="three_year_plan"
+                        name="three_year_plan"
+                        required
+                        accept=".docx"
+                    >
+                    <span class="field-help">文件类型支持：.docx</span>
+                </div>
+
+                <div class="form-field">
+                    <label for="leaders_resumes">
+                        负责人和指导老师简历及身份证复印件
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="file"
+                        id="leaders_resumes"
+                        name="leaders_resumes"
+                        required
+                        accept=".zip,.rar,.docx"
+                    >
+                    <span class="field-help">文件类型支持：.zip, .rar, .docx</span>
+                </div>
+
+                <div class="form-field">
+                    <label for="one_month_activity_plan">
+                        组建一个月后的活动计划
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="file"
+                        id="one_month_activity_plan"
+                        name="one_month_activity_plan"
+                        required
+                        accept=".docx"
+                    >
+                    <span class="field-help">文件类型支持：.docx</span>
+                </div>
+
+                <div class="form-field">
+                    <label for="advisor_certificates">
+                        指导老师专业证书
+                        <span class="field-help" style="margin-bottom: var(--md3-spacing-sm); color: var(--md3-on-surface-variant);">(可选)</span>
+                    </label>
+                    <input
+                        type="file"
+                        id="advisor_certificates"
+                        name="advisor_certificates"
+                        accept=".zip,.rar,.jpg,.png"
+                    >
+                    <span class="field-help">文件类型支持：.zip, .rar, .jpg, .png</span>
+                </div>
+            </div>
+
+            <hr class="section-divider">
+
+            <!-- 社长信息 -->
+            <h2 class="section-title">
+                <span class="material-icons">person</span>
+                社长信息
+            </h2>
+
+            <div class="president-grid">
+                <div class="president-card selected" id="current_president_card">
+                    <div class="president-name">{{ current_user_profile.get_full_name }}</div>
+                    <div class="president-detail">学号: {{ current_user_profile.student_id }}</div>
+                    <div class="president-detail">电话: {{ current_user_profile.phone|default:'--' }}</div>
+                    <div class="president-detail">微信: {{ current_user_profile.wechat|default:'--' }}</div>
+                    <div style="margin-top: var(--md3-spacing-sm);">
+                        <span style="color: var(--md3-primary); font-size: 0.875rem; font-weight: 500;">✓ 当前选中</span>
+                    </div>
+                </div>
+
+                {% if other_presidents %}
+                <div class="form-field">
+                    <label for="president_profile_id">选择其他社长</label>
+                    <select id="president_profile_id" name="president_profile_id">
+                        <option value="">-- 使用当前用户 --</option>
+                        {% for president in other_presidents %}
+                        <option value="{{ president.id }}" {% if form_data.president_profile_id == president.id|stringformat:"s" %}selected{% endif %}>
+                            {{ president.get_full_name }} ({{ president.student_id }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <span class="field-help">选择其他社长时，申请将代表该用户提交</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 选中社长信息详情 -->
+            <div class="selected-president-card">
+                <div style="font-weight: 600; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-sm);">
+                    申请人信息确认
+                </div>
+                <div class="president-name" id="selected_name">{{ current_user_profile.get_full_name }}</div>
+                <div class="president-detail">学号: <span id="selected_student_id">{{ current_user_profile.student_id }}</span></div>
+                <div class="president-detail">电话: <span id="selected_phone">{{ current_user_profile.phone|default:'--' }}</span></div>
+                <div class="president-detail">微信: <span id="selected_wechat">{{ current_user_profile.wechat|default:'--' }}</span></div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <div class="form-actions">
+                <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-secondary">
+                    <span class="material-icons">arrow_back</span>
+                    返回
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <span class="material-icons">send</span>
+                    提交注册申请
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+{% if other_presidents %}
+// 社长选择时更新显示信息
+const presidentSelect = document.getElementById('president_profile_id');
+const currentPresidentCard = document.getElementById('current_president_card');
+const presidentsData = {
+    '': {
+        name: '{{ current_user_profile.get_full_name }}',
+        student_id: '{{ current_user_profile.student_id }}',
+        phone: '{{ current_user_profile.phone|default:"--" }}',
+        wechat: '{{ current_user_profile.wechat|default:"--" }}'
+    },
+    {% for president in other_presidents %}
+    '{{ president.id }}': {
+        name: '{{ president.get_full_name }}',
+        student_id: '{{ president.student_id }}',
+        phone: '{{ president.phone|default:"--" }}',
+        wechat: '{{ president.wechat|default:"--" }}'
+    },
+    {% endfor %}
+};
+
+presidentSelect.addEventListener('change', function() {
+    const selectedId = this.value;
+    const data = presidentsData[selectedId];
+
+    // 更新选中信息
+    if (data) {
+        document.getElementById('selected_name').textContent = data.name;
+        document.getElementById('selected_student_id').textContent = data.student_id;
+        document.getElementById('selected_phone').textContent = data.phone;
+        document.getElementById('selected_wechat').textContent = data.wechat;
+    }
+
+    // 更新卡片选中状态
+    if (selectedId === '') {
+        currentPresidentCard.classList.add('selected');
+    } else {
+        currentPresidentCard.classList.remove('selected');
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

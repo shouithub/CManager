@@ -1,0 +1,498 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}发布公告{% endblock %}
+
+{% block extra_css %}
+<style>
+    .publish-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        box-sizing: border-box;
+    }
+    
+    /* 页面标题 */
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-tertiary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .page-header .material-icons {
+        font-size: 3rem;
+        color: var(--md3-tertiary);
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    /* 表单卡片 */
+    .form-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .form-group {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+    }
+    
+    .required {
+        color: var(--md3-error);
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select,
+    .form-file {
+        width: 100%;
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+    
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+    
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .form-textarea {
+        resize: vertical;
+        min-height: 150px;
+    }
+    
+    .form-hint {
+        display: block;
+        margin-top: var(--md3-spacing-xs);
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    /* 表单操作按钮 */
+    .form-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    /* 错误提示 */
+    .error-messages {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+        border-left: 4px solid var(--md3-error);
+    }
+    
+    .error-item {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-xs);
+    }
+    
+    .error-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .error-item .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    /* 公告列表 */
+    .announcements-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .announcements-card h3 {
+        margin: 0 0 var(--md3-spacing-lg) 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .announcements-card h3 .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .announcement-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .announcement-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: var(--md3-spacing-lg);
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-lg);
+        border: 1px solid var(--md3-outline-variant);
+        transition: all 0.2s ease;
+    }
+    
+    .announcement-item:hover {
+        background: var(--md3-surface-container-high);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .announcement-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .announcement-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0;
+    }
+    
+    .announcement-meta {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        flex-wrap: wrap;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-badge.published {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .status-badge.draft {
+        background: var(--md3-surface-container-highest);
+        color: var(--md3-on-surface-variant);
+        border: 1px solid var(--md3-outline);
+    }
+    
+    .status-badge .material-icons {
+        font-size: 0.875rem;
+    }
+    
+    .announcement-preview {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        line-height: 1.5;
+    }
+    
+    .attachment-link {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        font-size: 0.875rem;
+        color: var(--md3-primary);
+        text-decoration: none;
+    }
+    
+    .attachment-link:hover {
+        text-decoration: underline;
+    }
+    
+    .attachment-link .material-icons {
+        font-size: 1rem;
+    }
+    
+    .announcement-actions {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+        flex-shrink: 0;
+    }
+    
+    .btn-delete {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-delete:hover {
+        background: var(--md3-error);
+        color: var(--md3-on-error);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-delete .material-icons {
+        font-size: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .publish-container {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .announcement-item {
+            flex-direction: column;
+        }
+        
+        .announcement-actions {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="publish-container">
+    <div class="page-header">
+        <h1>发布系统公告</h1>
+    </div>
+    
+    {% if errors %}
+    <div class="error-messages">
+        {% for error in errors %}
+        <div class="error-item">
+            <span class="material-icons">error</span>
+            <span>{{ error }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="form-card">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="title" class="form-label">公告标题 <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="title" 
+                    name="title" 
+                    class="form-input"
+                    required 
+                    maxlength="200"
+                    placeholder="输入公告标题"
+                    value="{{ title }}"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="content" class="form-label">公告内容 <span class="required">*</span></label>
+                <textarea 
+                    id="content" 
+                    name="content" 
+                    class="form-textarea"
+                    required 
+                    placeholder="输入公告内容"
+                >{{ content }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="expires_at" class="form-label">失效时间（可选）</label>
+                <input 
+                    type="datetime-local" 
+                    id="expires_at" 
+                    name="expires_at"
+                    class="form-input"
+                >
+                <small class="form-hint">公告将在指定时间后自动归档。如不填写，公告将一直有效。</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="attachment" class="form-label">附件（可选）</label>
+                <input 
+                    type="file" 
+                    id="attachment" 
+                    name="attachment"
+                    class="form-file"
+                >
+                <small class="form-hint">支持上传各种类型的文件，如文档、图片等。</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="status" class="form-label">发布状态 <span class="required">*</span></label>
+                <select id="status" name="status" class="form-select" required>
+                    <option value="">-- 请选择 --</option>
+                    <option value="draft">草稿（保存但不显示）</option>
+                    <option value="published">发布（立即显示在首页）</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" name="action" value="publish" class="btn btn-primary">
+                    <span class="material-icons">send</span>
+                    发布公告
+                </button>
+                <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-secondary">
+                    <span class="material-icons">close</span>
+                    取消
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- 已发布公告列表 -->
+    {% if announcements %}
+    <div class="announcements-card">
+        <h3>
+            <span class="material-icons">list</span>
+            最近发布的公告
+        </h3>
+        <div class="announcement-list">
+            {% for announcement in announcements %}
+            <div class="announcement-item">
+                <div class="announcement-info">
+                    <div class="announcement-title">{{ announcement.title }}</div>
+                    <div class="announcement-meta">
+                        <span>发布于 {{ announcement.created_at|date:"Y-m-d H:i" }}</span>
+                        {% if announcement.expires_at %}
+                            <span>失效于 {{ announcement.expires_at|date:"Y-m-d H:i" }}</span>
+                        {% else %}
+                            <span>永久有效</span>
+                        {% endif %}
+                        <span class="status-badge {{ announcement.status }}">
+                            <span class="material-icons">
+                                {% if announcement.status == 'published' %}check_circle
+                                {% elif announcement.status == 'draft' %}edit_note
+                                {% else %}archive{% endif %}
+                            </span>
+                            {% if announcement.status == 'published' %}已发布
+                            {% elif announcement.status == 'draft' %}草稿
+                            {% else %}已归档{% endif %}
+                        </span>
+                    </div>
+                    <div class="announcement-preview">{{ announcement.content|truncatewords:30 }}</div>
+                    {% if announcement.attachment %}
+                    <a href="{{ announcement.attachment.url }}" class="attachment-link" target="_blank">
+                        <span class="material-icons">attach_file</span>
+                        {{ announcement.attachment.name|slice:"-30:" }}
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="announcement-actions">
+                    <a href="{% url 'clubs:delete_announcement' announcement.id %}" class="btn-delete" onclick="return confirm('确定要删除此公告吗？');">
+                        <span class="material-icons">delete</span>
+                        删除
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

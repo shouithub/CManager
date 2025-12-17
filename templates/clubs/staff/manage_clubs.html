@@ -1,0 +1,437 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}管理负责社团 - 干事后台{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* MD3 管理社团页面样式 */
+    .manage-clubs-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        box-sizing: border-box;
+    }
+
+    /* 页面标题 */
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-xl);
+        padding-bottom: var(--md3-spacing-md);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+
+    .page-title .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .page-title h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    /* 主要内容卡片 */
+    .main-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-2xl);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-lg) 0;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .card-title .material-icons {
+        font-size: 1.75rem;
+        color: var(--md3-primary);
+    }
+
+    /* 社团选择网格 */
+    .clubs-selection-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+
+    /* 社团卡片 */
+    .club-selection-card {
+        background: var(--md3-surface-container-high);
+        border: 2px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+    }
+
+    .club-selection-card:hover {
+        background: var(--md3-surface-container-highest);
+        border-color: var(--md3-primary);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-2px);
+    }
+
+    .club-selection-card.selected {
+        background: var(--md3-primary-container);
+        border-color: var(--md3-primary);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .club-selection-card.selected .club-checkbox {
+        background: var(--md3-primary);
+        border-color: var(--md3-primary);
+    }
+
+    .club-selection-card.selected .club-checkbox::after {
+        content: '✓';
+        color: var(--md3-on-primary);
+        font-size: 14px;
+        font-weight: bold;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    /* 复选框样式 */
+    .club-checkbox {
+        position: absolute;
+        top: var(--md3-spacing-md);
+        right: var(--md3-spacing-md);
+        width: 24px;
+        height: 24px;
+        border: 2px solid var(--md3-outline);
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-surface);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0;
+    }
+
+    .club-card-content {
+        padding-right: 40px; /* 为复选框留空间 */
+    }
+
+    .club-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-sm) 0;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .club-name .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+
+    .club-info {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xs);
+    }
+
+    .club-info-item {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .club-info-item .material-icons {
+        font-size: 1rem;
+        color: var(--md3-primary);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: 4px var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-badge.active {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .status-badge.inactive {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+
+    .status-badge.suspended {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    /* 按钮区域 */
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-lg);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary, .btn-secondary {
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .btn-primary:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+    }
+
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    /* 说明卡片 */
+    .info-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .info-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-lg) 0;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .info-card-title .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+
+    .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-list li {
+        padding: var(--md3-spacing-sm) 0;
+        border-bottom: 1px solid var(--md3-outline-variant);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .info-list li:last-child {
+        border-bottom: none;
+    }
+
+    .info-list li .material-icons {
+        font-size: 1.25rem;
+        color: var(--md3-primary);
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .info-list li span {
+        color: var(--md3-on-surface);
+        line-height: 1.5;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .manage-clubs-container {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .clubs-selection-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-primary, .btn-secondary {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="manage-clubs-container">
+    <!-- 页面标题 -->
+    <div class="page-title">
+        <span class="material-icons">assignment</span>
+        <h1>管理负责社团</h1>
+    </div>
+
+    <!-- 主要内容卡片 -->
+    <div class="main-card">
+        <h2 class="card-title">
+            <span class="material-icons">check</span>
+            选择负责的社团
+        </h2>
+
+        <p style="color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xl);">
+            请选择您负责管理的社团（可多选）。选择后，相关审核任务将自动分配给您。
+        </p>
+
+        <form method="post" id="manage-clubs-form">
+            {% csrf_token %}
+
+            <!-- 隐藏的复选框用于表单提交 -->
+            <div style="display: none;">
+                {% for club in all_clubs %}
+                <input type="checkbox" name="club_ids" value="{{ club.id }}" id="club_{{ club.id }}" {% if club.id in selected_club_ids %}checked{% endif %}>
+                {% endfor %}
+            </div>
+
+            <!-- 社团选择网格 -->
+            <div class="clubs-selection-grid">
+                {% for club in all_clubs %}
+                <div class="club-selection-card {% if club.id in selected_club_ids %}selected{% endif %}" data-club-id="{{ club.id }}">
+                    <div class="club-checkbox"></div>
+                    <div class="club-card-content">
+                        <h3 class="club-name">
+                            <span class="material-icons">flag</span>
+                            {{ club.name }}
+                        </h3>
+                        <div class="club-info">
+                            <div class="club-info-item">
+                                <span class="material-icons">event</span>
+                                <span>成立日期: {{ club.founded_date|date:"Y年m月d日" }}</span>
+                            </div>
+                            <div class="club-info-item">
+                                <span class="material-icons">group</span>
+                                <span>成员数: {{ club.members_count }}</span>
+                            </div>
+                            <div class="club-info-item">
+                                <span class="material-icons">info</span>
+                                <span>状态:
+                                    <span class="status-badge {{ club.status }}">
+                                        {% if club.status == 'active' %}
+                                            <span class="material-icons" style="font-size: 12px;">check_circle</span> 活跃
+                                        {% elif club.status == 'inactive' %}
+                                            <span class="material-icons" style="font-size: 12px;">pause_circle</span> 不活跃
+                                        {% else %}
+                                            <span class="material-icons" style="font-size: 12px;">cancel</span> 停止
+                                        {% endif %}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 按钮区域 -->
+            <div class="action-buttons">
+                <button type="submit" class="btn-primary">
+                    <span class="material-icons">save</span>
+                    保存设置
+                </button>
+                <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+                    <span class="material-icons">arrow_back</span>
+                    返回仪表板
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 说明卡片 -->
+    <div class="info-card">
+        <h3 class="info-card-title">
+            <span class="material-icons">help_outline</span>
+            使用说明
+        </h3>
+        <ul class="info-list">
+            <li>
+                <span class="material-icons">list</span>
+                <span>选择您负责管理的社团后，相关审核任务将自动分配给您</span>
+            </li>
+            <li>
+                <span class="material-icons">edit</span>
+                <span>您可以随时修改负责的社团列表</span>
+            </li>
+            <li>
+                <span class="material-icons">visibility</span>
+                <span>社长在查看社团信息时，可以看到负责他们社团的干事信息</span>
+            </li>
+            <li>
+                <span class="material-icons">balance</span>
+                <span>建议根据您的工作能力合理选择负责的社团数量</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<script>
+// 社团卡片点击切换选择状态
+document.querySelectorAll('.club-selection-card').forEach(card => {
+    card.addEventListener('click', function() {
+        const clubId = this.dataset.clubId;
+        const checkbox = document.getElementById('club_' + clubId);
+
+        // 切换选择状态
+        checkbox.checked = !checkbox.checked;
+        this.classList.toggle('selected');
+    });
+});
+
+// 防止表单在卡片点击时提交
+document.getElementById('manage-clubs-form').addEventListener('submit', function(e) {
+    // 表单提交逻辑保持不变
+});
+</script>
+{% endblock %}

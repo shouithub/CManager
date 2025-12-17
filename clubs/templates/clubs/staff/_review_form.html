@@ -1,0 +1,403 @@
+{% comment %} 统一审核表单模板片段 - Material Design 3 风格 {% endcomment %}
+<style>
+    /* Material Design 3 表单基础样式 */
+    form {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .feishu-form {
+        background: var(--md3-surface-container-lowest);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+        width: 100%;
+        box-sizing: border-box;
+        margin: 0;
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .feishu-form h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    /* 表单组样式 */
+    .feishu-form-group {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .feishu-form-label {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    /* 单选按钮组样式 */
+    .feishu-radio-group {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        border-radius: 0;
+        overflow: visible;
+        border: none;
+    }
+    
+    .feishu-radio-button {
+        position: relative;
+        display: flex;
+        flex: 1;
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border: none;
+        border-radius: var(--md3-radius-lg);
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+        height: auto;
+    }
+    
+    .feishu-radio-button.approved {
+        background-color: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .feishu-radio-button.approved:hover {
+        background-color: var(--md3-success);
+        color: var(--md3-on-success);
+    }
+    
+    .feishu-radio-button.rejected {
+        background-color: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    .feishu-radio-button.rejected:hover {
+        background-color: var(--md3-error);
+        color: var(--md3-on-error);
+    }
+    
+    .feishu-radio-button:active,
+    .feishu-radio-button:focus {
+        outline: none;
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    /* 文本域样式 */
+    .feishu-textarea {
+        width: 100%;
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: var(--md3-on-surface);
+        background-color: var(--md3-surface-container-low);
+        resize: vertical;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+    
+    .feishu-textarea:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: inset 0 0 0 1px var(--md3-primary);
+    }
+    
+    .feishu-textarea::placeholder {
+        color: var(--md3-on-surface-variant);
+    }
+    
+    /* 复选框样式 */
+    .feishu-checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-md);
+    }
+    
+    .feishu-checkbox {
+        position: relative;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+    
+    .feishu-checkbox input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .feishu-checkbox-label {
+        display: flex;
+        align-items: center;
+        font-size: 0.95rem;
+        color: var(--md3-on-surface);
+        cursor: pointer;
+        padding-left: 28px;
+        position: relative;
+        transition: color 0.2s ease;
+    }
+    
+    .feishu-checkbox-label::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 18px;
+        height: 18px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-sm);
+        background-color: var(--md3-surface-container-low);
+        transition: all 0.2s ease;
+    }
+    
+    .feishu-checkbox input[type="checkbox"]:checked + .feishu-checkbox-label::before {
+        background-color: var(--md3-primary);
+        border-color: var(--md3-primary);
+    }
+    
+    .feishu-checkbox input[type="checkbox"]:checked + .feishu-checkbox-label::after {
+        content: '✓';
+        position: absolute;
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--md3-on-primary);
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .feishu-checkbox input[type="checkbox"]:hover + .feishu-checkbox-label::before {
+        border-color: var(--md3-primary);
+    }
+    
+    .feishu-checkbox input[type="checkbox"]:hover + .feishu-checkbox-label {
+        color: var(--md3-primary);
+    }
+    
+    /* 按钮样式 */
+    .feishu-button-group {
+        display: flex;
+        gap: var(--md3-spacing-lg);
+        margin-top: var(--md3-spacing-xl);
+    }
+    
+    .feishu-button {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border: none;
+        border-radius: var(--md3-radius-lg);
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .feishu-button.primary {
+        background-color: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+    
+    .feishu-button.primary:hover {
+        background-color: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    #confirm-reject-btn {
+        background-color: var(--md3-error);
+        color: var(--md3-on-error);
+    }
+    
+    #confirm-reject-btn:hover {
+        background-color: var(--md3-error-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .feishu-button.secondary {
+        background-color: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+    }
+    
+    .feishu-button.secondary:hover {
+        background-color: var(--md3-surface-container-highest);
+    }
+    
+    /* 被拒绝材料部分 */
+    .rejected-materials-section {
+        background-color: var(--md3-surface-container-low);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        margin-top: var(--md3-spacing-lg);
+    }
+    
+    .rejected-materials-section h5 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    /* 动画效果 */
+    .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .feishu-radio-group {
+            flex-direction: column;
+        }
+        
+        .feishu-checkbox-group {
+            grid-template-columns: 1fr;
+        }
+        
+        .feishu-button-group {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="feishu-form">
+    <h4>审核操作</h4>
+    
+    <div class="feishu-form-group">
+        <label class="feishu-form-label" for="review_comment">审核意见</label>
+        <textarea class="feishu-textarea" id="review_comment" name="review_comment" rows="4" placeholder="请输入审核意见"></textarea>
+    </div>
+    
+    <div class="feishu-form-group">
+        <label class="feishu-form-label" for="review_status">审核结果</label>
+        <div class="feishu-radio-group">
+            <button type="button" id="approved-btn" class="feishu-radio-button approved">批准</button>
+            <button type="button" id="reject-btn" class="feishu-radio-button rejected">拒绝</button>
+        </div>
+        <input type="hidden" name="review_status" id="review_status_hidden" value="">
+    </div>
+    
+    <div class="rejected-materials-section fade-in" style="display: none;">
+        <h5>被拒绝的材料（可多选）</h5>
+        <div class="feishu-checkbox-group">
+            {% if rejected_materials_list %}
+                {% for field, display_name in rejected_materials_list %}
+                    <div class="feishu-checkbox">
+                        <input type="checkbox" name="rejected_materials" value="{{ field }}" id="material_{{ field }}">
+                        <label class="feishu-checkbox-label" for="material_{{ field }}">{{ display_name }}</label>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>没有可选择的被拒绝材料</p>
+            {% endif %}
+        </div>
+        <div class="feishu-button-group mt-3">
+            <button type="button" id="confirm-reject-btn" class="feishu-button primary" style="display: none;">确认拒绝</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// 统一控制审核结果和被拒绝材料的显示逻辑
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取相关元素
+    var rejectBtn = document.getElementById('reject-btn');
+    var confirmRejectBtn = document.getElementById('confirm-reject-btn');
+    var rejectedMaterialsSection = document.querySelector('.rejected-materials-section');
+    var reviewForm = rejectBtn.closest('form');
+    var approvedBtn = document.querySelector('.feishu-radio-button.approved');
+    
+    // 简单的淡入效果
+    function fadeIn(element, duration) {
+        element.style.opacity = '0';
+        element.style.display = 'block';
+        
+        var startTime = null;
+        var animate = function(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            var progress = currentTime - startTime;
+            var opacity = Math.min(progress / duration, 1);
+            element.style.opacity = opacity;
+            
+            if (progress < duration) {
+                window.requestAnimationFrame(animate);
+            }
+        };
+        
+        window.requestAnimationFrame(animate);
+    }
+    
+    // 拒绝按钮点击事件
+    rejectBtn.addEventListener('click', function() {
+        fadeIn(rejectedMaterialsSection, 300);
+        rejectBtn.style.display = 'none';
+        confirmRejectBtn.style.display = 'block';
+    });
+    
+    // 为批准按钮添加点击事件
+    approvedBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // 设置隐藏字段值
+        document.getElementById('review_status_hidden').value = 'approved';
+        // 检查表单是否存在，然后提交
+        if (reviewForm) {
+            reviewForm.submit();
+        } else {
+            console.error('表单元素未找到');
+        }
+    });
+    
+    // 为确认拒绝按钮添加点击事件
+    confirmRejectBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var reviewComment = document.getElementById('review_comment').value.trim();
+        
+        // 验证审核意见
+        if (!reviewComment) {
+            alert('拒绝时必须填写审核意见');
+            return false;
+        }
+        
+        // 验证是否选择了被拒绝的材料
+        var rejectedMaterials = document.querySelectorAll('input[name="rejected_materials"]:checked');
+        var hasRejectedMaterials = rejectedMaterials.length > 0;
+        if (!hasRejectedMaterials) {
+            alert('拒绝时必须选择被拒绝的材料');
+            return false;
+        }
+        
+        // 设置隐藏字段值
+        document.getElementById('review_status_hidden').value = 'rejected';
+        
+        // 检查表单是否存在，然后提交
+        if (reviewForm) {
+            reviewForm.submit();
+        } else {
+            console.error('表单元素未找到');
+        }
+    });
+});
+</script>

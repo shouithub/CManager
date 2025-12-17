@@ -1,0 +1,910 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}修改被拒材料{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-rejected-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+    
+    /* 页面标题 */
+    .page-header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        width: 100%;
+    }
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+        flex-shrink: 0;
+        display: inline-block !important;
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        white-space: nowrap !important;
+        writing-mode: horizontal-tb !important;
+        text-orientation: mixed;
+        display: inline-block !important;
+    }
+    
+    .content-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .notice {
+        padding: var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-lg);
+        margin-bottom: var(--md3-spacing-xl);
+        border-left: 4px solid;
+    }
+    
+    .notice.info {
+        background: var(--md3-primary-container);
+        border-color: var(--md3-primary);
+        color: var(--md3-on-primary-container);
+    }
+    
+    .notice.warning {
+        background: #fff3cd;
+        border-color: #ffc107;
+        color: #856404;
+    }
+    
+    .notice.error {
+        background: var(--md3-error-container);
+        border-color: var(--md3-error);
+        color: var(--md3-on-error-container);
+    }
+    
+    .notice.success {
+        background: var(--md3-success-container);
+        border-color: var(--md3-success);
+        color: var(--md3-on-success-container);
+    }
+    
+    .notice h5 {
+        margin: 0 0 var(--md3-spacing-md) 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .notice h5 .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    .notice ul {
+        margin: var(--md3-spacing-md) 0 0 0;
+        padding-left: var(--md3-spacing-xl);
+    }
+    
+    .notice li {
+        margin-bottom: var(--md3-spacing-sm);
+    }
+    
+    .form-section {
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+    
+    .form-section h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-lg);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .form-group {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+        font-size: 1rem;
+    }
+    
+    .form-group .required,
+    .form-group label span[style*="color: var(--md3-error)"] {
+        color: var(--md3-error);
+    }
+    
+    .file-input-wrapper {
+        position: relative;
+    }
+    
+    .form-group input[type="file"] {
+        width: 100%;
+        padding: var(--md3-spacing-md);
+        border: 2px dashed var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container-highest);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: var(--md3-font-family-plain);
+        color: var(--md3-on-surface);
+    }
+    
+    .form-group input[type="file"]:hover {
+        border-color: var(--md3-primary);
+        background: var(--md3-surface-container-high);
+    }
+    
+    .form-group input[type="file"]:focus {
+        outline: 2px solid var(--md3-primary);
+        outline-offset: 2px;
+    }
+    
+    .form-group small,
+    .file-hint {
+        display: block;
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        margin-top: var(--md3-spacing-xs);
+    }
+    
+    .form-group small a {
+        color: var(--md3-primary);
+        text-decoration: none;
+    }
+    
+    .form-group small a:hover {
+        text-decoration: underline;
+    }
+    
+    .file-selected {
+        color: var(--md3-primary) !important;
+        font-weight: 500;
+    }
+    
+    .template-download-box {
+        background: var(--md3-secondary-container);
+        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .template-download-box h5 {
+        margin: 0 0 var(--md3-spacing-md) 0;
+        font-weight: 600;
+        color: var(--md3-on-secondary-container);
+    }
+    
+    .template-download-box ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .template-download-box li {
+        padding: var(--md3-spacing-sm) 0;
+    }
+    
+    .template-download-box a {
+        color: var(--md3-primary);
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+    }
+    
+    .template-download-box a:hover {
+        text-decoration: underline;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-2xl);
+    }
+    
+    @media (max-width: 768px) {
+        .edit-rejected-container {
+            padding: var(--md3-spacing-lg);
+            overflow-x: hidden;
+        }
+        
+        .page-header {
+            flex-direction: row !important;
+            justify-content: flex-start !important;
+            margin-bottom: var(--md3-spacing-lg);
+            width: 100%;
+        }
+        
+        .page-header .material-icons {
+            font-size: 2rem;
+        }
+        
+        .page-header h1 {
+            font-size: 1.25rem;
+            white-space: nowrap !important;
+            writing-mode: horizontal-tb !important;
+        }
+        
+        .content-card {
+            padding: var(--md3-spacing-lg);
+            overflow-x: hidden;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+        
+        .btn-group .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+    // 文件输入框变化时显示文件名
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024).toFixed(1);
+                    
+                    // 查找关联的 small 元素并更新显示文件信息
+                    const smallElement = this.nextElementSibling;
+                    if (smallElement && smallElement.tagName === 'SMALL') {
+                        const originalText = smallElement.textContent;
+                        smallElement.innerHTML = `<span class="file-selected">✓ 已选择: ${fileName} (${fileSize} KB)</span>`;
+                        
+                        // 保存原始文本以备后用
+                        if (!smallElement.dataset.originalText) {
+                            smallElement.dataset.originalText = originalText;
+                        }
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+
+<script>
+    // 文件输入框变化时显示文件名
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024).toFixed(1);
+                    
+                    // 查找关联的 small 元素并更新显示文件信息
+                    const smallElement = this.nextElementSibling;
+                    if (smallElement && smallElement.tagName === 'SMALL') {
+                        const originalText = smallElement.textContent;
+                        smallElement.innerHTML = `<span style="color: var(--md3-primary);">✓ 已选择: ${fileName} (${fileSize} KB)</span>`;
+                        
+                        // 保存原始文本以备后用
+                        if (!smallElement.dataset.originalText) {
+                            smallElement.dataset.originalText = originalText;
+                        }
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+<div class="edit-rejected-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <span class="material-icons">edit</span>
+        <h1>修改被拒材料</h1>
+    </div>
+    
+    <div class="content-card">
+                    <!-- 错误提示 -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="message {% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}info{% endif %}">
+                                <div>{{ message }}</div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <!-- 表单验证错误 -->
+                    {% if errors %}
+                        <div class="message error">
+                            <div>
+                                <strong>提交失败：</strong>
+                                <ul>
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- 重新提交说明 -->
+                    {% if review_type == 'club_registration' %}
+                        <div class="notice info">
+                            <div>
+                                <h5>重新提交说明</h5>
+                                <p>您的注册申请中有部分内容需要修改，请根据审核意见重新上传以下材料：</p>
+                                {% if registration.status == 'partially_rejected' %}
+                                    <p><strong>提示：您只需要重新上传被拒绝的材料。</strong></p>
+                                {% else %}
+                                    <p><strong>注意：所有必填材料必须上传，否则申请将被拒绝。</strong></p>
+                                {% endif %}
+                                <p><strong>文件格式要求：所有文件必须为Word格式(.doc或.docx)。</strong></p>
+                            </div>
+                        </div>
+                    {% elif review_type == 'application' %}
+                        <div class="notice warning">
+                            <div>
+                                <strong>注意：</strong>您的社团申请被拒绝，请根据审核意见修改并重新提交材料。
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="notice warning">
+                            <div>
+                                <strong>注意：</strong>请修改以下被拒绝的材料，修改完成后点击"提交审核"按钮重新提交。
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- 模板下载提示 -->
+                    {% if review_type == 'club_registration' and registration_templates %}
+                    <div class="template-download-box">
+                        <h5>📄 可用模板</h5>
+                        <ul>
+                            {% for template in registration_templates %}
+                                <li>
+                                    <a href="{{ template.file.url }}" download>
+                                        {{ template.name }}
+                                    </a>
+                                    {% if template.description %} - <small>{{ template.description }}</small>{% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% elif review_type == 'review' %}
+
+                    {% endif %}
+                    
+                    <!-- 申请信息 -->
+                    {% if review_type == 'application' %}
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">申请信息</h5>
+                            <p><strong>社团名称:</strong> {{ application.club_name }}</p>
+                            <p><strong>提交时间:</strong> {{ application.created_at|date:"Y-m-d H:i" }}</p>
+                            <p><strong>审核状态:</strong> 
+                                <span class="badge badge-danger" style="border: 1px solid #dc3545;">已拒绝</span>
+                            </p>
+                            <p><strong>审核意见:</strong> {{ application.reviewer_comment }}</p>
+                        </div>
+                    </div>
+                    {% elif review_type == 'club_registration' %}
+                    <div class="mb-5 mt-5 py-4">
+                        <div class="card shadow-md border border-secondary">
+                            <div class="card-header bg-white">
+                                <h2 class="h5 mb-0 font-weight-bold text-secondary">
+                                    ℹ️ 申请信息
+                                </h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3 p-2 bg-light rounded">
+                                            <strong>提交时间:</strong> {{ registration.submitted_at|date:"Y-m-d H:i:s" }}
+                                        </div>
+                                        <div class="mb-3 p-2 bg-light rounded">
+                                            <strong>状态:</strong> 
+                                            {% if registration.status == 'pending' %}
+                                                <span class="badge bg-warning">待审核</span>
+                                            {% elif registration.status == 'approved' %}
+                                                <span class="badge bg-success">已批准</span>
+                                            {% elif registration.status == 'rejected' %}
+                                                <span class="badge bg-danger">已拒绝</span>
+                                            {% elif registration.status == 'partially_rejected' %}
+                                                <span class="badge bg-warning">部分拒绝</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="mb-3 p-2 bg-light rounded">
+                                            <strong>审核意见:</strong> 
+                                            <div class="mt-1">
+                                                {{ registration.reviewer_comment|default:"无" }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 被拒绝材料列表 -->
+                    {% if rejected_materials %}
+                        {% if review_type == 'club_registration' %}
+                            <div class="notice warning">
+                                <div>
+                                    <h5><span class="material-icons" style="vertical-align: middle; font-size: 1em;">warning</span> 需重新提交的材料</h5>
+                                    <div style="margin-top: var(--md3-spacing-md);">
+                                        {% for material in rejected_materials %}
+                                            <div class="badge badge-warning" style="display: block; margin-bottom: var(--md3-spacing-sm); padding: var(--md3-spacing-md); text-align: left;">
+                                                {% if material == 'registration_form' %}社团注册申请表
+                                                {% elif material == 'basic_info_form' %}学生社团基础信息表
+                                                {% elif material == 'membership_fee_form' %}会费表或免收会费说明书
+                                                {% elif material == 'leader_change_application' %}社团主要负责人变动申请表
+                                                {% elif material == 'meeting_minutes' %}社团大会会议记录
+                                                {% elif material == 'name_change_application' %}社团名称变更申请表
+                                                {% elif material == 'advisor_change_application' %}社团指导老师变动申请表
+                                                {% elif material == 'business_advisor_change_application' %}社团业务指导单位变动申请表
+                                                {% elif material == 'new_media_application' %}新媒体平台建立申请表
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif review_type == 'application' %}
+                            <div class="notice error">
+                                <div>
+                                    <h5>
+                                        <span class="material-icons">error</span>
+                                        需要修改的材料
+                                    </h5>
+                                    <ul>
+                                        {% for material in rejected_materials %}
+                                            <li>
+                                                {% if material == 'establishment_application' %}社团成立申请书
+                                                {% elif material == 'constitution_draft' %}社团章程草案
+                                                {% elif material == 'three_year_plan' %}社团三年发展规划
+                                                {% elif material == 'leaders_resumes' %}社团拟任负责人和指导老师的详细简历和身份证复印件
+                                                {% elif material == 'one_month_activity_plan' %}社团组建一个月后的活动计划
+                                                {% elif material == 'advisor_certificates' %}社团老师的相关专业证书
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="notice error">
+                                <div>
+                                    <h5>
+                                        <span class="material-icons">error</span>
+                                        需要修改的材料
+                                    </h5>
+                                    <ul>
+                                        {% for material in rejected_materials %}
+                                            <li>
+                                                {% if material == 'self_assessment_form' %}<span class="material-icons" style="vertical-align: middle; font-size: 1em;">assignment</span> 自查表
+                                                {% elif material == 'club_constitution' %}📑 社团章程
+                                                {% elif material == 'leader_learning_work_report' %}<span class="material-icons" style="vertical-align: middle; font-size: 1em;">person</span> 负责人学习及工作情况表
+                                                {% elif material == 'annual_activity_list' %}📅 社团年度活动清单
+                                                {% elif material == 'advisor_performance_report' %}<span class="material-icons" style="vertical-align: middle; font-size: 1em;">school</span> 指导教师履职情况表
+                                                {% elif material == 'financial_report' %}<span class="material-icons" style="vertical-align: middle; font-size: 1em;">attach_money</span> 年度财务情况表
+                                                {% elif material == 'member_composition_list' %}<span class="material-icons" style="vertical-align: middle; font-size: 1em;">group</span> 社团成员构成表
+                                                {% elif material == 'new_media_account_report' %}📱 新媒体账号及运维情况表
+                                                {% elif material == 'other_materials' %}📦 其他材料
+                                                {% else %}{{ material }}
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <!-- 如果没有具体的被拒绝材料列表，显示审核意见 -->
+                        {% if review_type == 'review' %}
+                            <div class="notice warning">
+                                <div>
+                                    <h5>
+                                        <span class="material-icons">info</span>
+                                        审核意见
+                                    </h5>
+                                    {% if review_comments %}
+                                        <div style="margin-top: var(--md3-spacing-md);">
+                                            {% for comment in review_comments %}
+                                                <div style="margin-bottom: var(--md3-spacing-md); padding: var(--md3-spacing-md); background: var(--md3-surface-container-high); border-radius: var(--md3-radius-md);">
+                                                    <p style="margin: 0; white-space: pre-wrap;">{{ comment }}</p>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <p style="margin-top: var(--md3-spacing-md);"><strong>请根据以上审核意见修改相应的材料并重新上传。</strong></p>
+                                    {% else %}
+                                        <p style="margin-top: var(--md3-spacing-md);">您的申请被拒绝，但未记录具体需要修改的材料。建议您检查所有材料并重新上传。</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                    <!-- 审核意见 - 总是显示 -->
+                    {% if review_comments %}
+                        <div class="notice info" style="margin-top: var(--md3-spacing-lg);">
+                            <div>
+                                <h5>
+                                    <span class="material-icons">comment</span>
+                                    审核意见
+                                </h5>
+                                <div style="margin-top: var(--md3-spacing-md);">
+                                    {% for comment in review_comments %}
+                                        <div style="margin-bottom: var(--md3-spacing-md); padding: var(--md3-spacing-md); background: var(--md3-surface-container-high); border-radius: var(--md3-radius-md); border-left: 4px solid var(--md3-primary);">
+                                            <p style="margin: 0; white-space: pre-wrap; color: var(--md3-on-surface);">{{ comment }}</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <p style="margin-top: var(--md3-spacing-md); color: var(--md3-on-surface-variant);">
+                                    <strong>请根据以上审核意见修改相应的材料并重新上传。</strong>
+                                </p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- 表单 -->
+                    <form method="post" action="{% url 'clubs:edit_rejected_review' club.id %}?request_id={{ request.GET.request_id }}&type={{ request.GET.type }}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if review_type == 'club_registration' %}
+                        <div class="mb-5">
+                            <h2 class="h5 mb-4 text-primary-color">
+                                <i class="fas fa-upload text-secondary"></i> 上传材料
+                            </h2>
+                            
+                            <!-- 社团注册申请表 -->
+                            {% if 'registration_form' in rejected_materials %}
+                                <div class="form-group">
+                                    <label for="registration_form">
+                                        📄 1. 社团注册申请表
+                                        {% if registration.status == 'rejected' or 'registration_form' in rejected_materials %}<span style="color: var(--md3-error);">*</span>{% endif %}
+                                    </label>
+                                    <input type="file" name="registration_form" id="registration_form" 
+                                           {% if registration.status == 'rejected' or 'registration_form' in rejected_materials %}required{% endif %} 
+                                           accept=".doc,.docx">
+                                    <small>支持DOC、DOCX格式</small>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- 学生社团基础信息表 -->
+                            {% if 'basic_info_form' in rejected_materials %}
+                                <div class="form-group">
+                                    <label for="basic_info_form">
+                                        <span class="material-icons" style="vertical-align: middle; font-size: 1em;">assignment</span> 2. 学生社团基础信息表
+                                        {% if registration.status == 'rejected' or 'basic_info_form' in rejected_materials %}<span style="color: var(--md3-error);">*</span>{% endif %}
+                                    </label>
+                                    <input type="file" name="basic_info_form" id="basic_info_form" 
+                                           {% if registration.status == 'rejected' or 'basic_info_form' in rejected_materials %}required{% endif %} 
+                                           accept=".doc,.docx">
+                                    <small>支持DOC、DOCX格式</small>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- 会费表或免收会费说明书 -->
+                            {% if 'fee_form' in rejected_materials %}
+                                <div class="form-group">
+                                    <label for="fee_form">
+                                        <span class="material-icons" style="vertical-align: middle; font-size: 1em;">attach_money</span> 3. 会费表或免收会费说明书
+                                        {% if registration.status == 'rejected' or 'fee_form' in rejected_materials %}<span style="color: var(--md3-error);">*</span>{% endif %}
+                                    </label>
+                                    <input type="file" name="fee_form" id="fee_form" 
+                                           {% if registration.status == 'rejected' or 'fee_form' in rejected_materials %}required{% endif %} 
+                                           accept=".doc,.docx">
+                                    <small>支持DOC、DOCX格式</small>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- 社团主要负责人变动申请表 -->
+                            {% if 'leader_change_form' in rejected_materials %}
+                                <div class="form-group">
+                                    <label for="leader_change_form">
+                                        <span class="material-icons">person</span> 4. 社团主要负责人变动申请（选填）
+                                        {% if registration.status == 'rejected' or 'leader_change_form' in rejected_materials %}<span style="color: var(--md3-error);">*</span>{% endif %}
+                                    </label>
+                                    {% if registration.leader_change_application %}
+                                        <div style="background-color: var(--md3-surface-container); padding: var(--md3-spacing-md); border-radius: var(--md3-radius-md); margin-bottom: var(--md3-spacing-sm);">
+                                            <strong>当前已上传:</strong> 
+                                            <a href="{{ registration.leader_change_application.url }}" target="_blank">
+                                                {{ registration.leader_change_application.name|cut:'club_registration/' }}
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    <input type="file" name="leader_change_form" id="leader_change_form" 
+                                           {% if registration.status == 'rejected' or 'leader_change_form' in rejected_materials %}required{% endif %} 
+                                           accept=".doc,.docx">
+                                    <small>支持DOC、DOCX格式</small>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- 社团大会会议记录 -->
+                            {% if 'meeting_minutes' in rejected_materials %}
+                                <div class="form-group">
+                                    <label for="meeting_minutes">
+                                        <span class="material-icons" style="vertical-align: middle; font-size: 1em;">edit</span> 5. 社团大会会议记录（选填）
+                                        {% if registration.status == 'rejected' or 'meeting_minutes' in rejected_materials %}<span style="color: var(--md3-error);">*</span>{% endif %}
+                                    </label>
+                                    <input type="file" name="meeting_minutes" id="meeting_minutes" 
+                                           {% if registration.status == 'rejected' or 'meeting_minutes' in rejected_materials %}required{% endif %} 
+                                           accept=".doc,.docx">
+                                    <small>支持DOC、DOCX格式</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- 社团名称变更申请表 -->
+                            {% if 'name_change_form' in rejected_materials %}
+                                <div class="form-group">
+                                    <label for="name_change_form">
+                                        ✏️ 6. 社团名称变更申请表（选填）
+                                        {% if registration.status == 'rejected' or 'name_change_form' in rejected_materials %}<span style="color: var(--md3-error);">*</span>{% endif %}
+                                    </label>
+                                    <input type="file" name="name_change_form" id="name_change_form" 
+                                           {% if registration.status == 'rejected' or 'name_change_form' in rejected_materials %}required{% endif %} 
+                                           accept=".doc,.docx">
+                                    <small>支持DOC、DOCX格式</small>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- 社团指导老师变动申请表 -->
+                            {% if 'advisor_change_form' in rejected_materials %}
+                                <div class="form-group">
+                                    <label for="advisor_change_form">
+                                        <span class="material-icons">school</span> 7. 社团指导老师变动申请表（选填）
+                                        {% if registration.status == 'rejected' or 'advisor_change_form' in rejected_materials %}<span style="color: var(--md3-error);">*</span>{% endif %}
+                                    </label>
+                                    <input type="file" name="advisor_change_form" id="advisor_change_form" 
+                                           {% if registration.status == 'rejected' or 'advisor_change_form' in rejected_materials %}required{% endif %} 
+                                           accept=".doc,.docx">
+                                    <small>支持DOC、DOCX格式</small>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- 社团业务指导单位变动申请表 -->
+                            {% if 'business_unit_change_form' in rejected_materials %}
+                                <div class="form-group">
+                                    <label for="business_unit_change_form">
+                                        🏢 8. 社团业务指导单位变动申请表（选填）
+                                        {% if registration.status == 'rejected' or 'business_unit_change_form' in rejected_materials %}<span style="color: var(--md3-error);">*</span>{% endif %}
+                                    </label>
+                                    <input type="file" name="business_unit_change_form" id="business_unit_change_form" 
+                                           {% if registration.status == 'rejected' or 'business_unit_change_form' in rejected_materials %}required{% endif %} 
+                                           accept=".doc,.docx">
+                                    <small>支持DOC、DOCX格式</small>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- 新媒体平台建立申请表 -->
+                            {% if 'new_media_form' in rejected_materials %}
+                                <div class="form-group">
+                                    <label for="new_media_form">
+                                        🌐 9. 新媒体平台建立申请表（选填）
+                                        {% if registration.status == 'rejected' or 'new_media_form' in rejected_materials %}<span style="color: var(--md3-error);">*</span>{% endif %}
+                                    </label>
+                                    <input type="file" name="new_media_form" id="new_media_form" 
+                                           {% if registration.status == 'rejected' or 'new_media_form' in rejected_materials %}required{% endif %} 
+                                           accept=".doc,.docx">
+                                    <small>支持DOC、DOCX格式</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% elif review_type == 'application' %}
+                            <h5>重新提交材料</h5>
+                            
+                            <!-- 只显示被拒绝的材料 -->
+                            {% if 'establishment_application' in rejected_materials %}
+                                    <div class="form-group">
+                                        <label for="establishment_application">📄 社团成立申请书 <span style="color: var(--md3-error);">*</span></label>
+                                        <input type="file" id="establishment_application" name="establishment_application" required>
+                                        <small>文件类型支持：pdf, doc, docx</small>
+                                    </div>
+                                {% endif %}
+                                {% if 'constitution_draft' in rejected_materials %}
+                                    <div class="form-group">
+                                        <label for="constitution_draft"><span class="material-icons" style="vertical-align: middle; font-size: 1em;">assignment</span> 社团章程草案 <span style="color: var(--md3-error);">*</span></label>
+                                        <input type="file" id="constitution_draft" name="constitution_draft" required>
+                                        <small>文件类型支持：pdf, doc, docx</small>
+                                    </div>
+                                {% endif %}
+                                {% if 'three_year_plan' in rejected_materials %}
+                                    <div class="form-group">
+                                        <label for="three_year_plan"><span class="material-icons">show_chart</span> 社团三年发展规划 <span style="color: var(--md3-error);">*</span></label>
+                                        <input type="file" id="three_year_plan" name="three_year_plan" required>
+                                        <small>文件类型支持：pdf, doc, docx</small>
+                                    </div>
+                                {% endif %}
+                                {% if 'leaders_resumes' in rejected_materials %}
+                                    <div class="form-group">
+                                        <label for="leaders_resumes"><span class="material-icons">person</span> 社团拟任负责人和指导老师的详细简历和身份证复印件 <span style="color: var(--md3-error);">*</span></label>
+                                        <input type="file" id="leaders_resumes" name="leaders_resumes" required>
+                                        <small>文件类型支持：pdf, doc, docx, jpg, jpeg, png</small>
+                                    </div>
+                                {% endif %}
+                                {% if 'one_month_activity_plan' in rejected_materials %}
+                                    <div class="form-group">
+                                        <label for="one_month_activity_plan">📅 社团组建一个月后的活动计划 <span style="color: var(--md3-error);">*</span></label>
+                                        <input type="file" id="one_month_activity_plan" name="one_month_activity_plan" required>
+                                        <small>文件类型支持：pdf, doc, docx</small>
+                                    </div>
+                                {% endif %}
+                                {% if 'advisor_certificates' in rejected_materials %}
+                                    <div class="form-group">
+                                        <label for="advisor_certificates">🎓 社团老师的相关专业证书（可选）</label>
+                                        <input type="file" id="advisor_certificates" name="advisor_certificates">
+                                        <small>文件类型支持：pdf, jpg, jpeg, png</small>
+                                    </div>
+                                {% endif %}
+                        {% else %}
+                            <!-- 自查表 -->
+                            {% if 'self_assessment_form' in rejected_materials %}
+                            <div class="form-group">
+                                <label for="self_assessment_form"><span class="material-icons" style="vertical-align: middle; font-size: 1em;">assignment</span> 自查表 <span style="color: var(--md3-error);">*</span></label>
+                                <input type="file" id="self_assessment_form" name="self_assessment_form" accept=".doc,.docx" required>
+                                {% if rejected_submission.self_assessment_form %}
+                                    <small>现有文件: <a href="{{ rejected_submission.self_assessment_form.url }}" target="_blank">{{ rejected_submission.self_assessment_form.name }}</a></small>
+                                {% else %}
+                                    <small>支持格式: Word (.doc, .docx)</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- 社团章程 -->
+                            {% if 'club_constitution' in rejected_materials %}
+                            <div class="form-group">
+                                <label for="club_constitution">📑 社团章程 <span style="color: var(--md3-error);">*</span></label>
+                                <input type="file" id="club_constitution" name="club_constitution" accept=".doc,.docx" required>
+                                {% if rejected_submission.club_constitution %}
+                                    <small>现有文件: <a href="{{ rejected_submission.club_constitution.url }}" target="_blank">{{ rejected_submission.club_constitution.name }}</a></small>
+                                {% else %}
+                                    <small>支持格式: Word (.doc, .docx)</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- 负责人学习及工作情况表 -->
+                            {% if 'leader_learning_work_report' in rejected_materials %}
+                            <div class="form-group">
+                                <label for="leader_learning_work_report"><span class="material-icons">person</span> 负责人学习及工作情况表 <span style="color: var(--md3-error);">*</span></label>
+                                <input type="file" id="leader_learning_work_report" name="leader_learning_work_report" accept=".doc,.docx" required>
+                                {% if rejected_submission.leader_learning_work_report %}
+                                    <small>现有文件: <a href="{{ rejected_submission.leader_learning_work_report.url }}" target="_blank">{{ rejected_submission.leader_learning_work_report.name }}</a></small>
+                                {% else %}
+                                    <small>支持格式: Word (.doc, .docx)</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- 社团年度活动清单 -->
+                            {% if 'annual_activity_list' in rejected_materials %}
+                            <div class="form-group">
+                                <label for="annual_activity_list">📅 社团年度活动清单 <span style="color: var(--md3-error);">*</span></label>
+                                <input type="file" id="annual_activity_list" name="annual_activity_list" accept=".doc,.docx" required>
+                                {% if rejected_submission.annual_activity_list %}
+                                    <small>现有文件: <a href="{{ rejected_submission.annual_activity_list.url }}" target="_blank">{{ rejected_submission.annual_activity_list.name }}</a></small>
+                                {% else %}
+                                    <small>支持格式: Word (.doc, .docx)</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- 指导教师履职情况表 -->
+                            {% if 'advisor_performance_report' in rejected_materials %}
+                            <div class="form-group">
+                                <label for="advisor_performance_report"><span class="material-icons">school</span> 指导教师履职情况表 <span style="color: var(--md3-error);">*</span></label>
+                                <input type="file" id="advisor_performance_report" name="advisor_performance_report" accept=".doc,.docx" required>
+                                {% if rejected_submission.advisor_performance_report %}
+                                    <small>现有文件: <a href="{{ rejected_submission.advisor_performance_report.url }}" target="_blank">{{ rejected_submission.advisor_performance_report.name }}</a></small>
+                                {% else %}
+                                    <small>支持格式: Word (.doc, .docx)</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- 年度财务情况表 -->
+                            {% if 'financial_report' in rejected_materials %}
+                            <div class="form-group">
+                                <label for="financial_report"><span class="material-icons" style="vertical-align: middle; font-size: 1em;">attach_money</span> 年度财务情况表 <span style="color: var(--md3-error);">*</span></label>
+                                <input type="file" id="financial_report" name="financial_report" accept=".doc,.docx" required>
+                                {% if rejected_submission.financial_report %}
+                                    <small>现有文件: <a href="{{ rejected_submission.financial_report.url }}" target="_blank">{{ rejected_submission.financial_report.name }}</a></small>
+                                {% else %}
+                                    <small>支持格式: Word (.doc, .docx)</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- 社团成员构成表 -->
+                            {% if 'member_composition_list' in rejected_materials %}
+                            <div class="form-group">
+                                <label for="member_composition_list"><span class="material-icons" style="vertical-align: middle; font-size: 1em;">group</span> 社团成员构成表 <span style="color: var(--md3-error);">*</span></label>
+                                <input type="file" id="member_composition_list" name="member_composition_list" accept=".doc,.docx" required>
+                                {% if rejected_submission.member_composition_list %}
+                                    <small>现有文件: <a href="{{ rejected_submission.member_composition_list.url }}" target="_blank">{{ rejected_submission.member_composition_list.name }}</a></small>
+                                {% else %}
+                                    <small>支持格式: Word (.doc, .docx)</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- 新媒体账号及运维情况表 -->
+                            <div class="form-group">
+                                <label for="new_media_account_report">📱 新媒体账号及运维情况表 <small style="color: #666;">(可选)</small></label>
+                                <input type="file" id="new_media_account_report" name="new_media_account_report" accept=".doc,.docx">
+                                {% if rejected_submission.new_media_account_report %}
+                                    <small>现有文件: <a href="{{ rejected_submission.new_media_account_report.url }}" target="_blank">{{ rejected_submission.new_media_account_report.name }}</a></small>
+                                {% else %}
+                                    <small>支持格式: Word (.doc, .docx)</small>
+                                {% endif %}
+                            </div>
+
+                            <!-- 其他材料 -->
+                            {% if 'other_materials' in rejected_materials %}
+                            <div class="form-group">
+                                <label for="other_materials">📦 其他材料 (可选)</label>
+                                <input type="file" id="other_materials" name="other_materials" accept=".doc,.docx">
+                                {% if rejected_submission.other_materials %}
+                                    <small>现有文件: <a href="{{ rejected_submission.other_materials.url }}" target="_blank">{{ rejected_submission.other_materials.name }}</a></small>
+                                {% else %}
+                                    <small>支持格式: Word (.doc, .docx) - 此项可选</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endif %}
+
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-icons">send</span>
+                                {% if review_type == 'review' %}提交审核{% else %}重新提交{% endif %}
+                            </button>
+                            {% if review_type == 'review' %}
+                                <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-outlined">
+                                    <span class="material-icons">arrow_back</span>
+                                    返回
+                                </a>
+                            {% elif review_type == 'application' %}
+                                <a href="{% url 'clubs:view_club_applications' %}" class="btn btn-outlined">
+                                    <span class="material-icons">arrow_back</span>
+                                    返回
+                                </a>
+                            {% else %}
+                                <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-outlined">
+                                    <span class="material-icons">arrow_back</span>
+                                    返回
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+    </div>
+</div>
+
+{% endblock %}
