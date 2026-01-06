@@ -141,7 +141,7 @@
         
         <!-- 合并下载按钮 -->
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
-            <a href="{% url 'clubs:zip_registration_docs' registration.id %}" style="background: var(--md3-primary); color: var(--md3-on-primary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+            <a href="{% url 'clubs:zip_registration_request_docs' registration.id %}" style="background: var(--md3-primary); color: var(--md3-on-primary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
                 🗜️ 打包所有材料为ZIP文件
             </a>
         </div>
@@ -150,7 +150,7 @@
 
     <!-- 审核表单或状态显示 -->
     {% if registration.status == 'pending' %}
-    {% include 'clubs/components/review_form.html' with show_rejected_materials=True materials_list=materials_list cancel_url='clubs:staff_dashboard' %}
+    {% include 'clubs/components/review_form.html' with show_rejected_materials=True materials_list=materials_list cancel_url='clubs:staff_audit_center' cancel_url_args='registration' %}
     {% else %}
     <div class="status-display">
         <p><strong>审核状态:</strong> <span class="review-badge {{ registration.status }}">{{ registration.get_status_display }}</span></p>
@@ -164,7 +164,7 @@
         </div>
         {% endif %}
         <div class="action-buttons">
-            <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+            <a href="{% url 'clubs:staff_audit_center' 'registration' %}" class="btn-secondary">
                 <span class="material-icons" style="font-size: 18px;">arrow_back</span>
                 返回列表
             </a>

@@ -46,5 +46,5 @@ Thumbs.db
 .env
 .env.local
 
-# github files
-.github/
+uwsgi.ini
+uwsgi.pid

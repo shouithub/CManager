@@ -5,7 +5,7 @@
 {% block content %}
 <style>
     /* 复用MD3样式（紧凑版） */
-    .review-container { max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-xl); }
+    .review-container { max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-xl); padding-bottom: calc(var(--md3-spacing-xl) + 100px); }
     .review-header { padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); }
     .review-header h1 { margin: 0; color: var(--md3-on-surface); font-size: 1.75rem; font-weight: 400; line-height: 2.25rem; letter-spacing: 0; display: flex; align-items: center; gap: var(--md3-spacing-md); }
     .info-card, .club-info-card, .description-card, .materials-section, .review-records-section, .review-form-section, .status-display { background: var(--md3-surface-container-low); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
@@ -92,7 +92,7 @@
                 {% if registration.club %}
                     {% for relation in registration.club.responsible_staff.all %}
                         {% if relation.is_active %}
-                            {% if relation.staff.real_name %}{{ relation.staff.real_name }} (学号: {{ relation.staff.student_id }}){% elif relation.staff.user.username %}{{ relation.staff.user.username }}{% else %}未知用户{% endif %}{% if not forloop.last %}, {% endif %}
+                            {% if relation.staff.real_name %}{{ relation.staff.real_name }} (用户名: {{ relation.staff.user.username }}){% elif relation.staff.user.username %}{{ relation.staff.user.username }}{% else %}未知用户{% endif %}{% if not forloop.last %}, {% endif %}
                         {% endif %}
                     {% empty %}未分配
                     {% endfor %}
@@ -162,7 +162,7 @@
         <!-- 合并下载按钮 -->
         {% if registration.materials.exists %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
-            <a href="{% url 'clubs:zip_registration_docs' registration.id %}" style="background: var(--md3-primary); color: var(--md3-on-primary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+            <a href="{% url 'clubs:zip_club_registration_docs' registration.id %}" style="background: var(--md3-primary); color: var(--md3-on-primary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
                 🗜️ 打包所有材料为ZIP文件
             </a>
         </div>
@@ -228,7 +228,7 @@
                     <span class="material-icons" style="font-size: 18px;">send</span>
                     提交审核
                 </button>
-                <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+                <a href="{% url 'clubs:staff_audit_center' 'application' %}" class="btn-secondary">
                     <span class="material-icons" style="font-size: 18px;">arrow_back</span>
                     返回列表
                 </a>
@@ -242,7 +242,7 @@
         <p><strong>审核时间:</strong> {{ registration.reviewed_at|date:"Y-m-d H:i" }}</p>
         {% endif %}
         <div class="action-buttons">
-            <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+            <a href="{% url 'clubs:staff_audit_center' 'application' %}" class="btn-secondary">
                 <span class="material-icons" style="font-size: 18px;">arrow_back</span>
                 返回列表
             </a>

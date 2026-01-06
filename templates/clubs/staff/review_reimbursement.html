@@ -6,7 +6,7 @@
 {% block content %}
 <style>
     /* 复用之前的MD3样式 */
-    .review-container { max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-xl); }
+    .review-container { max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-xl); padding-bottom: calc(var(--md3-spacing-xl) + 100px); }
     .review-header { padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); }
     .review-header h1 { margin: 0; color: var(--md3-on-surface); font-size: 1.75rem; font-weight: 400; line-height: 2.25rem; letter-spacing: 0; display: flex; align-items: center; gap: var(--md3-spacing-md); }
     .info-card { background: var(--md3-surface-container-low); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); border: 1px solid var(--md3-outline-variant); }
@@ -73,7 +73,7 @@
     .status-display strong { color: var(--md3-on-surface-variant); font-weight: 600; }
     
     @media (max-width: 768px) {
-        .review-container { padding: var(--md3-spacing-md); }
+        .review-container { padding: var(--md3-spacing-md); padding-bottom: calc(var(--md3-spacing-md) + 100px); }
         .materials-grid, .info-grid { grid-template-columns: 1fr; }
         .action-buttons { flex-direction: column; }
         .action-buttons button, .action-buttons a { width: 100%; justify-content: center; }
@@ -127,7 +127,7 @@
                     {% for relation in reimbursement.club.responsible_staff.all %}
                         {% if relation.is_active %}
                             {% if relation.staff.real_name %}
-                                {{ relation.staff.real_name }} (学号: {{ relation.staff.student_id }})
+                                {{ relation.staff.real_name }} (用户名: {{ relation.staff.user.username }})
                             {% elif relation.staff.user.username %}
                                 {{ relation.staff.user.username }}
                             {% else %}
@@ -260,7 +260,7 @@
 
     <!-- 审核表单或状态显示 -->
     {% if reimbursement.status == 'pending' and not has_reviewed %}
-    {% include 'clubs/components/review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_dashboard' %}
+    {% include 'clubs/components/review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='reimbursement' %}
     {% else %}
     <div class="status-display">
         <p><strong>审核状态:</strong> <span class="review-badge {{ reimbursement.status }}">{{ reimbursement.get_status_display }}</span></p>
@@ -268,7 +268,7 @@
         <p><strong>审核时间:</strong> {{ reimbursement.reviewed_at|date:"Y-m-d H:i" }}</p>
         {% endif %}
         <div class="action-buttons">
-            <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+            <a href="{% url 'clubs:staff_audit_center' 'reimbursement' %}" class="btn-secondary">
                 <span class="material-icons" style="font-size: 18px;">arrow_back</span>
                 返回列表
             </a>

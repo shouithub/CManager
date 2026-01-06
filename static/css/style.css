@@ -398,9 +398,34 @@ a:hover {
 
 a:focus-visible {
     outline: 2px solid var(--md3-primary);
-    outline-offset: 2px;
-    border-radius: var(--md3-radius-xs);
 }
+
+/* ============================================================================
+ * Admin MD3 & Tree Component Styles (merged from admin-md3.css and index tree styles)
+ * These styles are reusable across admin pages and the homepage tree view
+ * ============================================================================ */
+
+/* Admin edit layout */
+.admin-edit-hero{
+  display:flex;gap:20px;align-items:center;margin-bottom:20px;
+}
+.user-avatar{width:72px;height:72px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--md3-primary-container);color:var(--md3-on-primary-container);font-size:28px;font-weight:600;}
+
+.admin-card{background:var(--md3-surface);border-radius:12px;padding:18px;box-shadow:var(--md3-elevation-2);border:1px solid var(--md3-outline-variant);}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.form-row{display:flex;gap:12px;align-items:center}
+.form-input,.form-select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--md3-outline);background:var(--md3-surface-container-highest);color:var(--md3-on-surface)}
+.btn-md3{padding:10px 14px;border-radius:10px;background:var(--md3-primary);color:var(--md3-on-primary);border:none;font-weight:600;cursor:pointer}
+.btn-secondary{padding:8px 12px;border-radius:10px;background:transparent;border:1px solid var(--md3-outline);color:var(--md3-on-surface-variant);cursor:pointer}
+.kv{color:var(--md3-on-surface-variant);font-size:0.95rem}
+.msg-error{background:linear-gradient(90deg,rgba(255,220,220,1),rgba(255,240,240,1));padding:12px;border-radius:8px;color:#8a1f1f;border:1px solid rgba(255,205,205,1)}
+.msg-success{background:linear-gradient(90deg,rgba(230,255,235,1),rgba(245,255,250,1));padding:12px;border-radius:8px;color:#1f6f3f;border:1px solid rgba(200,255,220,1)}
+.form-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:8px}
+@media (max-width:800px){.grid-2{grid-template-columns:1fr}.admin-edit-hero{flex-direction:column;align-items:flex-start;gap:12px}}
+
+/* Tree styles moved to components/tree.css (imported for reuse) */
+@import url('components/tree.css');
 
 /* ============================================================================
  * 5. 布局系统 (Layout)
@@ -711,9 +736,12 @@ input[type="radio"] {
 
 select {
     cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2349454e' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
+    background-size: 12px 12px;
     background-position: right var(--md3-spacing-lg) center;
     padding-right: var(--md3-spacing-3xl);
 }
@@ -1760,6 +1788,12 @@ html[data-theme="dark"] input[type="week"]::-webkit-calendar-picker-indicator {
 
 html[data-theme="dark"] select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cac4d0' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+    background-position: right var(--md3-spacing-lg) center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 /* ============================================================================
@@ -2315,6 +2349,60 @@ body {
     line-height: 16px;
 }
 
+.sidebar-menu-title.collapsible {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-menu-title.collapsible::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--md3-on-surface);
+    opacity: 0;
+    transition: opacity var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+}
+
+.sidebar-menu-title.collapsible:hover::before {
+    opacity: 0.08;
+}
+
+.sidebar-menu-title.collapsible:active::before {
+    opacity: 0.12;
+}
+
+.sidebar-menu-title.collapsible .expand-icon {
+    font-size: 1rem;
+    transition: transform var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+    color: var(--md3-on-surface-variant);
+}
+
+.sidebar-menu-title.collapsible.collapsed .expand-icon {
+    transform: rotate(-90deg);
+}
+
+.sidebar-menu-items {
+    overflow: hidden;
+    transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+    max-height: 500px;
+    opacity: 1;
+}
+
+.sidebar-menu-items.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
 .sidebar-menu-item {
     display: flex;
     align-items: center;
@@ -2385,7 +2473,9 @@ body {
     padding: var(--md3-spacing-md) var(--md3-spacing-lg) var(--md3-spacing-xl);
     border-top: 1px solid var(--md3-outline-variant);
     flex-shrink: 0;
-    background-color: var(--md3-surface);
+    /* inherit the sidebar background to ensure visual continuity */
+    background-color: inherit;
+    transition: background-color var(--md3-motion-duration-medium2) var(--md3-motion-easing-standard), color var(--md3-motion-duration-medium2) var(--md3-motion-easing-standard);
     position: relative;
 }
 
@@ -2395,10 +2485,11 @@ body {
     gap: var(--md3-spacing-md);
     padding: var(--md3-spacing-md) var(--md3-spacing-lg);
     background-color: var(--md3-surface-container-low);
+    border: 1px solid var(--md3-outline-variant);
     border-radius: var(--md3-radius-lg);
     margin-bottom: var(--md3-spacing-md);
     cursor: pointer;
-    transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+    transition: background-color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard), border-color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard), color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
     position: relative;
     overflow: hidden;
 }
@@ -2553,9 +2644,10 @@ body {
     gap: var(--md3-spacing-md);
     padding: var(--md3-spacing-md) var(--md3-spacing-lg);
     background-color: var(--md3-surface-container-low);
+    border: 1px solid var(--md3-outline-variant);
     border-radius: var(--md3-radius-lg);
     cursor: pointer;
-    transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+    transition: background-color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard), border-color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard), color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
     position: relative;
     overflow: hidden;
 }
@@ -3805,3 +3897,38 @@ fieldset legend {
         width: 100%;
     }
 }
+
+/* ==========================================================================
+   START: Minimal, reversible layout background fix
+   Ensures main content keeps surface color and theme transitions are smooth
+   ========================================================================== */
+
+/* Make wrapper transparent so only main-content shows the page background */
+.main-wrapper {
+    background-color: transparent !important;
+}
+
+/* Main content carries the page background and fills viewport to avoid gaps */
+.main-content {
+    background-color: var(--md3-surface) !important;
+    min-height: 100vh;
+    transition: background-color var(--md3-motion-duration-medium2) var(--md3-motion-easing-standard);
+    will-change: background-color;
+}
+
+/* Sidebar and bottom-nav use container background so they contrast with main content */
+.sidebar-nav, .sidebar-header, .bottom-nav {
+    background-color: var(--md3-surface-container) !important;
+    transition: background-color var(--md3-motion-duration-medium2) var(--md3-motion-easing-standard);
+}
+
+/* Reduce motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .main-content, .sidebar-nav, .bottom-nav {
+        transition: none !important;
+    }
+}
+
+/* ==========================================================================
+   END: Minimal, reversible layout background fix
+   ========================================================================== */

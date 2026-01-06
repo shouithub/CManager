@@ -14,6 +14,9 @@
     .copy-toast.show { display: block; }
 
     .alerts-grid { display: grid; gap: 16px; margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+
+    /* 移除页面最下方的所有 '待审核' 列表（在本页面生效，可回滚） */
+
     
     .alert-card { border-radius: 16px; padding: 18px 20px; border: 1px solid; display: flex; flex-direction: column; gap: 12px; }
     .alert-card.info { background: var(--md3-secondary-container); color: var(--md3-on-secondary-container); border-color: var(--md3-outline-variant); }
@@ -144,20 +147,39 @@
         <p class="dash-subtitle">欢迎 {{ user.profile.get_full_name }}，请处理待审核的材料</p>
     </div>
 
-    <div class="alerts-grid">
-        {% if clubs_with_low_members_count > 0 %}
-        <div class="alert-card info">
+    {# 已移除：预警栏 #}
+    {% comment %}
             <div class="alert-header">
                 <span class="material-icons">warning</span> 社团成员数量预警 ({{ clubs_with_low_members_count }})
             </div>
             <div class="alert-list">
-                {% for club in clubs_with_low_members %}
+                {% for club in clubs_with_low_members|slice:":3" %}
                 <div class="alert-item">
                     <strong>{{ club.name }}</strong> ({{ club.members_count }}人)<br>
                     社长: {% if club.president %}{{ club.president.profile.get_full_name|default:'未设置' }}{% else %}未设置{% endif %}<br>
                     负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
                 </div>
                 {% endfor %}
+
+                {% if clubs_with_low_members|length > 3 %}
+                <div class="collapsible-section">
+                    <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                        <span class="material-icons">expand_more</span>
+                        {% with remaining=clubs_with_low_members|length|add:"-3" %}
+                        更多 (+{{ remaining }})
+                        {% endwith %}
+                    </div>
+                    <div class="alert-list collapsible-content hidden">
+                        {% for club in clubs_with_low_members|slice:"3:" %}
+                        <div class="alert-item">
+                            <strong>{{ club.name }}</strong> ({{ club.members_count }}人)<br>
+                            社长: {% if club.president %}{{ club.president.profile.get_full_name|default:'未设置' }}{% else %}未设置{% endif %}<br>
+                            负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
             <button onclick="copyLowMemberClubs()" class="alert-btn">
                 <span class="material-icons" style="font-size:18px;">content_copy</span> 复制名单
@@ -174,13 +196,34 @@
             <!-- 我负责的社团 -->
             <div class="alert-list">
                 {% if clubs_enabled_review_not_submitted_my.count > 0 %}
-                    {% for club in clubs_enabled_review_not_submitted_my %}
+                    {% for club in clubs_enabled_review_not_submitted_my|slice:":3" %}
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong><br>
                         社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}<br>
                         负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
                     </div>
                     {% endfor %}
+
+                    {% if clubs_enabled_review_not_submitted_my.count > 3 %}
+                    <div class="collapsible-section">
+                        <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                            <span class="material-icons">expand_more</span>
+                            {% with remaining=clubs_enabled_review_not_submitted_my.count|add:"-3" %}
+                            更多 (+{{ remaining }})
+                            {% endwith %}
+                        </div>
+                        <div class="alert-list collapsible-content hidden">
+                            {% for club in clubs_enabled_review_not_submitted_my|slice:"3:" %}
+                            <div class="alert-item">
+                                <strong>{{ club.name }}</strong><br>
+                                社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}<br>
+                                负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                 {% else %}
                     <div class="alert-item" style="opacity: 0.7; font-style: italic;">暂无你负责的未提交社团</div>
                 {% endif %}
@@ -194,13 +237,33 @@
                     其他干事负责的社团 ({{ clubs_enabled_review_not_submitted_other.count }})
                 </div>
                 <div class="alert-list collapsible-content hidden">
-                    {% for club in clubs_enabled_review_not_submitted_other %}
+                    {% for club in clubs_enabled_review_not_submitted_other|slice:":3" %}
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong><br>
                         社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}<br>
                         负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
                     </div>
                     {% endfor %}
+
+                    {% if clubs_enabled_review_not_submitted_other.count > 3 %}
+                    <div class="collapsible-section">
+                        <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                            <span class="material-icons">expand_more</span>
+                            {% with remaining=clubs_enabled_review_not_submitted_other.count|add:"-3" %}
+                            更多 (+{{ remaining }})
+                            {% endwith %}
+                        </div>
+                        <div class="alert-list collapsible-content hidden">
+                            {% for club in clubs_enabled_review_not_submitted_other|slice:"3:" %}
+                            <div class="alert-item">
+                                <strong>{{ club.name }}</strong><br>
+                                社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}<br>
+                                负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -230,13 +293,34 @@
             <!-- 我负责的社团 -->
             <div class="alert-list">
                 {% if clubs_not_registered_my.count > 0 %}
-                    {% for club in clubs_not_registered_my %}
+                    {% for club in clubs_not_registered_my|slice:":3" %}
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong><br>
                         社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}<br>
                         负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
                     </div>
                     {% endfor %}
+
+                    {% if clubs_not_registered_my.count > 3 %}
+                    <div class="collapsible-section">
+                        <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                            <span class="material-icons">expand_more</span>
+                            {% with remaining=clubs_not_registered_my.count|add:"-3" %}
+                            更多 (+{{ remaining }})
+                            {% endwith %}
+                        </div>
+                        <div class="alert-list collapsible-content hidden">
+                            {% for club in clubs_not_registered_my|slice:"3:" %}
+                            <div class="alert-item">
+                                <strong>{{ club.name }}</strong><br>
+                                社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}<br>
+                                负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                 {% else %}
                     <div class="alert-item" style="opacity: 0.7; font-style: italic;">暂无你负责的未提交社团</div>
                 {% endif %}
@@ -315,10 +399,16 @@
                 <a href="{% url 'clubs:staff_management' %}" class="btn btn-success">
                     <span class="material-icons">business_center</span> 社团管理
                 </a>
+                {% if user.profile.staff_level == 'director' and user.profile.department %}
+                <a href="{% url 'clubs:manage_department_staff' %}" class="btn btn-success">
+                    <span class="material-icons">supervisor_account</span> 部门管理
+                </a>
+                {% endif %}
                 <a href="{% url 'clubs:index' %}" class="btn btn-secondary"><span class="material-icons">home</span> 返回首页</a>
             </div>
         </div>
     </div>
+    {% endcomment %}
 
     <div class="stats-grid">
         <div class="stat-card c1">
@@ -347,314 +437,171 @@
         </div>
     </div>
 
-    <div class="section-card">
-        <div class="section-header">
-            <h3 class="section-title">
-                <span><span class="material-icons">assignment</span> 待审核的年审材料</span>
-                <a href="{% url 'clubs:staff_review_history' 'submission' %}" class="btn btn-secondary btn-sm">查看历史</a>
-            </h3>
+    <!-- 待审核记录列表 -->
+    <div style="margin-top: 32px;">
+        <div style="font-size: 20px; font-weight: 700; color: var(--md3-on-surface); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <span class="material-icons">assignment</span>
+            <span>待审核记录</span>
         </div>
+
+        <!-- 年审 -->
         {% if pending_submissions %}
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>社团名称</th>
-                        <th>社长</th>
-                        <th>负责干事</th>
-                        <th>提交年份</th>
-                        <th>提交时间</th>
-                        <th>审核记录</th>
-                        <th style="text-align: center;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for submission in pending_submissions %}
-                    <tr>
-                        <td><strong>{{ submission.club.name }}</strong></td>
-                        <td>{% if submission.club.president %}{{ submission.club.president.profile.real_name|default:'未设置' }}{% else %}未设置{% endif %}</td>
-                        <td>{% if submission.club.responsible_staff.all %}{% for relation in submission.club.responsible_staff.all %}{% if relation.is_active %}{{ relation.staff.get_full_name }}{% if not forloop.last %}<br>{% endif %}{% endif %}{% endfor %}{% else %}暂未分配{% endif %}</td>
-                        <td>{{ submission.submission_year }}</td>
-                        <td>{{ submission.submitted_at|date:"Y-m-d" }}</td>
-                        <td>
-                            {% if submission.reviews.all %}
-                            {% for review in submission.reviews.all %}
-                            <span class="review-badge {% if review.status == 'approved' %}approved{% elif review.status == 'rejected' %}rejected{% else %}pending{% endif %}">
-                                {{ review.get_status_display }} ({% if review.reviewer %}{{ review.reviewer.profile.get_full_name|default:''}}{% else %}未设置{% endif %})
-                            </span>
-                            {% endfor %}
-                            {% else %}暂无记录{% endif %}
-                        </td>
-                        <td style="text-align: center;">
-                            <a href="{% url 'clubs:review' submission.club.id %}?type=submission&number={{ forloop.counter }}&id={{ submission.id }}" class="btn btn-success">查看审核</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div style="margin-bottom: 32px;">
+            <div style="font-size: 16px; font-weight: 700; color: var(--md3-on-surface); margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--md3-outline-variant);">
+                <span class="material-icons" style="font-size: 20px; vertical-align: middle; margin-right: 8px;">assignment</span>年审 ({{ pending_submissions|length }})
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;">
+                {% for item in pending_submissions|slice:":10" %}
+                <div style="background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s ease;" onclick="window.location.href='{{ item.review_url }}';">
+                    <div style="font-weight: 600; color: var(--md3-on-surface); margin-bottom: 8px;">{{ item.club.name }}</div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">calendar_today</span>
+                        <span>{{ item.submission_year }} 年</span>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">schedule</span>
+                        <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        {% else %}
-        <div class="empty-msg">暂无待审核的年审材料</div>
         {% endif %}
-    </div>
 
-    <div class="section-card">
-        <div class="section-header">
-            <h3 class="section-title">
-                <span><span class="material-icons">note</span> 待审核的社团注册</span>
-                <a href="{% url 'clubs:staff_review_history' 'club_registration' %}" class="btn btn-secondary btn-sm">查看历史</a>
-            </h3>
-        </div>
+        <!-- 社团注册 -->
         {% if pending_club_registrations %}
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>社团名称</th>
-                        <th>申请人</th>
-                        <th>负责干事</th>
-                        <th>提交时间</th>
-                        <th>审核记录</th>
-                        <th style="text-align: center;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for registration in pending_club_registrations %}
-                    <tr>
-                        <td><strong>{{ registration.club.name }}</strong></td>
-                        <td>{% if registration.club.president %}{{ registration.club.president.profile.real_name|default:'' }}{% elif registration.requested_by %}{{ registration.requested_by.profile.real_name|default:'未设置' }}{% else %}未设置{% endif %}</td>
-                        <td>{% if registration.club.responsible_staff.all %}{% for relation in registration.club.responsible_staff.all %}{% if relation.is_active %}{{ relation.staff.get_full_name }}{% if not forloop.last %}<br>{% endif %}{% endif %}{% endfor %}{% else %}暂未分配{% endif %}</td>
-                        <td>{{ registration.submitted_at|date:"Y-m-d" }}</td>
-                        <td>
-                            {% if registration.reviews.all %}
-                            {% for review in registration.reviews.all %}
-                            <span class="review-badge {% if review.status == 'approved' %}approved{% elif review.status == 'rejected' %}rejected{% else %}pending{% endif %}">
-                                {{ review.get_status_display }} ({% if review.reviewer %}{{ review.reviewer.profile.real_name|default:review.reviewer.username|default:''}}{% else %}未设置{% endif %})
-                            </span>
-                            {% endfor %}
-                            {% else %}暂无记录{% endif %}
-                        </td>
-                        <td style="text-align: center;">
-                            <a href="{% url 'clubs:review' registration.club.id %}?type=club_registration_submission&number={{ forloop.counter }}&id={{ registration.id }}" class="btn btn-success">查看审核</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div style="margin-bottom: 32px;">
+            <div style="font-size: 16px; font-weight: 700; color: var(--md3-on-surface); margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--md3-outline-variant);">
+                <span class="material-icons" style="font-size: 20px; vertical-align: middle; margin-right: 8px;">edit</span>社团注册 ({{ pending_club_registrations|length }})
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;">
+                {% for item in pending_club_registrations|slice:":10" %}
+                <div style="background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s ease;" onclick="window.location.href='{{ item.review_url }}';">
+                    <div style="font-weight: 600; color: var(--md3-on-surface); margin-bottom: 8px;">{{ item.club.name }}</div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">event</span>
+                        <span>{{ item.registration_period.name }}</span>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">schedule</span>
+                        <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        {% else %}
-        <div class="empty-msg">暂无待审核的社团注册</div>
         {% endif %}
-    </div>
 
-    <div class="section-card">
-        <div class="section-header">
-            <h3 class="section-title">
-                <span><span class="material-icons">edit</span> 待审核的社团信息修改申请</span>
-                <a href="{% url 'clubs:staff_review_history' 'club_info_change' %}" class="btn btn-secondary btn-sm">查看历史</a>
-            </h3>
-        </div>
-        {% if pending_club_info_changes %}
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>社团名称</th>
-                        <th>申请人</th>
-                        <th>提交时间</th>
-                        <th style="text-align: center;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for change in pending_club_info_changes %}
-                    <tr>
-                        <td><strong>{{ change.club.name }}</strong></td>
-                        <td>{% if change.requested_by %}{{ change.requested_by.profile.get_full_name|default:'未设置' }}{% else %}未设置{% endif %}</td>
-                        <td>{{ change.submitted_at|date:"Y-m-d" }}</td>
-                        <td style="text-align: center;">
-                            <a href="{% url 'clubs:review' change.club.id %}?type=club_info_change&number={{ forloop.counter }}&id={{ change.id }}" class="btn btn-success">查看审核</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="empty-msg">暂无待审核的社团信息修改申请</div>
-        {% endif %}
-    </div>
-
-    <div class="section-card">
-        <div class="section-header">
-            <h3 class="section-title">
-                <span><span class="material-icons">payments</span> 待审核的报销申请</span>
-                <a href="{% url 'clubs:staff_review_history' 'reimbursement' %}" class="btn btn-secondary btn-sm">查看历史</a>
-            </h3>
-        </div>
-        {% if pending_reimbursements %}
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>社团名称</th>
-                        <th>申请人</th>
-                        <th>负责干事</th>
-                        <th>报销金额</th>
-                        <th>申请时间</th>
-                        <th style="text-align: center;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for reimbursement in pending_reimbursements %}
-                    <tr>
-                        <td><strong>{{ reimbursement.club.name }}</strong></td>
-                        <td>{% if reimbursement.club.president %}{{ reimbursement.club.president.profile.get_full_name|default:'未设置' }}{% else %}未设置{% endif %}</td>
-                        <td>{% if reimbursement.club.responsible_staff.all %}{% for relation in reimbursement.club.responsible_staff.all %}{% if relation.is_active %}{{ relation.staff.get_full_name }}{% if not forloop.last %}<br>{% endif %}{% endif %}{% endfor %}{% else %}暂未分配{% endif %}</td>
-                        <td>¥{{ reimbursement.reimbursement_amount }}</td>
-                        <td>{{ reimbursement.submitted_at|date:"Y-m-d" }}</td>
-                        <td style="text-align: center;">
-                            <a href="{% url 'clubs:review' reimbursement.club.id %}?type=reimbursement&number={{ forloop.counter }}&id={{ reimbursement.id }}" class="btn btn-success">查看审核</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="empty-msg">暂无待审核的报销申请</div>
-        {% endif %}
-    </div>
-
-    <div class="section-card">
-        <div class="section-header">
-            <h3 class="section-title">
-                <span><span class="material-icons">group_work</span> 待审核的社团申请</span>
-                <a href="{% url 'clubs:staff_review_history' 'club_application' %}" class="btn btn-secondary btn-sm">查看历史</a>
-            </h3>
-        </div>
+        <!-- 新社团申请 -->
         {% if pending_registrations %}
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>社团名称</th>
-                        <th>申请人</th>
-                        <th>社长</th>
-                        <th>申请时间</th>
-                        <th style="text-align: center;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for registration in pending_registrations %}
-                    <tr>
-                        <td><strong>{{ registration.club_name }}</strong></td>
-                        <td>{% if registration.requested_by %}{{ registration.requested_by.profile.get_full_name|default:'未设置' }}{% else %}未设置{% endif %}</td>
-                        <td>{{ registration.president_name }}</td>
-                        <td>{{ registration.submitted_at|date:"Y-m-d" }}</td>
-                        <td style="text-align: center;">
-                            <a href="{% url 'clubs:review' registration.id %}?type=registration" class="btn btn-success">查看审核</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div style="margin-bottom: 32px;">
+            <div style="font-size: 16px; font-weight: 700; color: var(--md3-on-surface); margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--md3-outline-variant);">
+                <span class="material-icons" style="font-size: 20px; vertical-align: middle; margin-right: 8px;">group_work</span>新社团申请 ({{ pending_registrations|length }})
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;">
+                {% for item in pending_registrations|slice:":10" %}
+                <div style="background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s ease;" onclick="window.location.href='{{ item.review_url }}';">
+                    <div style="font-weight: 600; color: var(--md3-on-surface); margin-bottom: 8px;">{{ item.club_name }}</div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">person</span>
+                        <span>{{ item.requested_by.get_full_name|default:item.requested_by.username }}</span>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">schedule</span>
+                        <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        {% else %}
-        <div class="empty-msg">暂无待审核的社团申请</div>
         {% endif %}
-    </div>
 
-    <div class="section-card">
-        <div class="section-header">
-            <h3 class="section-title">
-                <span><span class="material-icons">event</span> 待审核的活动申请</span>
-                <a href="{% url 'clubs:staff_review_history' 'activity_application' %}" class="btn btn-secondary btn-sm">查看历史</a>
-            </h3>
+        <!-- 报销 -->
+        {% if pending_reimbursements %}
+        <div style="margin-bottom: 32px;">
+            <div style="font-size: 16px; font-weight: 700; color: var(--md3-on-surface); margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--md3-outline-variant);">
+                <span class="material-icons" style="font-size: 20px; vertical-align: middle; margin-right: 8px;">payments</span>报销 ({{ pending_reimbursements|length }})
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;">
+                {% for item in pending_reimbursements|slice:":10" %}
+                <div style="background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s ease;" onclick="window.location.href='{{ item.review_url }}';">
+                    <div style="font-weight: 600; color: var(--md3-on-surface); margin-bottom: 8px;">{{ item.club.name }}</div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">attach_money</span>
+                        <span style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">schedule</span>
+                        <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
+        {% endif %}
+
+        <!-- 活动申请 -->
         {% if pending_activity_applications %}
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>社团名称</th>
-                        <th>活动名称</th>
-                        <th>活动日期</th>
-                        <th>提交时间</th>
-                        <th>状态</th>
-                        <th style="text-align: center;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for activity in pending_activity_applications|slice:':10' %}
-                    <tr>
-                        <td><strong>{{ activity.club.name }}</strong></td>
-                        <td>{{ activity.activity_name }}</td>
-                        <td>{{ activity.activity_date|date:"Y-m-d" }}</td>
-                        <td>{{ activity.submitted_at|date:"Y-m-d" }}</td>
-                        <td>
-                            <span class="review-badge pending">
-                                <span class="material-icons">schedule</span> 待审核
-                            </span>
-                        </td>
-                        <td style="text-align: center;">
-                            <a href="{% url 'clubs:review_activity_application' activity.id %}" class="btn btn-success">查看审核</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div style="margin-bottom: 32px;">
+            <div style="font-size: 16px; font-weight: 700; color: var(--md3-on-surface); margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--md3-outline-variant);">
+                <span class="material-icons" style="font-size: 20px; vertical-align: middle; margin-right: 8px;">event</span>活动申请 ({{ pending_activity_applications|length }})
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;">
+                {% for item in pending_activity_applications|slice:":10" %}
+                <div style="background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s ease;" onclick="window.location.href='{{ item.review_url }}';">
+                    <div style="font-weight: 600; color: var(--md3-on-surface); margin-bottom: 8px;">{{ item.club.name }}</div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">event</span>
+                        <span>{{ item.activity_date|date:"Y-m-d" }}</span>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">schedule</span>
+                        <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        {% else %}
-        <div class="empty-msg">暂无待审核的活动申请</div>
+        {% endif %}
+
+        <!-- 社长换届 -->
+        {% if pending_president_transitions %}
+        <div style="margin-bottom: 32px;">
+            <div style="font-size: 16px; font-weight: 700; color: var(--md3-on-surface); margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--md3-outline-variant);">
+                <span class="material-icons" style="font-size: 20px; vertical-align: middle; margin-right: 8px;">swap_horiz</span>社长换届 ({{ pending_president_transitions|length }})
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;">
+                {% for item in pending_president_transitions|slice:":10" %}
+                <div style="background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.2s ease;" onclick="window.location.href='{{ item.review_url }}';">
+                    <div style="font-weight: 600; color: var(--md3-on-surface); margin-bottom: 8px;">{{ item.club.name }}</div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">person</span>
+                        <span>新社长: {{ item.new_president_name }}</span>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">schedule</span>
+                        <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
         {% endif %}
     </div>
 
-    <div class="section-card">
-        <div class="section-header">
-            <h3 class="section-title">
-                <span><span class="material-icons">swap_horiz</span> 待审核的社长换届申请</span>
-                <a href="{% url 'clubs:staff_review_history' 'president_transition' %}" class="btn btn-secondary btn-sm">查看历史</a>
-            </h3>
-        </div>
-        {% if pending_president_transitions %}
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>社团名称</th>
-                        <th>原社长</th>
-                        <th>新社长</th>
-                        <th>换届日期</th>
-                        <th>提交时间</th>
-                        <th>状态</th>
-                        <th style="text-align: center;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for transition in pending_president_transitions|slice:':10' %}
-                    <tr>
-                        <td><strong>{{ transition.club.name }}</strong></td>
-                        <td>{{ transition.old_president.profile.get_full_name }}</td>
-                        <td>{{ transition.new_president_name }}</td>
-                        <td>{{ transition.transition_date|date:"Y-m-d" }}</td>
-                        <td>{{ transition.submitted_at|date:"Y-m-d" }}</td>
-                        <td>
-                            <span class="review-badge pending">
-                                <span class="material-icons">schedule</span> 待审核
-                            </span>
-                        </td>
-                        <td style="text-align: center;">
-                            <a href="{% url 'clubs:review_president_transition' transition.id %}" class="btn btn-success">查看审核</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="empty-msg">暂无待审核的社长换届申请</div>
-        {% endif %}
-    </div>
+    {# 已删除：待审核的年审材料（按要求永久移除） #}
+
+    {# 已删除：待审核的社团注册（按要求永久移除） #}
+
+    {# 已删除：待审核的社团信息修改申请（按要求永久移除） #}
+
+    {# 已删除：待审核的报销申请（按要求永久移除） #}
+
+    {# 已删除：待审核的社团申请（按要求永久移除） #}
+
+    {# 已删除：待审核的活动申请（按要求永久移除） #}
+
+    {# 已删除：待审核的社长换届申请（按要求永久移除） #}
 </div>
 
 <script>

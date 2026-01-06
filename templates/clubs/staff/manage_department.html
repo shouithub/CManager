@@ -1,0 +1,410 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}管理部门人员{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container-full {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        box-sizing: border-box;
+    }
+
+    /* 页面标题 */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-tertiary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+
+    .header-content .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .header-text h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .header-text p {
+        margin: var(--md3-spacing-xs) 0 0 0;
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .stats-container {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        flex-wrap: wrap;
+    }
+
+    .stat-badge {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        color: var(--md3-primary);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .stat-badge .material-icons {
+        font-size: 1.25rem;
+    }
+
+    /* 信息卡片 */
+    .info-card {
+        background: var(--md3-info-container, #e1f5ff);
+        color: var(--md3-on-info-container, #01579b);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-2xl);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-xl);
+        border-left: 4px solid var(--md3-info, #0288d1);
+        display: flex;
+        gap: var(--md3-spacing-md);
+        align-items: flex-start;
+    }
+
+    .info-card .material-icons {
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    /* 部门卡片 */
+    .staff-list {
+        display: grid;
+        gap: var(--md3-spacing-lg);
+    }
+
+    .staff-section {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+
+    .section-header .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+
+    .section-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .section-title-suffix {
+        margin-left: auto;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .staff-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: var(--md3-spacing-md);
+    }
+
+    .staff-table thead {
+        background: var(--md3-surface-container-highest);
+    }
+
+    .staff-table th {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        text-align: left;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+
+    .staff-table tbody tr {
+        border-bottom: 1px solid var(--md3-outline-variant);
+        transition: background-color 0.2s ease;
+    }
+
+    .staff-table tbody tr:hover {
+        background: var(--md3-surface-container-highest);
+    }
+
+    .staff-table td {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        color: var(--md3-on-surface);
+    }
+
+    .staff-name {
+        font-weight: 600;
+        color: var(--md3-primary);
+    }
+
+    .staff-level-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: var(--md3-spacing-xs) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .staff-level-director {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .staff-level-member {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: var(--md3-spacing-2xl);
+        color: var(--md3-on-surface-variant);
+    }
+
+    .empty-state .material-icons {
+        font-size: 3rem;
+        margin-bottom: var(--md3-spacing-md);
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: 1rem;
+        margin: var(--md3-spacing-md) 0;
+    }
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container);
+        color: var(--md3-primary);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 1rem;
+    }
+
+    .back-button:hover {
+        background: var(--md3-surface-container-highest);
+        border-color: var(--md3-primary);
+    }
+
+    @media (max-width: 768px) {
+        .container-full {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .page-header {
+            padding: var(--md3-spacing-xl);
+        }
+
+        .header-content .material-icons {
+            font-size: 2rem;
+        }
+
+        .header-text h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-container {
+            gap: var(--md3-spacing-sm);
+        }
+
+        .stat-badge {
+            padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+            font-size: 0.9rem;
+        }
+
+        .staff-table {
+            font-size: 0.9rem;
+        }
+
+        .staff-table th,
+        .staff-table td {
+            padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-full">
+    <!-- 返回按钮 -->
+    <a href="{% url 'clubs:staff_dashboard' %}" class="back-button">
+        <span class="material-icons">arrow_back</span>
+        <span>返回</span>
+    </a>
+
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <div class="header-content">
+            <span class="material-icons">supervisor_account</span>
+            <div class="header-text">
+                <h1>管理部门人员</h1>
+                <p>管理 {{ department }} 的所有干事</p>
+            </div>
+        </div>
+        <div class="stats-container">
+            <div class="stat-badge">
+                <span class="material-icons">people</span>
+                <span>总人数: {{ total_staff }}</span>
+            </div>
+            <div class="stat-badge">
+                <span class="material-icons">admin_panel_settings</span>
+                <span>部长: {{ directors.count }}</span>
+            </div>
+            <div class="stat-badge">
+                <span class="material-icons">person</span>
+                <span>部员: {{ members.count }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 信息提示 -->
+    <div class="info-card">
+        <span class="material-icons">info</span>
+        <div>
+            <strong>部门部长管理功能</strong>
+            <p style="margin: var(--md3-spacing-xs) 0 0 0;">
+                你是 {{ department }} 的部长，可以查看和了解你部门的所有干事成员。
+                如需修改干事的属性（部门/职级），请联系管理员。
+            </p>
+        </div>
+    </div>
+
+    <!-- 部长列表 -->
+    {% if directors.count > 0 %}
+    <div class="staff-list">
+        <div class="staff-section">
+            <div class="section-header">
+                <span class="material-icons">admin_panel_settings</span>
+                <h3>部长</h3>
+                <div class="section-title-suffix">{{ directors.count }} 人</div>
+            </div>
+            
+            <table class="staff-table">
+                <thead>
+                    <tr>
+                        <th width="20%">用户名</th>
+                        <th width="20%">姓名</th>
+                        <th width="20%">学号</th>
+                        <th width="20%">电话</th>
+                        <th width="20%">职级</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for staff in directors %}
+                    <tr>
+                        <td>{{ staff.user.username }}</td>
+                        <td class="staff-name">{{ staff.get_full_name }}</td>
+                        <td>{{ staff.student_id }}</td>
+                        <td>{{ staff.phone|default:"--" }}</td>
+                        <td>
+                            <span class="staff-level-badge staff-level-director">
+                                <span class="material-icons" style="font-size: 1rem;">star</span>
+                                {{ staff.get_staff_level_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 部员列表 -->
+    {% if members.count > 0 %}
+    <div class="staff-list">
+        <div class="staff-section">
+            <div class="section-header">
+                <span class="material-icons">person</span>
+                <h3>部员</h3>
+                <div class="section-title-suffix">{{ members.count }} 人</div>
+            </div>
+            
+            <table class="staff-table">
+                <thead>
+                    <tr>
+                        <th width="20%">用户名</th>
+                        <th width="20%">姓名</th>
+                        <th width="20%">学号</th>
+                        <th width="20%">电话</th>
+                        <th width="20%">职级</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for staff in members %}
+                    <tr>
+                        <td>{{ staff.user.username }}</td>
+                        <td class="staff-name">{{ staff.get_full_name }}</td>
+                        <td>{{ staff.student_id }}</td>
+                        <td>{{ staff.phone|default:"--" }}</td>
+                        <td>
+                            <span class="staff-level-badge staff-level-member">
+                                <span class="material-icons" style="font-size: 1rem;">person</span>
+                                {{ staff.get_staff_level_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 空状态 -->
+    {% if total_staff == 0 %}
+    <div class="staff-section">
+        <div class="empty-state">
+            <span class="material-icons">group_off</span>
+            <p>当前部门暂无成员</p>
+            <p style="font-size: 0.9rem; color: var(--md3-on-surface-variant);">
+                请等待其他干事加入 {{ department }} 或联系管理员添加
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -387,7 +387,7 @@
                         {% for officer in officers %}
                         <tr>
                             <td><strong>{{ officer.user_profile.get_full_name }}</strong></td>
-                            <td>{{ officer.user_profile.student_id }}</td>
+                            <td>{{ officer.user.username }}</td>
                             <td>
                                 <span class="badge badge-info">{{ officer.get_position_display }}</span>
                             </td>

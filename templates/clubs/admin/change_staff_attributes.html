@@ -1,0 +1,307 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}修改干事属性{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container-card {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+    }
+
+    .card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        box-shadow: var(--md3-elevation-1);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+
+    .card-header .material-icons {
+        font-size: 2rem;
+        color: var(--md3-primary);
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .user-info {
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+        border-left: 4px solid var(--md3-primary);
+    }
+
+    .user-info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--md3-spacing-sm) 0;
+        font-size: 0.95rem;
+    }
+
+    .user-info-label {
+        color: var(--md3-on-surface-variant);
+        font-weight: 500;
+    }
+
+    .user-info-value {
+        color: var(--md3-on-surface);
+        font-weight: 600;
+    }
+
+    .form-group {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--md3-spacing-sm);
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        font-size: 0.95rem;
+    }
+
+    .form-label .required {
+        color: var(--md3-error);
+        margin-left: 2px;
+    }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container-highest);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+
+    .form-select {
+        cursor: pointer;
+    }
+
+    .form-help {
+        display: block;
+        margin-top: var(--md3-spacing-xs);
+        font-size: 0.85rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-2xl);
+        padding-top: var(--md3-spacing-xl);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .btn {
+        flex: 1;
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border: none;
+        border-radius: var(--md3-radius-md);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .btn-primary:hover {
+        background: var(--md3-primary);
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: var(--md3-surface-container);
+        color: var(--md3-primary);
+        border: 1px solid var(--md3-outline);
+    }
+
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        border-color: var(--md3-primary);
+    }
+
+    .info-message {
+        background: var(--md3-info-container, #e1f5ff);
+        color: var(--md3-on-info-container, #01579b);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-xl);
+        border-left: 4px solid var(--md3-info, #0288d1);
+        display: flex;
+        gap: var(--md3-spacing-md);
+    }
+
+    .info-message .material-icons {
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 600px) {
+        .container-card {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .card {
+            padding: var(--md3-spacing-xl);
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .card-header .material-icons {
+            font-size: 1.5rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-card">
+    <div class="card">
+        <div class="card-header">
+            <span class="material-icons">person_add</span>
+            <h2>修改干事属性</h2>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="info-message">
+            <span class="material-icons">info</span>
+            <span>为干事分配部门和职级，仅对干事角色有效</span>
+        </div>
+
+        <!-- 用户信息 -->
+        <div class="user-info">
+            <div class="user-info-item">
+                <span class="user-info-label">登录用户名：</span>
+                <span class="user-info-value">{{ user.username }}</span>
+            </div>
+            <div class="user-info-item">
+                <span class="user-info-label">真实姓名：</span>
+                <span class="user-info-value">{{ profile.get_full_name }}</span>
+            </div>
+            <div class="user-info-item">
+                <span class="user-info-label">当前角色：</span>
+                <span class="user-info-value">{{ profile.get_role_display }}</span>
+            </div>
+            {% if profile.department %}
+            <div class="user-info-item">
+                <span class="user-info-label">当前部门：</span>
+                <span class="user-info-value">{{ profile.get_department_display }}</span>
+            </div>
+            {% endif %}
+            {% if profile.staff_level %}
+            <div class="user-info-item">
+                <span class="user-info-label">当前职级：</span>
+                <span class="user-info-value">{{ profile.get_staff_level_display }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 修改表单 -->
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- 部门选择 -->
+            <div class="form-group">
+                <label class="form-label">
+                    部门
+                </label>
+                <select class="form-select" name="department" required>
+                    <option value="">-- 选择部门 --</option>
+                    {% for value, display in department_choices %}
+                        <option value="{{ value }}" {% if profile.department == value %}selected{% endif %}>
+                            {{ display }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <span class="form-help">选择干事所属的部门</span>
+            </div>
+
+            <!-- 职级选择 -->
+            <div class="form-group">
+                <label class="form-label">
+                    职级
+                </label>
+                <select class="form-select" name="staff_level" required>
+                    <option value="">-- 选择职级 --</option>
+                    {% for value, display in staff_level_choices %}
+                        <option value="{{ value }}" {% if profile.staff_level == value %}selected{% endif %}>
+                            {{ display }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <span class="form-help">选择干事在部门中的职级</span>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">check</span>
+                    <span>保存修改</span>
+                </button>
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
+                    <span class="material-icons">close</span>
+                    <span>取消</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -609,7 +609,7 @@
             <div class="president-grid">
                 <div class="president-card selected" id="current_president_card">
                     <div class="president-name">{{ current_user_profile.get_full_name }}</div>
-                    <div class="president-detail">学号: {{ current_user_profile.student_id }}</div>
+                    <div class="president-detail">用户名: {{ user.username }}</div>
                     <div class="president-detail">电话: {{ current_user_profile.phone|default:'--' }}</div>
                     <div class="president-detail">微信: {{ current_user_profile.wechat|default:'--' }}</div>
                     <div style="margin-top: var(--md3-spacing-sm);">
@@ -624,7 +624,7 @@
                         <option value="">-- 使用当前用户 --</option>
                         {% for president in other_presidents %}
                         <option value="{{ president.id }}" {% if form_data.president_profile_id == president.id|stringformat:"s" %}selected{% endif %}>
-                            {{ president.get_full_name }} ({{ president.student_id }})
+                            {{ president.get_full_name }} ({{ president.user.username }})
                         </option>
                         {% endfor %}
                     </select>
@@ -639,7 +639,7 @@
                     申请人信息确认
                 </div>
                 <div class="president-name" id="selected_name">{{ current_user_profile.get_full_name }}</div>
-                <div class="president-detail">学号: <span id="selected_student_id">{{ current_user_profile.student_id }}</span></div>
+                <div class="president-detail">用户名: <span id="selected_username">{{ user.username }}</span></div>
                 <div class="president-detail">电话: <span id="selected_phone">{{ current_user_profile.phone|default:'--' }}</span></div>
                 <div class="president-detail">微信: <span id="selected_wechat">{{ current_user_profile.wechat|default:'--' }}</span></div>
             </div>
@@ -667,14 +667,14 @@ const currentPresidentCard = document.getElementById('current_president_card');
 const presidentsData = {
     '': {
         name: '{{ current_user_profile.get_full_name }}',
-        student_id: '{{ current_user_profile.student_id }}',
+        username: '{{ user.username }}',
         phone: '{{ current_user_profile.phone|default:"--" }}',
         wechat: '{{ current_user_profile.wechat|default:"--" }}'
     },
     {% for president in other_presidents %}
     '{{ president.id }}': {
         name: '{{ president.get_full_name }}',
-        student_id: '{{ president.student_id }}',
+        username: '{{ president.user.username }}',
         phone: '{{ president.phone|default:"--" }}',
         wechat: '{{ president.wechat|default:"--" }}'
     },
@@ -688,7 +688,7 @@ presidentSelect.addEventListener('change', function() {
     // 更新选中信息
     if (data) {
         document.getElementById('selected_name').textContent = data.name;
-        document.getElementById('selected_student_id').textContent = data.student_id;
+        document.getElementById('selected_username').textContent = data.username;
         document.getElementById('selected_phone').textContent = data.phone;
         document.getElementById('selected_wechat').textContent = data.wechat;
     }

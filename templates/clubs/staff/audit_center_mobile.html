@@ -1,0 +1,356 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}审核中心{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 移动端简版样式 - 仅适用于手机端 */
+    .mobile-audit-container {
+        padding: var(--md3-spacing-md);
+        padding-bottom: calc(var(--md3-spacing-lg) + 100px); /* 为底栏留出空间 */
+        max-width: 100%;
+    }
+
+    /* 标签页导航 */
+    .mobile-tabs {
+        display: flex;
+        overflow-x: auto;
+        gap: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-xs);
+        scrollbar-width: thin;
+        scrollbar-color: var(--md3-outline-variant) transparent;
+        -ms-overflow-style: auto;
+    }
+
+    .mobile-tabs::-webkit-scrollbar {
+        display: block;
+        height: 4px;
+    }
+
+    .mobile-tabs::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .mobile-tabs::-webkit-scrollbar-thumb {
+        background: var(--md3-outline-variant);
+        border-radius: 2px;
+    }
+
+    .mobile-tab {
+        flex-shrink: 0;
+        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        background: var(--md3-surface-container);
+        color: var(--md3-on-surface);
+        border-radius: var(--md3-radius-full);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border: 1px solid var(--md3-outline-variant);
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .mobile-tab.active {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border-color: var(--md3-primary);
+        font-weight: 600;
+    }
+
+    /* 记录卡片简化版 */
+    .mobile-record-card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-md);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-record-card:active {
+        background: var(--md3-surface-container-high);
+        transform: scale(0.98);
+    }
+
+    .mobile-record-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--md3-spacing-sm);
+    }
+
+    .mobile-club-name {
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        font-size: 1rem;
+        flex: 1;
+    }
+
+    .mobile-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .mobile-status-badge.approved {
+        background: var(--md3-tertiary-container);
+        color: var(--md3-on-tertiary-container);
+    }
+
+    .mobile-status-badge.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .mobile-status-badge.pending {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+
+    .mobile-record-info {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xs);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.8125rem;
+    }
+
+    .mobile-info-row {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+    }
+
+    .mobile-info-row .material-icons {
+        font-size: 1rem;
+    }
+
+    /* 分组标题 */
+    .mobile-section-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) 0;
+        margin-bottom: var(--md3-spacing-sm);
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface-variant);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .mobile-section-title .material-icons {
+        font-size: 1.125rem;
+        color: var(--md3-primary);
+    }
+
+    /* 空状态 */
+    .mobile-empty-state {
+        text-align: center;
+        padding: var(--md3-spacing-2xl) var(--md3-spacing-md);
+        color: var(--md3-on-surface-variant);
+    }
+
+    .mobile-empty-state .material-icons {
+        font-size: 2.5rem;
+        opacity: 0.5;
+        margin-bottom: var(--md3-spacing-sm);
+    }
+
+    .mobile-empty-state p {
+        margin: 0;
+        font-size: 0.875rem;
+    }
+
+    /* PC端隐藏 */
+    @media (min-width: 769px) {
+        .mobile-audit-container {
+            display: none;
+        }
+    }
+</style>
+
+<!-- PC端跳转到完整版 -->
+<script>
+function checkLayout() {
+    if (window.innerWidth > 768) {
+        window.location.href = '{% url "clubs:staff_audit_center" current_tab %}';
+    }
+}
+checkLayout();
+window.addEventListener('resize', checkLayout);
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div class="mobile-audit-container">
+    <!-- 标签页导航 -->
+    <div class="mobile-tabs">
+        <a href="{% url 'clubs:staff_audit_center_mobile' 'annual_review' %}" 
+           class="mobile-tab {% if current_tab == 'annual_review' %}active{% endif %}">
+            年审
+        </a>
+        <a href="{% url 'clubs:staff_audit_center_mobile' 'registration' %}" 
+           class="mobile-tab {% if current_tab == 'registration' %}active{% endif %}">
+            社团注册
+        </a>
+        <a href="{% url 'clubs:staff_audit_center_mobile' 'application' %}" 
+           class="mobile-tab {% if current_tab == 'application' %}active{% endif %}">
+            新社团申请
+        </a>
+        <a href="{% url 'clubs:staff_audit_center_mobile' 'reimbursement' %}" 
+           class="mobile-tab {% if current_tab == 'reimbursement' %}active{% endif %}">
+            报销
+        </a>
+        <a href="{% url 'clubs:staff_audit_center_mobile' 'activity_application' %}" 
+           class="mobile-tab {% if current_tab == 'activity_application' %}active{% endif %}">
+            活动申请
+        </a>
+        <a href="{% url 'clubs:staff_audit_center_mobile' 'president_transition' %}" 
+           class="mobile-tab {% if current_tab == 'president_transition' %}active{% endif %}">
+            社长换届
+        </a>
+    </div>
+
+    <!-- 待审核记录 -->
+    {% if pending_items %}
+    <div class="mobile-section-title">
+        <span class="material-icons">assignment</span>
+        <span>待审核 ({{ pending_items|length }})</span>
+    </div>
+
+    {% for item in pending_items %}
+    <div class="mobile-record-card" onclick="window.location.href='{{ item.review_url }}';">
+        <div class="mobile-record-header">
+            <span class="mobile-club-name">
+                {% if current_tab == 'annual_review' %}{{ item.club.name }}
+                {% elif current_tab == 'registration' %}{{ item.club.name }}
+                {% elif current_tab == 'application' %}{{ item.club_name }}
+                {% elif current_tab == 'reimbursement' %}{{ item.club.name }}
+                {% elif current_tab == 'activity_application' %}{{ item.club.name }}
+                {% elif current_tab == 'president_transition' %}{{ item.club.name }}
+                {% endif %}
+            </span>
+            <span class="mobile-status-badge pending">
+                <span class="material-icons" style="font-size: 0.875rem;">schedule</span> 待审核
+            </span>
+        </div>
+
+        <div class="mobile-record-info">
+            {% if current_tab == 'annual_review' %}
+            <div class="mobile-info-row">
+                <span class="material-icons">calendar_today</span>
+                <span>{{ item.submission_year }} 年</span>
+            </div>
+            <div class="mobile-info-row">
+                <span class="material-icons">schedule</span>
+                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            {% elif current_tab == 'registration' %}
+            <div class="mobile-info-row">
+                <span class="material-icons">event</span>
+                <span>{{ item.registration_period.name }}</span>
+            </div>
+            <div class="mobile-info-row">
+                <span class="material-icons">schedule</span>
+                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            {% elif current_tab == 'application' %}
+            <div class="mobile-info-row">
+                <span class="material-icons">person</span>
+                <span>{{ item.requested_by.get_full_name|default:item.requested_by.username }}</span>
+            </div>
+            <div class="mobile-info-row">
+                <span class="material-icons">schedule</span>
+                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            {% elif current_tab == 'reimbursement' %}
+            <div class="mobile-info-row">
+                <span class="material-icons">attach_money</span>
+                <span style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
+            </div>
+            <div class="mobile-info-row">
+                <span class="material-icons">schedule</span>
+                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            {% elif current_tab == 'activity_application' %}
+            <div class="mobile-info-row">
+                <span class="material-icons">event</span>
+                <span>{{ item.activity_date|date:"Y-m-d" }}</span>
+            </div>
+            <div class="mobile-info-row">
+                <span class="material-icons">schedule</span>
+                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            {% elif current_tab == 'president_transition' %}
+            <div class="mobile-info-row">
+                <span class="material-icons">person</span>
+                <span>新社长: {{ item.new_president_name }}</span>
+            </div>
+            <div class="mobile-info-row">
+                <span class="material-icons">schedule</span>
+                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- 已完成记录 -->
+    {% if completed_items %}
+    <div class="mobile-section-title">
+        <span class="material-icons">done_all</span>
+        <span>已完成 ({{ completed_items|length }})</span>
+    </div>
+
+    {% for item in completed_items %}
+    <div class="mobile-record-card" onclick="window.location.href='{{ item.review_url }}';">
+        <div class="mobile-record-header">
+            <span class="mobile-club-name">
+                {% if current_tab == 'annual_review' %}{{ item.club.name }}
+                {% elif current_tab == 'registration' %}{{ item.club.name }}
+                {% elif current_tab == 'application' %}{{ item.club_name }}
+                {% elif current_tab == 'reimbursement' %}{{ item.club.name }}
+                {% elif current_tab == 'activity_application' %}{{ item.club.name }}
+                {% elif current_tab == 'president_transition' %}{{ item.club.name }}
+                {% endif %}
+            </span>
+            {% if item.status == 'approved' %}
+            <span class="mobile-status-badge approved">
+                <span class="material-icons" style="font-size: 0.875rem;">check_circle</span> 已批准
+            </span>
+            {% elif item.status == 'rejected' %}
+            <span class="mobile-status-badge rejected">
+                <span class="material-icons" style="font-size: 0.875rem;">cancel</span> 已拒绝
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="mobile-record-info">
+            <div class="mobile-info-row">
+                <span class="material-icons">schedule</span>
+                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- 空状态 -->
+    {% if not pending_items and not completed_items %}
+    <div class="mobile-empty-state">
+        <span class="material-icons">inbox</span>
+        <p>暂无记录</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

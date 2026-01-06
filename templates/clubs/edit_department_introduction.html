@@ -1,0 +1,451 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}编辑部门介绍 - 社团管理系统{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl) var(--md3-spacing-xl);
+    }
+
+    .edit-header {
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+
+    .edit-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-md) 0;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+    }
+
+    .edit-title .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .edit-subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .form-container {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-2xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .dept-form-section {
+        margin-bottom: var(--md3-spacing-2xl);
+        padding-bottom: var(--md3-spacing-2xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .dept-form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .dept-section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-lg) 0;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+
+    .dept-icon-display {
+        width: 48px;
+        height: 48px;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        border-radius: var(--md3-radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dept-icon-display .material-icons {
+        font-size: 24px;
+    }
+
+    .form-group {
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.95rem;
+        font-family: inherit;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-text {
+        font-size: 0.85rem;
+        color: var(--md3-on-surface-variant);
+        margin-top: var(--md3-spacing-xs);
+    }
+
+    .icon-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-md);
+    }
+
+    .icon-option {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        border: 2px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: var(--md3-surface);
+    }
+
+    .icon-option:hover {
+        border-color: var(--md3-primary);
+        background: var(--md3-primary-container);
+    }
+
+    .icon-option .material-icons {
+        font-size: 24px;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .icon-option input[type="radio"] {
+        display: none;
+    }
+
+    .icon-option input[type="radio"]:checked + .material-icons {
+        color: var(--md3-primary);
+    }
+
+    .icon-option input[type="radio"]:checked ~ * {
+        color: var(--md3-primary);
+    }
+
+    .icon-option.selected {
+        border-color: var(--md3-primary);
+        background: var(--md3-primary-container);
+    }
+
+    .icon-option.selected .material-icons {
+        color: var(--md3-primary);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-lg);
+        margin-top: var(--md3-spacing-2xl);
+        padding-top: var(--md3-spacing-2xl);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-md) var(--md3-spacing-2xl);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .btn-primary:hover {
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: var(--md3-outline-variant);
+        color: var(--md3-on-surface);
+    }
+
+    .btn-secondary:hover {
+        background: var(--md3-outline);
+    }
+
+    .btn .material-icons {
+        font-size: 1.2rem;
+    }
+
+    .alert {
+        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-lg);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--md3-spacing-md);
+    }
+
+    .alert-success {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+        border: 1px solid var(--md3-success);
+    }
+
+    .alert-error {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border: 1px solid var(--md3-error);
+    }
+
+    .alert-info {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        border: 1px solid var(--md3-primary);
+    }
+
+    .alert .material-icons {
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .alert-content {
+        flex: 1;
+    }
+
+    .alert-title {
+        font-weight: 600;
+        margin-bottom: var(--md3-spacing-xs);
+    }
+
+    @media (max-width: 768px) {
+        .edit-container {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .form-container {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .edit-title {
+            font-size: 1.5rem;
+        }
+
+        .dept-section-title {
+            font-size: 1rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .icon-selector {
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+        }
+
+        .icon-option {
+            width: 45px;
+            height: 45px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <!-- 页面标题 -->
+    <div class="edit-header">
+        <h1 class="edit-title">
+            <span class="material-icons">edit</span>
+            编辑部门介绍
+        </h1>
+        <p class="edit-subtitle">管理各部门的介绍内容、重点工作和图标</p>
+    </div>
+
+    <!-- 消息提示 -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}">
+        <span class="material-icons">
+            {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}
+        </span>
+        <div class="alert-content">
+            {{ message }}
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- 编辑表单 -->
+    <div class="form-container">
+        <form method="post" class="dept-edit-form">
+            {% csrf_token %}
+
+            {% for dept in departments %}
+            <div class="dept-form-section">
+                <h3 class="dept-section-title">
+                    <div class="dept-icon-display">
+                        <span class="material-icons">{{ dept.icon }}</span>
+                    </div>
+                    {{ dept.get_department_display }}
+                </h3>
+
+                <!-- 部门描述 -->
+                <div class="form-group">
+                    <label for="dept_{{ dept.id }}_description" class="form-label">部门职责描述</label>
+                    <textarea
+                        class="form-control"
+                        id="dept_{{ dept.id }}_description"
+                        name="dept_{{ dept.id }}_description"
+                        placeholder="请输入部门的主要职责和介绍（最多500字）"
+                        maxlength="500"
+                    >{{ dept.description }}</textarea>
+                    <div class="form-text">
+                        简洁清晰地描述该部门的主要职责和工作内容
+                    </div>
+                </div>
+
+                <!-- 重点工作 -->
+                <div class="form-group">
+                    <label for="dept_{{ dept.id }}_highlights" class="form-label">重点工作</label>
+                    <textarea
+                        class="form-control"
+                        id="dept_{{ dept.id }}_highlights"
+                        name="dept_{{ dept.id }}_highlights"
+                        placeholder="请输入部门的重点工作，多个重点工作用换行分隔"
+                    >{{ dept.highlights }}</textarea>
+                    <div class="form-text">
+                        每行一个重点工作，将按行分隔显示
+                    </div>
+                </div>
+
+                <!-- 部门图标 -->
+                <div class="form-group">
+                    <label class="form-label">部门图标</label>
+                    <div class="icon-selector">
+                        {% for icon in material_icons %}
+                        <label class="icon-option {% if dept.icon == icon %}selected{% endif %}">
+                            <input
+                                type="radio"
+                                name="dept_{{ dept.id }}_icon"
+                                value="{{ icon }}"
+                                {% if dept.icon == icon %}checked{% endif %}
+                            >
+                            <span class="material-icons">{{ icon }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <div class="form-text">
+                        选择代表该部门特色的Material Icons图标
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">save</span>
+                    <span>保存更改</span>
+                </button>
+                <a href="{% url 'clubs:index' %}" class="btn btn-secondary">
+                    <span class="material-icons">cancel</span>
+                    <span>取消</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// 增强图标选择器的交互体验
+document.addEventListener('DOMContentLoaded', function() {
+    const iconOptions = document.querySelectorAll('.icon-option');
+    
+    iconOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+            // 不是直接点击 radio 按钮时才更新
+            if (e.target.tagName !== 'INPUT') {
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    // 更新样式
+                    updateIconSelection();
+                }
+            }
+        });
+
+        // 点击radio按钮时也更新样式
+        const radio = option.querySelector('input[type="radio"]');
+        if (radio) {
+            radio.addEventListener('change', function() {
+                updateIconSelection();
+            });
+        }
+    });
+
+    function updateIconSelection() {
+        iconOptions.forEach(option => {
+            const radio = option.querySelector('input[type="radio"]');
+            if (radio && radio.checked) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+        });
+    }
+
+    // 初始化样式
+    updateIconSelection();
+});
+</script>
+{% endblock %}

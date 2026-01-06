@@ -148,3 +148,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 登录URL设置
 LOGIN_URL = 'clubs:login'
+
+# 管理员联系邮箱（登录锁定时用于显示联系按钮）
+ADMIN_CONTACT_EMAIL = 'admin@example.com'  # 请在生产环境设置为真实管理员邮箱
+
+# Email 设置（开发环境使用控制台后台，生产请配置真实 SMTP）
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # 生产请改为 SMTP
+EMAIL_HOST = 'smtp.example.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'no-reply@example.com'
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'no-reply@example.com'

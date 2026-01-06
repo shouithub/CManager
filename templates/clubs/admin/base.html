@@ -1,0 +1,37 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}管理中心 - CManager{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-layout {
+    display: flex;
+    gap: 24px;
+}
+.admin-sidebar {
+    width: 220px;
+}
+.admin-sidebar ul { list-style: none; padding: 0; }
+.admin-sidebar li { margin-bottom: 8px; }
+.admin-sidebar a { text-decoration: none; color: var(--md3-on-surface); display: inline-block; padding: 8px 12px; border-radius: 6px; }
+.admin-sidebar a.active { background: var(--md3-surface-container); font-weight: 600; }
+.admin-main { flex: 1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout container" style="padding-top: 20px;">
+    <aside class="admin-sidebar">
+        <ul>
+            <li><a href="{% url 'clubs:admin_dashboard' %}">仪表板</a></li>
+            <li><a href="{% url 'clubs:manage_users' %}">用户管理</a></li>
+            <li><a href="{% url 'clubs:locked_accounts' %}">被锁定账号</a></li>
+            <li><a href="{% url 'clubs:publish_announcement' %}">发布公告</a></li>
+        </ul>
+    </aside>
+    <main class="admin-main">
+        {% block admin_main %}{% endblock %}
+        {% block content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}

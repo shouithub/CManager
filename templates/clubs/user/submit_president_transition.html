@@ -282,7 +282,7 @@
                     <select id="new_president_officer_id" name="new_president_officer_id" required onchange="updateOfficerInfo()">
                         <option value="">-- 请选择 --</option>
                         {% for officer in club_officers %}
-                        <option value="{{ officer.id }}" data-name="{% if officer.user_profile.real_name %}{{ officer.user_profile.real_name }}{% endif %}" data-student-id="{{ officer.user_profile.student_id }}" data-phone="{{ officer.user_profile.phone }}" data-position="{{ officer.get_position_display }}">
+                        <option value="{{ officer.id }}" data-name="{% if officer.user_profile.real_name %}{{ officer.user_profile.real_name }}{% endif %}" data-username="{{ officer.user.username }}" data-phone="{{ officer.user_profile.phone }}" data-position="{{ officer.get_position_display }}">
                             {% if officer.user_profile.real_name %}{{ officer.user_profile.real_name }}{% else %}{{ officer.user_profile.user.username }}{% endif %} ({{ officer.get_position_display }})
                         </option>
                         {% endfor %}

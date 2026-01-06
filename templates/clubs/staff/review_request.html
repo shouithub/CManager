@@ -732,7 +732,7 @@
         </div>
         {% elif request_type == 'registration' and registration %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
-            <a href="{% url 'clubs:zip_registration_docs' registration.id %}" class="download-btn" style="width: 100%;">
+            <a href="{% url 'clubs:zip_registration_request_docs' registration.id %}" class="download-btn" style="width: 100%;">
                 🗜️ 打包所有材料为ZIP文件
             </a>
         </div>

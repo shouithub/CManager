@@ -179,6 +179,37 @@
     min-height: 80px;
 }
 
+/* 文件上传区域样式 (与活动申请页面一致) */
+.file-upload-area {
+    border: 2px dashed var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    padding: var(--md3-spacing-xl);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--md3-surface-container-highest);
+}
+
+.file-upload-area:hover {
+    border-color: var(--md3-primary);
+    background: var(--md3-primary-container);
+}
+
+.file-upload-area .material-icons {
+    font-size: 3rem;
+    color: var(--md3-primary);
+    margin-bottom: var(--md3-spacing-md);
+}
+
+.file-upload-area p {
+    margin: 0;
+    color: var(--md3-on-surface-variant);
+}
+
+.form-group input[type="file"] {
+    display: none;
+}
+
 .form-group small {
     font-size: 0.75rem;
     color: var(--md3-on-surface-variant);
@@ -365,9 +396,15 @@
                         <span class="material-icons">receipt</span>
                         报销凭证 (Word) *
                     </label>
-                    <input type="file" id="receipt_file" name="receipt_file"
-                           accept=".doc,.docx" required>
-                    <small>支持格式: Word (.doc, .docx)</small>
+                    <div class="file-upload-area" id="receiptFileUploadArea">
+                        <span class="material-icons">cloud_upload</span>
+                        <p>点击选择文件或拖放文件</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">支持 Word (.doc, .docx)</p>
+                    </div>
+                    <input type="file" id="receipt_file" name="receipt_file" required accept=".doc,.docx" style="display: none;">
+                    <div id="receiptFileNameDisplay" style="margin-top: var(--md3-spacing-md); padding: var(--md3-spacing-md); background: var(--md3-surface-container-highest); border-radius: var(--md3-radius-md); display: none;">
+                        <strong>已选择文件:</strong> <span id="receiptSelectedFileName"></span>
+                    </div>
                 </div>
             </div>
 
@@ -384,4 +421,55 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const receiptFileUploadArea = document.getElementById('receiptFileUploadArea');
+    const receiptFileInput = document.getElementById('receipt_file');
+    const receiptFileNameDisplay = document.getElementById('receiptFileNameDisplay');
+    const receiptSelectedFileName = document.getElementById('receiptSelectedFileName');
+
+    // 点击上传区域触发文件选择
+    receiptFileUploadArea.addEventListener('click', function() {
+        receiptFileInput.click();
+    });
+
+    // 文件选择后更新显示
+    receiptFileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            receiptSelectedFileName.textContent = this.files[0].name;
+            receiptFileNameDisplay.style.display = 'block';
+        } else {
+            receiptFileNameDisplay.style.display = 'none';
+        }
+    });
+
+    // 拖放上传
+    receiptFileUploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        receiptFileUploadArea.style.borderColor = 'var(--md3-primary)';
+        receiptFileUploadArea.style.background = 'var(--md3-primary-container)';
+    });
+
+    receiptFileUploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        receiptFileUploadArea.style.borderColor = 'var(--md3-outline)';
+        receiptFileUploadArea.style.background = 'var(--md3-surface-container-highest)';
+    });
+
+    receiptFileUploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        receiptFileUploadArea.style.borderColor = 'var(--md3-outline)';
+        receiptFileUploadArea.style.background = 'var(--md3-surface-container-highest)';
+
+        if (e.dataTransfer.files.length > 0) {
+            receiptFileInput.files = e.dataTransfer.files;
+            // 触发 change 事件
+            const event = new Event('change', { bubbles: true });
+            receiptFileInput.dispatchEvent(event);
+        }
+    });
+});
+</script>
+
 {% endblock %}

@@ -8,26 +8,215 @@
     .home-container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-3xl) var(--md3-spacing-xl);
     }
     
-    /* 页面标题 */
+    /* 顶部标题 */
     .page-header {
+        background: linear-gradient(135deg, var(--md3-primary) 0%, var(--md3-tertiary) 100%);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-3xl);
+        margin-bottom: var(--md3-spacing-2xl);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-2);
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-xl);
+        gap: var(--md3-spacing-lg);
     }
     
     .page-header .material-icons {
+        font-size: 3rem;
+        flex-shrink: 0;
+    }
+    
+    .page-title {
         font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.95;
+        margin: 0;
+    }
+    
+    /* 部门卡片网格 */
+    .departments-section {
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+    
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-xl) 0;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        justify-content: space-between;
+    }
+    
+    .section-title .material-icons {
+        font-size: 2rem;
         color: var(--md3-primary);
     }
     
-    .page-header h1 {
-        margin: 0;
-        font-size: 2rem;
+    .section-actions {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+        align-items: center;
+    }
+    
+    .edit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+        cursor: pointer;
         font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .edit-btn:hover {
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-1px);
+    }
+    
+    .edit-btn .material-icons {
+        font-size: 1rem;
+        color: white;
+    }
+    
+    .departments-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: var(--md3-spacing-lg);
+    }
+    
+    .dept-card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .dept-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .dept-header {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        padding: var(--md3-spacing-lg);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .dept-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border-radius: var(--md3-radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .dept-icon .material-icons {
+        font-size: 28px;
+    }
+    
+    .dept-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .dept-body {
+        padding: var(--md3-spacing-lg);
+    }
+    
+    .dept-description {
+        color: var(--md3-on-surface);
+        line-height: 1.6;
+        margin-bottom: var(--md3-spacing-md);
+        font-size: 0.95rem;
+    }
+    
+    .dept-highlights {
+        background: var(--md3-tertiary-container);
+        color: var(--md3-on-tertiary-container);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-sm);
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .dept-highlights .material-icons {
+        font-size: 1rem;
+    }
+    
+    /* 统计卡片 */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+    
+    .stat-card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        text-align: center;
+        border-left: 4px solid;
+        transition: transform 0.2s ease;
+    }
+    
+    .stat-card:nth-child(1) { border-left-color: var(--md3-primary); }
+    .stat-card:nth-child(2) { border-left-color: var(--md3-tertiary); }
+    .stat-card:nth-child(3) { border-left-color: var(--md3-secondary); }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--md3-on-surface-variant);
+        font-weight: 600;
+        margin-bottom: var(--md3-spacing-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-xs);
+    }
+    
+    .stat-label .material-icons {
+        font-size: 1.1rem;
+    }
+    
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 700;
         color: var(--md3-on-surface);
     }
     
@@ -38,8 +227,8 @@
     
     .announcement-card {
         background: var(--md3-secondary-container);
-        border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
         border: 1px solid var(--md3-secondary);
         margin-bottom: var(--md3-spacing-lg);
         box-shadow: var(--md3-elevation-1);
@@ -68,7 +257,7 @@
     
     .announcement-item {
         background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-lg);
+        border-radius: var(--md3-radius-md);
         padding: var(--md3-spacing-lg);
         margin-bottom: var(--md3-spacing-md);
         border: 1px solid var(--md3-outline-variant);
@@ -84,25 +273,19 @@
     }
     
     .announcement-title {
-        font-size: 1.125rem;
+        font-size: 1.1rem;
         font-weight: 600;
         color: var(--md3-on-surface);
         margin: 0 0 var(--md3-spacing-sm) 0;
-        line-height: 1.4;
     }
     
     .announcement-date {
-        font-size: 0.875rem;
+        font-size: 0.85rem;
         color: var(--md3-on-surface-variant);
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-xs);
         margin-bottom: var(--md3-spacing-md);
-    }
-    
-    .announcement-date .material-icons {
-        font-size: 1rem;
-        color: var(--md3-on-surface-variant);
     }
     
     .announcement-content {
@@ -111,139 +294,46 @@
         margin-bottom: var(--md3-spacing-md);
     }
     
-    .announcement-attachment {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--md3-spacing-xs);
-        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
-        background: var(--md3-tertiary-container);
-        border-radius: var(--md3-radius-md);
-        text-decoration: none;
-        color: var(--md3-on-tertiary-container);
-        font-size: 0.875rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        border: 1px solid transparent;
-    }
-    
-    .announcement-attachment:hover {
-        background: var(--md3-tertiary);
-        color: var(--md3-on-tertiary);
-        border-color: var(--md3-tertiary);
-    }
-    
-    .announcement-attachment .material-icons {
-        font-size: 1.125rem;
-    }
-    
-    /* 系统概览卡片 */
-    .overview-card {
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-xl);
-        border: 1px solid var(--md3-outline-variant);
-        margin-bottom: var(--md3-spacing-2xl);
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-lg);
-    }
-    
-    .overview-icon {
-        background: var(--md3-primary-container);
-        border-radius: var(--md3-radius-lg);
-        width: 64px;
-        height: 64px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    
-    .overview-icon .material-icons {
-        font-size: 2rem;
-        color: var(--md3-on-primary-container);
-    }
-    
-    .overview-content {
-        flex: 1;
-    }
-    
-    .overview-content h3 {
-        margin: 0 0 var(--md3-spacing-xs) 0;
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-    }
-    
-    .overview-content p {
-        margin: 0;
-        color: var(--md3-on-surface-variant);
-    }
-    
-    .overview-stat {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--md3-primary);
-    }
-    
     /* 社团列表 */
     .clubs-section {
         margin-bottom: var(--md3-spacing-2xl);
     }
     
-    .section-header {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-xl);
-        padding: var(--md3-spacing-lg);
-        background: var(--md3-surface-container-low);
-        border-radius: var(--md3-radius-lg);
-    }
-    
-    .section-header .material-icons {
-        font-size: 1.75rem;
-        color: var(--md3-primary);
-    }
-    
-    .section-header h2 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-    }
-    
     .clubs-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-        gap: var(--md3-spacing-xl);
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: var(--md3-spacing-lg);
     }
     
     .club-card {
         background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
         border: 1px solid var(--md3-outline-variant);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s ease;
     }
     
     .club-card:hover {
         background: var(--md3-surface-container-high);
         box-shadow: var(--md3-elevation-2);
-        transform: translateY(-4px);
+        transform: translateY(-2px);
     }
     
     .club-card-header {
         margin-bottom: var(--md3-spacing-lg);
         padding-bottom: var(--md3-spacing-md);
         border-bottom: 1px solid var(--md3-outline-variant);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
     }
     
     .club-name {
-        font-size: 1.25rem;
+        font-size: 1.15rem;
         font-weight: 600;
         color: var(--md3-on-surface);
-        margin: 0 0 var(--md3-spacing-sm) 0;
+        margin: 0;
     }
     
     .club-info {
@@ -257,17 +347,17 @@
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-sm);
-        font-size: 0.875rem;
+        font-size: 0.85rem;
     }
     
     .club-info-item .material-icons {
-        font-size: 1.125rem;
+        font-size: 1.1rem;
         color: var(--md3-primary);
     }
     
     .club-info-label {
         color: var(--md3-on-surface-variant);
-        min-width: 60px;
+        min-width: 50px;
     }
     
     .club-info-value {
@@ -283,6 +373,7 @@
         border-radius: var(--md3-radius-sm);
         font-size: 0.75rem;
         font-weight: 600;
+        white-space: nowrap;
     }
     
     .status-badge.active {
@@ -300,19 +391,11 @@
         color: var(--md3-on-error-container);
     }
     
-    .status-badge .material-icons {
-        font-size: 0.875rem;
-    }
-    
     .club-description {
         color: var(--md3-on-surface-variant);
-        font-size: 0.875rem;
+        font-size: 0.85rem;
         line-height: 1.5;
         margin-bottom: var(--md3-spacing-lg);
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
     }
     
     .club-actions {
@@ -325,9 +408,9 @@
         align-items: center;
         justify-content: center;
         gap: var(--md3-spacing-xs);
-        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
         border-radius: var(--md3-radius-md);
-        font-size: 0.875rem;
+        font-size: 0.85rem;
         font-weight: 600;
         text-decoration: none;
         transition: all 0.2s ease;
@@ -341,62 +424,29 @@
     }
     
     .btn-primary:hover {
-        background: var(--md3-primary-hover);
         box-shadow: var(--md3-elevation-1);
+        transform: translateY(-1px);
     }
     
     .btn .material-icons {
-        font-size: 1.125rem;
-    }
-    
-    /* 空状态 */
-    .empty-state {
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-3xl);
-        text-align: center;
-        border: 2px dashed var(--md3-outline-variant);
-    }
-    
-    .empty-state .material-icons {
-        font-size: 4rem;
-        color: var(--md3-on-surface-variant);
-        opacity: 0.5;
-        margin-bottom: var(--md3-spacing-lg);
-    }
-    
-    .empty-state p {
-        color: var(--md3-on-surface-variant);
         font-size: 1rem;
-        margin: 0;
     }
     
-    .empty-state a {
-        color: var(--md3-primary);
-        text-decoration: none;
-        font-weight: 600;
-    }
-    
-    .empty-state a:hover {
-        text-decoration: underline;
-    }
-    
-    /* 未登录状态样式 */
+    /* 登录提示 */
     .login-prompt {
         background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
-        border-radius: var(--md3-radius-3xl);
+        border-radius: var(--md3-radius-xl);
         padding: var(--md3-spacing-3xl) var(--md3-spacing-2xl);
         text-align: center;
         box-shadow: var(--md3-elevation-1);
-        margin: var(--md3-spacing-3xl) auto;
+        margin: var(--md3-spacing-2xl) auto;
         max-width: 600px;
-        overflow: hidden;
     }
     
     .login-prompt-icon {
         width: 80px;
         height: 80px;
-        margin: 0 auto var(--md3-spacing-xl);
+        margin: 0 auto var(--md3-spacing-lg);
         background: var(--md3-surface);
         border-radius: 50%;
         display: flex;
@@ -441,13 +491,9 @@
         font-size: 1rem;
         font-weight: 600;
         text-decoration: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s ease;
         min-width: 160px;
         box-shadow: var(--md3-elevation-1);
-    }
-    
-    .login-btn .material-icons {
-        font-size: 1.25rem;
     }
     
     .login-btn-primary {
@@ -456,7 +502,6 @@
     }
     
     .login-btn-primary:hover {
-        background: var(--md3-primary);
         box-shadow: var(--md3-elevation-3);
         transform: translateY(-2px);
     }
@@ -473,67 +518,84 @@
         transform: translateY(-2px);
     }
     
+    /* 空状态 */
+    .empty-state {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-3xl);
+        text-align: center;
+        border: 2px dashed var(--md3-outline-variant);
+    }
+    
+    .empty-state .material-icons {
+        font-size: 4rem;
+        color: var(--md3-on-surface-variant);
+        opacity: 0.5;
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .empty-state p {
+        color: var(--md3-on-surface-variant);
+        font-size: 1rem;
+        margin: 0;
+    }
+    
+    .empty-state a {
+        color: var(--md3-primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    /* 轮播 */
+    .carousel-section {
+        margin-bottom: var(--md3-spacing-2xl);
+        border-radius: var(--md3-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .carousel-image {
+        height: 400px;
+        object-fit: cover;
+        width: 100%;
+    }
+    
+    /* 响应式 */
     @media (max-width: 768px) {
         .home-container {
-            padding: var(--md3-spacing-md);
+            padding: var(--md3-spacing-lg);
         }
         
         .page-header {
-            margin-bottom: var(--md3-spacing-lg);
-        }
-        
-        .page-header .material-icons {
-            font-size: 2rem;
-        }
-        
-        .page-header h1 {
-            font-size: 1.5rem;
-        }
-        
-        .login-prompt {
-            border-radius: var(--md3-radius-2xl);
-            padding: var(--md3-spacing-2xl) var(--md3-spacing-lg);
-            margin: var(--md3-spacing-xl) 0;
-            max-width: 100%;
-        }
-        
-        .login-prompt-icon {
-            width: 64px;
-            height: 64px;
-            margin-bottom: var(--md3-spacing-lg);
-        }
-        
-        .login-prompt-icon .material-icons {
-            font-size: 2.5rem;
-        }
-        
-        .login-prompt-title {
-            font-size: 1.5rem;
-            margin-bottom: var(--md3-spacing-sm);
-        }
-        
-        .login-prompt-message {
-            font-size: 0.938rem;
-            margin-bottom: var(--md3-spacing-xl);
-        }
-        
-        .login-actions {
             flex-direction: column;
-            gap: var(--md3-spacing-md);
+            text-align: center;
+            padding: var(--md3-spacing-xl);
         }
         
-        .login-btn {
-            width: 100%;
-            padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        .page-title {
+            font-size: 1.8rem;
         }
         
+        .departments-grid,
         .clubs-grid {
             grid-template-columns: 1fr;
         }
         
-        .overview-card {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .login-prompt {
+            padding: var(--md3-spacing-xl);
+        }
+        
+        .carousel-image {
+            height: 250px;
+        }
+        
+        .club-card-header {
             flex-direction: column;
-            text-align: center;
+            align-items: flex-start;
         }
     }
 </style>
@@ -541,127 +603,159 @@
 
 {% block content %}
 <div class="home-container">
-    <!-- 页面标题 -->
+    <!-- 顶部标题 -->
     <div class="page-header">
-        <span class="material-icons">home</span>
-        <h1>社团管理系统</h1>
+        <span class="material-icons">groups</span>
+        <div>
+            <h1 class="page-title">社团管理服务中心</h1>
+            <p class="page-subtitle">致力于为社团提供全方位的管理与服务支持，促进社团健康发展</p>
+        </div>
     </div>
-
+    
+    <!-- 未登录状态 -->
     {% if is_anonymous %}
-    <!-- 未登录提示 -->
     <div class="login-prompt">
         <div class="login-prompt-icon">
-            <span class="material-icons">lock_person</span>
+            <span class="material-icons">lock</span>
         </div>
         <h2 class="login-prompt-title">欢迎来到社团管理系统</h2>
-        <p class="login-prompt-message">{{ message }}，登录后即可查看所有社团信息并进行管理操作</p>
+        <p class="login-prompt-message">请登录后查看部门信息与社团详情</p>
         <div class="login-actions">
             <a href="{% url 'clubs:login' %}" class="login-btn login-btn-primary">
-                <span class="material-icons">person</span>
-                <span>立即登录</span>
+                <span class="material-icons">group</span>
+                <span>登录</span>
             </a>
             <a href="{% url 'clubs:register' %}" class="login-btn login-btn-secondary">
                 <span class="material-icons">person_add</span>
-                <span>注册账号</span>
+                <span>注册</span>
             </a>
         </div>
     </div>
+    
+    <!-- 部门介绍 - 未登录用户可见 -->
+    {% if departments %}
+    <div class="departments-section">
+        <h2 class="section-title">
+            <span class="material-icons">info</span>
+            部门介绍
+        </h2>
+        <div class="departments-grid">
+            {% for dept in departments %}
+            <div class="dept-card">
+                <div class="dept-header">
+                    <div class="dept-icon">
+                        <span class="material-icons">{{ dept.icon }}</span>
+                    </div>
+                    <h3 class="dept-name">{{ dept.get_department_display }}</h3>
+                </div>
+                <div class="dept-body">
+                    <p class="dept-description">{{ dept.description }}</p>
+                    {% if dept.highlights %}
+                    <div class="dept-highlights">
+                        <span class="material-icons">star</span>
+                        <span>{{ dept.highlights }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- 登录用户内容 -->
     {% else %}
-
-    <!-- 公告区 -->
+    
+    <!-- 统计卡片（仅干事管理员可见） -->
+    {% if is_staff_or_admin %}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">
+                <span class="material-icons">groups</span>
+                干事总数
+            </div>
+            <div class="stat-value">{{ total_staff }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">
+                <span class="material-icons">stars</span>
+                部长人数
+            </div>
+            <div class="stat-value">{{ total_directors }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">
+                <span class="material-icons">person</span>
+                部员人数
+            </div>
+            <div class="stat-value">{{ total_members }}</div>
+        </div>
+    </div>
+    
+    <!-- 部门介绍（干事管理员） -->
+    {% if departments %}
+    <div class="departments-section">
+        <div class="section-title">
+            <div style="display: flex; align-items: center; gap: var(--md3-spacing-md);">
+                <span class="material-icons">info</span>
+                <h2 style="margin: 0; font-size: 1.75rem; font-weight: 700;">部门介绍</h2>
+            </div>
+            <div class="section-actions">
+                <a href="{% url 'clubs:edit_department_introduction' %}" class="edit-btn">
+                    <span class="material-icons">edit</span>
+                    <span>编辑部门</span>
+                </a>
+            </div>
+        </div>
+        <div class="departments-grid">
+            {% for dept in departments %}
+            <div class="dept-card">
+                <div class="dept-header">
+                    <div class="dept-icon">
+                        <span class="material-icons">{{ dept.icon }}</span>
+                    </div>
+                    <h3 class="dept-name">{{ dept.get_department_display }}</h3>
+                </div>
+                <div class="dept-body">
+                    <p class="dept-description">{{ dept.description }}</p>
+                    {% if dept.highlights %}
+                    <div class="dept-highlights">
+                        <span class="material-icons">star</span>
+                        <span>{{ dept.highlights }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+    
+    <!-- 公告区域 -->
     {% if announcements %}
     <div class="announcement-section">
         <div class="announcement-card">
             <div class="announcement-header">
+                <span class="material-icons">notifications</span>
                 <h3>最新公告</h3>
             </div>
             {% for announcement in announcements %}
             <div class="announcement-item">
                 <h4 class="announcement-title">{{ announcement.title }}</h4>
-                <p class="announcement-date">
+                <div class="announcement-date">
                     <span class="material-icons">schedule</span>
-                    {{ announcement.published_at|date:"Y年m月d日 H:i" }}
-                </p>
-                <p class="announcement-content">{{ announcement.content|truncatewords:50 }}</p>
-                {% if announcement.attachment %}
-                <a href="{{ announcement.attachment.url }}" class="announcement-attachment">
-                    <span class="material-icons">attach_file</span>
-                    下载附件: {{ announcement.attachment.name|slice:"-30:" }}
-                </a>
+                    {{ announcement.published_at|date:"Y年m月d日" }}
+                </div>
+                {% if announcement.content %}
+                <div class="announcement-content">{{ announcement.content|truncatewords:50 }}</div>
                 {% endif %}
             </div>
             {% endfor %}
         </div>
     </div>
     {% endif %}
-
-    <!-- 系统概览 -->
-    <div class="overview-card">
-        <div class="overview-icon">
-            <span class="material-icons">show_chart</span>
-        </div>
-        <div class="overview-content">
-            <h3>系统概览</h3>
-            <p>欢迎使用社团管理系统！当前系统中共有 <span class="overview-stat">{{ total_clubs }}</span> 个社团</p>
-        </div>
-    </div>
-
-    <!-- 社团列表 -->
-    {% if clubs %}
-    <div class="clubs-section">
-        <div class="section-header">
-            <span class="material-icons">groups</span>
-            <h2>所有社团</h2>
-        </div>
-        
-        <div class="clubs-grid">
-            {% for club in clubs %}
-            <div class="club-card">
-                <div class="club-card-header">
-                    <h3 class="club-name">{{ club.name }}</h3>
-                    <span class="status-badge {% if club.status == 'active' %}active{% elif club.status == 'inactive' %}inactive{% else %}stopped{% endif %}">
-                        {% if club.status == 'active' %}
-                        <span class="material-icons">check_circle</span> 活跃
-                        {% elif club.status == 'inactive' %}
-                        <span class="material-icons">pause_circle</span> 不活跃
-                        {% else %}
-                        <span class="material-icons">cancel</span> 停止
-                        {% endif %}
-                    </span>
-                </div>
-                
-                <div class="club-info">
-                    <div class="club-info-item">
-                        <span class="material-icons">event</span>
-                        <span class="club-info-label">成立日期:</span>
-                        <span class="club-info-value">{{ club.founded_date }}</span>
-                    </div>
-                    <div class="club-info-item">
-                        <span class="material-icons">people</span>
-                        <span class="club-info-label">成员数:</span>
-                        <span class="club-info-value">{{ club.members_count }} 人</span>
-                    </div>
-                </div>
-                
-                {% if club.description %}
-                <p class="club-description">{{ club.description }}</p>
-                {% endif %}
-                
-                <div class="club-actions">
-                    <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-primary">
-                        <span class="material-icons">visibility</span> 查看详情
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <span class="material-icons">groups</span>
-        <p>暂无社团信息，<a href="{% url 'clubs:register_club' %}">去申请新社团</a></p>
-    </div>
-    {% endif %}
+    
     {% endif %}
 </div>
 {% endblock %}

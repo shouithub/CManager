@@ -350,18 +350,6 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if item.teacher_approved is not None %}
-                                        {% if item.teacher_approved %}
-                                            <span class="status-badge approved">✓ 已批准</span>
-                                        {% else %}
-                                            <span class="status-badge rejected">✗ 已拒绝</span>
-                                        {% endif %}
-                                        <br><small style="color: var(--md3-on-surface-variant);">{{ item.teacher_reviewed_at|date:"m-d H:i" }}</small>
-                                    {% else %}
-                                        <span class="status-badge pending">待审核</span>
-                                    {% endif %}
-                                </td>
-                                <td>
                                     <span class="status-badge {{ item.status }}">
                                         {% if item.status == 'approved' %}已批准{% elif item.status == 'rejected' %}已拒绝{% elif item.status == 'pending' %}待审核{% endif %}
                                     </span>
@@ -390,13 +378,13 @@
     </div>
 
     <div class="back-button-area">
-        <a href="{% url 'clubs:approval_center' %}" class="btn btn-secondary">返回审批中心</a>
+        <a href="{% url 'clubs:approval_center' item_type %}" class="btn btn-secondary">返回审批中心</a>
     </div>
 </div>
 
 <script>
 function viewApprovalDetail(itemType, itemId) {
-    const url = `/clubs/approval-center/${itemType}/${itemId}/`;
+    const url = `/clubs/approval-center-detail/${itemType}/${itemId}/`;
     window.location.href = url;
 }
 </script>

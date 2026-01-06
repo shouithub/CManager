@@ -2,10 +2,19 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from .models import UserProfile, Club, ReviewSubmission, Reimbursement, ClubRegistrationRequest, ClubInfoChangeRequest, RegistrationPeriod, ClubRegistration, StaffClubRelation
 from datetime import datetime
 from django.utils import timezone
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.core.cache import cache
+import time
+
+# 登录限制配置
+MAX_LOGIN_ATTEMPTS = 5
+LOGIN_WINDOW_SECONDS = 300  # 5 minutes
 
 
 def register(request):
@@ -114,15 +123,32 @@ def user_login(request):
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '').strip()
-        
+        client_ip = request.META.get('REMOTE_ADDR', '')
+
         if not username or not password:
             messages.error(request, '用户名和密码不能为空')
             return render(request, 'clubs/auth/login.html')
-        
+
+        # 检查是否被锁定（按用户名或 IP）
+        lock_key_user = f'login_lock:user:{username}'
+        lock_key_ip = f'login_lock:ip:{client_ip}'
+        if cache.get(lock_key_user) or cache.get(lock_key_ip):
+            messages.error(request, '登录尝试过多，请等待5分钟后再试，或联系管理员重置密码。')
+            return render(request, 'clubs/auth/login.html', {
+                'username': username,
+                'show_admin_reset_prompt': True,
+            })
+
         user = authenticate(request, username=username, password=password)
-        
+
         if user is not None:
             try:
+                # 成功登录：清理失败计数
+                attempts_key_user = f'login_attempts:user:{username}'
+                attempts_key_ip = f'login_attempts:ip:{client_ip}'
+                cache.delete(attempts_key_user)
+                cache.delete(attempts_key_ip)
+
                 # 检查用户状态 - 干事需要审核通过才能登录
                 profile = user.profile
                 if profile.role == 'staff' and profile.status != 'approved':
@@ -130,17 +156,15 @@ def user_login(request):
                     return render(request, 'clubs/auth/login.html', {
                         'username': username,
                     })
-                
+
                 login(request, user)
                 messages.success(request, f'欢迎回来，{username}！')
-                
+
                 # 根据角色跳转
                 if user.profile.role == 'admin':
                     return redirect('clubs:admin_dashboard')
                 elif user.profile.role == 'staff':
                     return redirect('clubs:staff_dashboard')
-                elif user.profile.role == 'teacher':
-                    return redirect('clubs:index')  # 老师跳转首页
                 elif user.profile.role == 'president':
                     return redirect('clubs:user_dashboard')
                 else:
@@ -149,6 +173,37 @@ def user_login(request):
                 login(request, user)
                 return redirect('clubs:index')
         else:
+            # 登录失败：增加失败计数
+            attempts_key_user = f'login_attempts:user:{username}'
+            attempts_key_ip = f'login_attempts:ip:{client_ip}'
+
+            user_attempts = cache.get(attempts_key_user) or 0
+            ip_attempts = cache.get(attempts_key_ip) or 0
+
+            user_attempts += 1
+            ip_attempts += 1
+
+            cache.set(attempts_key_user, user_attempts, LOGIN_WINDOW_SECONDS)
+            cache.set(attempts_key_ip, ip_attempts, LOGIN_WINDOW_SECONDS)
+
+            # 如果达到阈值，则设锁
+            if user_attempts >= MAX_LOGIN_ATTEMPTS:
+                cache.set(lock_key_user, True, LOGIN_WINDOW_SECONDS)
+                cache.delete(attempts_key_user)
+            if ip_attempts >= MAX_LOGIN_ATTEMPTS:
+                cache.set(lock_key_ip, True, LOGIN_WINDOW_SECONDS)
+                cache.delete(attempts_key_ip)
+
+            # 如果已经被锁定，提示联系管理员重置密码
+            if cache.get(lock_key_user) or cache.get(lock_key_ip):
+                messages.error(request, '登录尝试过多，请等待5分钟后再试，或联系管理员重置密码。')
+                from django.conf import settings
+                return render(request, 'clubs/auth/login.html', {
+                    'username': username,
+                    'show_admin_reset_prompt': True,
+                    'admin_contact_email': getattr(settings, 'ADMIN_CONTACT_EMAIL', ''),
+                })
+
             messages.error(request, '用户名或密码错误')
             return render(request, 'clubs/auth/login.html', {
                 'username': username,
@@ -338,25 +393,11 @@ def user_dashboard(request):
             for relation in staff_relations
         ]
         
-        # 获取负责老师信息
-        from .models import TeacherClubAssignment
-        teacher_assignments = TeacherClubAssignment.objects.filter(club=club, is_active=True)
-        assigned_teachers = [
-            {
-                'name': assignment.user.get_full_name(),
-                'phone': getattr(assignment.user.profile, 'phone', None) or '--',
-                'email': assignment.user.email or '--',
-                'assigned_at': assignment.assigned_date
-            }
-            for assignment in teacher_assignments
-        ]
-        
         club_data = {
             'club': club,
             'has_submitted_review': has_submitted_review,
             'has_submitted_registration': has_submitted_registration,
             'assigned_staff': assigned_staff,
-            'assigned_teachers': assigned_teachers,
             'unread_submissions_count': unread_annual_review + unread_registration + unread_application + unread_reimbursement + unread_activity + unread_transition,
             'review_enabled': club.review_enabled,
             'registration_enabled': club.registration_enabled
@@ -393,7 +434,7 @@ def staff_dashboard(request):
     from .models import (
         ActivityApplication, ReviewSubmission, ClubRegistrationRequest,
         ClubRegistration, ClubInfoChangeRequest, Reimbursement, PresidentTransition,
-        StaffClubRelation, Club
+        StaffClubRelation, Club, RegistrationPeriod
     )
     from datetime import datetime
     
@@ -402,13 +443,26 @@ def staff_dashboard(request):
     pending_club_registrations = ClubRegistration.objects.filter(status='pending').order_by('-submitted_at')
     pending_club_info_changes = ClubInfoChangeRequest.objects.filter(status='pending').order_by('-submitted_at')
     pending_reimbursements = Reimbursement.objects.filter(status='pending').order_by('-submitted_at')
-    # 活动申请 - 获取干事还未审核的申请，但排除老师已拒绝的
+    # 活动申请 - 获取干事还未审核的申请
     pending_activity_applications = ActivityApplication.objects.filter(
-        staff_approved__isnull=True,  # 干事还未审核
-        teacher_approved__isnull=True  # 老师也还未拒绝
+        staff_approved__isnull=True  # 干事还未审核
     ).order_by('-submitted_at')
     pending_president_transitions = PresidentTransition.objects.filter(status='pending').order_by('-submitted_at')
     pending_registrations = ClubRegistrationRequest.objects.filter(status='pending').order_by('-submitted_at')
+    
+    # 为所有待审核项添加review_url属性
+    for item in pending_submissions:
+        item.review_url = f'/clubs/staff/review-submission/{item.id}/'
+    for item in pending_club_registrations:
+        item.review_url = f'/clubs/staff/review-club-registration/{item.id}/'
+    for item in pending_registrations:
+        item.review_url = f'/clubs/staff/review-club-registration-submission/{item.id}/'
+    for item in pending_reimbursements:
+        item.review_url = f'/clubs/staff/review-reimbursement/{item.id}/'
+    for item in pending_activity_applications:
+        item.review_url = f'/clubs/staff/review-activity-application/{item.id}/'
+    for item in pending_president_transitions:
+        item.review_url = f'/clubs/staff/review-president-transition/{item.id}/'
     
     # 计算待审核数量
     pending_counts = {
@@ -718,7 +772,8 @@ def staff_management(request):
         messages.error(request, '用户角色未配置')
         return redirect('clubs:login')
     
-    from .models import Club, RegistrationPeriod
+    from .models import Club, RegistrationPeriod, ReviewSubmission, ClubRegistration, StaffClubRelation
+    from datetime import datetime
     
     # 计算全局年审功能状态
     all_review_enabled = not Club.objects.filter(review_enabled=False).exists()
@@ -728,11 +783,61 @@ def staff_management(request):
     
     # 获取当前活跃的社团注册周期
     active_registration_period = RegistrationPeriod.objects.filter(is_active=True).first()
+
+    # 搜索 & 列表（分页）
+    q = request.GET.get('q', '').strip()
+    clubs_qs = Club.objects.all().order_by('name')
+    if q:
+        clubs_qs = clubs_qs.filter(
+            Q(name__icontains=q) |
+            Q(description__icontains=q) |
+            Q(president__username__icontains=q) |
+            Q(president__profile__real_name__icontains=q)
+        )
+
+    paginator = Paginator(clubs_qs, 20)  # 每页20条
+    page_number = request.GET.get('page')
+    clubs_page = paginator.get_page(page_number)
+    
+    # === 预警功能数据 ===
+    # 获取当前干事负责的社团ID
+    staff_club_ids = StaffClubRelation.objects.filter(
+        staff=user.profile, 
+        is_active=True
+    ).values_list('club_id', flat=True)
+    
+    # 获取成员数少于20人的社团（排除停止状态的社团）
+    clubs_with_low_members = Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count').prefetch_related('responsible_staff', 'responsible_staff__staff')
+    
+    # 获取当前年份
+    current_year = datetime.now().year
+    # 获取已开启年审的社团（排除停止状态的社团）
+    enabled_review_clubs = Club.objects.filter(review_enabled=True).exclude(status='suspended')
+    # 获取已提交本年度年审的社团ID
+    submitted_clubs_ids = ReviewSubmission.objects.filter(
+        club__in=enabled_review_clubs, 
+        submission_year=current_year
+    ).values_list('club_id', flat=True)
+    # 获取已开启年审但未提交的社团
+    clubs_enabled_review_not_submitted = enabled_review_clubs.exclude(id__in=submitted_clubs_ids).prefetch_related('responsible_staff')
+    
+    # 分别获取当前干事负责的和其他的未提交年审社团
+    clubs_enabled_review_not_submitted_my = clubs_enabled_review_not_submitted.filter(id__in=staff_club_ids)
+    clubs_enabled_review_not_submitted_other = clubs_enabled_review_not_submitted.exclude(id__in=staff_club_ids)
     
     context = {
         'all_review_enabled': all_review_enabled,
         'all_registration_enabled': all_registration_enabled,
         'active_registration_period': active_registration_period,
+        'clubs_page': clubs_page,
+        'q': q,
+        # 预警数据
+        'clubs_with_low_members': clubs_with_low_members,
+        'clubs_with_low_members_count': clubs_with_low_members.count(),
+        'clubs_enabled_review_not_submitted': clubs_enabled_review_not_submitted,
+        'clubs_enabled_review_not_submitted_my': clubs_enabled_review_not_submitted_my,
+        'clubs_enabled_review_not_submitted_other': clubs_enabled_review_not_submitted_other,
+        'current_year': current_year,
     }
     
     return render(request, 'clubs/staff/management.html', context)
@@ -817,3 +922,125 @@ def resend_verification_code(request):
         messages.error(request, msg)
     
     return redirect('clubs:verify_email')
+
+@login_required(login_url='login')
+@require_http_methods(['GET', 'POST'])
+def manage_department_staff(request):
+    """部长管理本部门人员 - 仅部长可用"""
+    user = request.user
+    
+    try:
+        profile = user.profile
+        if profile.role != 'staff' or profile.staff_level != 'director':
+            messages.error(request, '您没有权限访问此页面，仅部长可以管理本部门人员')
+            return redirect('clubs:staff_dashboard')
+    except UserProfile.DoesNotExist:
+        messages.error(request, '用户角色未配置')
+        return redirect('clubs:login')
+    
+    department = profile.department
+    
+    if not department:
+        messages.error(request, '您的部门信息未配置，无法管理部门人员')
+        return redirect('clubs:staff_dashboard')
+    
+    # 获取本部门的所有干事
+    department_staff = UserProfile.objects.filter(
+        role='staff',
+        department=department
+    ).select_related('user').order_by('staff_level', 'user__username')
+    
+    # 分类统计
+    directors = department_staff.filter(staff_level='director')
+    members = department_staff.filter(staff_level='member')
+    
+    context = {
+        'department': profile.get_department_display(),
+        'department_key': department,
+        'all_staff': department_staff,
+        'directors': directors,
+        'members': members,
+        'total_staff': department_staff.count(),
+    }
+    return render(request, 'clubs/staff/manage_department.html', context)
+
+
+@login_required
+def staff_dashboard_home(request):
+    """干事和管理员主页 - 显示部门介绍"""
+    from .models import DepartmentIntroduction
+    
+    profile = request.user.profile
+    
+    # 只允许干事和管理员访问
+    if profile.role not in ['staff', 'admin']:
+        messages.error(request, '无权访问此页面')
+        return redirect('clubs:index')
+    
+    # 获取所有部门介绍
+    departments = DepartmentIntroduction.objects.all().order_by('department')
+    
+    # 获取组织统计
+    total_staff = UserProfile.objects.filter(role='staff', status='approved').count()
+    total_directors = UserProfile.objects.filter(role='staff', staff_level='director').count()
+    total_members = UserProfile.objects.filter(role='staff', staff_level='member').count()
+    
+    context = {
+        'departments': departments,
+        'total_staff': total_staff,
+        'total_directors': total_directors,
+        'total_members': total_members,
+        'can_edit': profile.role == 'admin',
+    }
+    
+    return render(request, 'clubs/staff/home.html', context)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def edit_department_intro(request, department):
+    """编辑部门介绍（仅管理员）"""
+    from .models import DepartmentIntroduction
+    
+    profile = request.user.profile
+    
+    # 只允许管理员编辑
+    if profile.role != 'admin':
+        messages.error(request, '无权编辑部门介绍')
+        return redirect('clubs:staff_dashboard_home')
+    
+    dept_intro = DepartmentIntroduction.objects.filter(department=department).first()
+    
+    if request.method == 'POST':
+        description = request.POST.get('description', '').strip()
+        highlights = request.POST.get('highlights', '').strip()
+        icon = request.POST.get('icon', 'work').strip()
+        
+        if not description:
+            messages.error(request, '职责描述不能为空')
+        else:
+            if dept_intro:
+                dept_intro.description = description
+                dept_intro.highlights = highlights
+                dept_intro.icon = icon
+                dept_intro.updated_by = request.user
+                dept_intro.save()
+                messages.success(request, f'{dept_intro.get_department_display()}介绍已更新')
+            else:
+                dept_intro = DepartmentIntroduction.objects.create(
+                    department=department,
+                    description=description,
+                    highlights=highlights,
+                    icon=icon,
+                    updated_by=request.user
+                )
+                messages.success(request, f'{dept_intro.get_department_display()}介绍已创建')
+            
+            return redirect('clubs:staff_dashboard_home')
+    
+    context = {
+        'dept_intro': dept_intro,
+        'department': department,
+    }
+    
+    return render(request, 'clubs/staff/edit_department_intro.html', context)

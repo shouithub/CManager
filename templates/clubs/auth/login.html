@@ -269,6 +269,18 @@
             </button>
         </form>
 
+        {% if show_admin_reset_prompt %}
+        <div id="admin-reset-modal" style="margin-top: var(--md3-spacing-lg); padding: var(--md3-spacing-md); border-radius: var(--md3-radius-lg); background: var(--md3-error-container); color: var(--md3-on-error-container);">
+            <strong>登录已被锁定</strong>
+            <p style="margin: .5rem 0;">由于多次失败的登录尝试，您的账号（或此 IP）已被暂时锁定 5 分钟。请等待解锁或联系管理员重置密码。</p>
+            {% if admin_contact_email %}
+            <a href="mailto:{{ admin_contact_email }}" class="action-btn primary" style="background: var(--md3-on-error-container); color: var(--md3-error-container);">联系管理员</a>
+            {% else %}
+            <button class="action-btn" onclick="alert('请联系系统管理员或使用管理员面板重置密码');">联系管理员</button>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <div class="auth-divider">
             <span>还没有账户？</span>
         </div>

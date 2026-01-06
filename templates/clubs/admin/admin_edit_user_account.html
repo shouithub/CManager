@@ -1,0 +1,509 @@
+{% extends 'clubs/admin/base.html' %}
+
+{% block title %}编辑用户账户 - {{ target_user.username }}{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .account-container {
+        max-width: 1000px;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    /* 页面头部 */
+    .account-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .user-avatar-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .account-header-info h1 {
+        margin: 0 0 var(--md3-spacing-sm) 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .account-info-row {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-xs) 0;
+        font-size: 0.95rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .account-info-label {
+        font-weight: 600;
+        min-width: 60px;
+    }
+
+    .account-info-value {
+        color: var(--md3-on-surface);
+    }
+
+    /* 消息提示 */
+    .alert-message {
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-2xl);
+        border-radius: var(--md3-radius-md);
+        border-left: 4px solid;
+        display: flex;
+        gap: var(--md3-spacing-md);
+        align-items: flex-start;
+    }
+
+    .alert-message.error {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border-left-color: var(--md3-error);
+    }
+
+    .alert-message.success {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+        border-left-color: var(--md3-success);
+    }
+
+    .alert-message .material-icons {
+        flex-shrink: 0;
+        font-size: 1.25rem;
+    }
+
+    .alert-content {
+        flex: 1;
+    }
+
+    .alert-content div {
+        margin: var(--md3-spacing-xs) 0;
+        line-height: 1.5;
+    }
+
+    /* 卡片布局 */
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .edit-card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .edit-card h3 {
+        margin: 0 0 var(--md3-spacing-xl) 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+
+    .edit-card h3 .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+
+    .form-section {
+        margin-bottom: var(--md3-spacing-xl);
+        padding-bottom: var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .form-group {
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--md3-spacing-sm);
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        font-size: 0.95rem;
+    }
+
+    .form-label .required {
+        color: var(--md3-error);
+        margin-left: 2px;
+    }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container-highest);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+
+    .form-input::placeholder {
+        color: var(--md3-on-surface-variant);
+    }
+
+    .form-row {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        align-items: flex-end;
+    }
+
+    .form-row .form-input,
+    .form-row .form-select {
+        flex: 1;
+    }
+
+    .password-input-group {
+        position: relative;
+    }
+
+    .password-toggle-btn {
+        position: absolute;
+        right: var(--md3-spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: var(--md3-primary);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        transition: all 0.2s ease;
+    }
+
+    .password-toggle-btn:hover {
+        color: var(--md3-on-primary-container);
+    }
+
+    /* 按钮 */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border: none;
+        border-radius: var(--md3-radius-md);
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        font-family: inherit;
+    }
+
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .btn-primary:hover {
+        background: var(--md3-primary);
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: var(--md3-surface-container);
+        color: var(--md3-primary);
+        border: 1px solid var(--md3-outline);
+    }
+
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        border-color: var(--md3-primary);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-xl);
+    }
+
+    .form-actions .btn {
+        flex: 1;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+        .account-header {
+            flex-direction: column;
+            text-align: center;
+            gap: var(--md3-spacing-lg);
+        }
+
+        .cards-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block admin_main %}
+    <div class="account-header">
+        <div class="user-avatar-large">{{ target_user.username|slice:":1"|upper }}</div>
+        <div class="account-header-info">
+            <h1>{{ target_user.username }}</h1>
+            <div class="account-info-row">
+                <span class="account-info-label">全名：</span>
+                <span class="account-info-value">{{ target_user.profile.get_full_name|default:"未设置" }}</span>
+            </div>
+            <div class="account-info-row">
+                <span class="account-info-label">邮箱：</span>
+                <span class="account-info-value">{{ target_user.email|default:"—" }}</span>
+            </div>
+            <div class="account-info-row">
+                <span class="account-info-label">电话：</span>
+                <span class="account-info-value">{{ target_user.profile.phone|default:"—" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 错误消息 -->
+    {% if errors %}
+    <div class="alert-message error">
+        <span class="material-icons">error</span>
+        <div class="alert-content">
+            {% for error in errors %}
+            <div>{{ error }}</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 成功消息 -->
+    {% if success_messages %}
+    <div class="alert-message success">
+        <span class="material-icons">check_circle</span>
+        <div class="alert-content">
+            {% for message in success_messages %}
+            <div>{{ message }}</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 编辑卡片 -->
+    <div class="cards-grid">
+        <!-- 账号信息卡片 -->
+        <div class="edit-card">
+            <h3>
+                <span class="material-icons">account_circle</span>
+                账号信息
+            </h3>
+
+            <!-- 用户名部分 -->
+            <div class="form-section">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_username">
+                    
+                    <div class="form-group">
+                        <label class="form-label">用户名</label>
+                        <div class="form-row">
+                            <input class="form-input" name="new_username" value="{{ target_user.username }}" required>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-icons">save</span>
+                                <span>保存</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 角色部分 -->
+            <div class="form-section">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_role">
+                    
+                    <div class="form-group">
+                        <label class="form-label">角色</label>
+                        <div class="form-row">
+                            <select class="form-select" name="new_role">
+                                <option value="president" {% if target_user.profile.role == 'president' %}selected{% endif %}>社长</option>
+                                <option value="staff" {% if target_user.profile.role == 'staff' %}selected{% endif %}>干事</option>
+                                <option value="admin" {% if target_user.profile.role == 'admin' %}selected{% endif %}>管理员</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-icons">save</span>
+                                <span>保存</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 密码与安全卡片 -->
+        <div class="edit-card">
+            <h3>
+                <span class="material-icons">security</span>
+                密码与安全
+            </h3>
+
+            <!-- 密码修改部分 -->
+            <div class="form-section">
+                <form method="post" id="password-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+                    
+                    <div class="form-group">
+                        <label class="form-label">新密码 <span class="required">*</span></label>
+                        <div class="password-input-group">
+                            <input 
+                                class="form-input" 
+                                type="password" 
+                                id="new_password" 
+                                name="new_password" 
+                                placeholder="至少6个字符" 
+                                minlength="6" 
+                                required
+                            >
+                            <button 
+                                type="button" 
+                                class="password-toggle-btn" 
+                                id="toggle-pw"
+                                title="显示/隐藏密码"
+                            >显示</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">确认新密码 <span class="required">*</span></label>
+                        <input 
+                            class="form-input" 
+                            type="password" 
+                            id="confirm_password" 
+                            name="confirm_password" 
+                            placeholder="再次输入新密码" 
+                            minlength="6" 
+                            required
+                        >
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
+                            <span class="material-icons">close</span>
+                            <span>取消</span>
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-icons">check</span>
+                            <span>设置新密码</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 账号锁定部分 -->
+            <div class="form-section">
+                <div class="form-group">
+                    <label class="form-label">账号状态</label>
+                    <p style="color: var(--md3-on-surface-variant); font-size: 0.9rem; margin: var(--md3-spacing-sm) 0;">
+                        如果用户由于多次登录失败而被锁定，可以在此解锁账号。
+                    </p>
+                    <form method="post" action="{% url 'clubs:unlock_account' target_user.username %}" style="display:inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-secondary">
+                            <span class="material-icons">lock_open</span>
+                            <span>解锁账号</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 密码显示/隐藏切换
+    document.getElementById('toggle-pw').addEventListener('click', function(e) {
+        e.preventDefault();
+        const newPwInput = document.getElementById('new_password');
+        const confirmPwInput = document.getElementById('confirm_password');
+        const isPassword = newPwInput.type === 'password';
+        
+        newPwInput.type = isPassword ? 'text' : 'password';
+        confirmPwInput.type = isPassword ? 'text' : 'password';
+        this.textContent = isPassword ? '隐藏' : '显示';
+    });
+
+    // 表单验证
+    document.getElementById('password-form').addEventListener('submit', function(e) {
+        const newPassword = document.getElementById('new_password').value.trim();
+        const confirmPassword = document.getElementById('confirm_password').value.trim();
+        
+        if (newPassword.length < 6) {
+            alert('新密码至少需要 6 个字符');
+            e.preventDefault();
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            alert('两次输入的密码不一致，请检查');
+            e.preventDefault();
+            return;
+        }
+    });
+</script>
+
+{% endblock %}

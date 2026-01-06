@@ -90,6 +90,6 @@
     </div>
     
     <a href="{% url 'clubs:submit_club_registration' club.id %}" class="btn btn-primary">提交新的注册申请</a>
-    <a href="{% url 'clubs:approval_center' %}" class="btn btn-secondary">返回审批中心</a>
+    <a href="{% url 'clubs:approval_center' 'registration' %}" class="btn btn-secondary">返回审批中心</a>
 </div>
 {% endblock %}

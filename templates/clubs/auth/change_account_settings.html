@@ -310,58 +310,7 @@
         </form>
     </div>
     
-    <!-- 修改教师负责的社团 - 仅管理员对教师可见 -->
-    {% if is_admin_view and profile and profile.role == 'teacher' %}
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <h3><span class="material-icons">school</span> 修改负责社团</h3>
-        </div>
-        
-        <form method="post" class="settings-card-body">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="change_teacher_clubs">
-            
-            <div class="form-group">
-                <label>选择教师负责的社团 <span class="required-indicator">*</span></label>
-                <p style="color: var(--md3-on-surface-variant); font-size: 0.875rem; margin: 0 0 var(--md3-spacing-md) 0;">
-                    选择此教师要负责指导的社团。教师可以指导多个社团。
-                </p>
-                
-                <div class="clubs-selector">
-                    {% if all_clubs %}
-                        {% for club in all_clubs %}
-                        <label class="club-checkbox-label">
-                            <input 
-                                type="checkbox" 
-                                name="responsible_clubs" 
-                                value="{{ club.id }}"
-                                {% if club.id in responsible_club_ids %}checked{% endif %}
-                                class="club-checkbox"
-                            >
-                            <span class="checkbox-custom"></span>
-                            <span class="club-name">{{ club.name }}</span>
-                            <span class="club-category">({{ club.category }})</span>
-                        </label>
-                        {% endfor %}
-                    {% else %}
-                        <p style="color: var(--md3-on-surface-variant); padding: var(--md3-spacing-md); background: var(--md3-surface-container-low); border-radius: var(--md3-radius-md);">
-                            系统中还没有任何社团
-                        </p>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    ✓ 确认修改负责社团
-                </button>
-                <a href="{% url 'clubs:manage_users' %}" class="btn btn-outlined">
-                    <span class="material-icons">close</span> 取消
-                </a>
-            </div>
-        </form>
-    </div>
-    {% endif %}
+
     {% endif %}
     
     <!-- 删除账户 - 仅用户自己可见 -->

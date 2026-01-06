@@ -13,6 +13,7 @@ from openpyxl.utils import get_column_letter
 import urllib.parse
 
 from .models import Room222Booking
+from .views import is_staff_or_admin
 
 
 def _is_staff(user):
@@ -42,7 +43,7 @@ def export_room222_bookings_weekly(request):
     表格以天为列，时间段为行
     """
     # 检查权限
-    if not (_is_staff(request.user) or _is_admin(request.user) or request.user.is_superuser):
+    if not is_staff_or_admin(request.user):
         messages.error(request, '您没有权限导出日程安排')
         return redirect('clubs:room222_calendar')
     

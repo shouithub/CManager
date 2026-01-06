@@ -1,16 +1,21 @@
 from django.contrib import admin
-from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, Template, Announcement, ClubRegistrationRequest, EmailVerificationCode, SMTPConfig, TeacherClubAssignment, ActivityParticipation
+from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, Template, Announcement, ClubRegistrationRequest, EmailVerificationCode, SMTPConfig, CarouselImage, DepartmentIntroduction
 
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'real_name', 'role', 'student_id', 'created_at')
-    list_filter = ('role', 'political_status', 'created_at')
+    list_display = ('user', 'real_name', 'role', 'department', 'staff_level', 'student_id', 'created_at')
+    list_filter = ('role', 'department', 'staff_level', 'political_status', 'created_at')
     search_fields = ('user__username', 'user__email', 'real_name', 'student_id')
     readonly_fields = ('created_at', 'updated_at')
     fieldsets = (
         ('基本信息', {
             'fields': ('user', 'role', 'created_at', 'updated_at')
+        }),
+        ('干事信息', {
+            'fields': ('department', 'staff_level'),
+            'classes': ('collapse',),
+            'description': '仅对干事角色有效'
         }),
         ('实名信息', {
             'fields': ('real_name', 'student_id', 'phone', 'wechat', 'political_status')
@@ -113,29 +118,35 @@ class SMTPConfigAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(TeacherClubAssignment)
-class TeacherClubAssignmentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'club', 'role', 'assigned_date', 'is_active')
-    list_filter = ('role', 'is_active', 'assigned_date')
-    search_fields = ('user__username', 'user__first_name', 'club__name')
-    readonly_fields = ('assigned_date',)
+@admin.register(CarouselImage)
+class CarouselImageAdmin(admin.ModelAdmin):
+    list_display = ('title', 'uploaded_by', 'uploaded_at', 'is_active')
+    list_filter = ('is_active', 'uploaded_at')
+    search_fields = ('title', 'description')
+    readonly_fields = ('uploaded_at',)
     fieldsets = (
-        ('分配信息', {
-            'fields': ('user', 'club', 'role', 'is_active')
+        ('基本信息', {
+            'fields': ('image', 'title', 'description', 'is_active')
         }),
-        ('时间戳', {
-            'fields': ('assigned_date',)
+        ('上传信息', {
+            'fields': ('uploaded_by', 'uploaded_at'),
+            'classes': ('collapse',)
         }),
     )
 
 
-@admin.register(ActivityParticipation)
-class ActivityParticipationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'get_activity_name', 'status', 'applied_at')
-    list_filter = ('status', 'applied_at')
-    search_fields = ('user__username', 'activity__activity_name')
-    readonly_fields = ('applied_at', 'approved_at')
-    
-    def get_activity_name(self, obj):
-        return obj.activity.activity_name
-    get_activity_name.short_description = '活动名称'
+@admin.register(DepartmentIntroduction)
+class DepartmentIntroductionAdmin(admin.ModelAdmin):
+    list_display = ('get_department_display', 'updated_at', 'updated_by')
+    list_filter = ('department', 'updated_at')
+    search_fields = ('description', 'highlights')
+    readonly_fields = ('updated_at',)
+    fieldsets = (
+        ('基本信息', {
+            'fields': ('department', 'description', 'highlights', 'icon')
+        }),
+        ('更新信息', {
+            'fields': ('updated_by', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )

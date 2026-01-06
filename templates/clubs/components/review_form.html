@@ -270,7 +270,7 @@
                 <span class="material-icons">send</span>
                 提交审核
             </button>
-            <a href="{% url cancel_url %}" class="btn-secondary">
+            <a href="{% if cancel_url_args %}{% url cancel_url cancel_url_args %}{% else %}{% url cancel_url %}{% endif %}" class="btn-secondary">
                 <span class="material-icons">arrow_back</span>
                 返回
             </a>

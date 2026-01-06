@@ -25,6 +25,7 @@
         max-width: 1200px;
         margin: 0 auto;
         padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
         box-sizing: border-box;
     }
     
@@ -415,13 +416,6 @@
         gap: var(--md3-spacing-md);
     }
     
-    .teacher-comment {
-        padding: var(--md3-spacing-lg);
-        background: var(--md3-secondary-container);
-        border-left: 4px solid var(--md3-secondary);
-        border-radius: var(--md3-radius-md);
-    }
-    
     .comment-label {
         font-size: 0.875rem;
         font-weight: 600;
@@ -716,46 +710,6 @@
     </div>
     {% endif %}
     
-    <!-- ===== 教师审核结果卡片 ===== -->
-    <div class="card">
-        <div class="card-header">
-            <span class="material-icons">school</span>
-            <h2>教师审核结果</h2>
-        </div>
-        
-        {% if activity.teacher_approved is not None %}
-            <div class="review-status-container">
-                <div class="status-display">
-                    {% if activity.teacher_approved %}
-                        <div class="status-badge approved">
-                            <span class="material-icons">check_circle</span>
-                            <span>已批准</span>
-                        </div>
-                    {% else %}
-                        <div class="status-badge rejected">
-                            <span class="material-icons">cancel</span>
-                            <span>已拒绝</span>
-                        </div>
-                    {% endif %}
-                </div>
-                
-                {% if activity.teacher_comment %}
-                <div class="teacher-comment">
-                    <div class="comment-label">教师审核意见</div>
-                    <div class="comment-content">
-                        {{ activity.teacher_comment }}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        {% else %}
-            <div class="no-review-yet">
-                <span class="material-icons">schedule</span>
-                <p>教师尚未审核此申请</p>
-            </div>
-        {% endif %}
-    </div>
-    
     <!-- ===== 干事审核表单 ===== -->
     <div class="card">
         <div class="card-header">
@@ -795,7 +749,7 @@
                     <span class="material-icons">send</span>
                     提交审核
                 </button>
-                <a href="{% url 'clubs:staff_dashboard' %}" class="btn btn-secondary">
+                <a href="{% url 'clubs:staff_audit_center' 'activity_application' %}" class="btn btn-secondary">
                     <span class="material-icons">arrow_back</span>
                     返回
                 </a>

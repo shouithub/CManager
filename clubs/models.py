@@ -12,14 +12,25 @@ class UserProfile(models.Model):
         ('president', '社长'),
         ('staff', '干事'),
         ('admin', '管理员'),
-        ('teacher', '老师'),
-        ('user', '普通用户'),
     ]
     
     STATUS_CHOICES = [
         ('pending', '待审核'),
         ('approved', '已批准'),
         ('rejected', '已拒绝'),
+    ]
+    
+    DEPARTMENT_CHOICES = [
+        ('office', '办公室'),
+        ('review', '评审部'),
+        ('activity', '活动部'),
+        ('organization', '组织部'),
+        ('propaganda', '宣传部'),
+    ]
+    
+    STAFF_LEVEL_CHOICES = [
+        ('member', '部员'),
+        ('director', '部长'),
     ]
     
     POLITICAL_STATUS_CHOICES = [
@@ -44,9 +55,13 @@ class UserProfile(models.Model):
     # 审核状态 - 只有干事需要审核
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='approved', verbose_name='状态')
     
+    # 干事专属字段 - 部门和职级
+    department = models.CharField(max_length=20, choices=DEPARTMENT_CHOICES, null=True, blank=True, verbose_name='部门')
+    staff_level = models.CharField(max_length=20, choices=STAFF_LEVEL_CHOICES, default='member', verbose_name='部员/部长', help_text='仅对干事有效')
+    
     # 实名信息字段
     real_name = models.CharField(max_length=100, verbose_name='真名', blank=True)
-    student_id = models.CharField(max_length=50, unique=True, verbose_name='学号', blank=True)
+    student_id = models.CharField(max_length=50, verbose_name='学号', blank=True)
     phone = models.CharField(max_length=20, verbose_name='电话', blank=True)
     wechat = models.CharField(max_length=100, verbose_name='微信', blank=True)
     political_status = models.CharField(
@@ -109,41 +124,10 @@ class Club(models.Model):
         return self.name
 
 
-class TeacherClubAssignment(models.Model):
-    """教师社团分配模型 - 关联教师与其管理的社团"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='teacher_club_assignments', verbose_name='教师用户')
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='assigned_teachers', verbose_name='社团')
-    role = models.CharField(
-        max_length=20,
-        choices=[
-            ('advisor', '指导老师'),
-            ('supervisor', '监管员'),
-            ('reviewer', '审核员'),
-        ],
-        default='advisor',
-        verbose_name='角色'
-    )
-    assigned_date = models.DateTimeField(auto_now_add=True, verbose_name='分配日期')
-    is_active = models.BooleanField(default=True, verbose_name='是否活跃')
-    
-    class Meta:
-        verbose_name = '教师社团分配'
-        verbose_name_plural = '教师社团分配'
-        unique_together = ['user', 'club']
-        ordering = ['-assigned_date']
-    
-    def __str__(self):
-        return f"{self.user.username} - {self.club.name} ({self.get_role_display()})"
-
-
 class Officer(models.Model):
     """社团干部模型"""
     POSITION_CHOICES = [
         ('president', '社长'),
-        ('vice_president', '副社长'),
-        ('secretary', '秘书'),
-        ('treasurer', '财务'),
-        ('member', '普通成员'),
     ]
     
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='officers', verbose_name='社团')
@@ -730,7 +714,6 @@ class ActivityApplication(models.Model):
     STATUS_CHOICES = [
         ('pending', '待审核'),
         ('staff_approved', '干事已批准'),
-        ('teacher_approved', '老师已批准'),
         ('approved', '已批准'),
         ('rejected', '被拒绝'),
     ]
@@ -774,12 +757,6 @@ class ActivityApplication(models.Model):
     staff_comment = models.TextField(blank=True, verbose_name='干事审核意见')
     staff_approved = models.BooleanField(null=True, blank=True, verbose_name='干事是否批准')
     
-    # 老师审核
-    teacher_reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='老师审核时间')
-    teacher_reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='teacher_reviewed_activities', verbose_name='老师审核人')
-    teacher_comment = models.TextField(blank=True, verbose_name='老师审核意见')
-    teacher_approved = models.BooleanField(null=True, blank=True, verbose_name='老师是否批准')
-    
     # 保留旧字段以兼容
     reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
     reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_activities', verbose_name='审核人')
@@ -799,48 +776,21 @@ class ActivityApplication(models.Model):
         return f"{self.club.name} - {self.activity_name} ({self.activity_date})"
     
     def update_status(self):
-        """根据双重审核结果更新状态"""
-        if self.staff_approved is False or self.teacher_approved is False:
+        """根据审核结果更新状态"""
+        if self.staff_approved is False:
             self.status = 'rejected'
-        elif self.staff_approved is True and self.teacher_approved is True:
+        elif self.staff_approved is True:
             self.status = 'approved'
-        elif self.staff_approved is True and self.teacher_approved is None:
-            self.status = 'staff_approved'
-        elif self.teacher_approved is True and self.staff_approved is None:
-            self.status = 'teacher_approved'
         else:
             self.status = 'pending'
         
-        # 更新reviewed_at为最后一次审核的时间（最后决定的时间）
-        reviewed_times = [t for t in [self.staff_reviewed_at, self.teacher_reviewed_at] if t is not None]
-        if reviewed_times:
-            self.reviewed_at = max(reviewed_times)
+        # 更新reviewed_at为最后一次审核的时间
+        if self.staff_reviewed_at:
+            self.reviewed_at = self.staff_reviewed_at
         
         self.save()
 
 
-class ActivityParticipation(models.Model):
-    """活动参加记录模型"""
-    STATUS_CHOICES = [
-        ('pending', '申请中'),
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
-    ]
-    
-    activity = models.ForeignKey(ActivityApplication, on_delete=models.CASCADE, related_name='participants', verbose_name='活动')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activity_participations', verbose_name='用户')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='approved', verbose_name='状态')
-    applied_at = models.DateTimeField(auto_now_add=True, verbose_name='申请时间')
-    approved_at = models.DateTimeField(null=True, blank=True, verbose_name='批准时间')
-    
-    class Meta:
-        verbose_name = '活动参加'
-        verbose_name_plural = '活动参加'
-        ordering = ['-applied_at']
-        unique_together = ('activity', 'user')  # 防止重复申请
-    
-    def __str__(self):
-        return f"{self.user.username} - {self.activity.activity_name}"
 
 
 class Room222Booking(models.Model):
@@ -976,3 +926,72 @@ class SMTPConfig(models.Model):
     def get_active_config(cls):
         """获取激活的SMTP配置"""
         return cls.objects.filter(is_active=True).first()
+
+
+class CarouselImage(models.Model):
+    """首页轮播图片模型"""
+    image = models.ImageField(upload_to='carousel/', verbose_name='轮播图片')
+    title = models.CharField(max_length=200, blank=True, verbose_name='标题')
+    description = models.TextField(blank=True, verbose_name='描述')
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='上传者')
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
+    is_active = models.BooleanField(default=True, verbose_name='是否激活')
+    
+    class Meta:
+        verbose_name = '轮播图片'
+        verbose_name_plural = '轮播图片'
+        ordering = ['-uploaded_at']
+    
+    def __str__(self):
+        return self.title or f"轮播图片 {self.id}"
+
+
+class DepartmentIntroduction(models.Model):
+    """部门介绍模型"""
+    DEPARTMENT_CHOICES = [
+        ('office', '办公室'),
+        ('review', '评审部'),
+        ('activity', '活动部'),
+        ('organization', '组织部'),
+        ('propaganda', '宣传部'),
+    ]
+    
+    department = models.CharField(
+        max_length=20, 
+        choices=DEPARTMENT_CHOICES, 
+        unique=True,
+        verbose_name='部门'
+    )
+    description = models.TextField(verbose_name='职责描述')
+    highlights = models.TextField(
+        blank=True,
+        verbose_name='重点工作',
+        help_text='多个重点工作用换行分隔'
+    )
+    icon = models.CharField(
+        max_length=50,
+        default='work',
+        verbose_name='图标名称',
+        help_text='Material Icons图标名称'
+    )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    updated_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        verbose_name='更新者'
+    )
+    
+    class Meta:
+        verbose_name = '部门介绍'
+        verbose_name_plural = '部门介绍'
+        ordering = ['department']
+    
+    def __str__(self):
+        return self.get_department_display()
+    
+    def get_highlights_list(self):
+        """将highlights转换为列表"""
+        if self.highlights:
+            return [h.strip() for h in self.highlights.split('\n') if h.strip()]
+        return []

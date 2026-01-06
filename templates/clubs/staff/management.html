@@ -25,6 +25,31 @@
     .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border-color: var(--md3-outline-variant); }
     .btn-success { background: var(--md3-tertiary); color: var(--md3-on-tertiary); }
 
+    /* 预警样式 */
+    .copy-toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); padding: 12px 24px; border-radius: 999px; box-shadow: var(--md3-elevation-3); display: none; font-weight: 600; }
+    .copy-toast.show { display: block; }
+    .alerts-grid { display: grid; gap: 16px; margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+    .alert-card { border-radius: 16px; padding: 18px 20px; border: 1px solid; display: flex; flex-direction: column; gap: 12px; }
+    .alert-card.info { background: var(--md3-secondary-container); color: var(--md3-on-secondary-container); border-color: var(--md3-outline-variant); }
+    .alert-card.warning { background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); border-color: var(--md3-outline-variant); }
+    .alert-card.error { background: var(--md3-error-container); color: var(--md3-on-error-container); border-color: var(--md3-error); }
+    .alert-header { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
+    .alert-list { display: flex; flex-direction: column; gap: 8px; }
+    .alert-item { padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,0.05); font-size: 13px; line-height: 1.5; }
+    .alert-btn { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; background: var(--md3-primary); color: var(--md3-on-primary); border: none; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .alert-btn:hover { transform: translateY(-1px); box-shadow: var(--md3-elevation-2); }
+    .alert-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-copy-all { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; background: var(--md3-primary); color: var(--md3-on-primary); border: none; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .btn-copy-all:hover { transform: translateY(-1px); box-shadow: var(--md3-elevation-2); }
+    .btn-copy-my { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; background: var(--md3-secondary); color: var(--md3-on-secondary); border: none; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .btn-copy-my:hover { transform: translateY(-1px); box-shadow: var(--md3-elevation-2); }
+    .collapsible-section { margin-top: 12px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 12px; }
+    .collapsible-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--md3-primary); user-select: none; }
+    .collapsible-toggle .material-icons { font-size: 18px; transition: transform 0.2s ease; }
+    .collapsible-toggle.collapsed .material-icons { transform: rotate(-90deg); }
+    .collapsible-content { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .collapsible-content.hidden { display: none; }
+
     .section-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 18px; margin-bottom: 24px; overflow: hidden; }
     .section-header { padding: 16px 20px; background: var(--md3-surface-container-low); border-bottom: 1px solid var(--md3-outline-variant); }
     .section-title { margin: 0; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
@@ -60,11 +85,153 @@
 
 {% block content %}
 <div class="management-shell">
+    <div id="copyToast" class="copy-toast">✓ 复制成功</div>
+
     <div class="management-header">
         <h1 class="management-title">
             <span class="material-icons">business_center</span> 社团管理
         </h1>
         <p class="management-subtitle">管理社团功能、模板和用户信息</p>
+    </div>
+
+    <!-- 预警功能 -->
+    <div class="alerts-grid">
+        {% if clubs_with_low_members_count > 0 %}
+        <div class="alert-card info">
+            <div class="alert-header">
+                <span class="material-icons">warning</span> 社团成员数量预警 ({{ clubs_with_low_members_count }})
+            </div>
+            <div class="alert-list">
+                {% for club in clubs_with_low_members|slice:":3" %}
+                <div class="alert-item">
+                    <strong>{{ club.name }}</strong> ({{ club.members_count }}人)<br>
+                    社长: {% if club.president %}{{ club.president.profile.get_full_name|default:'未设置' }}{% else %}未设置{% endif %}<br>
+                    负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                </div>
+                {% endfor %}
+
+                {% if clubs_with_low_members|length > 3 %}
+                <div class="collapsible-section">
+                    <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                        <span class="material-icons">expand_more</span>
+                        {% with remaining=clubs_with_low_members|length|add:"-3" %}
+                        更多 (+{{ remaining }})
+                        {% endwith %}
+                    </div>
+                    <div class="alert-list collapsible-content hidden">
+                        {% for club in clubs_with_low_members|slice:"3:" %}
+                        <div class="alert-item">
+                            <strong>{{ club.name }}</strong> ({{ club.members_count }}人)<br>
+                            社长: {% if club.president %}{{ club.president.profile.get_full_name|default:'未设置' }}{% else %}未设置{% endif %}<br>
+                            负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <button onclick="copyLowMemberClubs()" class="alert-btn">
+                <span class="material-icons" style="font-size:18px;">content_copy</span> 复制名单
+            </button>
+        </div>
+        {% endif %}
+
+        {% if clubs_enabled_review_not_submitted.count > 0 %}
+        <div class="alert-card warning">
+            <div class="alert-header">
+                <span class="material-icons">error</span> 未提交年审预警 ({{ clubs_enabled_review_not_submitted.count }})
+            </div>
+            
+            <!-- 我负责的社团 -->
+            <div class="alert-list">
+                {% if clubs_enabled_review_not_submitted_my.count > 0 %}
+                    {% for club in clubs_enabled_review_not_submitted_my|slice:":3" %}
+                    <div class="alert-item">
+                        <strong>{{ club.name }}</strong><br>
+                        社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}<br>
+                        负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% if clubs_enabled_review_not_submitted_my.count > 3 %}
+                    <div class="collapsible-section">
+                        <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                            <span class="material-icons">expand_more</span>
+                            {% with remaining=clubs_enabled_review_not_submitted_my.count|add:"-3" %}
+                            更多 (+{{ remaining }})
+                            {% endwith %}
+                        </div>
+                        <div class="alert-list collapsible-content hidden">
+                            {% for club in clubs_enabled_review_not_submitted_my|slice:"3:" %}
+                            <div class="alert-item">
+                                <strong>{{ club.name }}</strong><br>
+                                社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}<br>
+                                负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                {% else %}
+                    <div class="alert-item" style="opacity: 0.7; font-style: italic;">暂无你负责的未提交社团</div>
+                {% endif %}
+            </div>
+
+            <!-- 其他干事负责的社团（折叠） -->
+            {% if clubs_enabled_review_not_submitted_other.count > 0 %}
+            <div class="collapsible-section">
+                <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                    <span class="material-icons">expand_more</span>
+                    其他干事负责的社团 ({{ clubs_enabled_review_not_submitted_other.count }})
+                </div>
+                <div class="alert-list collapsible-content hidden">
+                    {% for club in clubs_enabled_review_not_submitted_other|slice:":3" %}
+                    <div class="alert-item">
+                        <strong>{{ club.name }}</strong><br>
+                        社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}<br>
+                        负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% if clubs_enabled_review_not_submitted_other.count > 3 %}
+                    <div class="collapsible-section">
+                        <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                            <span class="material-icons">expand_more</span>
+                            {% with remaining=clubs_enabled_review_not_submitted_other.count|add:"-3" %}
+                            更多 (+{{ remaining }})
+                            {% endwith %}
+                        </div>
+                        <div class="alert-list collapsible-content hidden">
+                            {% for club in clubs_enabled_review_not_submitted_other|slice:"3:" %}
+                            <div class="alert-item">
+                                <strong>{{ club.name }}</strong><br>
+                                社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}<br>
+                                负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 复制按钮 -->
+            <div class="alert-buttons">
+                {% if clubs_enabled_review_not_submitted_my.count > 0 %}
+                <button onclick="copyUnsubmittedClubsMy()" class="btn-copy-my">
+                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
+                </button>
+                {% endif %}
+                {% if clubs_enabled_review_not_submitted_other.count > 0 %}
+                <button onclick="copyUnsubmittedClubsAll()" class="btn-copy-all">
+                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- 功能控制 -->
@@ -142,18 +309,165 @@
                         <span class="material-icons">edit</span> 负责社团
                     </a>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="action-card">
-                    <div class="action-card-icon">
-                        <span class="material-icons" style="font-size: 28px;">check_circle</span>
+    <!-- 社团名单 -->
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title"><span class="material-icons">format_list_bulleted</span> 社团名单</h3>
+        </div>
+        <div class="section-body">
+            <!-- 搜索和工具栏 -->
+            <div style="margin-bottom: var(--md3-spacing-xl);">
+                <form method="get" style="display: flex; gap: var(--md3-spacing-md); align-items: center; margin-bottom: var(--md3-spacing-lg);">
+                    <div style="flex: 1; display: flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); background: var(--md3-surface-container-highest); border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-md); transition: all 0.2s ease;">
+                        <span class="material-icons" style="color: var(--md3-on-surface-variant);">search</span>
+                        <input 
+                            type="text" 
+                            name="q" 
+                            value="{{ q|default:'' }}" 
+                            placeholder="搜索社团名称、社长或描述..." 
+                            style="flex: 1; border: none; background: transparent; font-size: 1rem; color: var(--md3-on-surface); font-family: inherit;"
+                        >
                     </div>
-                    <div class="action-card-title">审核中心</div>
-                    <div class="action-card-desc">查看和处理待审核的社团材料和申请</div>
-                    <a href="{% url 'clubs:staff_dashboard' %}" class="btn btn-primary action-card-btn">
-                        <span class="material-icons">rate_review</span> 审核材料
-                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">search</span>
+                        <span>搜索</span>
+                    </button>
+                </form>
+                <div style="color: var(--md3-on-surface-variant); font-size: 0.9rem;">
+                    共 {{ clubs_page.paginator.count }} 个社团
                 </div>
             </div>
+
+            <!-- 表格容器 -->
+            <div style="overflow-x: auto; border-radius: var(--md3-radius-lg); border: 1px solid var(--md3-outline-variant); background: var(--md3-surface-container);">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--md3-surface-container-high); border-bottom: 2px solid var(--md3-outline-variant);">
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">社团名称</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">社长</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">状态</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">年审</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">注册</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for club in clubs_page %}
+                        <tr style="border-bottom: 1px solid var(--md3-outline-variant); transition: background-color 0.2s ease;" onmouseover="this.style.background='var(--md3-surface-container-highest)'" onmouseout="this.style.background='transparent'">
+                            <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface); font-weight: 600;">{{ club.name }}</td>
+                            <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
+                                {% if club.president %}
+                                    <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs);">
+                                        <span style="width: 28px; height: 28px; border-radius: 50%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600;">
+                                            {{ club.president.get_full_name|slice:":1"|upper|default:club.president.username|slice:":1"|upper }}
+                                        </span>
+                                        {{ club.president.get_full_name|default:club.president.username }}
+                                    </span>
+                                {% else %}
+                                    <span style="color: var(--md3-on-surface-variant);">—</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
+                                {% if club.status == 'active' %}
+                                    <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-success-container); color: var(--md3-on-success-container); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
+                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span> 活跃
+                                    </span>
+                                {% elif club.status == 'inactive' %}
+                                    <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
+                                        <span class="material-icons" style="font-size: 1rem;">pause_circle</span> 不活跃
+                                    </span>
+                                {% elif club.status == 'suspended' %}
+                                    <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-error-container); color: var(--md3-on-error-container); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
+                                        <span class="material-icons" style="font-size: 1rem;">cancel</span> 停止
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
+                                {% if club.review_enabled %}
+                                    <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
+                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span> 启用
+                                    </span>
+                                {% else %}
+                                    <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
+                                        <span class="material-icons" style="font-size: 1rem;">block</span> 禁用
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
+                                {% if club.registration_enabled %}
+                                    <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
+                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span> 启用
+                                    </span>
+                                {% else %}
+                                    <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
+                                        <span class="material-icons" style="font-size: 1rem;">block</span> 禁用
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
+                                <div style="display: flex; gap: var(--md3-spacing-sm); flex-wrap: wrap;">
+                                    <a href="{% url 'clubs:club_detail' club_id=club.id %}" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem;">
+                                        <span class="material-icons" style="font-size: 1rem;">visibility</span> <span>查看</span>
+                                    </a>
+                                    <form method="post" action="{% url 'clubs:toggle_review_enabled' club_id=club.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem;">
+                                            <span class="material-icons" style="font-size: 1rem;">{% if club.review_enabled %}lock{% else %}lock_open{% endif %}</span> <span>年审</span>
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'clubs:toggle_club_registration_enabled' club_id=club.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem;">
+                                            <span class="material-icons" style="font-size: 1rem;">{% if club.registration_enabled %}lock{% else %}lock_open{% endif %}</span> <span>注册</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="padding: var(--md3-spacing-3xl); text-align: center; color: var(--md3-on-surface-variant);">
+                                <span class="material-icons" style="font-size: 3rem; opacity: 0.5; display: block; margin-bottom: var(--md3-spacing-md);">folder_off</span>
+                                <div>暂无社团记录</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页控制 -->
+            {% if clubs_page.has_previous or clubs_page.has_next %}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--md3-spacing-xl); padding-top: var(--md3-spacing-lg); border-top: 1px solid var(--md3-outline-variant);">
+                <div style="color: var(--md3-on-surface-variant); font-size: 0.95rem;">
+                    第 {{ clubs_page.number }} / {{ clubs_page.paginator.num_pages }} 页
+                </div>
+                <div style="display: flex; gap: var(--md3-spacing-md);">
+                    {% if clubs_page.has_previous %}
+                        <a href="?q={{ q }}&page={{ clubs_page.previous_page_number }}" class="btn btn-secondary">
+                            <span class="material-icons">chevron_left</span> <span>上一页</span>
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
+                            <span class="material-icons">chevron_left</span> <span>上一页</span>
+                        </button>
+                    {% endif %}
+                    {% if clubs_page.has_next %}
+                        <a href="?q={{ q }}&page={{ clubs_page.next_page_number }}" class="btn btn-secondary">
+                            <span>下一页</span> <span class="material-icons">chevron_right</span>
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
+                            <span>下一页</span> <span class="material-icons">chevron_right</span>
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -167,11 +481,83 @@
                 <a href="{% url 'clubs:index' %}" class="btn btn-secondary">
                     <span class="material-icons">home</span> 返回首页
                 </a>
-                <a href="{% url 'clubs:staff_dashboard' %}" class="btn btn-secondary">
-                    <span class="material-icons">check_circle</span> 审核中心
-                </a>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function showToast() {
+    const toast = document.getElementById('copyToast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+function toggleCollapsible(element) {
+    element.classList.toggle('collapsed');
+    const content = element.nextElementSibling;
+    if (content) {
+        content.classList.toggle('hidden');
+    }
+}
+
+// 年审预警 - 复制我负责的
+function copyUnsubmittedClubsMy() {
+    let text = '未提交年审的社团名单（{{ current_year }}年） - 我负责的\n==========================\n';
+    {% for club in clubs_enabled_review_not_submitted_my %}
+    text += '{{ club.name }} - 社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}';
+    {% if club.responsible_staff.all %}
+    text += ' - 负责干事: ';
+    {% for relation in club.responsible_staff.all %}
+    text += '{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}';
+    {% endfor %}
+    {% else %}
+    text += ' - 暂未分配负责干事';
+    {% endif %}
+    text += '\n';
+    {% endfor %}
+    navigator.clipboard.writeText(text).then(showToast).catch(err => console.error('复制失败:', err));
+}
+
+// 年审预警 - 复制所有
+function copyUnsubmittedClubsAll() {
+    let text = '未提交年审的社团名单（{{ current_year }}年）\n==========================\n';
+    {% for club in clubs_enabled_review_not_submitted %}
+    text += '{{ club.name }} - 社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}';
+    {% if club.responsible_staff.all %}
+    text += ' - 负责干事: ';
+    {% for relation in club.responsible_staff.all %}
+    text += '{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}';
+    {% endfor %}
+    {% else %}
+    text += ' - 暂未分配负责干事';
+    {% endif %}
+    text += '\n';
+    {% endfor %}
+    navigator.clipboard.writeText(text).then(showToast).catch(err => console.error('复制失败:', err));
+}
+
+function copyLowMemberClubs() {
+    let text = '成员数量不足的社团名单\n==========================\n';
+    {% for club in clubs_with_low_members %}
+    text += '{{ club.name }} - 成员数: {{ club.members_count }} 人 (社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %})';
+    {% if club.responsible_staff.all %}
+    text += ' - 负责干事: ';
+    {% for relation in club.responsible_staff.all %}
+    text += '{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}';
+    {% endfor %}
+    {% else %}
+    text += ' - 暂未分配负责干事';
+    {% endif %}
+    text += '\n';
+    {% endfor %}
+    text += '==========================\n总计: {{ clubs_with_low_members_count }}个社团';
+    navigator.clipboard.writeText(text).then(showToast).catch(err => console.error('复制失败:', err));
+}
+
+// 保留旧函数以保持兼容性
+function copyUnsubmittedClubs() {
+    copyUnsubmittedClubsAll();
+}
+</script>
 {% endblock %}

@@ -368,14 +368,14 @@
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: var(--md3-spacing-md);">
+            <a href="{% url 'clubs:create_user' %}" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;">
+                <span class="material-icons">person_add</span>
+                创建用户
+            </a>
             <div class="stats-badge">
                 <span class="material-icons">person</span>
                 <span>{{ total_users }} 个用户</span>
             </div>
-            <a href="{% url 'clubs:create_teacher' %}" class="btn-search" style="background: var(--md3-tertiary); color: var(--md3-on-tertiary); text-decoration: none;">
-                <span class="material-icons">person_add</span>
-                创建新用户
-            </a>
         </div>
     </div>
     
@@ -482,6 +482,25 @@
                                     审核
                                 </a>
                             {% endif %}
+
+                            {% if user.profile.role == 'staff' %}
+                                <a href="{% url 'clubs:change_staff_attributes' user.id %}" class="btn-action detail">
+                                    <span class="material-icons">visibility</span>
+                                    属性
+                                </a>
+                            {% endif %}
+
+                            {% if user.username in locked_usernames %}
+                                <form method="post" action="{% url 'clubs:unlock_account' user.username %}" style="display:inline">{% csrf_token %}
+                                    <button class="btn-action review" title="解锁">
+                                        <span class="material-icons">lock_open</span>
+                                        解锁
+                                    </button>
+                                </form>
+                            {% endif %}
+
+
+
                             <a href="{% url 'clubs:admin_edit_user_account' user.id %}" class="btn-action detail">
                                 <span class="material-icons">visibility</span>
                                 详情

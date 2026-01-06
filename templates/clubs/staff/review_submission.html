@@ -9,6 +9,7 @@
         max-width: 1200px;
         margin: 0 auto;
         padding: var(--md3-spacing-xl);
+        padding-bottom: calc(var(--md3-spacing-xl) + 100px);
     }
     
     .review-header {
@@ -493,7 +494,7 @@
                     {% for relation in submission.club.responsible_staff.all %}
                         {% if relation.is_active %}
                             {% if relation.staff.real_name %}
-                                {{ relation.staff.real_name }} (学号: {{ relation.staff.student_id }})
+                                {{ relation.staff.real_name }} (用户名: {{ relation.staff.user.username }})
                             {% elif relation.staff.user.username %}
                                 {{ relation.staff.user.username }}
                             {% else %}
@@ -724,7 +725,7 @@
 
     <!-- 审核表单或状态显示 -->
     {% if submission.status == 'pending' and not has_reviewed %}
-    {% include 'clubs/components/review_form.html' with show_rejected_materials=True materials_list=submission_materials cancel_url='clubs:staff_dashboard' %}
+    {% include 'clubs/components/review_form.html' with show_rejected_materials=True materials_list=submission_materials cancel_url='clubs:staff_audit_center' cancel_url_args='annual_review' %}
     {% else %}
     <div class="status-display">
         <p><strong>审核状态:</strong> <span class="review-badge {{ submission.status }}">{{ submission.get_status_display }}</span></p>
@@ -732,7 +733,7 @@
         <p><strong>审核时间:</strong> {{ submission.reviewed_at|date:"Y-m-d H:i" }}</p>
         {% endif %}
         <div class="action-buttons">
-            <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+            <a href="{% url 'clubs:staff_audit_center' 'annual_review' %}" class="btn-secondary">
                 <span class="material-icons" style="font-size: 18px;">arrow_back</span>
                 返回列表
             </a>

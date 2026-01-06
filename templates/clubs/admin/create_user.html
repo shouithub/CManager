@@ -1,0 +1,470 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}创建用户账户 - CManager{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-user-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        box-sizing: border-box;
+    }
+
+    /* 页面标题 */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-tertiary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+
+    .header-content .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .header-text h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .header-text p {
+        margin: var(--md3-spacing-xs) 0 0 0;
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    /* 表单卡片 */
+    .form-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        padding: var(--md3-spacing-2xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container-high);
+    }
+
+    .form-card-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+
+    .form-card-header .material-icons {
+        color: var(--md3-primary);
+    }
+
+    .form-card-body {
+        padding: var(--md3-spacing-2xl);
+    }
+
+    /* 表单组 */
+    .form-group {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--md3-spacing-sm);
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        font-size: 0.875rem;
+    }
+
+    .form-label .required-indicator {
+        color: var(--md3-error);
+    }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+
+    .form-input::placeholder {
+        color: var(--md3-on-surface-variant);
+    }
+
+    .form-hint {
+        margin-top: var(--md3-spacing-xs);
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    /* 表单网格 */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--md3-spacing-xl);
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* 表单动作 */
+    .form-actions {
+        margin-top: var(--md3-spacing-2xl);
+        padding-top: var(--md3-spacing-xl);
+        border-top: 1px solid var(--md3-outline-variant);
+        display: flex;
+        gap: var(--md3-spacing-md);
+        justify-content: flex-end;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .btn-primary:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .btn-outlined {
+        background: transparent;
+        color: var(--md3-primary);
+        border: 1px solid var(--md3-outline);
+    }
+
+    .btn-outlined:hover {
+        background: var(--md3-primary-container);
+        border-color: var(--md3-primary);
+    }
+
+    /* 消息 */
+    .messages {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .message {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-sm);
+        font-size: 0.875rem;
+        display: flex;
+        align-items: flex-start;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .message.success {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+        border: 1px solid var(--md3-success);
+    }
+
+    .message.error {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border: 1px solid var(--md3-error);
+    }
+
+    .message .material-icons {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+        .create-user-container {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-user-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <div class="header-content">
+            <span class="material-icons">person_add</span>
+            <div class="header-text">
+                <h1>创建用户账户</h1>
+                <p>为系统创建新的用户账户</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息显示 -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            <span class="material-icons">
+                {% if message.tags == 'success' %}check_circle{% else %}error{% endif %}
+            </span>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if errors %}
+    <div class="messages">
+        {% for error in errors %}
+        <div class="message error">
+            <span class="material-icons">error</span>
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 创建用户表单 -->
+    <div class="form-card">
+        <div class="form-card-header">
+            <h2>
+                <span class="material-icons">edit</span>
+                用户信息
+            </h2>
+        </div>
+
+        <div class="form-card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- 第一行：用户名和真实姓名 -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="username">
+                            登录用户名
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            value="{{ form_data.username }}"
+                            class="form-input"
+                            placeholder="输入登录用户名"
+                            required
+                        >
+                        <div class="form-hint">用于登录系统的用户名，3-30个字符</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="real_name">
+                            真实姓名
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="real_name"
+                            name="real_name"
+                            value="{{ form_data.real_name }}"
+                            class="form-input"
+                            placeholder="输入真实姓名"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- 第二行：邮箱和电话 -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="email">
+                            邮箱地址
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value="{{ form_data.email }}"
+                            class="form-input"
+                            placeholder="输入邮箱地址"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="phone">
+                            电话号码
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            value="{{ form_data.phone }}"
+                            class="form-input"
+                            placeholder="输入电话号码"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- 第三行：微信号和用户角色 -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="wechat">
+                            微信号
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="wechat"
+                            name="wechat"
+                            value="{{ form_data.wechat }}"
+                            class="form-input"
+                            placeholder="输入微信号"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="role">
+                            用户角色
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <select id="role" name="role" class="form-select" required>
+                            <option value="president" {% if form_data.role == 'president' %}selected{% endif %}>社长</option>
+                            <option value="staff" {% if form_data.role == 'staff' %}selected{% endif %}>干事</option>
+                            <option value="admin" {% if form_data.role == 'admin' %}selected{% endif %}>管理员</option>
+                        </select>
+                        <div class="form-hint">干事角色创建后需要管理员审核才能激活</div>
+                    </div>
+                </div>
+
+                <!-- 第四行：学号 -->
+                <div class="form-group">
+                    <label class="form-label" for="student_id">
+                        学号
+                        <span class="required-indicator">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="student_id"
+                        name="student_id"
+                        value="{{ form_data.student_id }}"
+                        class="form-input"
+                        placeholder="输入学号"
+                        required
+                    >
+                    <div class="form-hint">学生的学号，用于记录身份信息</div>
+                </div>
+
+                <!-- 第五行：密码 -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="password">
+                            密码
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-input"
+                            placeholder="输入密码"
+                            required
+                        >
+                        <div class="form-hint">密码至少6个字符</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password2">
+                            确认密码
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <input
+                            type="password"
+                            id="password2"
+                            name="password2"
+                            class="form-input"
+                            placeholder="再次输入密码"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- 表单动作 -->
+                <div class="form-actions">
+                    <a href="{% url 'clubs:manage_users' %}" class="btn btn-outlined">
+                        <span class="material-icons">close</span>
+                        取消
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">person_add</span>
+                        创建用户账户
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

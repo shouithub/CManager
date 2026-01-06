@@ -1,0 +1,252 @@
+{% extends 'clubs/admin/base.html' %}
+
+{% block title %}编辑部门介绍{% endblock %}
+
+{% block admin_main %}
+<style>
+    .edit-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+    }
+    
+    .edit-header {
+        background: linear-gradient(135deg, var(--md3-primary) 0%, var(--md3-tertiary) 100%);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-2xl);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .edit-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .edit-card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .form-group {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+        font-size: 1rem;
+    }
+    
+    .form-label .required {
+        color: var(--md3-error);
+    }
+    
+    .form-hint {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--md3-on-surface-variant);
+        margin-bottom: var(--md3-spacing-xs);
+    }
+    
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-size: 1rem;
+        font-family: inherit;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .form-input:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+    
+    .form-textarea {
+        min-height: 150px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        justify-content: flex-end;
+        padding-top: var(--md3-spacing-xl);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border: none;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        transform: translateY(-1px);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        transform: translateY(-1px);
+    }
+    
+    /* 消息提示 */
+    .messages {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .alert {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-md);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .alert-error {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    .alert-success {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+</style>
+
+<div class="edit-container">
+    <div class="edit-header">
+        <h1 class="edit-title">
+            <span class="material-icons" style="font-size: 2.5rem;">edit</span>
+            编辑部门介绍
+        </h1>
+    </div>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <span class="material-icons">
+                {% if message.tags == 'error' %}error{% else %}check_circle{% endif %}
+            </span>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="edit-card">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">
+                    部门名称
+                </label>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    value="{% if dept_intro %}{{ dept_intro.get_department_display }}{% endif %}"
+                    disabled
+                    style="background: var(--md3-surface-container); cursor: not-allowed;"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="description">
+                    职责描述 <span class="required">*</span>
+                </label>
+                <span class="form-hint">详细描述该部门的主要职责和工作内容</span>
+                <textarea 
+                    name="description" 
+                    id="description" 
+                    class="form-textarea" 
+                    required
+                >{% if dept_intro %}{{ dept_intro.description }}{% endif %}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="highlights">
+                    重点工作
+                </label>
+                <span class="form-hint">本部门的标志性活动或重点项目（可选）</span>
+                <input 
+                    type="text" 
+                    name="highlights" 
+                    id="highlights" 
+                    class="form-input"
+                    value="{% if dept_intro %}{{ dept_intro.highlights }}{% endif %}"
+                    placeholder="例如：百团大战、社团指导教师聘任仪式"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="icon">
+                    图标名称
+                </label>
+                <span class="form-hint">Material Icons 图标名称，如：business, event, groups</span>
+                <input 
+                    type="text" 
+                    name="icon" 
+                    id="icon" 
+                    class="form-input"
+                    value="{% if dept_intro %}{{ dept_intro.icon }}{% else %}work{% endif %}"
+                    placeholder="work"
+                >
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'clubs:staff_dashboard_home' %}" class="btn btn-secondary">
+                    <span class="material-icons">close</span>
+                    <span>取消</span>
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">save</span>
+                    <span>保存</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

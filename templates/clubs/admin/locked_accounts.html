@@ -1,0 +1,29 @@
+{% extends 'clubs/admin/base.html' %}
+
+{% block title %}被锁定账号管理{% endblock %}
+
+{% block content %}
+<h1>被锁定账号</h1>
+{% if locked %}
+<table class="table">
+    <thead>
+        <tr><th>用户名</th><th>邮箱</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+        {% for u in locked %}
+        <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email }}</td>
+            <td>
+                <form method="post" action="{% url 'clubs:unlock_account' u.username %}" style="display:inline">{% csrf_token %}
+                    <button class="btn">解锁</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>当前没有被锁定的账号。</p>
+{% endif %}
+{% endblock %}

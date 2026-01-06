@@ -1,6 +1,6 @@
 {% extends 'clubs/base.html' %}
 
-{% block title %}活动列表 - 社团管理系统{% endblock %}
+{% block title %}活动管理 - 社团管理系统{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -42,6 +42,129 @@
         font-weight: 600;
         color: var(--md3-on-surface);
     }
+
+    /* 筛选和搜索区域 */
+    .filters-section {
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+
+    .filters-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+        overflow: hidden;
+    }
+
+    .filters-header {
+        padding: var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container-high);
+    }
+
+    .filters-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .filters-header .material-icons {
+        color: var(--md3-primary);
+        font-size: 1.5rem;
+    }
+
+    .filters-body {
+        padding: var(--md3-spacing-xl);
+    }
+
+    .filters-form {
+        width: 100%;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    @media (max-width: 1024px) {
+        .filters-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .filters-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        margin-bottom: var(--md3-spacing-sm);
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        font-size: 0.875rem;
+    }
+
+    .filter-label .material-icons {
+        font-size: 1rem;
+        color: var(--md3-primary);
+    }
+
+    .filter-input,
+    .filter-select {
+        width: 100%;
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .filter-input:focus,
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+
+    .filter-input::placeholder {
+        color: var(--md3-on-surface-variant);
+    }
+
+    .filters-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        justify-content: flex-end;
+    }
+
+    @media (max-width: 768px) {
+        .filters-actions {
+            flex-direction: column;
+        }
+
+        .filters-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -50,15 +173,120 @@
     <div class="page-header">
         <div class="title-section">
             <span class="material-icons">event_note</span>
-            <h1>活动列表</h1>
+            <h1>活动管理</h1>
         </div>
         {% if user.is_authenticated %}
         <div class="header-actions">
-            <a href="{% url 'clubs:my_activities' %}" class="btn btn-primary">
-                <span>我的活动</span>
+            <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-primary">
+                <span>返回仪表板</span>
             </a>
         </div>
         {% endif %}
+    </div>
+
+    <!-- 筛选和搜索表单 -->
+    <div class="filters-section">
+        <div class="filters-card">
+            <div class="filters-header">
+                <h2>
+                    <span class="material-icons">filter_list</span>
+                    筛选和搜索
+                </h2>
+            </div>
+            <div class="filters-body">
+                <form method="get" class="filters-form">
+                    <div class="filters-grid">
+                        <!-- 搜索框 -->
+                        <div class="filter-group">
+                            <label class="filter-label" for="search">
+                                <span class="material-icons">search</span>
+                                搜索
+                            </label>
+                            <input
+                                type="text"
+                                id="search"
+                                name="search"
+                                value="{{ search_query }}"
+                                placeholder="输入社团名称或活动名称"
+                                class="filter-input"
+                            >
+                        </div>
+
+                        <!-- 社团筛选 -->
+                        <div class="filter-group">
+                            <label class="filter-label" for="club">
+                                <span class="material-icons">business</span>
+                                社团名称
+                            </label>
+                            {% if user.is_authenticated and user.profile.role == 'president' %}
+                            {% if all_clubs.exists %}
+                                {% with only_club=all_clubs.first %}
+                                <select id="club" name="club" class="filter-select" disabled aria-disabled="true" title="仅允许选择本社团">
+                                    <option value="{{ only_club.name }}" selected>{{ only_club.name }}</option>
+                                </select>
+                                <!-- 使用隐藏字段确保表单提交时仍提交社团参数 -->
+                                <input type="hidden" name="club" value="{{ only_club.name }}">
+                                {% endwith %}
+                            {% else %}
+                                <select class="filter-select" disabled aria-disabled="true"><option>无所属社团</option></select>
+                            {% endif %}
+                        {% else %}
+                            <select id="club" name="club" class="filter-select">
+                                <option value="">全部社团</option>
+                                {% for club in all_clubs %}
+                                <option value="{{ club.name }}" {% if club_filter == club.name %}selected{% endif %}>
+                                    {{ club.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        {% endif %}
+                        </div>
+
+                        <!-- 活动类型筛选 -->
+                        <div class="filter-group">
+                            <label class="filter-label" for="activity_type">
+                                <span class="material-icons">local_activity</span>
+                                活动类型
+                            </label>
+                            <select id="activity_type" name="activity_type" class="filter-select">
+                                <option value="">全部类型</option>
+                                {% for value, display in activity_type_choices %}
+                                <option value="{{ value }}" {% if activity_type_filter == value %}selected{% endif %}>
+                                    {{ display }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- 日期筛选 -->
+                        <div class="filter-group">
+                            <label class="filter-label" for="date">
+                                <span class="material-icons">date_range</span>
+                                活动日期
+                            </label>
+                            <input
+                                type="date"
+                                id="date"
+                                name="date"
+                                value="{{ date_filter }}"
+                                class="filter-input"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="filters-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-icons">search</span>
+                            搜索
+                        </button>
+                        <a href="{% url 'clubs:public_activities' %}" class="btn btn-outlined">
+                            <span class="material-icons">clear</span>
+                            清除筛选
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     {% if approved_activities %}
@@ -123,21 +351,8 @@
                         </div>
                         <div class="action-buttons">
                             {% if user.is_authenticated %}
-                                <a href="{% url 'clubs:join_activity' activity.id %}" class="btn-join-activity">
-                                    申请参加
-                                </a>
-                                {% if user.profile.role in 'admin,staff' or user == activity.club.president %}
-                                    <a href="{% url 'clubs:activity_participants' activity.id %}" class="btn-view-participants">
-                                        报名名单
-                                    </a>
-                                {% elif user.profile.role == 'teacher' and activity.club.id in user_assigned_clubs %}
-                                    <a href="{% url 'clubs:activity_participants' activity.id %}" class="btn-view-participants">
-                                        报名名单
-                                    </a>
-                                {% endif %}
-                                
                                 <!-- 编辑按钮：干事、管理员和负责老师可见 -->
-                                {% if user.profile.role in 'admin,staff' or user.profile.role == 'teacher' and activity.club.id in user_assigned_clubs %}
+                                {% if user.profile.role in 'admin,staff' %}
                                     <a href="{% url 'clubs:edit_activity_application' activity.id %}" class="btn-edit-activity">
                                         <span class="material-icons">edit</span>
                                         编辑

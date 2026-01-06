@@ -8,19 +8,19 @@
 {% elif current_tab == 'reimbursement' %}报销记录
 {% elif current_tab == 'activity_application' %}活动申请
 {% elif current_tab == 'president_transition' %}社长换届
-{% endif %} - 审批中心
+{% endif %} - 审核中心
 {% endblock %}
 
 {% block extra_css %}
 <style>
-    /* 基础容器 */
+    /* 基础容器 - 沿用社长端样式以保持一致性 */
     .approval-container {
         max-width: 1400px;
         margin: 0 auto;
         padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px); /* 为底栏留出空间 */
     }
 
-    /* 页面标题 */
     .page-header {
         display: flex;
         align-items: center;
@@ -53,7 +53,7 @@
         font-size: 0.875rem;
     }
 
-    /* 内容卡片 */
+    /* 内容卡片 与记录样式直接复用社长端 */
     .content-card {
         background: var(--md3-surface-container);
         border-radius: var(--md3-radius-xl);
@@ -62,7 +62,6 @@
         box-shadow: var(--md3-elevation-1);
     }
 
-    /* 分区标题 */
     .section-header {
         display: flex;
         align-items: center;
@@ -77,24 +76,6 @@
         color: var(--md3-primary);
     }
 
-    .section-header h2 {
-        margin: 0;
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-        flex: 1;
-    }
-
-    .section-header .badge {
-        background: var(--md3-primary-container);
-        color: var(--md3-on-primary-container);
-        padding: var(--md3-spacing-xs) var(--md3-spacing-md);
-        border-radius: var(--md3-radius-full);
-        font-size: 0.875rem;
-        font-weight: 600;
-    }
-
-    /* 记录部分 */
     .records-section {
         padding: var(--md3-spacing-xl);
     }
@@ -130,7 +111,6 @@
         color: var(--md3-on-surface-variant);
     }
 
-    /* 记录列表 */
     .records-list {
         display: flex;
         flex-direction: column;
@@ -174,12 +154,6 @@
         margin-bottom: var(--md3-spacing-md);
     }
 
-    .record-field {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-xs);
-    }
-
     .record-field-label {
         font-size: 0.75rem;
         color: var(--md3-on-surface-variant);
@@ -202,7 +176,6 @@
         border-top: 1px solid var(--md3-outline-variant);
     }
 
-    /* 状态徽章 */
     .status-badge {
         display: inline-flex;
         align-items: center;
@@ -239,7 +212,6 @@
         border: 1px solid var(--md3-outline);
     }
 
-    /* 操作按钮 */
     .action-btn {
         display: inline-flex;
         align-items: center;
@@ -303,57 +275,34 @@
         font-size: 0.875rem;
     }
 
-    /* 移动端响应式 */
     @media (max-width: 768px) {
-        .approval-container {
-            padding: var(--md3-spacing-lg);
+        .approval-container { 
+            padding: var(--md3-spacing-lg); 
+            padding-bottom: calc(var(--md3-spacing-lg) + 100px); /* 移动端底栏空间 */
         }
-
-        .page-header {
-            padding: var(--md3-spacing-lg);
-            border-radius: var(--md3-radius-lg);
-        }
-
-        .page-header .material-icons {
-            font-size: 2rem;
-        }
-
-        .page-header h1 {
-            font-size: 1.25rem;
-        }
-
-        .records-section {
-            padding: var(--md3-spacing-lg);
-        }
-
-        .record-card {
-            padding: var(--md3-spacing-md);
-        }
-
-        .record-card-body {
-            grid-template-columns: 1fr;
-        }
+        .page-header { padding: var(--md3-spacing-lg); border-radius: var(--md3-radius-lg); }
+        .page-header .material-icons { font-size: 2rem; }
+        .page-header h1 { font-size: 1.25rem; }
+        .records-section { padding: var(--md3-spacing-lg); }
+        .record-card { padding: var(--md3-spacing-md); }
+        .record-card-body { grid-template-columns: 1fr; }
     }
 </style>
 
-<!-- 移动端自动切换到移动版 -->
 <script>
 function checkLayout() {
     if (window.innerWidth <= 768) {
-        window.location.href = '{% url "clubs:approval_center_mobile" current_tab %}';
+        // 移动端跳转到审核中心移动版
+        window.location.href = '{% url "clubs:staff_audit_center_mobile" current_tab %}';
     }
 }
-// 初始检测
 checkLayout();
-// 监听窗口大小变化
 window.addEventListener('resize', checkLayout);
 </script>
-
 {% endblock %}
 
 {% block content %}
 <div class="approval-container">
-    <!-- 页面标题 -->
     <div class="page-header">
         {% if current_tab == 'annual_review' %}
         <span class="material-icons">assignment</span>
@@ -394,20 +343,33 @@ window.addEventListener('resize', checkLayout);
         {% endif %}
     </div>
 
-    <!-- 内容卡片 -->
     <div class="content-card">
-        <!-- 活跃的记录（待审核/已拒绝） -->
+        <!-- 待处理 -->
         <div class="records-section">
             <div class="section-title">
                 <span class="material-icons">notifications_active</span>
                 <h3>当前活跃</h3>
                 <span class="count">{{ active_items|length }} 条记录</span>
             </div>
-            
+
             {% if active_items %}
             <div class="records-list">
                 {% for item in active_items %}
-                <div class="record-card" onclick="window.location.href='/clubs/approval-center-detail/{{ current_tab }}/{{ item.id }}/';">
+                <div class="record-card" onclick="
+                    {% if current_tab == 'annual_review' %}
+                        window.location.href='{% url "clubs:review_submission" item.id %}';
+                    {% elif current_tab == 'registration' %}
+                        window.location.href='{% url "clubs:review_club_registration_submission" item.id %}';
+                    {% elif current_tab == 'application' %}
+                        window.location.href='{% url "clubs:review_club_registration" item.id %}';
+                    {% elif current_tab == 'reimbursement' %}
+                        window.location.href='{% url "clubs:review_reimbursement" item.id %}';
+                    {% elif current_tab == 'activity_application' %}
+                        window.location.href='{% url "clubs:review_activity_application" item.id %}';
+                    {% elif current_tab == 'president_transition' %}
+                        window.location.href='{% url "clubs:review_president_transition" item.id %}';
+                    {% endif %}
+                ">
                     <div class="record-card-header">
                         {% if current_tab == 'annual_review' %}
                         <span class="club-name">{{ item.club.name }}</span>
@@ -422,7 +384,7 @@ window.addEventListener('resize', checkLayout);
                         {% elif current_tab == 'president_transition' %}
                         <span class="club-name">{{ item.club.name }}</span>
                         {% endif %}
-                        
+
                         {% if item.status == 'pending' %}
                         <span class="status-badge pending">
                             <span class="material-icons">schedule</span> 待审核
@@ -437,7 +399,7 @@ window.addEventListener('resize', checkLayout);
                         </span>
                         {% endif %}
                     </div>
-                    
+
                     <div class="record-card-body">
                         {% if current_tab == 'annual_review' %}
                         <div class="record-field">
@@ -448,7 +410,7 @@ window.addEventListener('resize', checkLayout);
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
-                        
+
                         {% elif current_tab == 'registration' %}
                         <div class="record-field">
                             <span class="record-field-label">注册期</span>
@@ -458,7 +420,7 @@ window.addEventListener('resize', checkLayout);
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
-                        
+
                         {% elif current_tab == 'application' %}
                         <div class="record-field">
                             <span class="record-field-label">申请人</span>
@@ -468,7 +430,7 @@ window.addEventListener('resize', checkLayout);
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
-                        
+
                         {% elif current_tab == 'reimbursement' %}
                         <div class="record-field">
                             <span class="record-field-label">报销金额</span>
@@ -478,7 +440,7 @@ window.addEventListener('resize', checkLayout);
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
-                        
+
                         {% elif current_tab == 'activity_application' %}
                         <div class="record-field">
                             <span class="record-field-label">活动日期</span>
@@ -488,7 +450,7 @@ window.addEventListener('resize', checkLayout);
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
-                        
+
                         {% elif current_tab == 'president_transition' %}
                         <div class="record-field">
                             <span class="record-field-label">新社长</span>
@@ -500,7 +462,7 @@ window.addEventListener('resize', checkLayout);
                         </div>
                         {% endif %}
                     </div>
-                    
+
                     {% if item.status == 'rejected' and not item.has_newer_version %}
                     <div class="record-card-footer">
                         <span></span>
@@ -536,7 +498,7 @@ window.addEventListener('resize', checkLayout);
             {% endif %}
         </div>
 
-        <!-- 已完成的记录（已通过） -->
+        <!-- 已通过的记录（已通过） -->
         <div class="records-section">
             <div class="section-title">
                 <span class="material-icons">done_all</span>
@@ -547,7 +509,7 @@ window.addEventListener('resize', checkLayout);
             {% if completed_items %}
             <div class="records-list">
                 {% for item in completed_items %}
-                <div class="record-card" onclick="window.location.href='/clubs/approval-center-detail/{{ current_tab }}/{{ item.id }}/';">
+                <div class="record-card" onclick="window.location.href='{% url "clubs:staff_review_detail" current_tab item.id %}';">
                     <div class="record-card-header">
                         {% if current_tab == 'annual_review' %}
                         <span class="club-name">{{ item.club.name }}</span>
@@ -562,12 +524,14 @@ window.addEventListener('resize', checkLayout);
                         {% elif current_tab == 'president_transition' %}
                         <span class="club-name">{{ item.club.name }}</span>
                         {% endif %}
-                        
-                        <span class="status-badge approved">
-                            <span class="material-icons">check_circle</span> 已批准
-                        </span>
+
+                        {% if item.status == 'approved' %}
+                        <span class="status-badge approved"><span class="material-icons">check_circle</span> 已通过</span>
+                        {% elif item.status == 'rejected' %}
+                        <span class="status-badge rejected"><span class="material-icons">cancel</span> 已拒绝</span>
+                        {% endif %}
                     </div>
-                    
+
                     <div class="record-card-body">
                         {% if current_tab == 'annual_review' %}
                         <div class="record-field">
@@ -578,58 +542,14 @@ window.addEventListener('resize', checkLayout);
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
-                        
-                        {% elif current_tab == 'registration' %}
-                        <div class="record-field">
-                            <span class="record-field-label">注册期</span>
-                            <span class="record-field-value">{{ item.registration_period.name }}</span>
-                        </div>
-                        <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
-                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
-                        </div>
-                        
-                        {% elif current_tab == 'application' %}
-                        <div class="record-field">
-                            <span class="record-field-label">申请人</span>
-                            <span class="record-field-value">{{ item.requested_by.get_full_name|default:item.requested_by.username }}</span>
-                        </div>
-                        <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
-                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
-                        </div>
-                        
-                        {% elif current_tab == 'reimbursement' %}
-                        <div class="record-field">
-                            <span class="record-field-label">报销金额</span>
-                            <span class="record-field-value" style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
-                        </div>
-                        <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
-                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
-                        </div>
-                        
-                        {% elif current_tab == 'activity_application' %}
-                        <div class="record-field">
-                            <span class="record-field-label">活动日期</span>
-                            <span class="record-field-value">{{ item.activity_date|date:"Y-m-d" }}</span>
-                        </div>
-                        <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
-                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
-                        </div>
-                        
-                        {% elif current_tab == 'president_transition' %}
-                        <div class="record-field">
-                            <span class="record-field-label">新社长</span>
-                            <span class="record-field-value">{{ item.new_president_name }}</span>
-                        </div>
+                        {% else %}
                         <div class="record-field">
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         {% endif %}
                     </div>
+
                 </div>
                 {% endfor %}
             </div>
@@ -643,6 +563,8 @@ window.addEventListener('resize', checkLayout);
             </div>
             {% endif %}
         </div>
+
     </div>
+
 </div>
 {% endblock %}
