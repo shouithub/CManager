@@ -13,7 +13,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 import urllib.parse
 
-from .models import Room222Booking, ActivityApplication
+from .models import RoomBooking, Room, ActivityApplication
 from .views import is_staff_or_admin
 
 
@@ -38,16 +38,27 @@ def _is_admin(user):
 
 
 @login_required(login_url='clubs:login')
-def export_room222_bookings_weekly(request):
+def export_room_bookings_weekly(request):
     """
-    导出222房间一周的预约日程为 xlsx 表格
+    导出房间一周的预约日程为 xlsx 表格
     表格以天为列，时间段为行
     """
     # 检查权限
     if not is_staff_or_admin(request.user):
         messages.error(request, '您没有权限导出日程安排')
-        return redirect('clubs:room222_calendar')
+        return redirect('clubs:room_calendar')
     
+    # 获取房间
+    room_id = request.GET.get('room_id')
+    if room_id:
+        room = get_object_or_404(Room, pk=room_id)
+    else:
+        # 默认使用第一个房间
+        room = Room.objects.first()
+        if not room:
+            messages.error(request, '系统中没有房间')
+            return redirect('clubs:room_calendar')
+
     # 获取周开始日期
     week_start_str = request.GET.get('week_start')
     if week_start_str:
@@ -55,7 +66,7 @@ def export_room222_bookings_weekly(request):
             week_start = datetime.strptime(week_start_str, '%Y-%m-%d').date()
         except ValueError:
             messages.error(request, '无效的日期格式')
-            return redirect('clubs:room222_calendar')
+            return redirect('clubs:room_calendar')
     else:
         # 默认为当前周
         today = timezone.now().date()
@@ -78,7 +89,8 @@ def export_room222_bookings_weekly(request):
     ]
     
     # 获取该周的所有有效预约
-    bookings = Room222Booking.objects.filter(
+    bookings = RoomBooking.objects.filter(
+        room=room,
         booking_date__gte=week_start,
         booking_date__lte=week_end,
         status='active'
@@ -89,7 +101,7 @@ def export_room222_bookings_weekly(request):
     ws = wb.active
     if ws is None:
         ws = wb.create_sheet()
-    ws.title = f"222房间日程-{week_start.strftime('%Y年%m月%d日')}"
+    ws.title = f"{room.name}日程-{week_start.strftime('%Y年%m月%d日')}"
     
     # 定义样式
     header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
@@ -110,7 +122,7 @@ def export_room222_bookings_weekly(request):
         ws.column_dimensions[get_column_letter(col)].width = 18
     
     # 写入标题
-    ws['A1'] = f"222房间日程安排 ({week_start.strftime('%Y年%m月%d日')} - {week_end.strftime('%m月%d日')})"
+    ws['A1'] = f"{room.name}日程安排 ({week_start.strftime('%Y年%m月%d日')} - {week_end.strftime('%m月%d日')})"
     ws['A1'].font = Font(bold=True, size=14)
     ws.merge_cells('A1:H1')
     ws['A1'].alignment = center_alignment
@@ -208,7 +220,7 @@ def export_room222_bookings_weekly(request):
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    filename = f"222房间日程-{week_start.strftime('%Y%m%d')}.xlsx"
+    filename = f"{room.name}日程-{week_start.strftime('%Y%m%d')}.xlsx"
     response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{urllib.parse.quote(filename)}'
     
     wb.save(response)
@@ -414,6 +426,436 @@ def export_activities(request):
     
     # 生成文件名
     filename = f"活动列表-{timezone.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{urllib.parse.quote(filename)}'
+    
+    wb.save(response)
+    return response
+
+
+@login_required(login_url='clubs:login')
+def export_audit_center_data(request, tab):
+    """
+    导出审核中心数据为Excel，支持筛选
+    """
+    # 检查权限
+    if not _is_staff(request.user) and not _is_admin(request.user):
+        messages.error(request, '您没有权限导出数据')
+        return redirect('clubs:staff_audit_center', tab=tab)
+    
+    from .models import (
+        ReviewSubmission, ClubRegistration, ClubRegistrationRequest,
+        Reimbursement, ActivityApplication, PresidentTransition,
+        SubmissionReview, ClubRegistrationReview, ClubApplicationReview,
+        ReimbursementHistory
+    )
+    
+    # 获取筛选参数
+    club_name = request.GET.get('club_name', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+    status = request.GET.get('status', '').strip()
+    
+    # 将连字符转换为下划线
+    tab_internal = tab.replace('-', '_')
+    
+    # 创建工作簿
+    wb = Workbook()
+    ws = wb.active
+    if ws is None:
+        ws = wb.create_sheet()
+    
+    # 定义样式
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF", size=12)
+    center_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    
+    # 根据tab类型设置不同的列和数据
+    if tab_internal == 'annual_review':
+        ws.title = "年审记录"
+        headers = ['申请ID', '社团名称', '提交年份', '状态', '提交时间', '提交次数', '审核ID', '审核人', '审核时间', '审核状态', '审核意见']
+        
+        # 获取数据并应用筛选条件
+        items = ReviewSubmission.objects.all()
+        if club_name:
+            items = items.filter(club__name__icontains=club_name)
+        if start_date:
+            items = items.filter(submitted_at__gte=start_date)
+        if end_date:
+            items = items.filter(submitted_at__lte=end_date + ' 23:59:59')
+        if status:
+            items = items.filter(status=status)
+        items = items.order_by('-submitted_at')
+        
+        # 写入表头
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = center_alignment
+            cell.border = border
+        
+        # 写入数据 - 包含所有历史审核记录
+        row_num = 2
+        for item in items:
+            # 获取所有审核记录
+            reviews = SubmissionReview.objects.filter(submission=item).order_by('submission_attempt', '-reviewed_at')
+            
+            if reviews.exists():
+                for review in reviews:
+                    ws.cell(row=row_num, column=1, value=item.id).border = border
+                    ws.cell(row=row_num, column=2, value=item.club.name).border = border
+                    ws.cell(row=row_num, column=3, value=item.submission_year).border = border
+                    ws.cell(row=row_num, column=4, value=item.get_status_display()).border = border
+                    ws.cell(row=row_num, column=5, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+                    ws.cell(row=row_num, column=6, value=item.resubmission_attempt).border = border
+                    ws.cell(row=row_num, column=7, value=review.id).border = border
+                    reviewer_name = ''
+                    if review.reviewer:
+                        try:
+                            reviewer_name = review.reviewer.profile.get_full_name() if hasattr(review.reviewer, 'profile') else review.reviewer.username
+                        except:
+                            reviewer_name = review.reviewer.username
+                    ws.cell(row=row_num, column=8, value=reviewer_name).border = border
+                    ws.cell(row=row_num, column=9, value=review.reviewed_at.strftime('%Y-%m-%d %H:%M') if review.reviewed_at else '').border = border
+                    ws.cell(row=row_num, column=10, value=review.get_status_display()).border = border
+                    ws.cell(row=row_num, column=11, value=review.comment or '').border = border
+                    row_num += 1
+            else:
+                # 没有审核记录时也显示申请信息
+                ws.cell(row=row_num, column=1, value=item.id).border = border
+                ws.cell(row=row_num, column=2, value=item.club.name).border = border
+                ws.cell(row=row_num, column=3, value=item.submission_year).border = border
+                ws.cell(row=row_num, column=4, value=item.get_status_display()).border = border
+                ws.cell(row=row_num, column=5, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+                ws.cell(row=row_num, column=6, value=item.resubmission_attempt).border = border
+                ws.cell(row=row_num, column=7, value='').border = border
+                ws.cell(row=row_num, column=8, value='').border = border
+                ws.cell(row=row_num, column=9, value='').border = border
+                ws.cell(row=row_num, column=10, value='').border = border
+                ws.cell(row=row_num, column=11, value='').border = border
+                row_num += 1
+        
+        filename = f"年审记录-{timezone.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+        
+    elif tab_internal == 'registration':
+        ws.title = "社团注册"
+        headers = ['申请ID', '社团名称', '状态', '提交时间', '提交次数', '审核ID', '审核人', '审核时间', '审核状态', '审核意见']
+        
+        # 获取数据并应用筛选条件
+        items = ClubRegistration.objects.all()
+        if club_name:
+            items = items.filter(club__name__icontains=club_name)
+        if start_date:
+            items = items.filter(submitted_at__gte=start_date)
+        if end_date:
+            items = items.filter(submitted_at__lte=end_date + ' 23:59:59')
+        if status:
+            items = items.filter(status=status)
+        items = items.order_by('-submitted_at')
+        
+        # 写入表头
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = center_alignment
+            cell.border = border
+        
+        # 写入数据 - 包含所有历史审核记录
+        row_num = 2
+        for item in items:
+            reviews = ClubRegistrationReview.objects.filter(registration=item).order_by('submission_attempt', '-reviewed_at')
+            
+            if reviews.exists():
+                for review in reviews:
+                    ws.cell(row=row_num, column=1, value=item.id).border = border
+                    ws.cell(row=row_num, column=2, value=item.club.name).border = border
+                    ws.cell(row=row_num, column=3, value=item.get_status_display()).border = border
+                    ws.cell(row=row_num, column=4, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+                    ws.cell(row=row_num, column=5, value=item.resubmission_attempt).border = border
+                    ws.cell(row=row_num, column=6, value=review.id).border = border
+                    reviewer_name = ''
+                    if review.reviewer:
+                        try:
+                            reviewer_name = review.reviewer.profile.get_full_name() if hasattr(review.reviewer, 'profile') else review.reviewer.username
+                        except:
+                            reviewer_name = review.reviewer.username
+                    ws.cell(row=row_num, column=7, value=reviewer_name).border = border
+                    ws.cell(row=row_num, column=8, value=review.reviewed_at.strftime('%Y-%m-%d %H:%M') if review.reviewed_at else '').border = border
+                    ws.cell(row=row_num, column=9, value=review.get_status_display()).border = border
+                    ws.cell(row=row_num, column=10, value=review.comment or '').border = border
+                    row_num += 1
+            else:
+                ws.cell(row=row_num, column=1, value=item.id).border = border
+                ws.cell(row=row_num, column=2, value=item.club.name).border = border
+                ws.cell(row=row_num, column=3, value=item.get_status_display()).border = border
+                ws.cell(row=row_num, column=4, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+                ws.cell(row=row_num, column=5, value=item.resubmission_attempt).border = border
+                for col in range(6, 11):
+                    ws.cell(row=row_num, column=col, value='').border = border
+                row_num += 1
+        
+        filename = f"社团注册-{timezone.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+        
+    elif tab_internal == 'application':
+        ws.title = "社团申请"
+        headers = ['申请ID', '社团名称', '状态', '提交时间', '提交次数', '审核ID', '审核人', '审核时间', '审核状态', '审核意见']
+        
+        # 获取数据并应用筛选条件
+        items = ClubRegistrationRequest.objects.all()
+        if club_name:
+            items = items.filter(club_name__icontains=club_name)
+        if start_date:
+            items = items.filter(submitted_at__gte=start_date)
+        if end_date:
+            items = items.filter(submitted_at__lte=end_date + ' 23:59:59')
+        if status:
+            items = items.filter(status=status)
+        items = items.order_by('-submitted_at')
+        
+        # 写入表头
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = center_alignment
+            cell.border = border
+        
+        # 写入数据 - 包含所有历史审核记录
+        row_num = 2
+        for item in items:
+            reviews = ClubApplicationReview.objects.filter(application=item).order_by('submission_attempt', '-reviewed_at')
+            
+            if reviews.exists():
+                for review in reviews:
+                    ws.cell(row=row_num, column=1, value=item.id).border = border
+                    ws.cell(row=row_num, column=2, value=item.club_name).border = border
+                    ws.cell(row=row_num, column=3, value=item.get_status_display()).border = border
+                    ws.cell(row=row_num, column=4, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+                    ws.cell(row=row_num, column=5, value=item.resubmission_attempt).border = border
+                    ws.cell(row=row_num, column=6, value=review.id).border = border
+                    reviewer_name = ''
+                    if review.reviewer:
+                        try:
+                            reviewer_name = review.reviewer.profile.get_full_name() if hasattr(review.reviewer, 'profile') else review.reviewer.username
+                        except:
+                            reviewer_name = review.reviewer.username
+                    ws.cell(row=row_num, column=7, value=reviewer_name).border = border
+                    ws.cell(row=row_num, column=8, value=review.reviewed_at.strftime('%Y-%m-%d %H:%M') if review.reviewed_at else '').border = border
+                    ws.cell(row=row_num, column=9, value=review.get_status_display()).border = border
+                    ws.cell(row=row_num, column=10, value=review.comment or '').border = border
+                    row_num += 1
+            else:
+                ws.cell(row=row_num, column=1, value=item.id).border = border
+                ws.cell(row=row_num, column=2, value=item.club_name).border = border
+                ws.cell(row=row_num, column=3, value=item.get_status_display()).border = border
+                ws.cell(row=row_num, column=4, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+                ws.cell(row=row_num, column=5, value=item.resubmission_attempt).border = border
+                for col in range(6, 11):
+                    ws.cell(row=row_num, column=col, value='').border = border
+                row_num += 1
+        
+        filename = f"社团申请-{timezone.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+        
+    elif tab_internal == 'reimbursement':
+        ws.title = "报销记录"
+        headers = ['申请ID', '社团名称', '报销日期', '报销金额', '状态', '提交时间', '提交次数', '审核ID', '审核人', '审核时间', '审核状态', '审核意见']
+        
+        # 获取数据并应用筛选条件
+        items = Reimbursement.objects.all()
+        if club_name:
+            items = items.filter(club__name__icontains=club_name)
+        if start_date:
+            items = items.filter(submitted_at__gte=start_date)
+        if end_date:
+            items = items.filter(submitted_at__lte=end_date + ' 23:59:59')
+        if status:
+            items = items.filter(status=status)
+        items = items.order_by('-submitted_at')
+        
+        # 写入表头
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = center_alignment
+            cell.border = border
+        
+        # 写入数据 - 包含所有历史审核记录
+        row_num = 2
+        for item in items:
+            reviews = ReimbursementHistory.objects.filter(reimbursement=item).order_by('attempt_number')
+            
+            if reviews.exists():
+                for review in reviews:
+                    ws.cell(row=row_num, column=1, value=item.id).border = border
+                    ws.cell(row=row_num, column=2, value=item.club.name).border = border
+                    ws.cell(row=row_num, column=3, value=item.submission_date.strftime('%Y-%m-%d')).border = border
+                    ws.cell(row=row_num, column=4, value=float(item.reimbursement_amount)).border = border
+                    ws.cell(row=row_num, column=5, value=item.get_status_display()).border = border
+                    ws.cell(row=row_num, column=6, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+                    ws.cell(row=row_num, column=7, value=item.resubmission_attempt).border = border
+                    ws.cell(row=row_num, column=8, value=review.id).border = border
+                    reviewer_name = ''
+                    if review.reviewer:
+                        try:
+                            reviewer_name = review.reviewer.profile.get_full_name() if hasattr(review.reviewer, 'profile') else review.reviewer.username
+                        except:
+                            reviewer_name = review.reviewer.username
+                    ws.cell(row=row_num, column=9, value=reviewer_name).border = border
+                    ws.cell(row=row_num, column=10, value=review.reviewed_at.strftime('%Y-%m-%d %H:%M') if review.reviewed_at else '').border = border
+                    ws.cell(row=row_num, column=11, value=review.get_status_display()).border = border
+                    ws.cell(row=row_num, column=12, value=review.reviewer_comment or '').border = border
+                    row_num += 1
+            else:
+                ws.cell(row=row_num, column=1, value=item.id).border = border
+                ws.cell(row=row_num, column=2, value=item.club.name).border = border
+                ws.cell(row=row_num, column=3, value=item.submission_date.strftime('%Y-%m-%d')).border = border
+                ws.cell(row=row_num, column=4, value=float(item.reimbursement_amount)).border = border
+                ws.cell(row=row_num, column=5, value=item.get_status_display()).border = border
+                ws.cell(row=row_num, column=6, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+                ws.cell(row=row_num, column=7, value=item.resubmission_attempt).border = border
+                for col in range(8, 13):
+                    ws.cell(row=row_num, column=col, value='').border = border
+                row_num += 1
+        
+        filename = f"报销记录-{timezone.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+        
+    elif tab_internal == 'activity_application':
+        ws.title = "活动申请"
+        headers = ['申请ID', '社团名称', '活动名称', '活动日期', '活动地点', '状态', '提交时间', '审核ID', '审核人', '审核时间', '审核状态', '审核意见']
+        
+        # 获取数据并应用筛选条件
+        items = ActivityApplication.objects.all()
+        if club_name:
+            items = items.filter(club__name__icontains=club_name)
+        if start_date:
+            items = items.filter(submitted_at__gte=start_date)
+        if end_date:
+            items = items.filter(submitted_at__lte=end_date + ' 23:59:59')
+        if status:
+            items = items.filter(status=status)
+        items = items.order_by('-submitted_at')
+        
+        # 写入表头
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = center_alignment
+            cell.border = border
+        
+        # 写入数据 - 包含所有历史审核记录
+        from .models import ActivityApplicationHistory
+        row_num = 2
+        for item in items:
+            reviews = ActivityApplicationHistory.objects.filter(activity_application=item).order_by('attempt_number')
+            
+            if reviews.exists():
+                for review in reviews:
+                    ws.cell(row=row_num, column=1, value=item.id).border = border
+                    ws.cell(row=row_num, column=2, value=item.club.name).border = border
+                    ws.cell(row=row_num, column=3, value=item.activity_name).border = border
+                    ws.cell(row=row_num, column=4, value=item.activity_date.strftime('%Y-%m-%d')).border = border
+                    ws.cell(row=row_num, column=5, value=item.activity_location).border = border
+                    ws.cell(row=row_num, column=6, value=item.get_status_display()).border = border
+                    ws.cell(row=row_num, column=7, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+                    ws.cell(row=row_num, column=8, value=review.id).border = border
+                    reviewer_name = ''
+                    if review.reviewer:
+                        try:
+                            reviewer_name = review.reviewer.profile.get_full_name() if hasattr(review.reviewer, 'profile') else review.reviewer.username
+                        except:
+                            reviewer_name = review.reviewer.username
+                    ws.cell(row=row_num, column=9, value=reviewer_name).border = border
+                    ws.cell(row=row_num, column=10, value=review.reviewed_at.strftime('%Y-%m-%d %H:%M') if review.reviewed_at else '').border = border
+                    ws.cell(row=row_num, column=11, value=review.get_status_display()).border = border
+                    ws.cell(row=row_num, column=12, value=review.comment or '').border = border
+                    row_num += 1
+            else:
+                ws.cell(row=row_num, column=1, value=item.id).border = border
+                ws.cell(row=row_num, column=2, value=item.club.name).border = border
+                ws.cell(row=row_num, column=3, value=item.activity_name).border = border
+                ws.cell(row=row_num, column=4, value=item.activity_date.strftime('%Y-%m-%d')).border = border
+                ws.cell(row=row_num, column=5, value=item.activity_location).border = border
+                ws.cell(row=row_num, column=6, value=item.get_status_display()).border = border
+                ws.cell(row=row_num, column=7, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+                for col in range(8, 13):
+                    ws.cell(row=row_num, column=col, value='').border = border
+                row_num += 1
+        
+        filename = f"活动申请-{timezone.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+        
+    elif tab_internal == 'president_transition':
+        ws.title = "社长换届"
+        headers = ['申请ID', '社团名称', '原社长', '新社长', '状态', '提交时间', '审核人', '审核时间', '审核意见']
+        
+        # 获取数据并应用筛选条件
+        items = PresidentTransition.objects.all()
+        if club_name:
+            items = items.filter(club__name__icontains=club_name)
+        if start_date:
+            items = items.filter(submitted_at__gte=start_date)
+        if end_date:
+            items = items.filter(submitted_at__lte=end_date + ' 23:59:59')
+        if status:
+            items = items.filter(status=status)
+        items = items.order_by('-submitted_at')
+        
+        # 写入表头
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = center_alignment
+            cell.border = border
+        
+        # 写入数据
+        for row_num, item in enumerate(items, 2):
+            ws.cell(row=row_num, column=1, value=item.id).border = border
+            ws.cell(row=row_num, column=2, value=item.club.name).border = border
+            try:
+                old_president_name = item.old_president.profile.get_full_name() if hasattr(item.old_president, 'profile') else item.old_president.username
+            except:
+                old_president_name = item.old_president.username if item.old_president else ''
+            ws.cell(row=row_num, column=3, value=old_president_name).border = border
+            try:
+                new_president_name = item.new_president.profile.get_full_name() if hasattr(item.new_president, 'profile') else item.new_president.username
+            except:
+                new_president_name = item.new_president.username if item.new_president else ''
+            ws.cell(row=row_num, column=4, value=new_president_name).border = border
+            ws.cell(row=row_num, column=5, value=item.get_status_display()).border = border
+            ws.cell(row=row_num, column=6, value=item.submitted_at.strftime('%Y-%m-%d %H:%M')).border = border
+            reviewer_name = ''
+            if item.reviewer:
+                try:
+                    reviewer_name = item.reviewer.profile.get_full_name() if hasattr(item.reviewer, 'profile') else item.reviewer.username
+                except:
+                    reviewer_name = item.reviewer.username
+            ws.cell(row=row_num, column=7, value=reviewer_name).border = border
+            ws.cell(row=row_num, column=8, value=item.reviewed_at.strftime('%Y-%m-%d %H:%M') if item.reviewed_at else '').border = border
+            ws.cell(row=row_num, column=9, value=item.reviewer_comment or '').border = border
+        
+        filename = f"社长换届-{timezone.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+    
+    else:
+        messages.error(request, '无效的数据类型，无法导出')
+        return redirect('clubs:staff_audit_center', tab=tab)
+    
+    # 设置列宽
+    for col_num in range(1, len(headers) + 1):
+        ws.column_dimensions[get_column_letter(col_num)].width = 18
+    
+    # 生成响应
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
     response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{urllib.parse.quote(filename)}'
     
     wb.save(response)

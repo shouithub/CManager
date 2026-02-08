@@ -1,5 +1,6 @@
 {% extends 'clubs/base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}提交社长换届申请{% endblock %}
 
@@ -9,28 +10,16 @@
         max-width: 900px;
         margin: 0 auto;
         padding: var(--md3-spacing-2xl);
+        padding-bottom: 120px; /* 防止被底栏遮挡 */
     }
     
-    .form-header {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-2xl);
-        padding: var(--md3-spacing-xl);
-        background: var(--md3-surface-container-low);
-        border-radius: var(--md3-radius-xl);
+    @media (max-width: 768px) {
+        .form-container {
+            padding-bottom: calc(var(--md3-spacing-2xl) + 100px) !important;
+        }
     }
     
-    .form-header .material-icons {
-        font-size: 2.5rem;
-        color: var(--md3-primary);
-    }
-    
-    .form-header h1 {
-        margin: 0;
-        font-size: 2rem;
-        font-weight: 600;
-    }
+    /* .form-header removed in favor of global .page-header */
     
     .form-card {
         background: var(--md3-surface-container);
@@ -161,23 +150,58 @@
         margin-bottom: var(--md3-spacing-sm);
     }
     
-    .form-actions {
+    .action-buttons {
         display: flex;
         gap: var(--md3-spacing-md);
-        justify-content: center;
         margin-top: var(--md3-spacing-2xl);
+        justify-content: flex-end;
     }
     
-    .form-actions .btn {
-        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+        padding: 10px 24px;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-sm);
-        text-decoration: none;
+        box-shadow: var(--md3-elevation-1);
     }
     
-    .form-actions .btn .material-icons {
-        font-size: 1.25rem;
+    .btn-primary:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+        padding: 10px 24px;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .btn-primary .material-icons,
+    .btn-secondary .material-icons {
+        font-size: 1.125rem;
     }
     
     .info-box {
@@ -202,22 +226,33 @@
         font-size: 0.9rem;
     }
     
-    @media (max-width: 768px) {
+        @media (max-width: 768px) {
         .form-container {
             padding: var(--md3-spacing-lg);
+            padding-bottom: calc(var(--md3-spacing-lg) + 50px);
         }
         
         .form-row {
             grid-template-columns: 1fr;
         }
         
-        .form-header {
+        .page-header {
             flex-direction: column;
             text-align: center;
         }
         
-        .form-header h1 {
+        .page-header h1 {
             font-size: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons button, 
+        .action-buttons a {
+            width: 100%;
+            justify-content: center;
         }
     }
 </style>
@@ -226,9 +261,12 @@
 {% block content %}
 <div class="form-container">
     <!-- 页面标题 -->
-    <div class="form-header">
+    <div class="page-header">
         <span class="material-icons">swap_horiz</span>
-        <h1>提交社长换届申请</h1>
+        <div class="page-header-content">
+            <h1>提交社长换届申请</h1>
+            <p class="subtitle">{{ club.name }}</p>
+        </div>
     </div>
     
     <!-- 提示信息 -->
@@ -281,17 +319,19 @@
                     <label for="new_president_officer_id">选择新社长 <span class="required">*</span></label>
                     <select id="new_president_officer_id" name="new_president_officer_id" required onchange="updateOfficerInfo()">
                         <option value="">-- 请选择 --</option>
-                        {% for officer in club_officers %}
-                        <option value="{{ officer.id }}" data-name="{% if officer.user_profile.real_name %}{{ officer.user_profile.real_name }}{% endif %}" data-username="{{ officer.user.username }}" data-phone="{{ officer.user_profile.phone }}" data-position="{{ officer.get_position_display }}">
-                            {% if officer.user_profile.real_name %}{{ officer.user_profile.real_name }}{% else %}{{ officer.user_profile.user.username }}{% endif %} ({{ officer.get_position_display }})
-                        </option>
+                        {% for officer in available_presidents %} 
+                        <option value="{{ officer.user_profile.user.id }}" data-name="{{ officer.user_profile.real_name|default:officer.user_profile.user.username }}" data-username="{{ officer.user_profile.user.username }}" data-student-id="{{ officer.user_profile.student_id }}" data-phone="{{ officer.user_profile.phone }}"> 
+                            {% if officer.user_profile.real_name %}{{ officer.user_profile.real_name }}{% else %}{{ officer.user_profile.user.username }}{% endif %} ({{ officer.user_profile.student_id|default:"无学号" }}) 
+                        </option> 
+                        {% empty %}
+                        <option value="" disabled>暂无可选的社长候选人</option>
                         {% endfor %}
                     </select>
                 </div>
             </div>
             
             <!-- 选中后显示的信息 -->
-            <div id="officer-info-container" style="display: none;">
+            <div id="president-info-container" style="display: none;">
                 <div class="officer-info">
                     <p><strong>姓名：</strong><span id="info-name">-</span></p>
                     <p><strong>学号：</strong><span id="info-student-id">-</span></p>
@@ -324,44 +364,47 @@
         <div class="form-section">
             <h2><span class="material-icons">attach_file</span> 附件上传</h2>
             
+            {% for req in requirements %}
             <div class="form-row">
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    <label for="transition_form">社团主要负责人变动申请表 <span class="required">*</span></label>
-                    <label for="transition_form" class="file-upload-area">
-                        <span class="material-icons">cloud_upload</span>
-                        <p>点击选择文件或拖放文件</p>
-                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">支持 Word(.docx) 和 PDF 文件</p>
-                    </label>
-                    <input type="file" id="transition_form" name="transition_form" required accept=".docx,.pdf">
+                    {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon=req.icon|default:"cloud_upload" %}
                 </div>
             </div>
+            {% empty %}
+            <p>暂无材料要求</p>
+            {% endfor %}
         </div>
+
+        <script>
+            // File upload logic is now handled by the component
+        </script>
         
         <!-- 操作按钮 -->
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">
-                <span class="material-icons">check_circle</span> 提交申请
-            </button>
-            <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-outlined">
-                <span class="material-icons">cancel</span> 返回
+        <div class="action-buttons">
+            <a href="{% url 'clubs:club_detail' club.id %}" class="btn-secondary">
+                <span class="material-icons">arrow_back</span>
+                返回
             </a>
+            <button type="submit" class="btn-primary">
+                <span class="material-icons">check_circle</span>
+                提交申请
+            </button>
         </div>
     </form>
 </div>
 
 <script>
-function updateOfficerInfo() {
-    const select = document.getElementById('new_president_officer_id');
-    const container = document.getElementById('officer-info-container');
+function updatePresidentInfo() {
+    const select = document.getElementById('new_president_user_id');
+    const container = document.getElementById('president-info-container');
     
     if (select.value === '') {
         container.style.display = 'none';
     } else {
         const option = select.options[select.selectedIndex];
-        document.getElementById('info-name').textContent = option.dataset.name || option.text.split('(')[0].trim();
+        document.getElementById('info-name').textContent = option.dataset.name || '-';
         document.getElementById('info-student-id').textContent = option.dataset.studentId || '-';
         document.getElementById('info-phone').textContent = option.dataset.phone || '-';
-        document.getElementById('info-position').textContent = option.dataset.position || '-';
         container.style.display = 'block';
     }
 }

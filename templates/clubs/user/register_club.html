@@ -502,100 +502,46 @@
                 >{{ form_data.description|default:'' }}</textarea>
             </div>
 
-            <!-- 必传材料 -->
+            <!-- 申请材料 -->
             <h2 class="section-title">
-                必传材料
+                <span class="material-icons">attach_file</span>
+                申请材料
             </h2>
 
             <div class="form-grid">
+                {% for req in requirements %}
                 <div class="form-field">
-                    <label for="establishment_application">
-                        社团成立申请书
+                    <label for="material_{{ req.id }}">
+                        {{ req.name }}
+                        {% if req.is_required %}
                         <span class="required">*</span>
+                        {% else %}
+                        <span class="field-help" style="display: inline; color: var(--md3-on-surface-variant);">(可选)</span>
+                        {% endif %}
                     </label>
                     <input
                         type="file"
-                        id="establishment_application"
-                        name="establishment_application"
-                        required
-                        accept=".docx"
+                        id="material_{{ req.id }}"
+                        name="material_{{ req.id }}"
+                        {% if req.is_required %}required{% endif %}
+                        accept="{{ req.allowed_extensions|default:'' }}"
                     >
-                    <span class="field-help">文件类型支持：.docx</span>
+                    {% if req.allowed_extensions %}
+                    <span class="field-help">文件类型支持：{{ req.allowed_extensions }}</span>
+                    {% endif %}
+                    {% if req.max_size_mb > 0 %}
+                    <span class="field-help">最大允许：{{ req.max_size_mb }}MB</span>
+                    {% endif %}
+                    {% if req.description %}
+                    <span class="field-help">{{ req.description }}</span>
+                    {% endif %}
                 </div>
-
-                <div class="form-field">
-                    <label for="constitution_draft">
-                        社团章程草案
-                        <span class="required">*</span>
-                    </label>
-                    <input
-                        type="file"
-                        id="constitution_draft"
-                        name="constitution_draft"
-                        required
-                        accept=".docx"
-                    >
-                    <span class="field-help">文件类型支持：.docx</span>
+                {% empty %}
+                <div class="message info">
+                    <span class="material-icons">info</span>
+                    无需上传任何材料
                 </div>
-
-                <div class="form-field">
-                    <label for="three_year_plan">
-                        社团三年发展规划
-                        <span class="required">*</span>
-                    </label>
-                    <input
-                        type="file"
-                        id="three_year_plan"
-                        name="three_year_plan"
-                        required
-                        accept=".docx"
-                    >
-                    <span class="field-help">文件类型支持：.docx</span>
-                </div>
-
-                <div class="form-field">
-                    <label for="leaders_resumes">
-                        负责人和指导老师简历及身份证复印件
-                        <span class="required">*</span>
-                    </label>
-                    <input
-                        type="file"
-                        id="leaders_resumes"
-                        name="leaders_resumes"
-                        required
-                        accept=".zip,.rar,.docx"
-                    >
-                    <span class="field-help">文件类型支持：.zip, .rar, .docx</span>
-                </div>
-
-                <div class="form-field">
-                    <label for="one_month_activity_plan">
-                        组建一个月后的活动计划
-                        <span class="required">*</span>
-                    </label>
-                    <input
-                        type="file"
-                        id="one_month_activity_plan"
-                        name="one_month_activity_plan"
-                        required
-                        accept=".docx"
-                    >
-                    <span class="field-help">文件类型支持：.docx</span>
-                </div>
-
-                <div class="form-field">
-                    <label for="advisor_certificates">
-                        指导老师专业证书
-                        <span class="field-help" style="margin-bottom: var(--md3-spacing-sm); color: var(--md3-on-surface-variant);">(可选)</span>
-                    </label>
-                    <input
-                        type="file"
-                        id="advisor_certificates"
-                        name="advisor_certificates"
-                        accept=".zip,.rar,.jpg,.png"
-                    >
-                    <span class="field-help">文件类型支持：.zip, .rar, .jpg, .png</span>
-                </div>
+                {% endfor %}
             </div>
 
             <hr class="section-divider">

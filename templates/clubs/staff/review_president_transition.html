@@ -3,84 +3,412 @@
 
 {% block title %}审核社长换届申请{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-    /* 复用MD3样式 */
-    .review-container { max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-xl); padding-bottom: calc(var(--md3-spacing-xl) + 100px); }
-    .review-header { padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); }
-    .review-header h1 { margin: 0; color: var(--md3-on-surface); font-size: 1.75rem; font-weight: 400; line-height: 2.25rem; letter-spacing: 0; display: flex; align-items: center; gap: var(--md3-spacing-md); }
-    .info-card { background: var(--md3-surface-container-low); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); border: 1px solid var(--md3-outline-variant); }
-    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--md3-spacing-md); }
-    .info-item { display: flex; flex-direction: column; gap: 4px; }
-    .info-label { color: var(--md3-on-surface-variant); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-    .info-value { color: var(--md3-on-surface); font-size: 14px; font-weight: 500; }
-    .staff-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--md3-info-container); color: var(--md3-on-info-container); padding: 8px 16px; border-radius: var(--md3-radius-full); font-size: 13px; font-weight: 500; margin-top: var(--md3-spacing-md); border: 2px solid var(--md3-primary); }
+    /* ===== MD3 完整重构 ===== */
     
-    .president-card { background: var(--md3-secondary-container); border-left: 4px solid var(--md3-secondary); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
-    .president-card h2 { margin: 0 0 var(--md3-spacing-lg) 0; color: var(--md3-on-secondary-container); font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: var(--md3-spacing-md); }
-    .president-table { width: 100%; }
-    .president-table tr { border-bottom: 1px solid rgba(0,0,0,0.1); }
-    .president-table tr:last-child { border-bottom: none; }
-    .president-table td { padding: 12px 0; color: var(--md3-on-secondary-container); }
-    .president-table td:first-child { font-weight: 600; width: 30%; }
+    :root {
+        /* MD3 间距系统 */
+        --md3-spacing-xs: 4px;
+        --md3-spacing-sm: 8px;
+        --md3-spacing-md: 12px;
+        --md3-spacing-lg: 16px;
+        --md3-spacing-xl: 24px;
+        --md3-spacing-2xl: 32px;
+    }
     
-    .materials-section { background: var(--md3-surface-container-lowest); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
-    .section-title { color: var(--md3-on-surface); font-size: 18px; font-weight: 600; margin: 0 0 var(--md3-spacing-lg) 0; display: flex; align-items: center; gap: var(--md3-spacing-md); padding-bottom: var(--md3-spacing-md); border-bottom: 2px solid var(--md3-outline-variant); }
-    .materials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--md3-spacing-md); }
-    .material-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); transition: all 0.2s ease; display: flex; flex-direction: column; gap: var(--md3-spacing-md); }
-    .material-card:hover { background: var(--md3-surface-container-high); box-shadow: var(--md3-elevation-2); transform: translateY(-2px); }
-    .material-title { color: var(--md3-on-surface); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; margin: 0; }
-    .material-title .material-icons { font-size: 20px; color: var(--md3-primary); }
-    .download-btn { background: var(--md3-primary); color: var(--md3-on-primary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .download-btn:hover { background: var(--md3-primary-dim); box-shadow: var(--md3-elevation-2); }
-    .preview-btn { background: var(--md3-secondary); color: var(--md3-on-secondary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .preview-btn:hover { background: var(--md3-secondary-dim); box-shadow: var(--md3-elevation-2); }
-    .file-actions { display: flex; gap: var(--md3-spacing-sm); width: 100%; }
-    .file-actions .preview-btn,
-    .file-actions .download-btn { flex: 1; }
+    body {
+        background: var(--md3-surface);
+    }
+
+    .review-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+        box-sizing: border-box;
+    }
     
-    .review-form-section { background: var(--md3-surface-container-lowest); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
-    .form-group { margin-bottom: var(--md3-spacing-lg); }
-    .form-label { display: block; color: var(--md3-on-surface); font-weight: 500; margin-bottom: var(--md3-spacing-sm); font-size: 14px; }
-    .form-select, .form-textarea { width: 100%; padding: 12px 16px; background: var(--md3-surface-container); border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-md); color: var(--md3-on-surface); font-family: inherit; font-size: 14px; transition: all 0.2s ease; }
-    .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--md3-primary); box-shadow: 0 0 0 3px var(--md3-primary-container); }
-    .form-textarea { resize: vertical; min-height: 100px; }
+    /* ===== 页面顶部标题 ===== */
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl) var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
     
-    .action-buttons { display: flex; gap: var(--md3-spacing-md); margin-top: var(--md3-spacing-xl); }
-    .btn-primary { background: var(--md3-primary); color: var(--md3-on-primary); border: none; padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
-    .btn-primary:hover { background: var(--md3-primary-dim); box-shadow: var(--md3-elevation-2); }
-    .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border: 1px solid var(--md3-outline); padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-    .btn-secondary:hover { background: var(--md3-surface-container-highest); box-shadow: var(--md3-elevation-1); }
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
     
-    .review-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: var(--md3-radius-full); font-size: 12px; font-weight: 600; text-transform: uppercase; }
-    .review-badge.approved { background: var(--md3-success-container); color: var(--md3-on-success-container); }
-    .review-badge.rejected { background: var(--md3-error-container); color: var(--md3-on-error-container); }
-    .review-badge.pending { background: var(--md3-warning-container); color: var(--md3-on-warning-container); }
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
     
-    .warning-box { background: var(--md3-warning-container); color: var(--md3-on-warning-container); border-left: 4px solid var(--md3-warning); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
-    .warning-box p { margin: var(--md3-spacing-md) 0; font-size: 14px; }
-    .warning-box p:first-child { margin-top: 0; }
-    .warning-box p:last-child { margin-bottom: 0; }
+    /* ===== 卡片容器 MD3 风格 ===== */
+    .card {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
+        border: 1px solid var(--md3-outline-variant);
+    }
     
+    .card:hover {
+        box-shadow: var(--md3-elevation-3);
+        background: var(--md3-surface-container);
+    }
+    
+    /* ===== 卡片标题 ===== */
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+    
+    .card-header .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
+    
+    /* ===== 信息网格布局 ===== */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md);
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-md);
+        border: 1px solid var(--md3-outline-variant);
+        transition: all 0.2s ease;
+    }
+    
+    .info-item:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+    }
+    
+    .info-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        word-break: break-word;
+        line-height: 1.5;
+    }
+    
+    /* ===== 状态徽章 ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 600;
+        width: fit-content;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .status-badge.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+    
+    .status-badge.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .status-badge.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    .status-badge .material-icons {
+        font-size: 1rem;
+    }
+    
+    /* ===== 详细信息网格布局 ===== */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
+    }
+    
+    .detail-item:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-2px);
+    }
+    
+    .detail-label {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .detail-label .material-icons {
+        font-size: 1rem;
+        color: var(--md3-primary);
+    }
+    
+    .detail-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        word-break: break-word;
+        line-height: 1.6;
+    }
+    
+    /* ===== 换届信息卡片特殊样式 ===== */
+    .transition-info-card {
+        background: linear-gradient(135deg, var(--md3-secondary-container) 0%, var(--md3-tertiary-container, var(--md3-secondary-container)) 100%);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .transition-info-card:hover {
+        background: linear-gradient(135deg, var(--md3-secondary-container) 0%, var(--md3-tertiary-container, var(--md3-secondary-container)) 100%);
+    }
+    
+    .transition-info-card .card-header {
+        border-bottom-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    .transition-info-card .detail-item {
+        background: rgba(255, 255, 255, 0.5);
+    }
+    
+    .transition-info-card .detail-item:hover {
+        background: rgba(255, 255, 255, 0.8);
+    }
+    
+    /* 换届对比样式 */
+    .transition-compare {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: var(--md3-spacing-xl);
+        align-items: center;
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .transition-person {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: var(--md3-spacing-xl);
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+        text-align: center;
+    }
+    
+    .transition-person .avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--md3-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .transition-person .avatar .material-icons {
+        font-size: 48px;
+        color: var(--md3-primary);
+    }
+    
+    .transition-person.new-president .avatar {
+        background: var(--md3-success-container);
+    }
+    
+    .transition-person.new-president .avatar .material-icons {
+        color: var(--md3-success);
+    }
+    
+    .transition-person .person-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: var(--md3-spacing-xs);
+    }
+    
+    .transition-person .person-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    .transition-person .person-username {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .transition-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .transition-arrow .material-icons {
+        font-size: 3rem;
+        color: var(--md3-primary);
+    }
+    
+    /* ===== 警告提示卡片 ===== */
+    .warning-card {
+        background: var(--md3-warning-container);
+        border: 1px solid var(--md3-warning);
+        border-left: 4px solid var(--md3-warning);
+    }
+    
+    .warning-card:hover {
+        background: var(--md3-warning-container);
+    }
+    
+    .warning-card .card-header {
+        border-bottom-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    .warning-card .card-header .material-icons {
+        color: var(--md3-warning);
+    }
+    
+    .warning-card .card-header h2 {
+        color: var(--md3-on-warning-container);
+    }
+    
+    .warning-card ul {
+        margin: var(--md3-spacing-md) 0;
+        padding-left: var(--md3-spacing-xl);
+        color: var(--md3-on-warning-container);
+    }
+    
+    .warning-card li {
+        margin-bottom: var(--md3-spacing-sm);
+        line-height: 1.5;
+    }
+    
+    .warning-card p {
+        margin: 0;
+        color: var(--md3-on-warning-container);
+        font-size: 0.9375rem;
+        line-height: 1.6;
+    }
+    
+    /* ===== 响应式设计 ===== */
     @media (max-width: 768px) {
-        .review-container { padding: var(--md3-spacing-md); padding-bottom: calc(var(--md3-spacing-md) + 100px); }
-        .info-grid { grid-template-columns: 1fr; }
-        .materials-grid { grid-template-columns: 1fr; }
-        .action-buttons { flex-direction: column; }
-        .action-buttons button, .action-buttons a { width: 100%; justify-content: center; }
+        .review-container {
+            padding: var(--md3-spacing-lg);
+            padding-bottom: calc(var(--md3-spacing-lg) + 100px);
+        }
+        
+        .page-header {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .page-header .material-icons {
+            font-size: 2rem;
+        }
+        
+        .info-grid,
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .card {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .transition-compare {
+            grid-template-columns: 1fr;
+            gap: var(--md3-spacing-lg);
+        }
+        
+        .transition-arrow {
+            transform: rotate(90deg);
+        }
     }
 </style>
+{% endblock %}
+
+{% block content %}
 
 <div class="review-container">
-    <div class="review-header">
-        <h1>
-            <span class="material-icons">swap_horiz</span>
-            审核社长换届申请
-        </h1>
+    <!-- ===== 页面顶部标题 ===== -->
+    <div class="page-header">
+        <span class="material-icons">swap_horiz</span>
+        <h1>审核社长换届申请</h1>
     </div>
-
-    <!-- 基本信息卡片 -->
-    <div class="info-card">
+    
+    <!-- ===== 基本信息卡片 ===== -->
+    <div class="card">
+        <div class="card-header">
+            <span class="material-icons">info</span>
+            <h2>基本信息</h2>
+        </div>
+        
         <div class="info-grid">
             <div class="info-item">
                 <span class="info-label">社团名称</span>
@@ -93,147 +421,181 @@
             <div class="info-item">
                 <span class="info-label">提交次数</span>
                 <span class="info-value">
-                    第 {{ transition.resubmission_attempt }} 次提交
+                    第{{ transition.resubmission_attempt }} 次提交
                     {% if transition.resubmission_attempt > 1 %}
-                        <span style="color: var(--md3-error);">(已重新提交)</span>
+                        <span style="color: var(--md3-error); font-weight: 600;">(已重新提交)</span>
                     {% endif %}
                 </span>
             </div>
             <div class="info-item">
                 <span class="info-label">当前状态</span>
                 <span class="info-value">
-                    <span class="review-badge {{ transition.status }}">{{ transition.get_status_display }}</span>
+                    <span class="status-badge {{ transition.status }}">
+                        <span class="material-icons">
+                            {% if transition.status == 'approved' %}check_circle{% elif transition.status == 'rejected' %}cancel{% else %}schedule{% endif %}
+                        </span>
+                        {{ transition.get_status_display }}
+                    </span>
                 </span>
             </div>
         </div>
-        <div class="staff-chip">
-            <span class="material-icons" style="font-size: 16px;">assignment_ind</span>
-            <span>
-                负责干事: 
-                {% if club %}
-                    {% for relation in club.responsible_staff.all %}
-                        {% if relation.is_active %}
-                            {% if relation.staff.real_name %}{{ relation.staff.real_name }} (用户名: {{ relation.staff.user.username }}){% elif relation.staff.user.username %}{{ relation.staff.user.username }}{% else %}未知用户{% endif %}{% if not forloop.last %}, {% endif %}
+        
+        {% if club.responsible_staff.all %}
+        <div class="info-item" style="margin-top: var(--md3-spacing-lg);">
+            <span class="info-label">负责干事</span>
+            <div class="info-value">
+                {% for relation in club.responsible_staff.all %}
+                    {% if relation.is_active %}
+                    <div style="margin-bottom: 2px; padding-bottom: 2px;">
+                        <div style="font-weight: 600; margin-bottom: 4px;">{{ relation.staff.real_name|default:relation.staff.user.username }}</div>
+                        {% if relation.staff.phone %}
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-bottom: 2px;">
+                            <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">phone</span>
+                            {{ relation.staff.phone }}
+                        </div>
                         {% endif %}
-                    {% empty %}未分配
-                    {% endfor %}
-                {% else %}未分配{% endif %}
-            </span>
+                        {% if relation.staff.wechat %}
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant);">
+                            <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">chat</span>
+                            {{ relation.staff.wechat }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
+        {% endif %}
     </div>
-
-    <!-- 社长信息卡片 -->
-    <div class="president-card">
-        <h2>
-            <span class="material-icons">person</span>
-            社长换届信息
-        </h2>
-        <table class="president-table">
-            <tr>
-                <td><strong>原社长:</strong></td>
-                <td>
+    
+    <!-- ===== 换届信息卡片 ===== -->
+    <div class="card transition-info-card">
+        <div class="card-header">
+            <span class="material-icons">people</span>
+            <h2>社长换届信息</h2>
+        </div>
+        
+        <!-- 换届对比展示 -->
+        <div class="transition-compare">
+            <div class="transition-person old-president">
+                <div class="avatar">
+                    <span class="material-icons">person</span>
+                </div>
+                <span class="person-label">原社长</span>
+                <span class="person-name">
                     {% if club.president %}
-                        {{ club.president.username }}
+                        {% if club.president.profile.real_name %}
+                            {{ club.president.profile.real_name }}
+                        {% else %}
+                            {{ club.president.username }}
+                        {% endif %}
                     {% else %}
                         未设置
                     {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <td><strong>新社长名称:</strong></td>
-                <td>
+                </span>
+                <span class="person-username">
+                    {% if club.president %}@{{ club.president.username }}{% endif %}
+                </span>
+            </div>
+            
+            <div class="transition-arrow">
+                <span class="material-icons">arrow_forward</span>
+            </div>
+            
+            <div class="transition-person new-president">
+                <div class="avatar">
+                    <span class="material-icons">person</span>
+                </div>
+                <span class="person-label">新社长</span>
+                <span class="person-name">
                     {% if transition.new_president_officer.user_profile.real_name %}
                         {{ transition.new_president_officer.user_profile.real_name }}
                     {% else %}
                         {{ transition.new_president_officer.user_profile.user.username }}
                     {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <td><strong>新社长用户名:</strong></td>
-                <td>{{ transition.new_president_officer.user.username }}</td>
-            </tr>
-            <tr>
-                <td><strong>新社长电话:</strong></td>
-                <td>{{ transition.new_president_officer.user_profile.phone }}</td>
-            </tr>
-            <tr>
-                <td><strong>新社长职位:</strong></td>
-                <td>{{ transition.new_president_officer.get_position_display }}</td>
-            </tr>
-            <tr>
-                <td><strong>换届日期:</strong></td>
-                <td>{{ transition.transition_date }}</td>
-            </tr>
-            <tr>
-                <td><strong>换届原因:</strong></td>
-                <td>{{ transition.transition_reason }}</td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- 警告提示 -->
-    <div class="warning-box">
-        <p><strong>⚠️ 重要提示：</strong></p>
-        <p>批准此社长换届申请后，系统将自动：</p>
-        <ul style="margin: var(--md3-spacing-md) 0; padding-left: var(--md3-spacing-xl);">
-            <li>标记原社长为不在任状态</li>
-            <li>设置新社长为现任状态</li>
-            <li>更新社团的社长字段</li>
-        </ul>
-        <p>新社长已是社团现有成员，无需创建新账户。</p>
-    </div>
-
-    <!-- 附件卡片 -->
-    {% if transition.transition_form %}
-    <div class="materials-section">
-        <h3 class="section-title">
-            <span class="material-icons">attach_file</span>
-            附件材料
-        </h3>
-        <div class="materials-grid">
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">description</span>
-                    社长换届申请表
-                </p>
-                <div class="file-actions">
-                    <a href="{{ transition.transition_form.url }}" class="download-btn" target="_blank" title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ transition.transition_form.url }}', '社长换届申请表')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
+                </span>
+                <span class="person-username">@{{ transition.new_president_officer.user_profile.user.username }}</span>
             </div>
         </div>
         
-        <!-- 合并下载按钮 -->
-        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
-            <a href="{% url 'clubs:zip_president_transition_docs' transition.id %}" class="download-btn" style="width: 100%;">
-                🗜️ 打包所有材料为ZIP文件
+        <!-- 详细信息网格 -->
+        <div class="detail-grid">
+            <div class="detail-item">
+                <span class="detail-label">
+                    <span class="material-icons">phone</span>
+                    新社长联系电话
+                </span>
+                <span class="detail-value">{{ transition.new_president_officer.user_profile.phone|default:"未设置" }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    <span class="material-icons">badge</span>
+                    当前职位
+                </span>
+                <span class="detail-value">{{ transition.new_president_officer.get_position_display }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    <span class="material-icons">event</span>
+                    换届日期
+                </span>
+                <span class="detail-value">{{ transition.transition_date|date:"Y-m-d" }}</span>
+            </div>
+        </div>
+        
+        <!-- 换届原因 -->
+        <div style="margin-top: var(--md3-spacing-lg); padding-top: var(--md3-spacing-lg); border-top: 1px solid rgba(0,0,0,0.1);">
+            <div class="detail-label" style="margin-bottom: var(--md3-spacing-md);">
+                <span class="material-icons">description</span>
+                换届原因
+            </div>
+            <div style="padding: var(--md3-spacing-lg); background: rgba(255,255,255,0.6); border-radius: var(--md3-radius-lg); line-height: 1.8;">
+                {{ transition.transition_reason|default:"未填写"|linebreaks }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- ===== 附件材料卡片 ===== -->
+    {% include 'clubs/components/_materials_display.html' with materials=transition_materials title="附件材料" show_zip=True zip_url=zip_url %}
+    
+    <!-- ===== 干事审核表单 ===== -->
+    {% if transition.status == 'pending' %}
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='president_transition' title="提交审核意见" approve_text="批准换届" reject_text="拒绝换届" %}
+    {% else %}
+    <div class="card">
+        <div class="card-header">
+            <span class="material-icons">done_all</span>
+            <h2>审核状态</h2>
+        </div>
+        
+        <div style="padding: var(--md3-spacing-lg) 0;">
+            <p><strong>状态：</strong> 
+                <span class="status-badge {{ transition.status }}">
+                    <span class="material-icons">
+                        {% if transition.status == 'approved' %}check_circle{% elif transition.status == 'rejected' %}cancel{% else %}schedule{% endif %}
+                    </span>
+                    {{ transition.get_status_display }}
+                </span>
+            </p>
+            {% if transition.reviewed_at %}
+            <p style="margin-top: var(--md3-spacing-md);"><strong>审核时间：</strong> {{ transition.reviewed_at|date:"Y-m-d H:i" }}</p>
+            {% endif %}
+            {% if transition.reviewer %}
+            <p style="margin-top: var(--md3-spacing-sm);"><strong>审核人：</strong> {{ transition.reviewer.profile.get_full_name|default:transition.reviewer.username }}</p>
+            {% endif %}
+            {% if transition.reviewer_comment %}
+            <p style="margin-top: var(--md3-spacing-sm);"><strong>审核意见：</strong> {{ transition.reviewer_comment }}</p>
+            {% endif %}
+        </div>
+        
+        <div style="display: flex; gap: var(--md3-spacing-md); margin-top: var(--md3-spacing-lg); padding-top: var(--md3-spacing-lg); border-top: 1px solid var(--md3-outline-variant);">
+            <a href="{% url 'clubs:staff_audit_center' 'president_transition' %}" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-xl); background: var(--md3-surface-container-high); color: var(--md3-on-surface); border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-full); text-decoration: none; font-weight: 600;">
+                <span class="material-icons">arrow_back</span>
+                返回列表
             </a>
         </div>
     </div>
     {% endif %}
-
-    <!-- 审核表单 -->
-    {% include 'clubs/components/review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='president_transition' %}
 </div>
-
-<script>
-function previewFile(fileUrl, fileName) {
-    const currentDomain = window.location.origin;
-    let fullUrl = fileUrl;
-    if (fileUrl.startsWith('/')) {
-        fullUrl = currentDomain + fileUrl;
-    } else if (!fileUrl.startsWith('http')) {
-        fullUrl = currentDomain + '/' + fileUrl;
-    }
-    const encodedUrl = encodeURIComponent(fullUrl);
-    const previewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
-    window.open(previewUrl, '_blank');
-}
-</script>
 
 {% endblock %}

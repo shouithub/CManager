@@ -2,34 +2,216 @@
 
 {% block title %}编辑公告 - CManager{% endblock %}
 
+{% block extra_css %}
+<style>
+    .edit-announcement-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .md3-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+        padding: var(--md3-spacing-2xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .md3-field {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xs);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .md3-field label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .md3-field .required {
+        color: var(--md3-error);
+        margin-left: var(--md3-spacing-xs);
+    }
+
+    .md3-input,
+    .md3-textarea,
+    .md3-select {
+        width: 100%;
+        border-radius: var(--md3-radius-lg);
+        border: 1px solid var(--md3-outline-variant);
+        padding: var(--md3-spacing-md);
+        font-size: 0.95rem;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .md3-input:focus,
+    .md3-textarea:focus,
+    .md3-select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 20%, transparent);
+    }
+
+    .md3-hint {
+        font-size: 0.8rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .md3-attachment {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        margin-top: var(--md3-spacing-xs);
+        font-size: 0.85rem;
+    }
+
+    .md3-attachment a {
+        color: var(--md3-primary);
+        text-decoration: none;
+        background: var(--md3-primary-container);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+    }
+
+    .md3-messages {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .md3-message {
+        padding: var(--md3-spacing-md);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        font-size: 0.9rem;
+    }
+
+    .md3-message.error {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border-color: transparent;
+    }
+
+    .md3-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-md);
+        justify-content: flex-end;
+        margin-top: var(--md3-spacing-lg);
+    }
+
+    .md3-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        border: none;
+        border-radius: var(--md3-radius-full);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .md3-btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .md3-btn-primary:hover {
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-1px);
+    }
+
+    .md3-btn-tonal {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+
+    @media (max-width: 768px) {
+        .edit-announcement-container {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .md3-actions {
+            justify-content: stretch;
+        }
+
+        .md3-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
+<div class="edit-announcement-container">
     <div class="page-header">
-        <h1>📝 编辑公告</h1>
+        <span class="material-icons">edit_note</span>
+        <h1>编辑公告</h1>
     </div>
     
     {% if messages %}
-    <div class="messages">
+    <div class="md3-messages">
         {% for message in messages %}
-        <div class="message {{ message.tags }}">{{ message }}</div>
+        <div class="md3-message {{ message.tags }}">{{ message }}</div>
         {% endfor %}
     </div>
     {% endif %}
     
     {% if errors %}
-    <div class="error-list">
+    <div class="md3-messages">
         {% for error in errors %}
-        <div class="message error">{{ error }}</div>
+        <div class="md3-message error">{{ error }}</div>
         {% endfor %}
     </div>
     {% endif %}
     
-    <div class="card">
+    <div class="md3-card">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             
-            <div class="form-group">
-                <label for="title">公告标题 <span class="required">*</span></label>
+            <div class="md3-field">
+                <label for="title">公告标题<span class="required">*</span></label>
                 <input 
                     type="text" 
                     id="title" 
@@ -38,60 +220,69 @@
                     maxlength="200"
                     placeholder="输入公告标题"
                     value="{{ announcement.title }}"
+                    class="md3-input"
                 >
             </div>
             
-            <div class="form-group">
-                <label for="content">公告内容 <span class="required">*</span></label>
+            <div class="md3-field">
+                <label for="content">公告内容<span class="required">*</span></label>
                 <textarea 
                     id="content" 
                     name="content" 
                     required 
                     rows="8"
                     placeholder="输入公告内容"
+                    class="md3-textarea"
                 >{{ announcement.content }}</textarea>
             </div>
             
-            <div class="form-group">
+            <div class="md3-field">
                 <label for="expires_at">失效时间（可选）</label>
                 <input 
                     type="datetime-local" 
                     id="expires_at" 
                     name="expires_at"
+                    class="md3-input"
                     {% if announcement.expires_at %}
                     value="{{ announcement.expires_at|date:'Y-m-d\TH:i' }}"
                     {% endif %}
                 >
-                <small>公告将在指定时间后自动归档。如不填写，公告将一直有效。</small>
+                <small class="md3-hint">公告将在指定时间后自动归档。如不填写，公告将一直有效。</small>
             </div>
             
-            <div class="form-group">
+            <div class="md3-field">
                 <label for="attachment">附件（可选）</label>
                 <input 
                     type="file" 
                     id="attachment" 
                     name="attachment"
+                    class="md3-input"
                 >
-                <small>支持上传各种类型的文件，如文档、图片等。</small>
+                <small class="md3-hint">支持上传各种类型的文件，如文档、图片等。</small>
                 {% if announcement.attachment %}
-                <p class="mt-1">当前附件：<a href="{{ announcement.attachment.url }}">{{ announcement.attachment.name }}</a></p>
+                <div class="md3-attachment">
+                    <span class="material-icons">attach_file</span>
+                    当前附件：<a href="{{ announcement.attachment.url }}" target="_blank" rel="noopener">{{ announcement.attachment.name }}</a>
+                </div>
                 {% endif %}
             </div>
             
-            <div class="form-group">
-                <label for="status">发布状态 <span class="required">*</span></label>
-                <select id="status" name="status" required>
-                    <option value="draft" {% if announcement.status == 'draft' %}selected{% endif %}>📝 草稿（保存但不显示）</option>
-                    <option value="published" {% if announcement.status == 'published' %}selected{% endif %}>✓ 发布（立即显示在首页）</option>
-                    <option value="archived" {% if announcement.status == 'archived' %}selected{% endif %}>📁 归档（不再显示在首页）</option>
+            <div class="md3-field">
+                <label for="status">发布状态<span class="required">*</span></label>
+                <select id="status" name="status" required class="md3-select">
+                    <option value="draft" {% if announcement.status == 'draft' %}selected{% endif %}>草稿（保存但不显示）</option>
+                    <option value="published" {% if announcement.status == 'published' %}selected{% endif %}>发布（立即显示在首页）</option>
+                    <option value="archived" {% if announcement.status == 'archived' %}selected{% endif %}>归档（不再显示在首页）</option>
                 </select>
             </div>
             
-            <div class="form-actions">
-                <button type="submit" name="action" value="update" class="btn btn-success">
-                    💾 保存修改
+            <div class="md3-actions">
+                <button type="submit" name="action" value="update" class="md3-btn md3-btn-primary">
+                    <span class="material-icons">save</span>
+                    保存修改
                 </button>
-                <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-secondary">
+                <a href="{% url 'clubs:admin_dashboard' %}" class="md3-btn md3-btn-tonal">
+                    <span class="material-icons">close</span>
                     取消
                 </a>
             </div>

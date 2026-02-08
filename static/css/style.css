@@ -415,7 +415,7 @@ a:focus-visible {
 
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .form-row{display:flex;gap:12px;align-items:center}
-.form-input,.form-select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--md3-outline);background:var(--md3-surface-container-highest);color:var(--md3-on-surface)}
+.form-input,.form-select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--md3-outline);background-color:var(--md3-surface-container-highest);color:var(--md3-on-surface)}
 .btn-md3{padding:10px 14px;border-radius:10px;background:var(--md3-primary);color:var(--md3-on-primary);border:none;font-weight:600;cursor:pointer}
 .btn-secondary{padding:8px 12px;border-radius:10px;background:transparent;border:1px solid var(--md3-outline);color:var(--md3-on-surface-variant);cursor:pointer}
 .kv{color:var(--md3-on-surface-variant);font-size:0.95rem}
@@ -744,6 +744,11 @@ select {
     background-size: 12px 12px;
     background-position: right var(--md3-spacing-lg) center;
     padding-right: var(--md3-spacing-3xl);
+}
+
+/* Dark mode override for select arrow */
+html[data-theme="dark"] select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cac4d0' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
 }
 
 /* Form Validation States */
@@ -2468,6 +2473,25 @@ body {
     z-index: 1;
 }
 
+/* 侧边栏菜单项徽章计数 - MD3 Badge 样式（显示在右侧） */
+.sidebar-menu-item .badge-count {
+    position: relative;
+    z-index: 1;
+    margin-left: auto;
+    background-color: var(--md3-error);
+    color: var(--md3-on-error);
+    border-radius: var(--md3-radius-full);
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
 /* 侧边栏底部 (用户信息和主题切换) */
 .sidebar-footer {
     padding: var(--md3-spacing-md) var(--md3-spacing-lg) var(--md3-spacing-xl);
@@ -2559,12 +2583,10 @@ body {
     overflow: hidden;
     box-shadow: var(--md3-elevation-2);
     position: absolute !important;
-    bottom: 100% !important;
-    left: 0;
-    right: 0;
-    margin-left: var(--md3-spacing-md);
-    margin-right: var(--md3-spacing-md);
-    z-index: 100;
+    bottom: calc(100% + 8px) !important;
+    left: var(--md3-spacing-md);
+    right: var(--md3-spacing-md);
+    z-index: 1000;
 }
 
 .sidebar-user-dropdown.active {
@@ -2708,7 +2730,8 @@ body {
 
 .main-content {
     flex: 1;
-    padding: var(--md3-spacing-xl) var(--md3-spacing-2xl);
+    /* 增加底部内边距，防止被固定底栏遮挡 */
+    padding: var(--md3-spacing-xl) var(--md3-spacing-2xl) 120px;
     max-width: 1440px;
     width: 100%;
     margin: 0 auto;
@@ -2799,17 +2822,71 @@ body {
     color: var(--md3-on-secondary-container);
 }
 
+/* 底部导航栏徽章 */
+.bottom-nav-item .icon {
+    position: relative;
+}
+
+.bottom-nav-item .nav-badge {
+    position: absolute;
+    top: 0;
+    right: 8px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: var(--md3-error);
+    color: var(--md3-on-error);
+    font-size: 0.625rem;
+    font-weight: 600;
+    border-radius: var(--md3-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 10;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     /* 隐藏侧边栏，显示底部导航 */
     .sidebar-nav {
         transform: translateX(-100%);
         box-shadow: none;
+        width: 70%;
+        max-width: 320px;
     }
     
     .sidebar-nav.active {
         transform: translateX(0);
         box-shadow: var(--md3-elevation-5);
+    }
+    
+    /* 移动端用户下拉框位置调整 */
+    .sidebar-user-dropdown {
+        position: fixed !important;
+        bottom: 80px !important;
+        top: auto !important;
+        left: 5%;
+        right: auto;
+        width: 60%;
+        max-width: 280px;
+        transform: none;
+    }
+    
+    .sidebar-user-dropdown.active {
+        display: block !important;
+        animation: slideUpMobile var(--md3-motion-duration-short4) var(--md3-motion-easing-standard);
+    }
+    
+    @keyframes slideUpMobile {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
     /* 为 sidebar-footer 添加底部间距避免被底栏遮挡 */
@@ -2860,12 +2937,12 @@ body {
 
 @media (max-width: 480px) {
     .sidebar-nav {
-        width: 100%;
+        width: 70%;
         max-width: 280px;
     }
     
     .main-content {
-        padding: var(--md3-spacing-md);
+        padding: var(--md3-spacing-md) var(--md3-spacing-md) calc(var(--md3-spacing-md) + 80px);
     }
 }
 
@@ -2887,6 +2964,29 @@ body {
     body:not(:has(.sidebar-nav:not(.expanded))) footer {
         left: 0;
         width: 100%;
+    }
+    
+    /* 重置移动端的侧边栏样式 */
+    .sidebar-nav {
+        width: 240px;
+        max-width: none;
+    }
+    
+    /* 重置移动端的用户下拉框样式，确保在桌面端正确显示 */
+    .sidebar-user-dropdown {
+        position: absolute !important;
+        bottom: calc(100% + 8px) !important;
+        top: auto !important;
+        left: var(--md3-spacing-md) !important;
+        right: var(--md3-spacing-md) !important;
+        width: auto !important;
+        max-width: none !important;
+        transform: none !important;
+    }
+    
+    .sidebar-user-dropdown.active {
+        display: block !important;
+        animation: slideUp var(--md3-motion-duration-short4) var(--md3-motion-easing-standard);
     }
 }
 
@@ -3932,3 +4032,51 @@ fieldset legend {
 /* ==========================================================================
    END: Minimal, reversible layout background fix
    ========================================================================== */
+
+/* Page Header Style (Unified with Approval Center) */
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-lg);
+    margin-bottom: var(--md3-spacing-2xl);
+    padding: var(--md3-spacing-xl);
+    background: var(--md3-surface-container-low);
+    border-radius: var(--md3-radius-xl);
+    border: 1px solid var(--md3-outline-variant);
+}
+
+.page-header .material-icons {
+    font-size: 2.5rem;
+    color: var(--md3-primary);
+}
+
+.page-header-content {
+    flex: 1;
+}
+
+.page-header h1 {
+    margin: 0 0 var(--md3-spacing-xs) 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--md3-on-surface);
+}
+
+.page-header .subtitle {
+    color: var(--md3-on-surface-variant);
+    font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-lg);
+    }
+
+    .page-header .material-icons {
+        font-size: 2rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.25rem;
+    }
+}

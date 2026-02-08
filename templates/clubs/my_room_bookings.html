@@ -1,0 +1,396 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}我的预约{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 页面容器 - 保持与其他页面一致的布局 */
+    .page-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 80px); /* 防止被底部导航栏遮挡 */
+    }
+    
+    /* 页面标题区域 */
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .page-header-content {
+        flex: 1;
+    }
+    
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    .page-header .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+    }
+
+    /* 预约列表 */
+    .bookings-list {
+        display: grid;
+        gap: var(--md3-spacing-lg);
+    }
+
+    .booking-card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: var(--md3-spacing-lg);
+        transition: all 0.2s ease;
+    }
+
+    .booking-card:hover {
+        background: var(--md3-surface-container-high);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .booking-main {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
+    }
+
+    .booking-header-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-xs);
+    }
+
+    .room-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        border-radius: var(--md3-radius-md);
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .time-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--md3-on-surface);
+        font-weight: 500;
+        font-size: 1rem;
+    }
+
+    .time-badge .material-icons {
+        color: var(--md3-primary);
+        font-size: 1.25rem;
+    }
+
+    .booking-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-md);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+    }
+
+    .detail-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-sm);
+    }
+
+    .detail-item .material-icons {
+        font-size: 1rem;
+        color: var(--md3-secondary);
+    }
+
+    .booking-purpose {
+        margin-top: 4px;
+        color: var(--md3-on-surface);
+        line-height: 1.5;
+    }
+
+    .booking-actions-col {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        min-width: 120px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .status-badge.active {
+        background: var(--md3-tertiary-container);
+        color: var(--md3-on-tertiary-container);
+    }
+
+    .status-badge.cancelled {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-hover, #56428a); /* Fallback or define var */
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: var(--md3-primary);
+        border: 1px solid var(--md3-outline);
+    }
+
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+    }
+    
+    .btn-tonal {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+    
+    .btn-tonal:hover {
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .btn-icon {
+        padding: 8px;
+        border-radius: 50%;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .btn-icon:hover {
+        background: var(--md3-surface-container-highest);
+        color: var(--md3-on-surface);
+    }
+
+    /* 空状态 */
+    .empty-state {
+        text-align: center;
+        padding: 64px 24px;
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        border: 1px dashed var(--md3-outline-variant);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--md3-outline);
+        margin-bottom: var(--md3-spacing-md);
+    }
+
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+    }
+
+    .empty-text {
+        color: var(--md3-on-surface-variant);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    @media (max-width: 768px) {
+        .page-container {
+            padding: var(--md3-spacing-md);
+            padding-bottom: 100px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .header-actions {
+            width: 100%;
+            margin-top: var(--md3-spacing-md);
+        }
+        
+        .header-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .booking-card {
+            grid-template-columns: 1fr;
+            gap: var(--md3-spacing-md);
+        }
+
+        .booking-actions-col {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--md3-outline-variant);
+            padding-top: var(--md3-spacing-md);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <span class="material-icons">event_note</span>
+        <div class="page-header-content">
+            <h1>我的预约</h1>
+            <div class="subtitle">查看和管理您的房间借用记录</div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'clubs:room_calendar' %}" class="btn btn-primary">
+                <span>返回日历</span>
+            </a>
+        </div>
+    </div>
+    
+    {% if bookings %}
+    <div class="bookings-list">
+        {% for booking in bookings %}
+        <div class="booking-card">
+            <div class="booking-main">
+                <div class="booking-header-row">
+                    <span class="room-badge">
+                        <span class="material-icons" style="font-size: 16px;">meeting_room</span>
+                        {{ booking.room.name }}
+                    </span>
+                    <span class="time-badge">
+                        {{ booking.booking_date|date:"Y年m月d日" }}
+                        <span class="material-icons" style="font-size: 16px; margin: 0 4px;">schedule</span>
+                        {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+                    </span>
+                </div>
+                
+                <div class="booking-purpose">
+                    <strong>用途：</strong>{{ booking.purpose }}
+                </div>
+                
+                <div class="booking-details">
+                    <span class="detail-item">
+                        <span class="material-icons">group</span>
+                        {{ booking.participant_count }}人
+                    </span>
+                    {% if booking.club %}
+                    <span class="detail-item">
+                        <span class="material-icons">groups</span>
+                        {{ booking.club.name }}
+                    </span>
+                    {% endif %}
+                    <span class="detail-item">
+                        <span class="material-icons">phone</span>
+                        {{ booking.contact_phone }}
+                    </span>
+                    {% if booking.special_requirements %}
+                    <span class="detail-item" title="特殊需求: {{ booking.special_requirements }}">
+                        <span class="material-icons">stars</span>
+                        {{ booking.special_requirements|truncatechars:10 }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="booking-actions-col">
+                {% if booking.status == 'active' %}
+                    <span class="status-badge active">
+                        <span class="material-icons" style="font-size: 16px;">check_circle</span>
+                        有效
+                    </span>
+                    <div class="action-buttons">
+                        <a href="{% url 'clubs:edit_room_booking' booking.id %}" class="btn btn-tonal" title="编辑">
+                            <span class="material-icons">edit</span>
+                            编辑
+                        </a>
+                        <a href="{% url 'clubs:delete_room_booking' booking.id %}" class="btn-icon" title="取消预约">
+                            <span class="material-icons" style="color: var(--md3-error);">delete</span>
+                        </a>
+                    </div>
+                {% elif booking.status == 'cancelled' %}
+                    <span class="status-badge cancelled">
+                        <span class="material-icons" style="font-size: 16px;">cancel</span>
+                        已取消
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="material-icons empty-icon">event_busy</span>
+        <h2 class="empty-title">暂无预约记录</h2>
+        <p class="empty-text">您还没有任何有效的房间借用记录</p>
+        <a href="{% url 'clubs:submit_room_booking' %}" class="btn btn-primary">
+            <span class="material-icons">add_circle</span>
+            立即预约
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -9,6 +9,7 @@
         max-width: 1000px;
         margin: 0 auto;
         padding: var(--md3-spacing-xl);
+        padding-bottom: 100px; /* 避免被底部导航栏遮挡 */
     }
 
     /* 页面头部 */
@@ -41,6 +42,43 @@
         padding: var(--md3-spacing-lg);
         margin-bottom: var(--md3-spacing-xl);
         box-shadow: var(--md3-elevation-1);
+    }
+
+    /* 复用组件卡片样式 */
+    .card {
+        background: var(--md3-surface-container-low);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .card-header .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .detail-item {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-lg);
     }
 
     .info-grid {
@@ -96,171 +134,6 @@
     .status-badge.pending {
         background-color: var(--md3-warning-container);
         color: var(--md3-on-warning-container);
-    }
-
-    /* 时间轴样式 */
-    .timeline-section {
-        background: var(--md3-surface-container-lowest);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-xl);
-        margin-top: var(--md3-spacing-xl);
-        box-shadow: var(--md3-elevation-1);
-    }
-
-    .timeline-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-        margin: 0 0 var(--md3-spacing-lg) 0;
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-        padding-bottom: var(--md3-spacing-md);
-        border-bottom: 2px solid var(--md3-outline-variant);
-    }
-
-    .timeline-title .material-icons {
-        color: var(--md3-primary);
-    }
-
-    /* 时间轴容器 */
-    .timeline-container {
-        position: relative;
-        padding-left: 48px;
-        margin-top: var(--md3-spacing-lg);
-    }
-
-    .timeline-line {
-        position: absolute;
-        left: 23px;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: var(--md3-outline);
-        border-radius: var(--md3-radius-sm);
-        opacity: 0.5;
-    }
-
-    .timeline-item {
-        position: relative;
-        margin-bottom: var(--md3-spacing-xl);
-        padding: var(--md3-spacing-lg);
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-lg);
-        border: 1px solid var(--md3-outline-variant);
-        box-shadow: var(--md3-elevation-1);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .timeline-item:hover {
-        box-shadow: var(--md3-elevation-2);
-        border-color: var(--md3-primary);
-        transform: translateX(4px);
-    }
-
-    .timeline-item::before {
-        content: '';
-        position: absolute;
-        left: -33px;
-        top: 20px;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: var(--md3-surface);
-        border: 4px solid var(--md3-primary);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        z-index: 1;
-    }
-
-    .timeline-item.approved::before {
-        border-color: #4CAF50;
-        background: #4CAF50;
-        box-shadow: 0 2px 12px rgba(76, 175, 80, 0.4);
-    }
-
-    .timeline-item.rejected::before {
-        border-color: #f44336;
-        background: #f44336;
-        box-shadow: 0 2px 12px rgba(244, 67, 54, 0.4);
-    }
-
-    .timeline-header {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-md);
-    }
-
-    .timeline-time {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--md3-on-surface-variant);
-    }
-
-    .timeline-status {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--md3-spacing-xs);
-        padding: 4px 10px;
-        border-radius: var(--md3-radius-full);
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .timeline-status.approved {
-        background: var(--md3-success-container);
-        color: var(--md3-on-success-container);
-    }
-
-    .timeline-status.rejected {
-        background: var(--md3-error-container);
-        color: var(--md3-on-error-container);
-    }
-
-    .timeline-status.pending {
-        background: var(--md3-warning-container);
-        color: var(--md3-on-warning-container);
-    }
-
-    .timeline-reviewer {
-        font-size: 0.875rem;
-        color: var(--md3-on-surface);
-        font-weight: 500;
-        margin-bottom: var(--md3-spacing-md);
-    }
-
-    .timeline-comment {
-        padding: var(--md3-spacing-md);
-        background: var(--md3-surface-container-high);
-        border-left: 3px solid var(--md3-primary);
-        border-radius: var(--md3-radius-sm);
-        color: var(--md3-on-surface);
-        font-size: 0.9375rem;
-        line-height: 1.6;
-    }
-
-    .timeline-comment.rejected {
-        background: var(--md3-error-container);
-        border-left-color: var(--md3-error);
-        color: var(--md3-on-error-container);
-    }
-
-    /* 空状态 */
-    .empty-state {
-        text-align: center;
-        padding: var(--md3-spacing-2xl);
-        color: var(--md3-on-surface-variant);
-    }
-
-    .empty-state .material-icons {
-        font-size: 3rem;
-        opacity: 0.5;
-        margin-bottom: var(--md3-spacing-md);
-    }
-
-    .empty-state p {
-        font-size: 1rem;
-        margin: 0;
     }
 
     /* 返回按钮 */
@@ -378,66 +251,82 @@
             </div>
             {% endif %}
 
+            {% if item_type == 'reimbursement' %}
+            <div class="info-item">
+                <span class="info-label">提交次数</span>
+                <span class="info-value">{{ item.resubmission_attempt }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">报销日期</span>
+                <span class="info-value">{{ item.submission_date|date:"Y-m-d" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">报销金额</span>
+                <span class="info-value">¥{{ item.reimbursement_amount }}</span>
+            </div>
+            {% endif %}
+
+            {% if item_type == 'activity_application' %}
+            <div class="info-item">
+                <span class="info-label">活动名称</span>
+                <span class="info-value">{{ item.activity_name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">活动类型</span>
+                <span class="info-value">{{ item.get_activity_type_display }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">活动日期</span>
+                <span class="info-value">{{ item.activity_date|date:"Y-m-d" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">活动时间</span>
+                <span class="info-value">{{ item.activity_time_start|time:"H:i" }} - {{ item.activity_time_end|time:"H:i" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">活动地点</span>
+                <span class="info-value">{{ item.activity_location }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">预计参与人数</span>
+                <span class="info-value">{{ item.expected_participants }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">联系人</span>
+                <span class="info-value">{{ item.contact_person }} ({{ item.contact_phone }})</span>
+            </div>
+            {% endif %}
+
             <div class="info-item">
                 <span class="info-label">提交时间</span>
                 <span class="info-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
             </div>
         </div>
-    </div>
-
-    <!-- 审核历史时间轴 -->
-    <div class="timeline-section">
-        <h3 class="timeline-title">
-            <span class="material-icons">history</span>
-            审核历史
-        </h3>
-
-        {% if reviews %}
-        <div class="timeline-container">
-            <div class="timeline-line"></div>
-            {% for review in reviews %}
-            <div class="timeline-item {% if review.status == 'approved' %}approved{% elif review.status == 'rejected' %}rejected{% endif %}">
-                <div class="timeline-header">
-                    <span class="timeline-time">{{ review.reviewed_at|date:"Y-m-d H:i" }}</span>
-                    <span class="timeline-status {% if review.status == 'approved' %}approved{% elif review.status == 'rejected' %}rejected{% elif review.status == 'pending' %}pending{% endif %}">
-                        {% if review.status == 'approved' %}
-                            <span class="material-icons" style="font-size: 0.875rem;">check_circle</span>
-                            已批准
-                        {% elif review.status == 'rejected' %}
-                            <span class="material-icons" style="font-size: 0.875rem;">cancel</span>
-                            已拒绝
-                        {% elif review.status == 'pending' %}
-                            <span class="material-icons" style="font-size: 0.875rem;">schedule</span>
-                            待处理
-                        {% endif %}
-                    </span>
-                </div>
-
-                {% if review.reviewer %}
-                <div class="timeline-reviewer">
-                    审核者：<strong>{{ review.reviewer.profile.get_full_name }}</strong>
-                </div>
-                {% else %}
-                <div class="timeline-reviewer">
-                    审核者：<strong>系统管理员</strong>
-                </div>
-                {% endif %}
-
-                {% if review.comment or review.reviewer_comment %}
-                <div class="timeline-comment {% if review.status == 'rejected' %}rejected{% endif %}">
-                    <strong>审核意见：</strong><br>
-                    {{ review.comment|linebreaks }}
-                </div>
-                {% endif %}
-            </div>
-            {% endfor %}
+        
+        {% if item_type == 'activity_application' and item.activity_description %}
+        <div style="margin-top: var(--md3-spacing-lg); padding-top: var(--md3-spacing-lg); border-top: 1px solid var(--md3-outline-variant);">
+            <span class="info-label">活动描述</span>
+            <p style="margin: var(--md3-spacing-sm) 0 0 0; color: var(--md3-on-surface); line-height: 1.6;">{{ item.activity_description }}</p>
         </div>
-        {% else %}
-        <div class="empty-state">
-            <span class="material-icons">history</span>
-            <p>暂无审核历史记录</p>
+        {% endif %}
+        
+        {% if item_type == 'reimbursement' and item.description %}
+        <div style="margin-top: var(--md3-spacing-lg); padding-top: var(--md3-spacing-lg); border-top: 1px solid var(--md3-outline-variant);">
+            <span class="info-label">报销说明</span>
+            <p style="margin: var(--md3-spacing-sm) 0 0 0; color: var(--md3-on-surface); line-height: 1.6;">{{ item.description }}</p>
         </div>
         {% endif %}
     </div>
+
+    <!-- 审核历史时间线 -->
+    {% if item_type == 'reimbursement' %}
+        {% include 'clubs/components/_review_history.html' with reviews=reviews title="审核历史" current_attempt=item.resubmission_attempt %}
+    {% else %}
+        {% include 'clubs/components/_review_history.html' with reviews=reviews title="审核历史" %}
+    {% endif %}
+
+    <!-- 提交材料部分 -->
+    {% include 'clubs/components/_materials_display.html' with materials=materials title="提交的材料" show_zip=True zip_url=zip_url %}
 </div>
+
 {% endblock %}

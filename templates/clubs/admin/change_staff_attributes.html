@@ -240,10 +240,10 @@
                 <span class="user-info-label">当前角色：</span>
                 <span class="user-info-value">{{ profile.get_role_display }}</span>
             </div>
-            {% if profile.department %}
+            {% if profile.department or profile.department_link %}
             <div class="user-info-item">
                 <span class="user-info-label">当前部门：</span>
-                <span class="user-info-value">{{ profile.get_department_display }}</span>
+                <span class="user-info-value">{{ profile.department_link.name|default:profile.department }}</span>
             </div>
             {% endif %}
             {% if profile.staff_level %}
@@ -266,7 +266,7 @@
                 <select class="form-select" name="department" required>
                     <option value="">-- 选择部门 --</option>
                     {% for value, display in department_choices %}
-                        <option value="{{ value }}" {% if profile.department == value %}selected{% endif %}>
+                        <option value="{{ value }}" {% if profile.department_link.id == value %}selected{% endif %}>
                             {{ display }}
                         </option>
                     {% endfor %}

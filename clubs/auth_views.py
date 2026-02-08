@@ -3,8 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
+from django.conf import settings
 from django.contrib import messages
-from .models import UserProfile, Club, ReviewSubmission, Reimbursement, ClubRegistrationRequest, ClubInfoChangeRequest, RegistrationPeriod, ClubRegistration, StaffClubRelation
+from .models import UserProfile, Club, ReviewSubmission, Reimbursement, ClubRegistrationRequest, RegistrationPeriod, ClubRegistration, StaffClubRelation
 from datetime import datetime
 from django.utils import timezone
 from django.db.models import Q
@@ -71,15 +72,33 @@ def register(request):
         if role not in valid_roles:
             errors.append('无效的角色选择')
         
+        # 部门验证（仅干事）
+        department = None
+        department_obj = None
+        if role == 'staff':
+            department_id = request.POST.get('department', '').strip()
+            if not department_id:
+                errors.append('干事必须选择部门')
+            else:
+                from .models import Department
+                try:
+                    department_obj = Department.objects.get(id=department_id)
+                    department = department_obj.name
+                except (Department.DoesNotExist, ValueError):
+                    errors.append('无效的部门选择')
+
         # 社长必须选择政治面貌
         if role == 'president':
             if not political_status or political_status == '':
                 errors.append('社长必须选择政治面貌')
         
         if errors:
+            from .models import Department
+            departments = Department.objects.all().order_by('order', 'name')
             return render(request, 'clubs/auth/register.html', {
                 'errors': errors,
                 'form_data': request.POST,
+                'departments': departments,
             })
         
         # 创建用户账户
@@ -106,13 +125,17 @@ def register(request):
             student_id=student_id,
             phone=phone,
             wechat=wechat,
-            political_status=political_status if role == 'president' else 'non_member'
+            political_status=political_status if role == 'president' else 'non_member',
+            department=department,  # 保存部门名称
+            department_link=department_obj  # 保存部门关联
         )
         
         messages.success(request, message_text)
         return redirect('clubs:login')
     
-    return render(request, 'clubs/auth/register.html')
+    from .models import Department
+    departments = Department.objects.all().order_by('order', 'name')
+    return render(request, 'clubs/auth/register.html', {'departments': departments})
 
 
 def user_login(request):
@@ -133,7 +156,7 @@ def user_login(request):
         lock_key_user = f'login_lock:user:{username}'
         lock_key_ip = f'login_lock:ip:{client_ip}'
         if cache.get(lock_key_user) or cache.get(lock_key_ip):
-            messages.error(request, '登录尝试过多，请等待5分钟后再试，或联系管理员重置密码。')
+            messages.error(request, '登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！')
             return render(request, 'clubs/auth/login.html', {
                 'username': username,
                 'show_admin_reset_prompt': True,
@@ -164,11 +187,11 @@ def user_login(request):
                 if user.profile.role == 'admin':
                     return redirect('clubs:admin_dashboard')
                 elif user.profile.role == 'staff':
-                    return redirect('clubs:staff_dashboard')
+                    return redirect('clubs:index')  # 干事跳转首页
                 elif user.profile.role == 'president':
                     return redirect('clubs:user_dashboard')
                 else:
-                    return redirect('clubs:index')  # 普通用户跳转首页
+                    return redirect('clubs:index')  # 默认跳转首页
             except UserProfile.DoesNotExist:
                 login(request, user)
                 return redirect('clubs:index')
@@ -186,7 +209,7 @@ def user_login(request):
             cache.set(attempts_key_user, user_attempts, LOGIN_WINDOW_SECONDS)
             cache.set(attempts_key_ip, ip_attempts, LOGIN_WINDOW_SECONDS)
 
-            # 如果达到阈值，则设锁
+            # 如果达到阈值，则设置锁定
             if user_attempts >= MAX_LOGIN_ATTEMPTS:
                 cache.set(lock_key_user, True, LOGIN_WINDOW_SECONDS)
                 cache.delete(attempts_key_user)
@@ -196,7 +219,7 @@ def user_login(request):
 
             # 如果已经被锁定，提示联系管理员重置密码
             if cache.get(lock_key_user) or cache.get(lock_key_ip):
-                messages.error(request, '登录尝试过多，请等待5分钟后再试，或联系管理员重置密码。')
+                messages.error(request, '登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！')
                 from django.conf import settings
                 return render(request, 'clubs/auth/login.html', {
                     'username': username,
@@ -255,8 +278,8 @@ def delete_account(request):
             
             elif user.profile.role == 'staff':
                 # 干事账户删除逻辑 - 完整清除所有数据
-                # 1. 先删除干事在所有社团中的角色关联
-                from clubs.models import Officer, SubmissionReview
+                # 1. 先删除干事在所有社团中的角色关系
+                from .models import Officer, SubmissionReview
                 
                 # 删除干事在社团中的干部记录
                 Officer.objects.filter(user_profile=user.profile).delete()
@@ -277,7 +300,7 @@ def delete_account(request):
             return redirect('clubs:index')
         else:
             # 显示错误消息
-            messages.error(request, '用户名输入错误，账户删除失败！')
+            messages.error(request, '用户名输入错误，账户删除失败。')
             
             # 重定向回修改账户设置页面
             return redirect('clubs:change_account_settings')
@@ -288,87 +311,72 @@ def delete_account(request):
 
 @login_required(login_url='clubs:login')
 def user_dashboard(request):
-    """用户仪表板 - 显示该用户的社团"""
+    """用户仪表盘 - 显示该用户的社团"""
     user = request.user
 
-    # 统一导入相关模型，避免 UnboundLocalError
-    from .models import ClubRegistration, RegistrationPeriod, StaffClubRelation, ClubRegistrationRequest, Reimbursement, ActivityApplication, PresidentTransition
+    # 统一导入相关模型，避免UnboundLocalError
+    from .models import ClubRegistration, RegistrationPeriod, StaffClubRelation, ClubRegistrationRequest, Reimbursement, ActivityApplication, PresidentTransition, Officer
 
     # 检查用户角色
     try:
         profile = user.profile
         if profile.role == 'staff':
-            return redirect('clubs:staff_dashboard')
+            return redirect('clubs:index')
     except UserProfile.DoesNotExist:
         return redirect('clubs:login')
 
     # 获取该社长的社团
     clubs = user.clubs_as_president.all()
+    
+    # 获取用户作为社长的社团列表（用于统计待审批数量）
+    president_clubs = Officer.objects.filter(
+        user_profile=user.profile, 
+        position='president', 
+        is_current=True
+    ).values_list('club', flat=True)
 
     # 检查每个社团是否已提交当前年度的年审
     current_year = datetime.now().year
     clubs_with_submission_status = []
+    
+    # 计算各类待审批数量（pending和rejected状态表示需要关注的申请）
+    annual_review_count = ReviewSubmission.objects.filter(
+        club__in=president_clubs, 
+        status__in=['pending', 'rejected']
+    ).count()
+    registration_count = ClubRegistration.objects.filter(
+        club__in=president_clubs, 
+        status__in=['pending', 'rejected']
+    ).count()
+    application_count = ClubRegistrationRequest.objects.filter(
+        requested_by=user, 
+        status__in=['pending', 'rejected']
+    ).count()
+    reimbursement_count = Reimbursement.objects.filter(
+        club__in=president_clubs, 
+        status__in=['pending', 'rejected', 'partially_rejected']
+    ).count()
+    activity_count = ActivityApplication.objects.filter(
+        club__in=president_clubs, 
+        status__in=['pending', 'rejected']
+    ).count()
+    transition_count = PresidentTransition.objects.filter(
+        club__in=president_clubs, 
+        status__in=['pending', 'rejected']
+    ).count()
+    
     unread_approval_counts = {
-        'annual_review': 0,
-        'registration': 0,
-        'application': 0,
-        'reimbursement': 0,
-        'activity': 0,
-        'transition': 0,
-        'total': 0
+        'annual_review': annual_review_count,
+        'registration': registration_count,
+        'application': application_count,
+        'reimbursement': reimbursement_count,
+        'activity': activity_count,
+        'transition': transition_count,
+        'total': annual_review_count + registration_count + application_count + reimbursement_count + activity_count + transition_count
     }
+    # 社团卡片数据
+    from .models import RegistrationPeriod, ClubRegistration, StaffClubRelation
     for club in clubs:
-        # 年审未读
-        unread_annual_review = ReviewSubmission.objects.filter(
-            club=club,
-            status__in=['approved', 'rejected'],
-            reviewed_at__isnull=False,
-            is_read_by_president=False
-        ).count()
-        # 注册未读
-        unread_registration = ClubRegistration.objects.filter(
-            club=club,
-            status__in=['approved', 'rejected'],
-            reviewed_at__isnull=False,
-            is_read=False
-        ).count()
-        # 申请未读（如 ClubRegistrationRequest）
-        unread_application = ClubRegistrationRequest.objects.filter(
-            president_id=getattr(club, 'president_id', None),
-            status__in=['approved', 'rejected'],
-            reviewed_at__isnull=False,
-            is_read=False
-        ).count()
-        # 报销未读
-        unread_reimbursement = Reimbursement.objects.filter(
-            club=club,
-            status__in=['approved', 'rejected'],
-            reviewed_at__isnull=False,
-            is_read=False
-        ).count()
-        # 活动申请未读
-        unread_activity = ActivityApplication.objects.filter(
-            club=club,
-            status__in=['approved', 'rejected'],
-            reviewed_at__isnull=False,
-            is_read=False
-        ).count()
-        # 社长换届未读
-        unread_transition = PresidentTransition.objects.filter(
-            club=club,
-            status__in=['approved', 'rejected'],
-            reviewed_at__isnull=False,
-            is_read=False
-        ).count()
-        # 统计
-        unread_approval_counts['annual_review'] += unread_annual_review
-        unread_approval_counts['registration'] += unread_registration
-        unread_approval_counts['application'] += unread_application
-        unread_approval_counts['reimbursement'] += unread_reimbursement
-        unread_approval_counts['activity'] += unread_activity
-        unread_approval_counts['transition'] += unread_transition
-        # 社团卡片数据
-        from .models import RegistrationPeriod, ClubRegistration, StaffClubRelation
         has_submitted_review = ReviewSubmission.objects.filter(
             club=club,
             submission_year=current_year
@@ -398,12 +406,10 @@ def user_dashboard(request):
             'has_submitted_review': has_submitted_review,
             'has_submitted_registration': has_submitted_registration,
             'assigned_staff': assigned_staff,
-            'unread_submissions_count': unread_annual_review + unread_registration + unread_application + unread_reimbursement + unread_activity + unread_transition,
             'review_enabled': club.review_enabled,
             'registration_enabled': club.registration_enabled
         }
         clubs_with_submission_status.append(club_data)
-    unread_approval_counts['total'] = unread_approval_counts['annual_review'] + unread_approval_counts['registration'] + unread_approval_counts['application'] + unread_approval_counts['reimbursement'] + unread_approval_counts['activity'] + unread_approval_counts['transition']
     context = {
         'user': user,
         'clubs': clubs,
@@ -417,7 +423,7 @@ def user_dashboard(request):
 
 @login_required(login_url='clubs:login')
 def staff_dashboard(request):
-    """干事仪表板 - 活动审核中心（干事和管理员可用）"""
+    """干事仪表盘 - 活动审核中心（干事和管理员可用）"""
     user = request.user
     
     # 检查用户角色
@@ -433,7 +439,7 @@ def staff_dashboard(request):
     # 导入所需的模型
     from .models import (
         ActivityApplication, ReviewSubmission, ClubRegistrationRequest,
-        ClubRegistration, ClubInfoChangeRequest, Reimbursement, PresidentTransition,
+        ClubRegistration, Reimbursement, PresidentTransition,
         StaffClubRelation, Club, RegistrationPeriod
     )
     from datetime import datetime
@@ -441,7 +447,7 @@ def staff_dashboard(request):
     # 获取待审核的数据 - 使用模板中期望的变量名
     pending_submissions = ReviewSubmission.objects.filter(status='pending').order_by('-submitted_at')
     pending_club_registrations = ClubRegistration.objects.filter(status='pending').order_by('-submitted_at')
-    pending_club_info_changes = ClubInfoChangeRequest.objects.filter(status='pending').order_by('-submitted_at')
+
     pending_reimbursements = Reimbursement.objects.filter(status='pending').order_by('-submitted_at')
     # 活动申请 - 获取干事还未审核的申请
     pending_activity_applications = ActivityApplication.objects.filter(
@@ -454,7 +460,7 @@ def staff_dashboard(request):
     for item in pending_submissions:
         item.review_url = f'/clubs/staff/review-submission/{item.id}/'
     for item in pending_club_registrations:
-        item.review_url = f'/clubs/staff/review-club-registration/{item.id}/'
+        item.review_url = f'/clubs/staff/application/{item.id}/'
     for item in pending_registrations:
         item.review_url = f'/clubs/staff/review-club-registration-submission/{item.id}/'
     for item in pending_reimbursements:
@@ -468,7 +474,7 @@ def staff_dashboard(request):
     pending_counts = {
         'submissions': pending_submissions.count(),
         'club_registrations': pending_club_registrations.count(),
-        'club_info_changes': pending_club_info_changes.count(),
+
         'reimbursements': pending_reimbursements.count(),
         'activity_applications': pending_activity_applications.count(),
         'president_transitions': pending_president_transitions.count(),
@@ -484,7 +490,7 @@ def staff_dashboard(request):
         is_active=True
     ).values_list('club_id', flat=True)
     
-    # 获取成员数少于20人的社团，并预加载负责干事信息（排除停止状态的社团）
+    # 获取成员数少20人的社团，并预加载负责干事信息（排除停止状态的社团）
     clubs_with_low_members = Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count').prefetch_related('responsible_staff', 'responsible_staff__staff')
     
     # 获取所有社团
@@ -529,7 +535,7 @@ def staff_dashboard(request):
     context = {
         'pending_submissions': pending_submissions,
         'pending_club_registrations': pending_club_registrations,
-        'pending_club_info_changes': pending_club_info_changes,
+
         'pending_reimbursements': pending_reimbursements,
         'pending_activity_applications': pending_activity_applications,
         'pending_president_transitions': pending_president_transitions,
@@ -547,19 +553,19 @@ def staff_dashboard(request):
         'clubs_not_registered': clubs_not_registered,
         'clubs_not_registered_my': clubs_not_registered_my,
         'clubs_not_registered_other': clubs_not_registered_other,
-        'clubs_not_registered_count': clubs_not_registered.count() if clubs_not_registered else 0,
+        'clubs_not_registered_count': clubs_not_registered.count() if hasattr(clubs_not_registered, 'count') else len(clubs_not_registered) if clubs_not_registered else 0,  # type: ignore
         'all_review_enabled': all_review_enabled,
         'all_registration_enabled': all_registration_enabled,
         # 为stats-grid卡片添加单独的计数变量
-        'pending_submissions_count': pending_counts['submissions'],
-        'pending_reimbursements_count': pending_counts['reimbursements'],
-        'pending_registrations_count': pending_counts['registrations'],
+        'pending_submissions_count': pending_counts.get('submissions', 0),
+        'pending_reimbursements_count': pending_counts.get('reimbursements', 0),
+        'pending_registrations_count': pending_counts.get('registrations', 0),
         'pending_club_registrations_count': pending_counts['club_registrations'],
         'pending_activity_applications_count': pending_counts['activity_applications'],
         'pending_president_transitions_count': pending_counts['president_transitions'],
     }
     
-    return render(request, 'clubs/staff/dashboard.html', context)
+    return render(request, 'clubs/staff/home.html', context)
 
 
 @login_required(login_url='clubs:login')
@@ -670,7 +676,7 @@ def manage_staff_clubs(request):
             except Club.DoesNotExist:
                 pass
         
-        messages.success(request, '负责社团设置成功！')
+        messages.success(request, '负责社团设置成功')
         return redirect('clubs:manage_staff_clubs')
     
     # 获取所有社团
@@ -699,20 +705,30 @@ def edit_profile(request):
     if request.method == 'POST':
         # 获取表单数据
         real_name = request.POST.get('real_name', '').strip()
-        email = request.POST.get('email', '').strip()
+        email = request.POST.get('email', '').strip().lower()  # 邮箱统一转小写以便比较
         phone = request.POST.get('phone', '').strip()
         wechat = request.POST.get('wechat', '').strip()
         student_id = request.POST.get('student_id', '').strip()
         political_status = request.POST.get('political_status', '')
-        is_info_public = request.POST.get('is_info_public') == 'on'
+        # 修复：checkbox 未勾选时值为 'off'，需要检查是否存在且值为 'on'
+        is_info_public = 'is_info_public' in request.POST
         
         errors = []
         
         # 验证
         if not real_name:
             errors.append('真实姓名不能为空')
-        if email and User.objects.filter(email=email).exclude(pk=user.pk).exists():
-            errors.append('邮箱已被其他用户注册')
+        # 邮箱是可选的，但如果填写了就要检查是否被其他用户使用
+        if email:
+            # 检查邮箱格式
+            if '@' not in email:
+                errors.append('请输入有效的邮箱地址')
+            # 检查邮箱是否已被其他用户注册（排除当前用户）
+            # 使用 iexact 进行不区分大小写的查询
+            elif User.objects.filter(email__iexact=email).exclude(id=user.id).exists():
+                # 检查当前用户是否已经使用了这个邮箱（这样就允许保持不变）
+                if user.email.lower() != email:
+                    errors.append('邮箱已被其他用户注册')
         if not phone:
             errors.append('电话不能为空')
         if not wechat:
@@ -757,7 +773,7 @@ def edit_profile(request):
     return render(request, 'clubs/user/edit_profile.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def staff_management(request):
     """干事社团管理页面（干事和管理员可用）"""
     user = request.user
@@ -795,7 +811,7 @@ def staff_management(request):
             Q(president__profile__real_name__icontains=q)
         )
 
-    paginator = Paginator(clubs_qs, 20)  # 每页20条
+    paginator = Paginator(clubs_qs, 20)  # 每页20个
     page_number = request.GET.get('page')
     clubs_page = paginator.get_page(page_number)
     
@@ -806,7 +822,7 @@ def staff_management(request):
         is_active=True
     ).values_list('club_id', flat=True)
     
-    # 获取成员数少于20人的社团（排除停止状态的社团）
+    # 获取成员数少20人的社团（排除停止状态的社团）
     clubs_with_low_members = Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count').prefetch_related('responsible_staff', 'responsible_staff__staff')
     
     # 获取当前年份
@@ -825,6 +841,25 @@ def staff_management(request):
     clubs_enabled_review_not_submitted_my = clubs_enabled_review_not_submitted.filter(id__in=staff_club_ids)
     clubs_enabled_review_not_submitted_other = clubs_enabled_review_not_submitted.exclude(id__in=staff_club_ids)
     
+    # 注册未交预警逻辑
+    clubs_enabled_registration_not_submitted = Club.objects.none()
+    clubs_enabled_registration_not_submitted_my = Club.objects.none()
+    clubs_enabled_registration_not_submitted_other = Club.objects.none()
+    
+    if active_registration_period:
+        # 获取已开启注册的社团（排除停止状态的社团）
+        enabled_registration_clubs = Club.objects.filter(registration_enabled=True).exclude(status='suspended')
+        # 获取已提交本周期注册的社团ID
+        submitted_registration_ids = ClubRegistration.objects.filter(
+            club__in=enabled_registration_clubs,
+            registration_period=active_registration_period
+        ).values_list('club_id', flat=True)
+        # 获取已开启注册但未提交的社团
+        clubs_enabled_registration_not_submitted = enabled_registration_clubs.exclude(id__in=submitted_registration_ids).prefetch_related('responsible_staff')
+        # 分别获取当前干事负责的和其他的未提交注册社团
+        clubs_enabled_registration_not_submitted_my = clubs_enabled_registration_not_submitted.filter(id__in=staff_club_ids)
+        clubs_enabled_registration_not_submitted_other = clubs_enabled_registration_not_submitted.exclude(id__in=staff_club_ids)
+    
     context = {
         'all_review_enabled': all_review_enabled,
         'all_registration_enabled': all_registration_enabled,
@@ -837,13 +872,16 @@ def staff_management(request):
         'clubs_enabled_review_not_submitted': clubs_enabled_review_not_submitted,
         'clubs_enabled_review_not_submitted_my': clubs_enabled_review_not_submitted_my,
         'clubs_enabled_review_not_submitted_other': clubs_enabled_review_not_submitted_other,
+        'clubs_enabled_registration_not_submitted': clubs_enabled_registration_not_submitted,
+        'clubs_enabled_registration_not_submitted_my': clubs_enabled_registration_not_submitted_my,
+        'clubs_enabled_registration_not_submitted_other': clubs_enabled_registration_not_submitted_other,
         'current_year': current_year,
     }
     
     return render(request, 'clubs/staff/management.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def verify_email(request):
     """邮箱验证视图"""
     user = request.user
@@ -888,7 +926,7 @@ def verify_email(request):
     return render(request, 'clubs/auth/verify_email.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def resend_verification_code(request):
     """重新发送验证码"""
     from .email_utils import send_verification_email
@@ -923,7 +961,7 @@ def resend_verification_code(request):
     
     return redirect('clubs:verify_email')
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['GET', 'POST'])
 def manage_department_staff(request):
     """部长管理本部门人员 - 仅部长可用"""
@@ -933,30 +971,40 @@ def manage_department_staff(request):
         profile = user.profile
         if profile.role != 'staff' or profile.staff_level != 'director':
             messages.error(request, '您没有权限访问此页面，仅部长可以管理本部门人员')
-            return redirect('clubs:staff_dashboard')
+            return redirect('clubs:index')
     except UserProfile.DoesNotExist:
         messages.error(request, '用户角色未配置')
         return redirect('clubs:login')
     
-    department = profile.department
+    department_link = profile.department_link
+    department_name = profile.department
     
-    if not department:
+    if not department_link and not department_name:
         messages.error(request, '您的部门信息未配置，无法管理部门人员')
-        return redirect('clubs:staff_dashboard')
+        return redirect('clubs:index')
     
     # 获取本部门的所有干事
-    department_staff = UserProfile.objects.filter(
-        role='staff',
-        department=department
-    ).select_related('user').order_by('staff_level', 'user__username')
+    # 优先使用关联对象筛选，如果不存在则降级使用名称筛选
+    if department_link:
+        department_staff = UserProfile.objects.filter(
+            role='staff',
+            department_link=department_link
+        ).select_related('user').order_by('staff_level', 'user__username')
+        current_dept_name = department_link.name
+    else:
+        department_staff = UserProfile.objects.filter(
+            role='staff',
+            department=department_name
+        ).select_related('user').order_by('staff_level', 'user__username')
+        current_dept_name = department_name
     
     # 分类统计
     directors = department_staff.filter(staff_level='director')
     members = department_staff.filter(staff_level='member')
     
     context = {
-        'department': profile.get_department_display(),
-        'department_key': department,
+        'department': current_dept_name,
+        'department_key': current_dept_name,
         'all_staff': department_staff,
         'directors': directors,
         'members': members,
@@ -968,7 +1016,7 @@ def manage_department_staff(request):
 @login_required
 def staff_dashboard_home(request):
     """干事和管理员主页 - 显示部门介绍"""
-    from .models import DepartmentIntroduction
+    from .models import Department
     
     profile = request.user.profile
     
@@ -978,7 +1026,7 @@ def staff_dashboard_home(request):
         return redirect('clubs:index')
     
     # 获取所有部门介绍
-    departments = DepartmentIntroduction.objects.all().order_by('department')
+    departments = Department.objects.all().order_by('order', 'name')
     
     # 获取组织统计
     total_staff = UserProfile.objects.filter(role='staff', status='approved').count()
@@ -994,53 +1042,3 @@ def staff_dashboard_home(request):
     }
     
     return render(request, 'clubs/staff/home.html', context)
-
-
-@login_required
-@require_http_methods(["GET", "POST"])
-def edit_department_intro(request, department):
-    """编辑部门介绍（仅管理员）"""
-    from .models import DepartmentIntroduction
-    
-    profile = request.user.profile
-    
-    # 只允许管理员编辑
-    if profile.role != 'admin':
-        messages.error(request, '无权编辑部门介绍')
-        return redirect('clubs:staff_dashboard_home')
-    
-    dept_intro = DepartmentIntroduction.objects.filter(department=department).first()
-    
-    if request.method == 'POST':
-        description = request.POST.get('description', '').strip()
-        highlights = request.POST.get('highlights', '').strip()
-        icon = request.POST.get('icon', 'work').strip()
-        
-        if not description:
-            messages.error(request, '职责描述不能为空')
-        else:
-            if dept_intro:
-                dept_intro.description = description
-                dept_intro.highlights = highlights
-                dept_intro.icon = icon
-                dept_intro.updated_by = request.user
-                dept_intro.save()
-                messages.success(request, f'{dept_intro.get_department_display()}介绍已更新')
-            else:
-                dept_intro = DepartmentIntroduction.objects.create(
-                    department=department,
-                    description=description,
-                    highlights=highlights,
-                    icon=icon,
-                    updated_by=request.user
-                )
-                messages.success(request, f'{dept_intro.get_department_display()}介绍已创建')
-            
-            return redirect('clubs:staff_dashboard_home')
-    
-    context = {
-        'dept_intro': dept_intro,
-        'department': department,
-    }
-    
-    return render(request, 'clubs/staff/edit_department_intro.html', context)

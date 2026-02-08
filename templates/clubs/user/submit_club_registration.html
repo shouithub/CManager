@@ -1,135 +1,366 @@
 {% extends 'clubs/base.html' %}
+{% load custom_filters %}
+
+{% block title %}提交社团注册{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+    }
+    
+    @media (max-width: 768px) {
+        .form-container {
+            padding-bottom: calc(var(--md3-spacing-2xl) + 100px) !important;
+        }
+    }
+    
+    /* .form-header removed in favor of global .page-header */
+    
+    .form-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .form-section {
+        margin-bottom: var(--md3-spacing-2xl);
+        padding-bottom: var(--md3-spacing-2xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+    
+    .form-section:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .form-section h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: var(--md3-spacing-lg);
+        color: var(--md3-primary);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .form-section h2 .material-icons {
+        font-size: 1.5rem;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-group label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+    }
+    
+    .form-group label .required {
+        color: var(--md3-error);
+    }
+    
+    .form-group input[type="file"],
+    .form-group textarea,
+    .form-group select {
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        background: var(--md3-surface-container-highest);
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+    }
+    
+    .form-group input[type="file"]:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+    
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    .form-hint {
+        font-size: 0.8125rem;
+        color: var(--md3-on-surface-variant);
+        margin-top: var(--md3-spacing-xs);
+    }
+    
+    .info-banner {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-xl);
+        border-left: 4px solid var(--md3-primary);
+        display: flex;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .info-banner .material-icons {
+        flex-shrink: 0;
+        font-size: 1.5rem;
+    }
+    
+    .info-banner p {
+        margin: 0;
+        font-size: 0.9375rem;
+        line-height: 1.5;
+    }
+    
+    .template-list {
+        background: var(--md3-surface-container-low);
+        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .template-list h3 {
+        margin: 0 0 var(--md3-spacing-md) 0;
+        color: var(--md3-primary);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .template-list h3 .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    .template-list ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .template-list li {
+        padding: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-xs);
+    }
+    
+    .template-list a {
+        color: var(--md3-primary);
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .template-list a:hover {
+        text-decoration: underline;
+    }
+    
+    .template-list a .material-icons {
+        font-size: 1rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-2xl);
+        justify-content: flex-end;
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+        padding: 10px 24px;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+        padding: 10px 24px;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .btn-primary .material-icons,
+    .btn-secondary .material-icons {
+        font-size: 1.125rem;
+    }
+    
+    .error-message {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-lg);
+        border-left: 4px solid var(--md3-error);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .error-message .material-icons {
+        flex-shrink: 0;
+        font-size: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .form-container {
+            padding: var(--md3-spacing-lg);
+            padding-bottom: calc(var(--md3-spacing-lg) + 50px);
+        }
+        
+        .form-card {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .form-header {
+            padding: var(--md3-spacing-lg);
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .form-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons button, 
+        .action-buttons a {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5 card shadow">
-        <div class="card-header">
-            <h3><span class="material-icons" style="vertical-align: middle;">assignment</span> 提交社团注册材料</h3>
+<div class="form-container">
+    <!-- 表单头部 -->
+    <div class="page-header">
+        <span class="material-icons">folder_open</span>
+        <div class="page-header-content">
+            <h1>提交社团注册</h1>
+            <p class="subtitle">请按照要求上传相关材料</p>
         </div>
-        
-        <!-- 提交说明 -->
-        <div style="background-color: #d1ecf1; padding: 15px; border-radius: 4px; margin: 15px; border: 1px solid #bee5eb;">
-            <h5 style="margin-top: 0; color: #0c5460;">ℹ️ 提交说明</h5>
-            <p>请下载相应模板并填写完整后上传。所有标记为<span style="color: red;">*</span>的字段为必填项。</p>
-            <p><strong>注意：</strong>所有文件必须为Word格式(.doc或.docx)。</p>
-        </div>
-        
-        <!-- 模板下载提示 - 按板块分类 -->
-        {% if registration_templates %}
-        <div style="background-color: #e8f4f8; padding: 15px; border-radius: 4px; margin: 15px;">
-            <h4 style="margin-top: 0;">📄 可用模板</h4>
-            
-            <!-- 注册申请表单模板 -->
-            <div style="margin: 10px 0;">
-                <h5 style="margin: 5px 0; color: #0066cc;"><span class="material-icons" style="vertical-align: middle; font-size: 1em;">assignment</span> 注册申请表单模板</h5>
-                <ul style="margin: 5px 0; padding-left: 20px;">
-                    {% for template in registration_templates %}
-                        <li>
-                            <a href="{{ template.file.url }}" download>{{ template.name }}</a>
-                            {% if template.description %} - {{ template.description }}{% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-        {% endif %}
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        
+    </div>
 
+    <!-- 提交说明 -->
+    <div class="info-banner">
+        <span class="material-icons">info</span>
+        <p>请下载相应模板并填写完整后上传。所有标记为 <span style="color: var(--md3-error); font-weight: 600;">*</span> 的字段为必填项。</p>
+    </div>
 
-            <div class="card-body">
-                <!-- 社团注册申请表 -->
-                <div class="form-group mb-5">
-                    <label for="registration_form" class="form-label" style="font-weight: bold; color: #333;">
-                        📄 1. 社团注册申请表 <span class="text-danger">*</span>
-                    </label>
-                    <input type="file" name="registration_form" id="registration_form" class="form-control" required accept=".doc,.docx">
-                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
-                </div>
-                
-                <!-- 学生社团基础信息表 -->
-                <div class="form-group mb-5">
-                    <label for="basic_info_form" class="form-label" style="font-weight: bold; color: #333;">
-                        ℹ️ 2. 学生社团基础信息表 <span class="text-danger">*</span>
-                    </label>
-                    <input type="file" name="basic_info_form" id="basic_info_form" class="form-control" required accept=".doc,.docx">
-                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
-                </div>
-                
-                <!-- 三会费表或免收会费说明书 -->
-                <div class="form-group mb-5">
-                    <label for="membership_fee_form" class="form-label" style="font-weight: bold; color: #333;">
-                        <span class="material-icons" style="vertical-align: middle; font-size: 1em;">attach_money</span> 3. 会费表或免收会费说明书 <span class="text-danger">*</span>
-                    </label>
-                    <input type="file" name="membership_fee_form" id="membership_fee_form" class="form-control" required accept=".doc,.docx">
-                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
-                </div>
-                
-                <!-- 选填的社团主要负责人变动申请 -->
-                <div class="form-group mb-5">
-                    <label for="leader_change_application" class="form-label" style="font-weight: bold; color: #333;">
-                        <span class="material-icons">person</span> 4. 社团主要负责人变动申请（选填）
-                    </label>
-                    <input type="file" name="leader_change_application" id="leader_change_application" class="form-control" accept=".doc,.docx">
-                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
-                </div>
-                
-                <!-- 选填的社团大会会议记录 -->
-                <div class="form-group mb-5">
-                    <label for="meeting_minutes" class="form-label" style="font-weight: bold; color: #333;">
-                        <span class="material-icons" style="vertical-align: middle; font-size: 1em;">edit</span> 5. 社团大会会议记录（选填）
-                    </label>
-                    <input type="file" name="meeting_minutes" id="meeting_minutes" class="form-control" accept=".doc,.docx">
-                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
-                </div>
-                
-                <!-- 选填的社团名称变更申请表 -->
-                <div class="form-group mb-5">
-                    <label for="name_change_application" class="form-label" style="font-weight: bold; color: #333;">
-                        📛 6. 社团名称变更申请表（选填）
-                    </label>
-                    <input type="file" name="name_change_application" id="name_change_application" class="form-control" accept=".doc,.docx">
-                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
-                </div>
-                
-                <!-- 选填的社团指导老师变动申请表 -->
-                <div class="form-group mb-5">
-                    <label for="advisor_change_application" class="form-label" style="font-weight: bold; color: #333;">
-                        <span class="material-icons">school</span> 7. 社团指导老师变动申请表（选填）
-                    </label>
-                    <input type="file" name="advisor_change_application" id="advisor_change_application" class="form-control" accept=".doc,.docx">
-                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
-                </div>
-                
-                <!-- 选填的社团业务指导单位变动申请表 -->
-                <div class="form-group mb-5">
-                    <label for="business_advisor_change_application" class="form-label" style="font-weight: bold; color: #333;">
-                        🏢 8. 社团业务指导单位变动申请表（选填）
-                    </label>
-                    <input type="file" name="business_advisor_change_application" id="business_advisor_change_application" class="form-control" accept=".doc,.docx">
-                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
-                </div>
-                
-                <!-- 新媒体平台建立申请表 -->
-                <div class="form-group mb-5">
-                    <label for="new_media_application" class="form-label" style="font-weight: bold; color: #333;">
-                        💻 9. 新媒体平台建立申请表（选填）
-                    </label>
-                    <input type="file" name="new_media_application" id="new_media_application" class="form-control" accept=".doc,.docx">
-                    <small class="form-text text-muted">支持DOC、DOCX格式</small>
-                </div>
-                
-                <div class="d-flex justify-content-between">
-                    <button type="submit" class="btn btn-primary btn-lg" style="background-color: #0066cc; border-color: #0066cc;">
-                        <i class="fas fa-paper-plane"></i> 提交注册
-                    </button>
-                    <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-secondary btn-lg">
-                        <i class="fas fa-times"></i> 取消
+    {% if messages %}
+    <div class="error-message">
+        <span class="material-icons">error</span>
+        <div>
+            {% for message in messages %}
+                <p style="margin: 0;">{{ message }}</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 模板下载 -->
+    {% if registration_templates %}
+    <div class="template-list">
+        <h3><span class="material-icons">download</span> 可用模板</h3>
+        <ul>
+            {% for template in registration_templates %}
+                <li>
+                    <a href="{{ template.file.url }}" download>
+                        <span class="material-icons">file_download</span>
+                        {{ template.name }}
                     </a>
+                    {% if template.description %}<span style="color: var(--md3-on-surface-variant); margin-left: 8px;">{{ template.description }}</span>{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- 表单 -->
+    <form method="post" enctype="multipart/form-data" class="form-card">
+        {% csrf_token %}
+
+        <!-- 动态材料部分 -->
+        <div class="form-section">
+            <h2>
+                <span class="material-icons">folder</span>
+                上传材料
+            </h2>
+            
+            {% for req in requirements %}
+            <div class="form-row">
+                <div class="form-group">
+                    {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon="folder" %}
                 </div>
             </div>
+            {% empty %}
+            <p>暂无材料要求</p>
+            {% endfor %}
+        </div>
 
-
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            <a href="javascript:history.back()" class="btn-secondary">
+                <span class="material-icons">arrow_back</span>
+                返回
+            </a>
+            <button type="submit" class="btn-primary">
+                <span class="material-icons">check_circle</span>
+                提交申请
+            </button>
+        </div>
     </form>
 </div>
 {% endblock %}

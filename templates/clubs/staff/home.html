@@ -287,10 +287,10 @@
                     <span class="material-icons">{{ dept.icon }}</span>
                 </div>
                 <div class="dept-header-content">
-                    <h2 class="dept-name">{{ dept.get_department_display }}</h2>
+                    <h2 class="dept-name">{{ dept.name }}</h2>
                     <div class="dept-meta">
                         <span class="material-icons" style="font-size: 1rem;">schedule</span>
-                        更新于 {{ dept.updated_at|date:"Y-m-d" }}
+                        更新于{{ dept.updated_at|date:"Y-m-d" }}
                     </div>
                 </div>
             </div>
@@ -305,7 +305,7 @@
             </div>
             {% if can_edit %}
             <div class="dept-footer">
-                <a href="{% url 'clubs:edit_department_intro' dept.department %}" class="btn-edit">
+                <a href="{% url 'clubs:edit_department' dept.id %}" class="btn-edit">
                     <span class="material-icons">edit</span>
                     <span>编辑</span>
                 </a>

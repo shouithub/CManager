@@ -192,8 +192,8 @@
     }
 
     .status-badge.approved {
-        background: var(--md3-tertiary-container);
-        color: var(--md3-on-tertiary-container);
+        background: var(--md3-success-container, #d1fae5);
+        color: var(--md3-on-success-container, #065f46);
     }
 
     .status-badge.rejected {
@@ -204,6 +204,11 @@
     .status-badge.pending {
         background: var(--md3-secondary-container);
         color: var(--md3-on-secondary-container);
+    }
+
+    .status-badge.reviewing {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
     }
 
     .status-badge.partially-rejected {
@@ -275,6 +280,159 @@
         font-size: 0.875rem;
     }
 
+    /* 导出弹窗样式 */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-3);
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        display: flex;
+        align-items: center;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--md3-on-surface-variant);
+        padding: var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        transition: background 0.2s;
+    }
+
+    .modal-close:hover {
+        background: var(--md3-surface-container-highest);
+    }
+
+    .modal-body {
+        padding: var(--md3-spacing-xl);
+    }
+
+    .form-group {
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: var(--md3-spacing-sm);
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        font-size: 0.875rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 2px rgba(var(--md3-primary-rgb), 0.1);
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-xl);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+    }
+
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+    }
+
+    /* 自动完成下拉列表样式 */
+    .autocomplete-items {
+        position: absolute;
+        border: 1px solid var(--md3-outline);
+        border-top: none;
+        z-index: 99;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 200px;
+        overflow-y: auto;
+        background: var(--md3-surface-container);
+        border-radius: 0 0 var(--md3-radius-md) var(--md3-radius-md);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .autocomplete-items div {
+        padding: var(--md3-spacing-md);
+        cursor: pointer;
+        border-bottom: 1px solid var(--md3-outline-variant);
+        color: var(--md3-on-surface);
+    }
+
+    .autocomplete-items div:hover {
+        background: var(--md3-surface-container-high);
+    }
+
+    .autocomplete-active {
+        background: var(--md3-primary-container) !important;
+        color: var(--md3-on-primary-container) !important;
+    }
+
+    .autocomplete-container {
+        position: relative;
+    }
+
+    /* 确保按钮内的Material Icons字体正确显示 */
+    .btn .material-icons {
+        font-family: 'Material Icons' !important;
+        color: currentColor;
+    }
+
+    .btn-primary .material-icons {
+        color: var(--md3-on-primary);
+    }
+
     @media (max-width: 768px) {
         .approval-container { 
             padding: var(--md3-spacing-lg); 
@@ -286,14 +444,167 @@
         .records-section { padding: var(--md3-spacing-lg); }
         .record-card { padding: var(--md3-spacing-md); }
         .record-card-body { grid-template-columns: 1fr; }
+        
+        .modal-content {
+            max-height: 90vh;
+        }
     }
 </style>
 
 <script>
+let currentExportTab = '';
+let clubsList = [];
+
+// 加载社团列表
+fetch('/clubs/api/clubs/list/')
+    .then(response => response.json())
+    .then(data => {
+        clubsList = data.clubs || [];
+    })
+    .catch(error => console.error('Error loading clubs:', error));
+
+function openExportDialog(tab) {
+    currentExportTab = tab;
+    document.getElementById('exportDialog').style.display = 'flex';
+    // 初始化自动完成
+    initAutocomplete();
+}
+
+function closeExportDialog() {
+    document.getElementById('exportDialog').style.display = 'none';
+    document.getElementById('exportForm').reset();
+    // 重置结束日期为禁用状态
+    document.getElementById('end_date').disabled = true;
+    // 清除自动完成
+    closeAllLists();
+}
+
+function handleStartDateChange() {
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
+    
+    if (startDate.value) {
+        // 启用结束日期并设置最小值为开始日期
+        endDate.disabled = false;
+        endDate.min = startDate.value;
+    } else {
+        // 禁用结束日期并清空
+        endDate.disabled = true;
+        endDate.value = '';
+    }
+}
+
+function initAutocomplete() {
+    const input = document.getElementById('club_name');
+    let currentFocus;
+
+    input.addEventListener('input', function() {
+        let val = this.value;
+        closeAllLists();
+        if (!val) return false;
+        currentFocus = -1;
+        
+        const container = document.createElement('div');
+        container.setAttribute('id', this.id + '-autocomplete-list');
+        container.setAttribute('class', 'autocomplete-items');
+        this.parentNode.appendChild(container);
+
+        let count = 0;
+        for (let club of clubsList) {
+            if (club.toLowerCase().includes(val.toLowerCase()) && count < 10) {
+                const item = document.createElement('div');
+                const matchIndex = club.toLowerCase().indexOf(val.toLowerCase());
+                item.innerHTML = club.substr(0, matchIndex);
+                item.innerHTML += '<strong>' + club.substr(matchIndex, val.length) + '</strong>';
+                item.innerHTML += club.substr(matchIndex + val.length);
+                item.innerHTML += '<input type="hidden" value="' + club + '">';
+                
+                item.addEventListener('click', function() {
+                    input.value = this.getElementsByTagName('input')[0].value;
+                    closeAllLists();
+                });
+                
+                container.appendChild(item);
+                count++;
+            }
+        }
+    });
+
+    input.addEventListener('keydown', function(e) {
+        let x = document.getElementById(this.id + '-autocomplete-list');
+        if (x) x = x.getElementsByTagName('div');
+        if (e.keyCode == 40) { // DOWN
+            currentFocus++;
+            addActive(x);
+        } else if (e.keyCode == 38) { // UP
+            currentFocus--;
+            addActive(x);
+        } else if (e.keyCode == 13) { // ENTER
+            e.preventDefault();
+            if (currentFocus > -1) {
+                if (x) x[currentFocus].click();
+            }
+        }
+    });
+
+    function addActive(x) {
+        if (!x) return false;
+        removeActive(x);
+        if (currentFocus >= x.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = (x.length - 1);
+        x[currentFocus].classList.add('autocomplete-active');
+    }
+
+    function removeActive(x) {
+        for (let i = 0; i < x.length; i++) {
+            x[i].classList.remove('autocomplete-active');
+        }
+    }
+}
+
+function closeAllLists(elmnt) {
+    const items = document.getElementsByClassName('autocomplete-items');
+    for (let i = 0; i < items.length; i++) {
+        if (elmnt != items[i] && elmnt != document.getElementById('club_name')) {
+            items[i].parentNode.removeChild(items[i]);
+        }
+    }
+}
+
+document.addEventListener('click', function(e) {
+    closeAllLists(e.target);
+});
+
+function submitExport() {
+    const form = document.getElementById('exportForm');
+    const formData = new FormData(form);
+    const params = new URLSearchParams();
+    
+    for (let [key, value] of formData.entries()) {
+        if (value) {
+            params.append(key, value);
+        }
+    }
+    
+    const url = `/clubs/staff/audit-center/${currentExportTab}/export/?${params.toString()}`;
+    window.location.href = url;
+    closeExportDialog();
+}
+
+// 点击遮罩层关闭弹窗
+document.addEventListener('click', function(e) {
+    const dialog = document.getElementById('exportDialog');
+    if (dialog && e.target === dialog) {
+        closeExportDialog();
+    }
+});
+</script>
+
+<script>
 function checkLayout() {
     if (window.innerWidth <= 768) {
-        // 移动端跳转到审核中心移动版
-        window.location.href = '{% url "clubs:staff_audit_center_mobile" current_tab %}';
+        // 移动端跳转到审核中心移动端
+        window.location.href = '{% url "clubs:staff_audit_center_mobile" %}';
     }
 }
 checkLayout();
@@ -310,41 +621,109 @@ window.addEventListener('resize', checkLayout);
             <h1>年审记录</h1>
             <p class="subtitle">查看和管理社团年审提交记录</p>
         </div>
+        <button onclick="openExportDialog('annual-review')" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); border-radius: var(--md3-radius-full); border: none; cursor: pointer; white-space: nowrap;">
+            <span class="material-icons" style="font-size: 1.25rem;">download</span>
+            导出Excel
+        </button>
         {% elif current_tab == 'registration' %}
         <span class="material-icons">add_circle</span>
         <div class="page-header-content">
             <h1>社团注册</h1>
             <p class="subtitle">查看社团注册申请和审核状态</p>
         </div>
+        <button onclick="openExportDialog('registration')" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); border-radius: var(--md3-radius-full); border: none; cursor: pointer; white-space: nowrap;">
+            <span class="material-icons" style="font-size: 1.25rem;">download</span>
+            导出Excel
+        </button>
         {% elif current_tab == 'application' %}
         <span class="material-icons">create</span>
         <div class="page-header-content">
             <h1>社团申请</h1>
             <p class="subtitle">查看新社团创建申请记录</p>
         </div>
+        <button onclick="openExportDialog('application')" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); border-radius: var(--md3-radius-full); border: none; cursor: pointer; white-space: nowrap;">
+            <span class="material-icons" style="font-size: 1.25rem;">download</span>
+            导出Excel
+        </button>
         {% elif current_tab == 'reimbursement' %}
         <span class="material-icons">receipt</span>
         <div class="page-header-content">
             <h1>报销记录</h1>
             <p class="subtitle">查看社团费用报销申请</p>
         </div>
+        <button onclick="openExportDialog('reimbursement')" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); border-radius: var(--md3-radius-full); border: none; cursor: pointer; white-space: nowrap;">
+            <span class="material-icons" style="font-size: 1.25rem;">download</span>
+            导出Excel
+        </button>
         {% elif current_tab == 'activity_application' %}
         <span class="material-icons">event</span>
         <div class="page-header-content">
             <h1>活动申请</h1>
             <p class="subtitle">查看社团活动申请和审批</p>
         </div>
+        <button onclick="openExportDialog('activity_application')" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); border-radius: var(--md3-radius-full); border: none; cursor: pointer; white-space: nowrap;">
+            <span class="material-icons" style="font-size: 1.25rem;">download</span>
+            导出Excel
+        </button>
         {% elif current_tab == 'president_transition' %}
         <span class="material-icons">swap_horiz</span>
         <div class="page-header-content">
             <h1>社长换届</h1>
             <p class="subtitle">查看社长换届申请记录</p>
         </div>
+        <button onclick="openExportDialog('president_transition')" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); border-radius: var(--md3-radius-full); border: none; cursor: pointer; white-space: nowrap;">
+            <span class="material-icons" style="font-size: 1.25rem;">download</span>
+            导出Excel
+        </button>
         {% endif %}
     </div>
 
+    <!-- 导出筛选弹窗 -->
+    <div id="exportDialog" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2><span class="material-icons" style="vertical-align: middle; margin-right: 8px;">filter_list</span>导出筛选</h2>
+                <button onclick="closeExportDialog()" class="modal-close">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm" method="get">
+                    <div class="form-group autocomplete-container">
+                        <label for="club_name">社团名称 <span style="color: var(--md3-on-surface-variant); font-size: 0.75rem;">(可选)</span></label>
+                        <input type="text" id="club_name" name="club_name" class="form-control" placeholder="留空表示全部社团" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="start_date">开始日期 <span style="color: var(--md3-on-surface-variant); font-size: 0.75rem;">(可选)</span></label>
+                        <input type="date" id="start_date" name="start_date" class="form-control" onchange="handleStartDateChange()">
+                    </div>
+                    <div class="form-group">
+                        <label for="end_date">结束日期 <span style="color: var(--md3-on-surface-variant); font-size: 0.75rem;">(可选)</span></label>
+                        <input type="date" id="end_date" name="end_date" class="form-control" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">状态</label>
+                        <select id="status" name="status" class="form-control">
+                            <option value="">全部状态</option>
+                            <option value="pending">待审核</option>
+                            <option value="approved">已通过</option>
+                            <option value="rejected">已拒绝</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeExportDialog()" class="btn btn-secondary">取消</button>
+                <button onclick="submitExport()" class="btn btn-primary">
+                    <span class="material-icons" style="font-size: 1.125rem; vertical-align: middle;">download</span>
+                    确认导出
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="content-card">
-        <!-- 待处理 -->
+        <!-- 待处理记录 -->
         <div class="records-section">
             <div class="section-title">
                 <span class="material-icons">notifications_active</span>
@@ -385,7 +764,13 @@ window.addEventListener('resize', checkLayout);
                         <span class="club-name">{{ item.club.name }}</span>
                         {% endif %}
 
-                        {% if item.status == 'pending' %}
+                        {% if item.review_count %}
+                        <span class="status-badge reviewing">
+                            <span class="material-icons">rate_review</span> 
+                            {% if item.user_reviewed %}已审核{% else %}审核中{% endif %}
+                            ({{ item.review_count }}/3)
+                        </span>
+                        {% elif item.status == 'pending' %}
                         <span class="status-badge pending">
                             <span class="material-icons">schedule</span> 待审核
                         </span>
@@ -413,8 +798,8 @@ window.addEventListener('resize', checkLayout);
 
                         {% elif current_tab == 'registration' %}
                         <div class="record-field">
-                            <span class="record-field-label">注册期</span>
-                            <span class="record-field-value">{{ item.registration_period.name }}</span>
+                            <span class="record-field-label">注册周期</span>
+                            <span class="record-field-value">{% if item.registration_period %}{{ item.registration_period }}{% else %}未设置{% endif %}</span>
                         </div>
                         <div class="record-field">
                             <span class="record-field-label">提交时间</span>
@@ -465,19 +850,33 @@ window.addEventListener('resize', checkLayout);
 
                     {% if item.status == 'rejected' and not item.has_newer_version %}
                     <div class="record-card-footer">
-                        <span></span>
                         {% if current_tab == 'annual_review' %}
                         <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=review&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
                             <span class="material-icons">edit</span> 修改材料
                         </a>
                         {% elif current_tab == 'registration' %}
-                        <a href="{% url 'clubs:edit_rejected_review' club_id=item.club.id %}?type=club_registration&request_id={{ item.id }}" 
+                        <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=club_registration&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
                             <span class="material-icons">edit</span> 修改材料
                         </a>
                         {% elif current_tab == 'application' %}
-                        <a href="{% url 'clubs:edit_rejected_review' club_id=item.id %}?type=club_application&request_id={{ item.id }}" 
+                        <a href="{% url 'clubs:edit_rejected_review' item.id %}?type=club_application&request_id={{ item.id }}" 
+                           class="action-btn primary" onclick="event.stopPropagation()">
+                            <span class="material-icons">edit</span> 修改材料
+                        </a>
+                        {% elif current_tab == 'reimbursement' %}
+                        <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=reimbursement&request_id={{ item.id }}" 
+                           class="action-btn primary" onclick="event.stopPropagation()">
+                            <span class="material-icons">edit</span> 修改材料
+                        </a>
+                        {% elif current_tab == 'activity_application' %}
+                        <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=activity_application&request_id={{ item.id }}" 
+                           class="action-btn primary" onclick="event.stopPropagation()">
+                            <span class="material-icons">edit</span> 修改材料
+                        </a>
+                        {% elif current_tab == 'president_transition' %}
+                        <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=president_transition&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
                             <span class="material-icons">edit</span> 修改材料
                         </a>
@@ -508,7 +907,7 @@ window.addEventListener('resize', checkLayout);
             
             {% if completed_items %}
             <div class="records-list">
-                {% for item in completed_items %}
+                {% for item in completed_items|slice:":3" %}
                 <div class="record-card" onclick="window.location.href='{% url "clubs:staff_review_detail" current_tab item.id %}';">
                     <div class="record-card-header">
                         {% if current_tab == 'annual_review' %}
@@ -525,9 +924,9 @@ window.addEventListener('resize', checkLayout);
                         <span class="club-name">{{ item.club.name }}</span>
                         {% endif %}
 
-                        {% if item.status == 'approved' %}
+                        {% if item.status == 'approved' or item.staff_approved == True %}
                         <span class="status-badge approved"><span class="material-icons">check_circle</span> 已通过</span>
-                        {% elif item.status == 'rejected' %}
+                        {% elif item.status == 'rejected' or item.staff_approved == False %}
                         <span class="status-badge rejected"><span class="material-icons">cancel</span> 已拒绝</span>
                         {% endif %}
                     </div>
@@ -553,6 +952,15 @@ window.addEventListener('resize', checkLayout);
                 </div>
                 {% endfor %}
             </div>
+            
+            {% if completed_items|length > 3 %}
+            <div style="margin-top: var(--md3-spacing-lg); text-align: center;">
+                <button onclick="openHistoryModal()" class="btn btn-secondary" style="border-radius: 20px; padding: 8px 24px;">
+                    查看更多历史记录
+                </button>
+            </div>
+            {% endif %}
+
             {% else %}
             <div class="empty-state">
                 <div class="empty-state-icon">
@@ -567,4 +975,84 @@ window.addEventListener('resize', checkLayout);
     </div>
 
 </div>
+
+<!-- 历史记录弹窗 -->
+<div id="historyModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h2><span class="material-icons" style="vertical-align: middle; margin-right: 8px;">history</span>全部已通过记录</h2>
+            <button onclick="closeHistoryModal()" class="modal-close">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="records-list">
+                {% for item in completed_items %}
+                <div class="record-card" onclick="window.location.href='{% url "clubs:staff_review_detail" current_tab item.id %}';">
+                    <div class="record-card-header">
+                        {% if current_tab == 'annual_review' %}
+                        <span class="club-name">{{ item.club.name }}</span>
+                        {% elif current_tab == 'registration' %}
+                        <span class="club-name">{{ item.club.name }}</span>
+                        {% elif current_tab == 'application' %}
+                        <span class="club-name">{{ item.club_name }}</span>
+                        {% elif current_tab == 'reimbursement' %}
+                        <span class="club-name">{{ item.club.name }}</span>
+                        {% elif current_tab == 'activity_application' %}
+                        <span class="club-name">{{ item.club.name }}</span>
+                        {% elif current_tab == 'president_transition' %}
+                        <span class="club-name">{{ item.club.name }}</span>
+                        {% endif %}
+
+                        {% if item.status == 'approved' or item.staff_approved == True %}
+                        <span class="status-badge approved"><span class="material-icons">check_circle</span> 已通过</span>
+                        {% elif item.status == 'rejected' or item.staff_approved == False %}
+                        <span class="status-badge rejected"><span class="material-icons">cancel</span> 已拒绝</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="record-card-body">
+                        {% if current_tab == 'annual_review' %}
+                        <div class="record-field">
+                            <span class="record-field-label">年份</span>
+                            <span class="record-field-value">{{ item.submission_year }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% else %}
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeHistoryModal()" class="btn btn-secondary">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openHistoryModal() {
+        document.getElementById('historyModal').style.display = 'flex';
+    }
+
+    function closeHistoryModal() {
+        document.getElementById('historyModal').style.display = 'none';
+    }
+
+    // 点击遮罩层关闭
+    document.getElementById('historyModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeHistoryModal();
+        }
+    });
+</script>
 {% endblock %}

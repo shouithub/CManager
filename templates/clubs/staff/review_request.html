@@ -7,16 +7,48 @@
 <style>
     /* MD3通用审核页面样式（紧凑版） */
     .review-container { max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-xl); }
-    .review-header { padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); }
-    .review-header h1 { margin: 0; color: var(--md3-on-surface); font-size: 1.75rem; font-weight: 400; line-height: 2.25rem; letter-spacing: 0; display: flex; align-items: center; gap: var(--md3-spacing-md); }
+    /* ===== 页面顶部标题 ===== */
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl) var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
     .info-card { background: var(--md3-surface-container-low); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); border: 1px solid var(--md3-outline-variant); }
     .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--md3-spacing-md); }
     .info-item { display: flex; flex-direction: column; gap: 4px; }
     .info-label { color: var(--md3-on-surface-variant); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
     .info-value { color: var(--md3-on-surface); font-size: 14px; font-weight: 500; }
     .staff-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--md3-info-container); color: var(--md3-on-info-container); padding: 8px 16px; border-radius: var(--md3-radius-full); font-size: 13px; font-weight: 500; margin-top: var(--md3-spacing-md); border: 2px solid var(--md3-primary); }
-    .materials-section, .review-records-section, .review-form-section { background: var(--md3-surface-container-lowest); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
+    .materials-section, .review-records-section, .review-form-section { background: var(--md3-surface-container-lowest); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); border: 1px solid var(--md3-outline-variant); box-shadow: var(--md3-elevation-1); }
     .section-title { color: var(--md3-on-surface); font-size: 18px; font-weight: 600; margin: 0 0 var(--md3-spacing-lg) 0; display: flex; align-items: center; gap: var(--md3-spacing-md); padding-bottom: var(--md3-spacing-md); border-bottom: 2px solid var(--md3-outline-variant); }
+    /* 复用组件卡片样式 */
+    .card { background: var(--md3-surface-container-low); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
+    .card-header { display: flex; align-items: center; gap: var(--md3-spacing-md); padding-bottom: var(--md3-spacing-lg); border-bottom: 1px solid var(--md3-outline-variant); margin-bottom: var(--md3-spacing-lg); }
+    .card-header .material-icons { font-size: 1.5rem; color: var(--md3-primary); }
+    .card-header h2 { margin: 0; font-size: 1.25rem; font-weight: 600; color: var(--md3-on-surface); }
+    .detail-item { background: var(--md3-surface-container); border-radius: var(--md3-radius-md); padding: var(--md3-spacing-lg); }
+    .status-badge { display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: 6px 12px; border-radius: var(--md3-radius-full); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+    .status-badge.approved { background: var(--md3-success-container); color: var(--md3-on-success-container); }
+    .status-badge.rejected { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+    .status-badge.pending { background: var(--md3-warning-container); color: var(--md3-on-warning-container); }
     .materials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--md3-spacing-md); }
     .material-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); transition: all 0.2s ease; display: flex; flex-direction: column; gap: var(--md3-spacing-md); }
     .material-card:hover { background: var(--md3-surface-container-high); box-shadow: var(--md3-elevation-2); transform: translateY(-2px); }
@@ -32,7 +64,8 @@
     /* 文件操作按钮容器 */
     .file-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .file-actions .preview-btn, .file-actions .download-btn { flex: 1; min-width: 120px; }
-    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--md3-surface-container); border-radius: var(--md3-radius-md); overflow: hidden; box-shadow: var(--md3-elevation-1); }
+    .table-container { overflow: hidden; border-radius: var(--md3-radius-md); border: 1px solid var(--md3-outline-variant); }
+    .data-table { width: 100%; border-collapse: collapse; background: var(--md3-surface-container); margin: 0; }
     .data-table thead { background: var(--md3-surface-container-high); }
     .data-table th { color: var(--md3-on-surface-variant); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--md3-outline-variant); }
     .data-table td { color: var(--md3-on-surface); padding: 12px 16px; border-bottom: 1px solid var(--md3-outline-variant); }
@@ -148,168 +181,158 @@
     .btn-secondary:hover { background: var(--md3-surface-container-highest); box-shadow: var(--md3-elevation-1); }
     .action-buttons { display: flex; gap: var(--md3-spacing-lg); flex-wrap: wrap; margin-top: var(--md3-spacing-lg); }
     
-    /* 时间轴样式 - MD3优化 */
-    .timeline-container { 
-        position: relative; 
-        padding-left: 48px; 
+    /* 时间轴样式 - 统一简洁风 */
+    .timeline-container {
+        position: relative;
+        padding-left: 48px;
         margin-top: var(--md3-spacing-lg);
-        /* 隐藏滚动条 */
-        overflow-x: hidden;
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE and Edge */
     }
-    .timeline-container::-webkit-scrollbar {
-        display: none; /* Chrome, Safari, Opera */
-    }
-    .timeline-line { 
-        position: absolute; 
-        left: 23px; 
-        top: 0; 
-        bottom: 0; 
-        width: 3px; 
-        background: var(--md3-outline); 
+
+    .timeline-line {
+        position: absolute;
+        left: 23px;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--md3-outline);
         border-radius: var(--md3-radius-sm);
         opacity: 0.5;
     }
-    .timeline-item { 
-        position: relative; 
-        margin-bottom: var(--md3-spacing-xl); 
-        padding: var(--md3-spacing-xl); 
-        background: var(--md3-surface-container); 
-        border-radius: var(--md3-radius-xl); 
-        border: 1px solid var(--md3-outline-variant); 
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-lg);
+        border: 1px solid var(--md3-outline-variant);
         box-shadow: var(--md3-elevation-1);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        /* 防止内容溢出导致滚动条 */
-        overflow: hidden;
-        word-wrap: break-word;
     }
+
     .timeline-item:hover {
         box-shadow: var(--md3-elevation-2);
         border-color: var(--md3-primary);
         transform: translateX(4px);
     }
-    .timeline-item::before { 
-        content: ''; 
-        position: absolute; 
-        left: -33px; 
-        top: 24px; 
-        width: 18px; 
-        height: 18px; 
-        border-radius: 50%; 
-        background: var(--md3-surface); 
-        border: 4px solid var(--md3-primary); 
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -33px;
+        top: 20px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--md3-surface);
+        border: 4px solid var(--md3-primary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         z-index: 1;
     }
-    .timeline-item.approved::before { border-color: #4CAF50; background: #4CAF50; box-shadow: 0 2px 12px rgba(76, 175, 80, 0.4); }
-    .timeline-item.rejected::before { border-color: #f44336; background: #f44336; box-shadow: 0 2px 12px rgba(244, 67, 54, 0.4); }
-    .timeline-header { 
-        display: flex; 
-        flex-direction: column;
+
+    .timeline-item.approved::before {
+        border-color: #4CAF50;
+        background: #4CAF50;
+        box-shadow: 0 2px 12px rgba(76, 175, 80, 0.4);
+    }
+
+    .timeline-item.rejected::before {
+        border-color: #f44336;
+        background: #f44336;
+        box-shadow: 0 2px 12px rgba(244, 67, 54, 0.4);
+    }
+
+    .timeline-header {
+        display: flex;
+        align-items: center;
         gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-lg); 
-        padding-bottom: var(--md3-spacing-md);
-        border-bottom: 1px solid var(--md3-outline-variant);
+        margin-bottom: var(--md3-spacing-md);
     }
-    .timeline-header-row {
-        display: flex;
+
+    .timeline-time {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .timeline-status {
+        display: inline-flex;
         align-items: center;
-        justify-content: space-between;
-        gap: var(--md3-spacing-sm);
-        flex-wrap: wrap;
-    }
-    .timeline-reviewer { 
-        display: flex; 
-        align-items: center; 
-        gap: var(--md3-spacing-sm); 
-        font-weight: 600; 
-        font-size: 16px;
-        color: var(--md3-on-surface); 
-    }
-    .timeline-reviewer .material-icons { 
-        font-size: 24px; 
-        color: var(--md3-primary);
-        background: var(--md3-primary-container);
-        padding: 6px;
+        gap: var(--md3-spacing-xs);
+        padding: 4px 10px;
         border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
     }
-    .timeline-time { 
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--md3-on-surface-variant); 
-        font-size: 13px; 
+
+    .timeline-status.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .timeline-status.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .timeline-status.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+
+    .timeline-reviewer {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface);
         font-weight: 500;
-        white-space: nowrap;
+        margin-bottom: var(--md3-spacing-md);
     }
-    .timeline-time .material-icons {
-        font-size: 16px;
-    }
-    .timeline-decision { 
-        display: inline-flex; 
-        align-items: center; 
-        gap: 8px; 
-        padding: 8px 16px; 
-        border-radius: var(--md3-radius-full); 
-        font-weight: 600; 
-        font-size: 14px; 
-        box-shadow: var(--md3-elevation-1);
-    }
-    .timeline-decision.approved { 
-        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); 
-        color: #2e7d32; 
-        border: 1px solid #81c784;
-    }
-    .timeline-decision.rejected { 
-        background: linear-gradient(135deg, var(--md3-error-container) 0%, #ffcdd2 100%); 
-        color: var(--md3-on-error-container); 
-        border: 1px solid #ef5350;
-    }
-    .timeline-comment { 
-        color: var(--md3-on-surface); 
-        line-height: 1.7; 
-        margin-top: var(--md3-spacing-md); 
+
+    .timeline-comment {
         padding: var(--md3-spacing-md);
-        background: var(--md3-surface-container-low);
-        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container-high);
         border-left: 3px solid var(--md3-primary);
-        font-size: 14px;
+        border-radius: var(--md3-radius-sm);
+        color: var(--md3-on-surface);
+        font-size: 0.9375rem;
+        line-height: 1.6;
     }
-    .timeline-materials { 
-        margin-top: var(--md3-spacing-lg); 
-        padding: var(--md3-spacing-lg); 
-        background: linear-gradient(135deg, var(--md3-error-container) 0%, #ffebee 100%); 
-        border-radius: var(--md3-radius-lg); 
-        border: 1px solid var(--md3-error);
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+
+    .timeline-comment.rejected {
+        background: var(--md3-error-container);
+        border-left-color: var(--md3-error);
+        color: var(--md3-on-error-container);
     }
-    .timeline-materials-title { 
-        font-size: 14px; 
-        font-weight: 600; 
-        color: var(--md3-on-error-container); 
-        margin-bottom: var(--md3-spacing-md); 
+    .timeline-materials {
+        margin-top: var(--md3-spacing-md);
+        padding: var(--md3-spacing-md);
+        background: var(--md3-error-container);
+        border-radius: var(--md3-radius-md);
+        border-left: 3px solid var(--md3-error);
+    }
+
+    .timeline-materials-title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--md3-on-error-container);
+        margin-bottom: var(--md3-spacing-sm);
+    }
+
+    .timeline-materials-list {
         display: flex;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .timeline-material-chip {
+        display: inline-flex;
         align-items: center;
-        gap: 6px;
-    }
-    .timeline-materials-title::before {
-        font-family: 'Material Icons';
-        font-size: 18px;
-    }
-    .timeline-materials-list { display: flex; flex-wrap: wrap; gap: var(--md3-spacing-sm); }
-    .timeline-material-chip { 
-        display: inline-flex; 
-        align-items: center; 
-        gap: 6px; 
-        padding: 6px 12px; 
-        background: var(--md3-surface); 
-        border-radius: var(--md3-radius-md); 
-        font-size: 13px; 
+        padding: 4px 10px;
+        background: var(--md3-surface);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
         font-weight: 500;
-        color: var(--md3-on-surface); 
-        border: 1px solid var(--md3-outline);
-        box-shadow: var(--md3-elevation-1);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline-variant);
     }
     
     .review-stats { 
@@ -336,17 +359,16 @@
             max-width: 100%;
         } 
         
-        .review-header {
+        .page-header {
             padding: var(--md3-spacing-lg);
             margin-bottom: var(--md3-spacing-lg);
         }
         
-        .review-header h1 {
+        .page-header h1 {
             font-size: 20px;
-            flex-wrap: wrap;
         }
         
-        .review-header h1 .material-icons {
+        .page-header .material-icons {
             font-size: 24px;
         }
         
@@ -453,107 +475,77 @@
             font-size: 14px;
             padding: 12px 24px;
         }
+
+        .data-table {
+            min-width: 600px;
+        }
+
+        .data-table th,
+        .data-table td {
+            white-space: nowrap;
+            padding: 8px;
+            font-size: 13px;
+        }
         
-        .timeline-container { 
-            padding-left: 32px; 
-            margin-top: var(--md3-spacing-md); 
-        } 
-        
-        .timeline-line { 
-            left: 15px; 
-            width: 2px; 
-        } 
-        
-        .timeline-item { 
-            padding: var(--md3-spacing-md); 
-            font-size: 14px;
+        /* 手机端时间轴适配 */
+        .timeline-container {
+            padding-left: 32px;
+        }
+
+        .timeline-line {
+            left: 12px;
+        }
+
+        .timeline-item {
+            padding: var(--md3-spacing-md);
             margin-bottom: var(--md3-spacing-lg);
-        } 
-        
-        .timeline-item:hover { 
-            transform: none; 
         }
-        
-        .timeline-item::before { 
-            left: -23px; 
-            width: 14px; 
-            height: 14px; 
-            border-width: 3px; 
-            top: 16px; 
-        } 
-        
-        .timeline-header { 
-            gap: var(--md3-spacing-sm); 
-            padding-bottom: var(--md3-spacing-sm);
-            margin-bottom: var(--md3-spacing-md);
+
+        .timeline-item::before {
+            left: -24px;
+            width: 14px;
+            height: 14px;
+            border-width: 3px;
         }
-        
-        .timeline-header-row {
+
+        .timeline-item:hover {
+            transform: none;
+        }
+
+        .timeline-header {
             flex-direction: column;
             align-items: flex-start;
-            gap: 6px;
+            gap: var(--md3-spacing-sm);
         }
-        
-        .timeline-reviewer { 
-            font-size: 14px; 
+
+        .timeline-time {
+            font-size: 0.8125rem;
         }
-        
-        .timeline-reviewer .material-icons { 
-            font-size: 20px; 
-            padding: 4px; 
+
+        .timeline-status {
+            font-size: 0.6875rem;
         }
-        
-        .timeline-time { 
-            font-size: 12px;
-            gap: 4px;
+
+        .timeline-reviewer {
+            font-size: 0.8125rem;
         }
-        
-        .timeline-time .material-icons {
-            font-size: 14px;
-        }
-        
-        .timeline-decision { 
-            font-size: 12px; 
-            padding: 6px 12px;
-            gap: 6px;
-        }
-        
-        .timeline-decision .material-icons {
-            font-size: 14px !important;
-        }
-        
-        .timeline-comment { 
-            font-size: 13px; 
+
+        .timeline-comment {
+            font-size: 0.875rem;
             padding: var(--md3-spacing-sm);
-            line-height: 1.6;
         }
-        
-        .timeline-materials { 
-            padding: var(--md3-spacing-md); 
-            margin-top: var(--md3-spacing-md); 
+
+        .timeline-materials {
+            padding: var(--md3-spacing-sm);
         }
-        
-        .timeline-materials-title { 
-            font-size: 12px;
-            margin-bottom: var(--md3-spacing-sm);
+
+        .timeline-materials-title {
+            font-size: 0.75rem;
         }
-        
-        .timeline-materials-title::before { 
-            font-size: 16px; 
-        }
-        
-        .timeline-materials-list {
-            gap: 6px;
-        }
-        
-        .timeline-material-chip { 
-            font-size: 11px; 
-            padding: 4px 8px;
-            gap: 4px;
-        }
-        
-        .timeline-material-chip .material-icons { 
-            font-size: 12px !important;
+
+        .timeline-material-chip {
+            font-size: 0.6875rem;
+            padding: 3px 8px;
         }
         
         .review-stats { 
@@ -579,20 +571,25 @@
             margin-bottom: var(--md3-spacing-sm);
         }
     }
+    
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: var(--md3-spacing-md) 0;
+    }
 </style>
 
 <div class="review-container">
-    <div class="review-header">
-        <h1>
-            <span class="material-icons">
-                {% if request_type == 'submission' %}assignment
-                {% elif request_type == 'registration' %}new_releases
-                {% elif request_type == 'club_registration_submission' %}flag
-                {% elif request_type == 'reimbursement' %}account_balance_wallet
-                {% else %}rate_review{% endif %}
-            </span>
-            {{ title }}
-        </h1>
+    <div class="page-header">
+        <span class="material-icons">
+            {% if request_type == 'submission' %}assignment
+            {% elif request_type == 'registration' %}new_releases
+            {% elif request_type == 'club_registration_submission' %}flag
+            {% elif request_type == 'reimbursement' %}account_balance_wallet
+            {% else %}rate_review{% endif %}
+        </span>
+        <h1>{{ title }}</h1>
     </div>
 
     <!-- 基本信息卡片 -->
@@ -610,7 +607,7 @@
                 <div class="info-item">
                     <span class="info-label">提交次数</span>
                     <span class="info-value">
-                        第 {{ submission.resubmission_attempt }} 次提交
+                        第{{ submission.resubmission_attempt }} 次提交
                         {% if submission.resubmission_attempt > 1 %}
                             <span style="color: var(--md3-error);">(已重新提交)</span>
                         {% endif %}
@@ -648,7 +645,7 @@
                 <div class="info-item">
                     <span class="info-label">提交次数</span>
                     <span class="info-value">
-                        第 {{ registration.resubmission_attempt }} 次提交
+                        第{{ registration.resubmission_attempt }} 次提交
                         {% if registration.resubmission_attempt > 1 %}
                             <span style="color: var(--md3-error);">(已重新提交)</span>
                         {% endif %}
@@ -727,80 +724,34 @@
         {% if request_type == 'submission' and submission %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
             <a href="{% url 'clubs:zip_review_docs' submission.id %}" class="download-btn" style="width: 100%;">
-                🗜️ 打包所有材料为ZIP文件
+                打包所有材料为ZIP文件
             </a>
         </div>
         {% elif request_type == 'registration' and registration %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
             <a href="{% url 'clubs:zip_registration_request_docs' registration.id %}" class="download-btn" style="width: 100%;">
-                🗜️ 打包所有材料为ZIP文件
+                打包所有材料为ZIP文件
             </a>
         </div>
         {% elif request_type == 'reimbursement' and reimbursement %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
             <a href="{% url 'clubs:zip_reimbursement_docs' reimbursement.id %}" class="download-btn" style="width: 100%;">
-                🗜️ 打包所有材料为ZIP文件
+                打包所有材料为ZIP文件
             </a>
         </div>
         {% endif %}
     </div>
     {% endif %}
 
-    <!-- 审核表单 -->
-    <!-- 总是显示时间轴（如果有审核记录） -->
-    {% if existing_reviews %}
-    {% if approved_count is not None and rejected_count is not None %}
-    <div class="review-stats">当前已有 <strong>{{ approved_count }}</strong> 人批准，<strong>{{ rejected_count }}</strong> 人拒绝</div>
-    {% endif %}
-    <div class="timeline-container" style="margin-bottom: var(--md3-spacing-xl);">
-        <div class="timeline-line"></div>
-        {% for review in existing_reviews %}
-        <div class="timeline-item {{ review.status }}">
-            <div class="timeline-header">
-                <div class="timeline-header-row">
-                    <div class="timeline-reviewer">
-                        <span class="material-icons">person</span>
-                        <span>{{ review.reviewer.profile.get_full_name|default:review.reviewer.username }}</span>
-                    </div>
-                    <div class="timeline-time">
-                        <span class="material-icons">schedule</span>
-                        <span>{{ review.reviewed_at|date:"Y-m-d H:i" }}</span>
-                    </div>
-                </div>
-                <div class="timeline-decision {{ review.status }}">
-                    <span class="material-icons" style="font-size: 16px;">
-                        {% if review.status == 'approved' %}check_circle{% else %}cancel{% endif %}
-                    </span>
-                    <span>{{ review.get_status_display }}</span>
-                </div>
-            </div>
-            {% if review.comment %}
-            <div class="timeline-comment">{{ review.comment }}</div>
-            {% endif %}
-            {% if review.rejected_materials %}
-            <div class="timeline-materials">
-                <div class="timeline-materials-title">被拒绝的材料：</div>
-                <div class="timeline-materials-list">
-                    {% for material in review.rejected_materials %}
-                    <span class="timeline-material-chip">
-                        {{ material|material_name }}
-                    </span>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews approved_count=approved_count rejected_count=rejected_count title="审核记录" %}
 
     <!-- 如果用户还没审核过，显示审核表单 -->
     {% if not user_has_reviewed %}
-    {% include 'clubs/components/review_form.html' with show_rejected_materials=True materials_list=materials_list cancel_url='clubs:staff_dashboard' %}
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=True materials_list=materials_list cancel_url='clubs:staff_dashboard' title="审核意见" %}
     {% else %}
     <!-- 已审核：显示返回按钮 -->
     <div class="action-buttons">
-        <a href="{% url 'clubs:staff_dashboard' %}" class="btn-secondary">
+        <a href="{% url 'clubs:index' %}" class="btn-secondary">
             <span class="material-icons" style="font-size: 18px;">arrow_back</span>
             返回列表
         </a>

@@ -18,29 +18,33 @@
     .page-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-xl);
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
     }
-    
-    .page-header .title-section {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-        margin-left: var(--md3-spacing-lg);
-        padding-top: var(--md3-spacing-sm);
-    }
-    
+
     .page-header .material-icons {
         font-size: 2.5rem;
         color: var(--md3-primary);
     }
-    
+
+    .page-header-content {
+        flex: 1;
+    }
+
     .page-header h1 {
-        margin: 0;
-        font-size: 2rem;
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.75rem;
         font-weight: 600;
         color: var(--md3-on-surface);
+    }
+
+    .page-header .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
     }
 
     /* 筛选和搜索区域 */
@@ -168,31 +172,6 @@
     }
 
     /* 导出功能样式 */
-    .export-section {
-        margin-top: var(--md3-spacing-lg);
-        padding-top: var(--md3-spacing-lg);
-        border-top: 1px solid var(--md3-outline-variant);
-    }
-
-    .export-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: var(--md3-spacing-md);
-    }
-
-    .export-title {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-sm);
-        font-weight: 600;
-        color: var(--md3-on-surface);
-    }
-
-    .export-title .material-icons {
-        color: var(--md3-tertiary);
-    }
-
     .select-all-container {
         display: flex;
         align-items: center;
@@ -210,12 +189,6 @@
         cursor: pointer;
         font-weight: 500;
         color: var(--md3-on-surface-variant);
-    }
-
-    .export-actions {
-        display: flex;
-        gap: var(--md3-spacing-md);
-        align-items: center;
     }
 
     .selected-count {
@@ -550,6 +523,11 @@
 
     /* 响应式设计 */
     @media (max-width: 768px) {
+        .home-container {
+            padding: var(--md3-spacing-md);
+            padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+        }
+        
         .activities-grid {
             grid-template-columns: 1fr;
             gap: 1rem;
@@ -605,9 +583,10 @@
 {% block content %}
 <div class="home-container">
     <div class="page-header">
-        <div class="title-section">
-            <span class="material-icons">event_note</span>
+        <span class="material-icons">event_note</span>
+        <div class="page-header-content">
             <h1>活动管理</h1>
+            <p class="subtitle">查看和管理社团活动</p>
         </div>
         {% if user.is_authenticated %}
         <div class="header-actions">
@@ -708,39 +687,35 @@
                         </div>
                     </div>
 
-                    <div class="filters-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <span class="material-icons">search</span>
-                            搜索
-                        </button>
-                        <a href="{% url 'clubs:public_activities' %}" class="btn btn-outlined">
-                            <span class="material-icons">clear</span>
-                            清除筛选
-                        </a>
-                    </div>
+                    <div class="filters-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <!-- 导出功能（管理员、干事和社长可见） -->
+                        <div class="export-actions-wrapper">
+                            {% if user.is_authenticated and user.profile.role in 'admin,staff,president' %}
+                            <div class="export-inline-group" style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="select-all-container">
+                                    <input type="checkbox" id="select-all" onclick="toggleAllActivities(this)">
+                                    <label for="select-all">全选</label>
+                                </div>
+                                <span class="selected-count" id="selected-count">已选择 0 个活动</span>
+                                <button type="button" class="btn-export" id="export-btn" onclick="exportActivities()" disabled style="padding: 0.5rem 1rem;">
+                                    <span class="material-icons" style="font-size: 1.1rem;">table_chart</span>
+                                    导出为 Excel
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
 
-                    <!-- 导出功能（管理员、干事和社长可见） -->
-                    {% if user.is_authenticated and user.profile.role in 'admin,staff,president' %}
-                    <div class="export-section">
-                        <div class="export-header">
-                            <div class="export-title">
-                                <span class="material-icons">file_download</span>
-                                <span>批量导出</span>
-                            </div>
-                            <div class="select-all-container">
-                                <input type="checkbox" id="select-all" onclick="toggleAllActivities(this)">
-                                <label for="select-all">全选</label>
-                            </div>
-                        </div>
-                        <div class="export-actions">
-                            <span class="selected-count" id="selected-count">已选择 0 个活动</span>
-                            <button type="button" class="btn-export" id="export-btn" onclick="exportActivities()" disabled>
-                                <span class="material-icons">table_chart</span>
-                                导出为 Excel
+                        <div class="filters-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-icons">search</span>
+                                搜索
                             </button>
+                            <a href="{% url 'clubs:public_activities' %}" class="btn btn-outlined">
+                                <span class="material-icons">clear</span>
+                                清除筛选
+                            </a>
                         </div>
                     </div>
-                    {% endif %}
                 </form>
             </div>
         </div>

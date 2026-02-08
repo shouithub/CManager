@@ -5,352 +5,889 @@
 
 {% block extra_css %}
 <style>
-    /* 移动端简版样式 - 仅适用于手机端 */
-    .mobile-audit-container {
-        padding: var(--md3-spacing-md);
-        padding-bottom: calc(var(--md3-spacing-lg) + 100px); /* 为底栏留出空间 */
-        max-width: 100%;
+    .audit-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+        box-sizing: border-box;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
-
-    /* 标签页导航 */
-    .mobile-tabs {
-        display: flex;
-        overflow-x: auto;
-        gap: var(--md3-spacing-sm);
-        margin-bottom: var(--md3-spacing-lg);
-        padding-bottom: var(--md3-spacing-xs);
-        scrollbar-width: thin;
-        scrollbar-color: var(--md3-outline-variant) transparent;
-        -ms-overflow-style: auto;
+    
+    /* 页面标题 */
+    .page-header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        width: 100%;
     }
-
-    .mobile-tabs::-webkit-scrollbar {
-        display: block;
-        height: 4px;
-    }
-
-    .mobile-tabs::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .mobile-tabs::-webkit-scrollbar-thumb {
-        background: var(--md3-outline-variant);
-        border-radius: 2px;
-    }
-
-    .mobile-tab {
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
         flex-shrink: 0;
-        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
-        background: var(--md3-surface-container);
-        color: var(--md3-on-surface);
-        border-radius: var(--md3-radius-full);
-        text-decoration: none;
-        font-size: 0.875rem;
-        font-weight: 500;
-        border: 1px solid var(--md3-outline-variant);
-        transition: all 0.2s ease;
-        white-space: nowrap;
+        display: inline-block !important;
     }
-
-    .mobile-tab.active {
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
-        border-color: var(--md3-primary);
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
         font-weight: 600;
+        color: var(--md3-on-surface);
+        white-space: nowrap !important;
+        writing-mode: horizontal-tb !important;
+        text-orientation: mixed;
+        display: inline-block !important;
     }
-
-    /* 记录卡片简化版 */
-    .mobile-record-card {
+    
+    /* 审核类型卡片网格 */
+    .audit-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: var(--md3-spacing-xl);
+    }
+    
+    /* 审核卡片 */
+    .audit-card {
         background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
         border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-md);
-        cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    .mobile-record-card:active {
+    
+    .audit-card-header {
         background: var(--md3-surface-container-high);
-        transform: scale(0.98);
-    }
-
-    .mobile-record-header {
+        padding: var(--md3-spacing-lg);
+        border-bottom: 1px solid var(--md3-outline-variant);
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: var(--md3-spacing-sm);
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        border-radius: var(--md3-radius-xl) var(--md3-radius-xl) 0 0;
     }
-
-    .mobile-club-name {
+    
+    .audit-card-header .material-icons {
+        font-size: 1.75rem;
+        color: var(--md3-primary);
+        flex-shrink: 0;
+    }
+    
+    .audit-card-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
         font-weight: 600;
         color: var(--md3-on-surface);
-        font-size: 1rem;
         flex: 1;
     }
-
-    .mobile-status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--md3-spacing-xs);
-        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+    
+    .audit-card-badge {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-md);
         border-radius: var(--md3-radius-full);
         font-size: 0.75rem;
         font-weight: 600;
-        flex-shrink: 0;
     }
-
-    .mobile-status-badge.approved {
-        background: var(--md3-tertiary-container);
-        color: var(--md3-on-tertiary-container);
+    
+    .audit-card-body {
+        padding: var(--md3-spacing-md);
+        border-radius: 0 0 var(--md3-radius-xl) var(--md3-radius-xl);
     }
-
-    .mobile-status-badge.rejected {
+    
+    /* 审核列表 - 移动端友好的卡片式设计 */
+    .audit-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .audit-item {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline-variant);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .audit-item:hover,
+    .audit-item:active {
+        background: var(--md3-surface-container);
+        border-color: var(--md3-primary);
+    }
+    
+    .audit-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-sm);
+    }
+    
+    .audit-item-title {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--md3-on-surface);
+        flex: 1;
+        line-height: 1.3;
+    }
+    
+    .audit-item-meta {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        font-size: 0.8125rem;
+        color: var(--md3-on-surface-variant);
+        flex-wrap: wrap;
+    }
+    
+    .audit-item-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+    }
+    
+    .audit-item-meta .material-icons {
+        font-size: 0.875rem;
+    }
+    
+    .audit-item-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: var(--md3-spacing-sm);
+        padding-top: var(--md3-spacing-sm);
+        border-top: 1px dashed var(--md3-outline-variant);
+    }
+    
+    /* 状态徽章 */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .status-badge .material-icons {
+        font-size: 0.875rem;
+    }
+    
+    .status-badge.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .status-badge.rejected {
         background: var(--md3-error-container);
         color: var(--md3-on-error-container);
     }
-
-    .mobile-status-badge.pending {
-        background: var(--md3-secondary-container);
-        color: var(--md3-on-secondary-container);
+    
+    .status-badge.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
     }
-
-    .mobile-record-info {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-xs);
-        color: var(--md3-on-surface-variant);
-        font-size: 0.8125rem;
-    }
-
-    .mobile-info-row {
-        display: flex;
+    
+    /* 修改按钮 */
+    .edit-btn {
+        display: inline-flex;
         align-items: center;
         gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-md);
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
     }
-
-    .mobile-info-row .material-icons {
+    
+    .edit-btn:hover {
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-1px);
+    }
+    
+    .edit-btn .material-icons {
         font-size: 1rem;
     }
-
-    /* 分组标题 */
-    .mobile-section-title {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-sm);
-        padding: var(--md3-spacing-md) 0;
-        margin-bottom: var(--md3-spacing-sm);
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--md3-on-surface-variant);
-        border-bottom: 1px solid var(--md3-outline-variant);
-    }
-
-    .mobile-section-title .material-icons {
-        font-size: 1.125rem;
-        color: var(--md3-primary);
-    }
-
+    
     /* 空状态 */
-    .mobile-empty-state {
+    .empty-state {
         text-align: center;
-        padding: var(--md3-spacing-2xl) var(--md3-spacing-md);
+        padding: var(--md3-spacing-xl);
         color: var(--md3-on-surface-variant);
     }
-
-    .mobile-empty-state .material-icons {
+    
+    .empty-state .material-icons {
         font-size: 2.5rem;
-        opacity: 0.5;
+        opacity: 0.4;
         margin-bottom: var(--md3-spacing-sm);
     }
-
-    .mobile-empty-state p {
+    
+    .empty-state p {
         margin: 0;
         font-size: 0.875rem;
     }
+    
+    /* 查看全部按钮 */
+    .view-more-link {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-md);
+        padding-top: var(--md3-spacing-sm);
+        text-decoration: none;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: color 0.2s ease;
+        background: none;
+        border: none;
+        width: 100%;
+        cursor: pointer;
+        font-family: inherit;
+    }
+    
+    /* 历史记录弹窗 */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(4px);
+    }
 
-    /* PC端隐藏 */
-    @media (min-width: 769px) {
-        .mobile-audit-container {
-            display: none;
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-content {
+        background: var(--md3-surface);
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        border-radius: var(--md3-radius-xl);
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(20px);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-overlay.active .modal-content {
+        transform: translateY(0);
+    }
+
+    .modal-header {
+        padding: var(--md3-spacing-lg);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        color: var(--md3-on-surface-variant);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+    }
+
+    .modal-close:hover {
+        background: var(--md3-surface-container-high);
+    }
+
+    .modal-body {
+        padding: var(--md3-spacing-md);
+        overflow-y: auto;
+    }
+
+    /* 历史记录列表项 */
+    .history-item {
+        padding: var(--md3-spacing-md);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .history-item:last-child {
+        border-bottom: none;
+    }
+
+    .history-info h4 {
+        margin: 0 0 4px 0;
+        font-size: 0.95rem;
+    }
+
+    .history-meta {
+        font-size: 0.8rem;
+        color: var(--md3-on-surface-variant);
+        display: flex;
+        gap: 8px;
+    }
+
+    /* 响应式设置 */
+    @media (max-width: 900px) {
+        .audit-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .audit-container {
+            padding: var(--md3-spacing-md);
+            padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+        }
+        
+        .audit-grid {
+            gap: var(--md3-spacing-md);
+        }
+        
+        .page-header {
+            margin-bottom: var(--md3-spacing-lg);
+        }
+        
+        .page-header .material-icons {
+            font-size: 1.75rem;
+        }
+        
+        .page-header h1 {
+            font-size: 1.25rem;
+        }
+        
+        .audit-card-header {
+            padding: var(--md3-spacing-md);
+        }
+        
+        .audit-card-header .material-icons {
+            font-size: 1.5rem;
+        }
+        
+        .audit-card-header h2 {
+            font-size: 1rem;
+        }
+        
+        .audit-card-body {
+            padding: var(--md3-spacing-sm);
+        }
+        
+        .audit-item {
+            padding: var(--md3-spacing-sm) var(--md3-spacing-md);
         }
     }
 </style>
-
-<!-- PC端跳转到完整版 -->
-<script>
-function checkLayout() {
-    if (window.innerWidth > 768) {
-        window.location.href = '{% url "clubs:staff_audit_center" current_tab %}';
-    }
-}
-checkLayout();
-window.addEventListener('resize', checkLayout);
-</script>
-
 {% endblock %}
 
 {% block content %}
-<div class="mobile-audit-container">
-    <!-- 标签页导航 -->
-    <div class="mobile-tabs">
-        <a href="{% url 'clubs:staff_audit_center_mobile' 'annual_review' %}" 
-           class="mobile-tab {% if current_tab == 'annual_review' %}active{% endif %}">
-            年审
-        </a>
-        <a href="{% url 'clubs:staff_audit_center_mobile' 'registration' %}" 
-           class="mobile-tab {% if current_tab == 'registration' %}active{% endif %}">
-            社团注册
-        </a>
-        <a href="{% url 'clubs:staff_audit_center_mobile' 'application' %}" 
-           class="mobile-tab {% if current_tab == 'application' %}active{% endif %}">
-            新社团申请
-        </a>
-        <a href="{% url 'clubs:staff_audit_center_mobile' 'reimbursement' %}" 
-           class="mobile-tab {% if current_tab == 'reimbursement' %}active{% endif %}">
-            报销
-        </a>
-        <a href="{% url 'clubs:staff_audit_center_mobile' 'activity_application' %}" 
-           class="mobile-tab {% if current_tab == 'activity_application' %}active{% endif %}">
-            活动申请
-        </a>
-        <a href="{% url 'clubs:staff_audit_center_mobile' 'president_transition' %}" 
-           class="mobile-tab {% if current_tab == 'president_transition' %}active{% endif %}">
-            社长换届
-        </a>
-    </div>
-
-    <!-- 待审核记录 -->
-    {% if pending_items %}
-    <div class="mobile-section-title">
+<div class="audit-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
         <span class="material-icons">assignment</span>
-        <span>待审核 ({{ pending_items|length }})</span>
+        <h1>审核中心</h1>
     </div>
-
-    {% for item in pending_items %}
-    <div class="mobile-record-card" onclick="window.location.href='{{ item.review_url }}';">
-        <div class="mobile-record-header">
-            <span class="mobile-club-name">
-                {% if current_tab == 'annual_review' %}{{ item.club.name }}
-                {% elif current_tab == 'registration' %}{{ item.club.name }}
-                {% elif current_tab == 'application' %}{{ item.club_name }}
-                {% elif current_tab == 'reimbursement' %}{{ item.club.name }}
-                {% elif current_tab == 'activity_application' %}{{ item.club.name }}
-                {% elif current_tab == 'president_transition' %}{{ item.club.name }}
+    
+    <!-- 审核类型卡片网格 -->
+    <div class="audit-grid">
+        <!-- 年审记录 -->
+        <div class="audit-card">
+            <div class="audit-card-header">
+                <span class="material-icons">assignment</span>
+                <h2>年审记录</h2>
+                {% if pending_counts.annual_review > 0 %}
+                <span class="audit-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
+                    {{ pending_counts.annual_review }} 未处理
+                </span>
+                {% elif audit_items.annual_review %}
+                <span class="audit-card-badge">{{ audit_items.annual_review|length }}</span>
                 {% endif %}
-            </span>
-            <span class="mobile-status-badge pending">
-                <span class="material-icons" style="font-size: 0.875rem;">schedule</span> 待审核
-            </span>
+            </div>
+            <div class="audit-card-body">
+                {% if audit_items.annual_review %}
+                <div class="audit-list">
+                    {% for item in audit_items.annual_review|slice:':3' %}
+                    <div class="audit-item" data-item-type="annual_review" data-item-id="{{ item.id }}">
+                        <div class="audit-item-header">
+                            <span class="audit-item-title">{{ item.club.name }}</span>
+                            {% if item.status == 'approved' %}
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            {% elif item.status == 'rejected' %}
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            {% elif item.status == 'pending' %}
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            {% endif %}
+                        </div>
+                        <div class="audit-item-footer">
+                            <div class="audit-item-meta">
+                                <span><span class="material-icons">calendar_today</span>{{ item.submission_year }}</span>
+                            </div>
+                            {% if item.status == 'rejected' and not item.has_newer_version %}
+                            <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=review&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
+                                <span class="material-icons">edit</span>修改
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if audit_items.annual_review|length > 3 %}
+                    <button type="button" class="view-more-link" onclick="openHistoryModal('submission', '年审记录历史')">
+                        <span class="material-icons">history</span> 历史记录
+                    </button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="material-icons">assignment</span>
+                    <p>暂无年审记录</p>
+                </div>
+                {% endif %}
+            </div>
         </div>
 
-        <div class="mobile-record-info">
-            {% if current_tab == 'annual_review' %}
-            <div class="mobile-info-row">
-                <span class="material-icons">calendar_today</span>
-                <span>{{ item.submission_year }} 年</span>
+        <!-- 社团注册记录 -->
+        <div class="audit-card">
+            <div class="audit-card-header">
+                <span class="material-icons">add_circle</span>
+                <h2>社团注册记录</h2>
+                {% if pending_counts.registration > 0 %}
+                <span class="audit-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
+                    {{ pending_counts.registration }} 未处理
+                </span>
+                {% elif audit_items.registration %}
+                <span class="audit-card-badge">{{ audit_items.registration|length }}</span>
+                {% endif %}
             </div>
-            <div class="mobile-info-row">
-                <span class="material-icons">schedule</span>
-                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+            <div class="audit-card-body">
+                {% if audit_items.registration %}
+                <div class="audit-list">
+                    {% for item in audit_items.registration|slice:':3' %}
+                    <div class="audit-item" data-item-type="registration" data-item-id="{{ item.id }}">
+                        <div class="audit-item-header">
+                            <span class="audit-item-title">{{ item.club.name }}</span>
+                            {% if item.status == 'approved' %}
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            {% elif item.status == 'rejected' %}
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            {% elif item.status == 'pending' %}
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            {% endif %}
+                        </div>
+                        <div class="audit-item-footer">
+                            <div class="audit-item-meta">
+                                <span><span class="material-icons">schedule</span>{{ item.submitted_at|date:"m-d" }}</span>
+                            </div>
+                            {% if item.status == 'rejected' and not item.has_newer_version %}
+                            <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=club_registration&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
+                                <span class="material-icons">edit</span>修改
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if audit_items.registration|length > 3 %}
+                    <button type="button" class="view-more-link" onclick="openHistoryModal('club_registration', '社团注册历史')">
+                        <span class="material-icons">history</span> 历史记录
+                    </button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="material-icons">add_circle</span>
+                    <p>暂无社团注册记录</p>
+                </div>
+                {% endif %}
             </div>
-            {% elif current_tab == 'registration' %}
-            <div class="mobile-info-row">
-                <span class="material-icons">event</span>
-                <span>{{ item.registration_period.name }}</span>
+        </div>
+
+        <!-- 社团申请记录 -->
+        <div class="audit-card">
+            <div class="audit-card-header">
+                <span class="material-icons">edit</span>
+                <h2>社团申请记录</h2>
+                {% if pending_counts.application > 0 %}
+                <span class="audit-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
+                    {{ pending_counts.application }} 未处理
+                </span>
+                {% elif audit_items.application %}
+                <span class="audit-card-badge">{{ audit_items.application|length }}</span>
+                {% endif %}
             </div>
-            <div class="mobile-info-row">
-                <span class="material-icons">schedule</span>
-                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+            <div class="audit-card-body">
+                {% if audit_items.application %}
+                <div class="audit-list">
+                    {% for item in audit_items.application|slice:':3' %}
+                    <div class="audit-item" data-item-type="application" data-item-id="{{ item.id }}">
+                        <div class="audit-item-header">
+                            <span class="audit-item-title">{{ item.club_name }}</span>
+                            {% if item.status == 'approved' %}
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            {% elif item.status == 'rejected' %}
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            {% elif item.status == 'pending' %}
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            {% endif %}
+                        </div>
+                        <div class="audit-item-footer">
+                            <div class="audit-item-meta">
+                                <span><span class="material-icons">schedule</span>{{ item.submitted_at|date:"m-d" }}</span>
+                            </div>
+                            {% if item.status == 'rejected' and not item.has_newer_version %}
+                            <a href="{% url 'clubs:edit_rejected_review' item.id %}?type=club_application&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
+                                <span class="material-icons">edit</span>修改
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if audit_items.application|length > 3 %}
+                    <button type="button" class="view-more-link" onclick="openHistoryModal('club_application', '社团申请历史')">
+                        <span class="material-icons">history</span> 历史记录
+                    </button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="material-icons">edit</span>
+                    <p>暂无社团申请记录</p>
+                </div>
+                {% endif %}
             </div>
-            {% elif current_tab == 'application' %}
-            <div class="mobile-info-row">
-                <span class="material-icons">person</span>
-                <span>{{ item.requested_by.get_full_name|default:item.requested_by.username }}</span>
-            </div>
-            <div class="mobile-info-row">
-                <span class="material-icons">schedule</span>
-                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
-            </div>
-            {% elif current_tab == 'reimbursement' %}
-            <div class="mobile-info-row">
+        </div>
+
+        <!-- 报销记录 -->
+        <div class="audit-card">
+            <div class="audit-card-header">
                 <span class="material-icons">attach_money</span>
-                <span style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
-            </div>
-            <div class="mobile-info-row">
-                <span class="material-icons">schedule</span>
-                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
-            </div>
-            {% elif current_tab == 'activity_application' %}
-            <div class="mobile-info-row">
-                <span class="material-icons">event</span>
-                <span>{{ item.activity_date|date:"Y-m-d" }}</span>
-            </div>
-            <div class="mobile-info-row">
-                <span class="material-icons">schedule</span>
-                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
-            </div>
-            {% elif current_tab == 'president_transition' %}
-            <div class="mobile-info-row">
-                <span class="material-icons">person</span>
-                <span>新社长: {{ item.new_president_name }}</span>
-            </div>
-            <div class="mobile-info-row">
-                <span class="material-icons">schedule</span>
-                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-    {% endfor %}
-    {% endif %}
-
-    <!-- 已完成记录 -->
-    {% if completed_items %}
-    <div class="mobile-section-title">
-        <span class="material-icons">done_all</span>
-        <span>已完成 ({{ completed_items|length }})</span>
-    </div>
-
-    {% for item in completed_items %}
-    <div class="mobile-record-card" onclick="window.location.href='{{ item.review_url }}';">
-        <div class="mobile-record-header">
-            <span class="mobile-club-name">
-                {% if current_tab == 'annual_review' %}{{ item.club.name }}
-                {% elif current_tab == 'registration' %}{{ item.club.name }}
-                {% elif current_tab == 'application' %}{{ item.club_name }}
-                {% elif current_tab == 'reimbursement' %}{{ item.club.name }}
-                {% elif current_tab == 'activity_application' %}{{ item.club.name }}
-                {% elif current_tab == 'president_transition' %}{{ item.club.name }}
+                <h2>报销记录</h2>
+                {% if pending_counts.reimbursement > 0 %}
+                <span class="audit-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
+                    {{ pending_counts.reimbursement }} 未处理
+                </span>
+                {% elif audit_items.reimbursement %}
+                <span class="audit-card-badge">{{ audit_items.reimbursement|length }}</span>
                 {% endif %}
-            </span>
-            {% if item.status == 'approved' %}
-            <span class="mobile-status-badge approved">
-                <span class="material-icons" style="font-size: 0.875rem;">check_circle</span> 已批准
-            </span>
-            {% elif item.status == 'rejected' %}
-            <span class="mobile-status-badge rejected">
-                <span class="material-icons" style="font-size: 0.875rem;">cancel</span> 已拒绝
-            </span>
-            {% endif %}
+            </div>
+            <div class="audit-card-body">
+                {% if audit_items.reimbursement %}
+                <div class="audit-list">
+                    {% for item in audit_items.reimbursement|slice:':3' %}
+                    <div class="audit-item" data-item-type="reimbursement" data-item-id="{{ item.id }}">
+                        <div class="audit-item-header">
+                            <span class="audit-item-title">{{ item.club.name }}</span>
+                            {% if item.status == 'approved' %}
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            {% elif item.status == 'rejected' %}
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            {% elif item.status == 'pending' %}
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            {% endif %}
+                        </div>
+                        <div class="audit-item-footer">
+                            <div class="audit-item-meta">
+                                <span style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
+                            </div>
+                            {% if item.status == 'rejected' and not item.has_newer_version %}
+                            <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=reimbursement&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
+                                <span class="material-icons">edit</span>修改
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if audit_items.reimbursement|length > 3 %}
+                    <button type="button" class="view-more-link" onclick="openHistoryModal('reimbursement', '报销记录历史')">
+                        <span class="material-icons">history</span> 历史记录
+                    </button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="material-icons">attach_money</span>
+                    <p>暂无报销记录</p>
+                </div>
+                {% endif %}
+            </div>
         </div>
 
-        <div class="mobile-record-info">
-            <div class="mobile-info-row">
-                <span class="material-icons">schedule</span>
-                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+        <!-- 活动申请记录 -->
+        <div class="audit-card">
+            <div class="audit-card-header">
+                <span class="material-icons">event</span>
+                <h2>活动申请记录</h2>
+                {% if pending_counts.activity_application > 0 %}
+                <span class="audit-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
+                    {{ pending_counts.activity_application }} 未处理
+                </span>
+                {% elif audit_items.activity_application %}
+                <span class="audit-card-badge">{{ audit_items.activity_application|length }}</span>
+                {% endif %}
+            </div>
+            <div class="audit-card-body">
+                {% if audit_items.activity_application %}
+                <div class="audit-list">
+                    {% for item in audit_items.activity_application|slice:':3' %}
+                    <div class="audit-item" data-item-type="activity_application" data-item-id="{{ item.id }}">
+                        <div class="audit-item-header">
+                            <span class="audit-item-title">{{ item.activity_name }}</span>
+                            {% if item.staff_approved is None %}
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            {% elif item.staff_approved %}
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            {% else %}
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            {% endif %}
+                        </div>
+                        <div class="audit-item-footer">
+                            <div class="audit-item-meta">
+                                <span><span class="material-icons">event</span>{{ item.activity_date|date:"m-d" }}</span>
+                            </div>
+                            {% if item.staff_approved == False and not item.has_newer_version %}
+                            <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=activity_application&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
+                                <span class="material-icons">edit</span>修改
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if audit_items.activity_application|length > 3 %}
+                    <button type="button" class="view-more-link" onclick="openHistoryModal('activity_application', '活动申请历史')">
+                        <span class="material-icons">history</span> 历史记录
+                    </button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="material-icons">event</span>
+                    <p>暂无活动申请记录</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 社长换届申请记录 -->
+        <div class="audit-card">
+            <div class="audit-card-header">
+                <span class="material-icons">swap_horiz</span>
+                <h2>社长换届申请</h2>
+                {% if pending_counts.president_transition > 0 %}
+                <span class="audit-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
+                    {{ pending_counts.president_transition }} 未处理
+                </span>
+                {% elif audit_items.president_transition %}
+                <span class="audit-card-badge">{{ audit_items.president_transition|length }}</span>
+                {% endif %}
+            </div>
+            <div class="audit-card-body">
+                {% if audit_items.president_transition %}
+                <div class="audit-list">
+                    {% for item in audit_items.president_transition|slice:':3' %}
+                    <div class="audit-item" data-item-type="president_transition" data-item-id="{{ item.id }}">
+                        <div class="audit-item-header">
+                            <span class="audit-item-title">{{ item.club.name }}</span>
+                            {% if item.status == 'approved' %}
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            {% elif item.status == 'rejected' %}
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            {% elif item.status == 'pending' %}
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            {% endif %}
+                        </div>
+                        <div class="audit-item-footer">
+                            <div class="audit-item-meta">
+                                <span><span class="material-icons">person</span>{{ item.new_president_name }}</span>
+                            </div>
+                            {% if item.status == 'rejected' and not item.has_newer_version %}
+                            <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=president_transition&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
+                                <span class="material-icons">edit</span>修改
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if audit_items.president_transition|length > 3 %}
+                    <button type="button" class="view-more-link" onclick="openHistoryModal('president_transition', '社长换届历史')">
+                        <span class="material-icons">history</span> 历史记录
+                    </button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="material-icons">swap_horiz</span>
+                    <p>暂无社长换届申请记录</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
-    {% endfor %}
-    {% endif %}
-
-    <!-- 空状态 -->
-    {% if not pending_items and not completed_items %}
-    <div class="mobile-empty-state">
-        <span class="material-icons">inbox</span>
-        <p>暂无记录</p>
-    </div>
-    {% endif %}
 </div>
+
+<!-- 历史记录弹窗 -->
+<div id="historyModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">审核历史</h2>
+            <button class="modal-close" onclick="closeHistoryModal()">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <div class="empty-state">
+                <p>加载中...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 打开弹窗
+function openHistoryModal(type, title) {
+    const modal = document.getElementById('historyModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = title;
+    modal.classList.add('active');
+    modalBody.innerHTML = '<div class="empty-state"><p>加载中...</p></div>';
+    
+    // Fetch data
+    fetch(`/clubs/api/staff/review-history/${type}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.items && data.items.length > 0) {
+                let html = '<div class="audit-list">';
+                data.items.forEach(item => {
+                    let statusClass = '';
+                    let statusIcon = '';
+                    let statusText = '';
+                    
+                    if (item.status === 'approved') {
+                        statusClass = 'approved';
+                        statusIcon = 'check_circle';
+                        statusText = '已批准';
+                    } else if (item.status === 'rejected') {
+                        statusClass = 'rejected';
+                        statusIcon = 'cancel';
+                        statusText = '已拒绝';
+                    } else {
+                        statusClass = 'pending';
+                        statusIcon = 'schedule';
+                        statusText = '待审核';
+                    }
+                    
+                    html += `
+                        <div class="history-item" onclick="window.location.href='/clubs/staff/review-detail/${item.type}/${item.id}/'" style="cursor: pointer;">
+                            <div class="history-info">
+                                <h4>${item.title}</h4>
+                                <div class="history-meta">
+                                    <span>${item.date}</span>
+                                    <span>•</span>
+                                    <span>${item.meta}</span>
+                                </div>
+                            </div>
+                            <span class="status-badge ${statusClass}">
+                                <span class="material-icons">${statusIcon}</span>${statusText}
+                            </span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                modalBody.innerHTML = html;
+            } else {
+                modalBody.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-icons">history</span>
+                        <p>暂无历史记录</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            modalBody.innerHTML = '<div class="empty-state"><p>加载失败，请重试</p></div>';
+        });
+}
+
+function closeHistoryModal() {
+    document.getElementById('historyModal').classList.remove('active');
+}
+
+// 点击遮罩关闭
+document.getElementById('historyModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeHistoryModal();
+    }
+});
+
+// 使审核列表项可点击
+document.addEventListener('DOMContentLoaded', function() {
+    const auditItems = document.querySelectorAll('.audit-item');
+    
+    auditItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            // 如果点击的是按钮或链接，则不处理
+            if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || 
+                e.target.closest('a') || e.target.closest('button')) {
+                return;
+            }
+            
+            const itemType = this.dataset.itemType;
+            const itemId = this.dataset.itemId;
+            
+            if (itemType && itemId) {
+                let url = '';
+                switch(itemType) {
+                    case 'annual_review':
+                        url = `/clubs/staff/review-submission/${itemId}/`;
+                        break;
+                    case 'registration':
+                        url = `/clubs/staff/review-club-registration-submission/${itemId}/`;
+                        break;
+                    case 'application':
+                        url = `/clubs/staff/application/${itemId}/`;
+                        break;
+                    case 'reimbursement':
+                        url = `/clubs/staff/review-reimbursement/${itemId}/`;
+                        break;
+                    case 'activity_application':
+                        url = `/clubs/staff/review-activity-application/${itemId}/`;
+                        break;
+                    case 'president_transition':
+                        url = `/clubs/staff/review-president-transition/${itemId}/`;
+                        break;
+                }
+                if (url) {
+                    window.location.href = url;
+                }
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load static %}
 
 {% block title %}{{ title }} - 社团管理系统{% endblock %}
 
@@ -7,108 +8,241 @@
     .history-container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 28px 20px 60px;
+        padding: var(--md3-spacing-xl) var(--md3-spacing-lg);
         box-sizing: border-box;
     }
 
-    .history-header {
-        margin-bottom: 24px;
-    }
-
-    .history-title {
-        font-size: 26px;
-        font-weight: 700;
-        color: var(--md3-on-surface);
+    /* 页面头部 */
+    .page-header {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 6px;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-xl);
     }
 
-    .history-title .material-icons {
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+        background: var(--md3-surface-container-highest);
+        transform: scale(1.05);
+    }
+
+    .page-title-section {
+        flex: 1;
+    }
+
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-xs) 0;
+    }
+
+    .page-title .material-icons {
         font-size: 2rem;
+        color: var(--md3-primary);
     }
 
-    .history-subtitle {
-        font-size: 14px;
+    .page-subtitle {
+        font-size: 0.875rem;
         color: var(--md3-on-surface-variant);
+        margin: 0;
     }
 
-    .section-card {
+    /* 统计卡片 */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .stat-card {
         background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
         border: 1px solid var(--md3-outline-variant);
-        border-radius: 18px;
-        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .stat-card.approved {
+        background: var(--md3-success-container);
+        border-color: transparent;
+    }
+
+    .stat-card.rejected {
+        background: var(--md3-error-container);
+        border-color: transparent;
+    }
+
+    .stat-card.pending {
+        background: var(--md3-warning-container);
+        border-color: transparent;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: var(--md3-spacing-xs);
+    }
+
+    .stat-card.approved .stat-value { color: var(--md3-on-success-container); }
+    .stat-card.rejected .stat-value { color: var(--md3-on-error-container); }
+    .stat-card.pending .stat-value { color: var(--md3-on-warning-container); }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-card.approved .stat-label { color: var(--md3-on-success-container); }
+    .stat-card.rejected .stat-label { color: var(--md3-on-error-container); }
+    .stat-card.pending .stat-label { color: var(--md3-on-warning-container); }
+
+    /* 主卡片 */
+    .main-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
         overflow: hidden;
     }
 
-    .section-body {
-        padding: 20px 0;
-        position: relative;
+    .card-header {
+        background: var(--md3-surface-container-high);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
-    .table-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        width: 100%;
-        max-width: 100%;
-        display: block;
-        position: relative;
-        padding: 0 20px;
-        box-sizing: border-box;
-    }
-
-    .data-table {
-        width: 100%;
-        min-width: 800px;
-        border-collapse: collapse;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .data-table thead tr {
-        background: var(--md3-surface-container-highest);
-    }
-    
-    .data-table th {
-        padding: 14px 16px;
-        text-align: left;
+    .card-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        font-size: 1.125rem;
         font-weight: 600;
-        font-size: 13px;
-        color: var(--md3-on-surface-variant);
-        border-bottom: 2px solid var(--md3-outline-variant);
-        white-space: nowrap;
-    }
-
-    .data-table td {
-        padding: 14px 16px;
         color: var(--md3-on-surface);
-        border-bottom: 1px solid rgba(0,0,0,0.08);
-        font-size: 14px;
-        word-break: break-word;
+        margin: 0;
     }
 
-    .data-table tbody tr {
+    .card-title .material-icons {
+        color: var(--md3-primary);
+    }
+
+    .record-count {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    /* 记录列表 */
+    .records-list {
+        padding: var(--md3-spacing-md);
+    }
+
+    .record-item {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline-variant);
         cursor: pointer;
         transition: all 0.2s ease;
     }
 
-    .data-table tbody tr:hover {
-        background: var(--md3-surface-container-low);
+    .record-item:last-child {
+        margin-bottom: 0;
     }
 
-    .data-table strong {
+    .record-item:hover {
+        background: var(--md3-surface-container);
+        border-color: var(--md3-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .record-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-md);
+    }
+
+    .record-main-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .record-title {
+        font-size: 1rem;
         font-weight: 700;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
     }
 
+    .record-title .amount {
+        color: var(--md3-primary);
+        font-weight: 600;
+    }
+
+    .record-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        font-size: 0.8125rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .record-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .record-meta-item .material-icons {
+        font-size: 1rem;
+        opacity: 0.7;
+    }
+
+    /* 状态徽章 */
     .status-badge {
         display: inline-flex;
         align-items: center;
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
         gap: 4px;
+        padding: 6px 12px;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .status-badge .material-icons {
+        font-size: 0.875rem;
     }
 
     .status-badge.approved {
@@ -131,96 +265,187 @@
         color: var(--md3-on-tertiary-container);
     }
 
-    .status-badge .material-icons {
-        font-size: 14px;
+    /* 记录详情网格 */
+    .record-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--md3-spacing-md);
     }
 
-    .empty-msg {
-        text-align: center;
-        padding: 40px;
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .detail-label {
+        font-size: 0.6875rem;
+        font-weight: 600;
         color: var(--md3-on-surface-variant);
-        font-size: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    .btn {
+    .detail-value {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface);
+        font-weight: 500;
+    }
+
+    .detail-value.highlight {
+        color: var(--md3-primary);
+        font-weight: 700;
+    }
+
+    /* 操作按钮 */
+    .record-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--md3-spacing-sm);
+        margin-top: var(--md3-spacing-md);
+        padding-top: var(--md3-spacing-md);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .action-btn {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 9px 16px;
-        border-radius: 999px;
-        border: 1px solid transparent;
+        padding: 8px 16px;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.8125rem;
         font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        text-decoration: none;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: var(--md3-elevation-2);
-    }
-
-    .btn-secondary {
-        background: var(--md3-surface-container-high);
-        color: var(--md3-on-surface);
-        border-color: var(--md3-outline-variant);
-    }
-
-    .action-links {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .action-links a {
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
         text-decoration: none;
         transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
     }
 
-    .action-links .edit-btn {
+    .action-btn.primary {
         background: var(--md3-primary);
         color: var(--md3-on-primary);
     }
 
-    .action-links .edit-btn:hover {
-        background: var(--md3-primary-dim);
+    .action-btn.primary:hover {
+        background: var(--md3-primary-hover, var(--md3-primary));
         box-shadow: var(--md3-elevation-1);
     }
 
-    .back-button-area {
-        text-align: center;
-        margin-top: 24px;
+    .action-btn .material-icons {
+        font-size: 1rem;
     }
 
-    @media (max-width: 900px) {
+    /* 空状态*/
+    .empty-state {
+        text-align: center;
+        padding: var(--md3-spacing-3xl);
+        color: var(--md3-on-surface-variant);
+    }
+
+    .empty-state .material-icons {
+        font-size: 4rem;
+        opacity: 0.3;
+        margin-bottom: var(--md3-spacing-md);
+    }
+
+    .empty-state h3 {
+        margin: 0 0 var(--md3-spacing-sm) 0;
+        font-size: 1.25rem;
+        color: var(--md3-on-surface);
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.875rem;
+    }
+
+    /* 活动申请双审核状态 */
+    .review-status-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .review-status-item {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        font-size: 0.75rem;
+    }
+
+    .review-status-item .label {
+        color: var(--md3-on-surface-variant);
+        min-width: 48px;
+    }
+
+    .mini-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 2px 8px;
+        border-radius: var(--md3-radius-sm);
+        font-size: 0.6875rem;
+        font-weight: 600;
+    }
+
+    .mini-badge.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .mini-badge.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .mini-badge.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
         .history-container {
-            padding: 20px 16px 48px;
+            padding: var(--md3-spacing-md);
         }
 
-        .section-body {
-            padding: 16px;
+        .page-header {
+            flex-wrap: wrap;
         }
 
-        .table-wrapper {
-            margin: 0 -16px;
-            padding: 0 16px;
+        .page-title {
+            font-size: 1.375rem;
         }
 
-        .data-table {
-            font-size: 13px;
+        .stats-row {
+            grid-template-columns: repeat(3, 1fr);
         }
 
-        .data-table th, .data-table td {
-            padding: 10px 12px;
+        .stat-card {
+            padding: var(--md3-spacing-md);
         }
 
-        .history-title {
-            font-size: 20px;
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--md3-spacing-sm);
+            padding: var(--md3-spacing-md);
+        }
+
+        .record-header {
+            flex-direction: column;
+        }
+
+        .record-details {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .record-actions {
+            flex-wrap: wrap;
         }
     }
 </style>
@@ -228,164 +453,272 @@
 
 {% block content %}
 <div class="history-container">
-    <div class="history-header">
-        <h1 class="history-title">
-            <span class="material-icons">history</span>
-            {{ title }}
-        </h1>
-        <p class="history-subtitle">欢迎 {{ user.profile.get_full_name }}，查看审批历史记录</p>
-    </div>
-
-    <div class="section-card">
-        <div class="section-body">
-            {% if items %}
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            {% if item_type == 'annual_review' %}
-                                <th>社团名称</th>
-                                <th>社长</th>
-                                <th>提交年份</th>
-                                <th>提交时间</th>
-                                <th>审核时间</th>
-                                <th>审核结果</th>
-                            {% elif item_type == 'club_registration' %}
-                                <th>社团名称</th>
-                                <th>申请人</th>
-                                <th>提交时间</th>
-                                <th>审核时间</th>
-                                <th>审核结果</th>
-                            {% elif item_type == 'club_application' %}
-                                <th>社团名称</th>
-                                <th>申请人</th>
-                                <th>提交时间</th>
-                                <th>审核时间</th>
-                                <th>审核结果</th>
-                            {% elif item_type == 'reimbursement' %}
-                                <th>社团名称</th>
-                                <th>报销日期</th>
-                                <th>报销金额</th>
-                                <th>提交时间</th>
-                                <th>审核时间</th>
-                                <th>审核结果</th>
-                            {% elif item_type == 'activity_application' %}
-                                <th>社团名称</th>
-                                <th>活动名称</th>
-                                <th>活动日期</th>
-                                <th>提交时间</th>
-                                <th>干事审核</th>
-                                <th>教师审核</th>
-                                <th>审核结果</th>
-                            {% elif item_type == 'president_transition' %}
-                                <th>社团名称</th>
-                                <th>原社长</th>
-                                <th>新社长</th>
-                                <th>提交时间</th>
-                                <th>审核时间</th>
-                                <th>审核结果</th>
-                            {% endif %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in items %}
-                        <tr onclick="viewApprovalDetail('{{ item_type }}', {{ item.id }})">
-                            {% if item_type == 'annual_review' %}
-                                <td><strong>{{ item.club.name }}</strong></td>
-                                <td>{% if item.club.president %}{{ item.club.president.profile.real_name|default:'未设置' }}{% else %}未设置{% endif %}</td>
-                                <td>{{ item.submission_year }}</td>
-                                <td>{{ item.submitted_at|date:"Y-m-d H:i" }}</td>
-                                <td>{{ item.reviewed_at|date:"Y-m-d H:i"|default:"待审核" }}</td>
-                                <td>
-                                    <span class="status-badge {{ item.status }}">
-                                        {% if item.status == 'approved' %}已批准{% elif item.status == 'rejected' %}已拒绝{% elif item.status == 'pending' %}待审核{% endif %}
-                                    </span>
-                                </td>
-                            {% elif item_type == 'club_registration' %}
-                                <td><strong>{{ item.club.name }}</strong></td>
-                                <td>{% if item.requested_by %}{{ item.requested_by.profile.get_full_name|default:'未设置' }}{% else %}未设置{% endif %}</td>
-                                <td>{{ item.submitted_at|date:"Y-m-d H:i" }}</td>
-                                <td>{{ item.reviewed_at|date:"Y-m-d H:i"|default:"待审核" }}</td>
-                                <td>
-                                    <span class="status-badge {{ item.status }}">
-                                        {% if item.status == 'approved' %}已批准{% elif item.status == 'rejected' %}已拒绝{% elif item.status == 'pending' %}待审核{% endif %}
-                                    </span>
-                                </td>
-                            {% elif item_type == 'club_application' %}
-                                <td><strong>{{ item.club_name }}</strong></td>
-                                <td>{% if item.requested_by %}{{ item.requested_by.profile.get_full_name|default:'未设置' }}{% else %}未设置{% endif %}</td>
-                                <td>{{ item.submitted_at|date:"Y-m-d H:i" }}</td>
-                                <td>{{ item.reviewed_at|date:"Y-m-d H:i"|default:"待审核" }}</td>
-                                <td>
-                                    <span class="status-badge {{ item.status }}">
-                                        {% if item.status == 'approved' %}已批准{% elif item.status == 'rejected' %}已拒绝{% elif item.status == 'pending' %}待审核{% endif %}
-                                    </span>
-                                </td>
-                            {% elif item_type == 'reimbursement' %}
-                                <td><strong>{{ item.club.name }}</strong></td>
-                                <td>{{ item.submission_date|date:"Y-m-d" }}</td>
-                                <td>¥{{ item.reimbursement_amount }}</td>
-                                <td>{{ item.submitted_at|date:"Y-m-d H:i" }}</td>
-                                <td>{{ item.reviewed_at|date:"Y-m-d H:i"|default:"待审核" }}</td>
-                                <td>
-                                    <span class="status-badge {{ item.status }}">
-                                        {% if item.status == 'approved' %}已批准{% elif item.status == 'rejected' %}已拒绝{% elif item.status == 'pending' %}待审核{% elif item.status == 'partially_rejected' %}部分拒绝{% endif %}
-                                    </span>
-                                </td>
-                            {% elif item_type == 'activity_application' %}
-                                <td><strong>{{ item.club.name }}</strong></td>
-                                <td>{{ item.activity_name }}</td>
-                                <td>{{ item.activity_date|date:"Y-m-d" }}</td>
-                                <td>{{ item.submitted_at|date:"Y-m-d H:i" }}</td>
-                                <td>
-                                    {% if item.staff_approved is not None %}
-                                        {% if item.staff_approved %}
-                                            <span class="status-badge approved">✓ 已批准</span>
-                                        {% else %}
-                                            <span class="status-badge rejected">✗ 已拒绝</span>
-                                        {% endif %}
-                                        <br><small style="color: var(--md3-on-surface-variant);">{{ item.staff_reviewed_at|date:"m-d H:i" }}</small>
-                                    {% else %}
-                                        <span class="status-badge pending">待审核</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="status-badge {{ item.status }}">
-                                        {% if item.status == 'approved' %}已批准{% elif item.status == 'rejected' %}已拒绝{% elif item.status == 'pending' %}待审核{% endif %}
-                                    </span>
-                                </td>
-                            {% elif item_type == 'president_transition' %}
-                                <td><strong>{{ item.club.name }}</strong></td>
-                                <td>{{ item.old_president.profile.get_full_name }}</td>
-                                <td>{{ item.new_president_name }}</td>
-                                <td>{{ item.submitted_at|date:"Y-m-d H:i" }}</td>
-                                <td>{{ item.reviewed_at|date:"Y-m-d H:i"|default:"待审核" }}</td>
-                                <td>
-                                    <span class="status-badge {{ item.status }}">
-                                        {% if item.status == 'approved' %}已批准{% elif item.status == 'rejected' %}已拒绝{% elif item.status == 'pending' %}待审核{% endif %}
-                                    </span>
-                                </td>
-                            {% endif %}
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="empty-msg">暂无审批历史记录</div>
-            {% endif %}
+    <!-- 页面头部 -->
+    <div class="page-header">
+        <a href="{% url 'clubs:approval_center' item_type %}" class="back-btn">
+            <span class="material-icons">arrow_back</span>
+        </a>
+        <div class="page-title-section">
+            <h1 class="page-title">
+                {% if item_type == 'annual_review' %}
+                <span class="material-icons">assignment</span>
+                {% elif item_type == 'club_registration' %}
+                <span class="material-icons">add_circle</span>
+                {% elif item_type == 'club_application' %}
+                <span class="material-icons">edit_note</span>
+                {% elif item_type == 'reimbursement' %}
+                <span class="material-icons">payments</span>
+                {% elif item_type == 'activity_application' %}
+                <span class="material-icons">event</span>
+                {% elif item_type == 'president_transition' %}
+                <span class="material-icons">swap_horiz</span>
+                {% endif %}
+                {{ title }}
+            </h1>
+            <p class="page-subtitle">查看全部历史记录</p>
         </div>
     </div>
 
-    <div class="back-button-area">
-        <a href="{% url 'clubs:approval_center' item_type %}" class="btn btn-secondary">返回审批中心</a>
+    <!-- 统计卡片 -->
+    <div class="stats-row">
+        <div class="stat-card approved">
+            <div class="stat-value" id="approved-count">0</div>
+            <div class="stat-label">已批准</div>
+        </div>
+        <div class="stat-card rejected">
+            <div class="stat-value" id="rejected-count">0</div>
+            <div class="stat-label">已拒绝</div>
+        </div>
+        <div class="stat-card pending">
+            <div class="stat-value" id="pending-count">0</div>
+            <div class="stat-label">待审核</div>
+        </div>
+    </div>
+
+    <!-- 记录列表 -->
+    <div class="main-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <span class="material-icons">history</span>
+                历史记录
+            </h2>
+            <span class="record-count">{{ items|length }} 条</span>
+        </div>
+
+        {% if items %}
+        <div class="records-list">
+            {% for item in items %}
+            <div class="record-item" onclick="viewApprovalDetail('{{ item_type }}', {{ item.id }})" data-status="{{ item.status|default:'pending' }}">
+                <div class="record-header">
+                    <div class="record-main-info">
+                        <h3 class="record-title">
+                            {% if item_type == 'annual_review' %}
+                            {{ item.club.name }}
+                            {% elif item_type == 'club_registration' %}
+                            {{ item.club.name }}
+                            {% elif item_type == 'club_application' %}
+                            {{ item.club_name }}
+                            {% elif item_type == 'reimbursement' %}
+                            {{ item.club.name }}
+                            <span class="amount">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
+                            {% elif item_type == 'activity_application' %}
+                            {{ item.activity_name }}
+                            {% elif item_type == 'president_transition' %}
+                            {{ item.club.name }}
+                            {% endif %}
+                        </h3>
+                        <div class="record-meta">
+                            <span class="record-meta-item">
+                                <span class="material-icons">calendar_today</span>
+                                {{ item.submitted_at|date:"Y-m-d H:i" }}
+                            </span>
+                            {% if item_type == 'annual_review' %}
+                            <span class="record-meta-item">
+                                <span class="material-icons">date_range</span>
+                                {{ item.submission_year }} 年度
+                            </span>
+                            {% elif item_type == 'reimbursement' %}
+                            <span class="record-meta-item">
+                                <span class="material-icons">receipt</span>
+                                报销日期: {{ item.submission_date|date:"Y-m-d" }}
+                            </span>
+                            {% elif item_type == 'activity_application' %}
+                            <span class="record-meta-item">
+                                <span class="material-icons">event</span>
+                                活动日期: {{ item.activity_date|date:"Y-m-d" }}
+                            </span>
+                            {% elif item_type == 'president_transition' %}
+                            <span class="record-meta-item">
+                                <span class="material-icons">person</span>
+                                {{ item.old_president.profile.real_name|default:'未知' }} → {{ item.new_president_name }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if item_type == 'activity_application' %}
+                    <!-- 活动申请有两级审核状态 -->
+                    <div class="review-status-group">
+                        <div class="review-status-item">
+                            <span class="label">干事:</span>
+                            {% if item.staff_approved is not None %}
+                                {% if item.staff_approved %}
+                                <span class="mini-badge approved">已批准</span>
+                                {% else %}
+                                <span class="mini-badge rejected">已拒绝</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="mini-badge pending">待审核</span>
+                            {% endif %}
+                        </div>
+                        <div class="review-status-item">
+                            <span class="label">教师:</span>
+                            <span class="status-badge {{ item.status }}">
+                                {% if item.status == 'approved' %}
+                                <span class="material-icons">check_circle</span> 已批准
+                                {% elif item.status == 'rejected' %}
+                                <span class="material-icons">cancel</span> 已拒绝
+                                {% else %}
+                                <span class="material-icons">schedule</span> 待审核
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <span class="status-badge {% if item.status == 'partially_rejected' %}partially-rejected{% else %}{{ item.status }}{% endif %}">
+                        {% if item.status == 'approved' %}
+                        <span class="material-icons">check_circle</span> 已批准
+                        {% elif item.status == 'rejected' %}
+                        <span class="material-icons">cancel</span> 已拒绝
+                        {% elif item.status == 'partially_rejected' %}
+                        <span class="material-icons">warning</span> 部分拒绝
+                        {% else %}
+                        <span class="material-icons">schedule</span> 待审核
+                        {% endif %}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="record-details">
+                    {% if item_type == 'annual_review' %}
+                    <div class="detail-item">
+                        <span class="detail-label">社长</span>
+                        <span class="detail-value">{{ item.club.president.profile.real_name|default:'未设置' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">审核时间</span>
+                        <span class="detail-value">{{ item.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
+                    </div>
+                    {% elif item_type == 'club_registration' %}
+                    <div class="detail-item">
+                        <span class="detail-label">申请人</span>
+                        <span class="detail-value">{{ item.requested_by.profile.real_name|default:'未设置' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">审核时间</span>
+                        <span class="detail-value">{{ item.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
+                    </div>
+                    {% elif item_type == 'club_application' %}
+                    <div class="detail-item">
+                        <span class="detail-label">申请人</span>
+                        <span class="detail-value">{{ item.requested_by.profile.real_name|default:'未设置' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">审核时间</span>
+                        <span class="detail-value">{{ item.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
+                    </div>
+                    {% elif item_type == 'reimbursement' %}
+                    <div class="detail-item">
+                        <span class="detail-label">报销金额</span>
+                        <span class="detail-value highlight">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">审核时间</span>
+                        <span class="detail-value">{{ item.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
+                    </div>
+                    {% elif item_type == 'activity_application' %}
+                    <div class="detail-item">
+                        <span class="detail-label">社团</span>
+                        <span class="detail-value">{{ item.club.name }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">干事审核时间</span>
+                        <span class="detail-value">{{ item.staff_reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
+                    </div>
+                    {% elif item_type == 'president_transition' %}
+                    <div class="detail-item">
+                        <span class="detail-label">原社长</span>
+                        <span class="detail-value">{{ item.old_president.profile.real_name }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">新社长</span>
+                        <span class="detail-value highlight">{{ item.new_president_name }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if item.status == 'rejected' and not item.has_newer_version %}
+                <div class="record-actions" onclick="event.stopPropagation()">
+                    {% if item_type == 'annual_review' %}
+                    <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=review&request_id={{ item.id }}" class="action-btn primary">
+                        <span class="material-icons">edit</span> 修改材料
+                    </a>
+                    {% elif item_type == 'club_registration' %}
+                    <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=club_registration&request_id={{ item.id }}" class="action-btn primary">
+                        <span class="material-icons">edit</span> 修改材料
+                    </a>
+                    {% elif item_type == 'club_application' %}
+                    <a href="{% url 'clubs:edit_rejected_review' item.id %}?type=club_application&request_id={{ item.id }}" class="action-btn primary">
+                        <span class="material-icons">edit</span> 修改材料
+                    </a>
+                    {% elif item_type == 'reimbursement' %}
+                    <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=reimbursement&request_id={{ item.id }}" class="action-btn primary">
+                        <span class="material-icons">edit</span> 修改材料
+                    </a>
+                    {% elif item_type == 'activity_application' %}
+                    <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=activity_application&request_id={{ item.id }}" class="action-btn primary">
+                        <span class="material-icons">edit</span> 修改材料
+                    </a>
+                    {% elif item_type == 'president_transition' %}
+                    <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=president_transition&request_id={{ item.id }}" class="action-btn primary">
+                        <span class="material-icons">edit</span> 修改材料
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="material-icons">inbox</span>
+            <h3>暂无历史记录</h3>
+            <p>当前没有任何审批历史</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <script>
 function viewApprovalDetail(itemType, itemId) {
-    const url = `/clubs/approval-center-detail/${itemType}/${itemId}/`;
-    window.location.href = url;
+    window.location.href = `/clubs/approval-center-detail/${itemType}/${itemId}/`;
 }
+
+// 计算统计数量
+document.addEventListener('DOMContentLoaded', function() {
+    const records = document.querySelectorAll('.record-item');
+    let approved = 0, rejected = 0, pending = 0;
+    
+    records.forEach(record => {
+        const status = record.dataset.status;
+        if (status === 'approved') approved++;
+        else if (status === 'rejected' || status === 'partially_rejected') rejected++;
+        else pending++;
+    });
+    
+    document.getElementById('approved-count').textContent = approved;
+    document.getElementById('rejected-count').textContent = rejected;
+    document.getElementById('pending-count').textContent = pending;
+});
 </script>
 {% endblock %}

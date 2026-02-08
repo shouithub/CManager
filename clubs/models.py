@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 import random
 import string
 from datetime import timedelta
@@ -18,14 +20,6 @@ class UserProfile(models.Model):
         ('pending', '待审核'),
         ('approved', '已批准'),
         ('rejected', '已拒绝'),
-    ]
-    
-    DEPARTMENT_CHOICES = [
-        ('office', '办公室'),
-        ('review', '评审部'),
-        ('activity', '活动部'),
-        ('organization', '组织部'),
-        ('propaganda', '宣传部'),
     ]
     
     STAFF_LEVEL_CHOICES = [
@@ -56,7 +50,8 @@ class UserProfile(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='approved', verbose_name='状态')
     
     # 干事专属字段 - 部门和职级
-    department = models.CharField(max_length=20, choices=DEPARTMENT_CHOICES, null=True, blank=True, verbose_name='部门')
+    department = models.CharField(max_length=20, null=True, blank=True, verbose_name='部门')
+    department_link = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='关联部门', related_name='staff_profiles')
     staff_level = models.CharField(max_length=20, choices=STAFF_LEVEL_CHOICES, default='member', verbose_name='部员/部长', help_text='仅对干事有效')
     
     # 实名信息字段
@@ -144,7 +139,8 @@ class Officer(models.Model):
         ordering = ['-appointed_date']
     
     def __str__(self):
-        return f"{self.club.name} - {self.user_profile.real_name} ({self.get_position_display()})"
+        real_name = self.user_profile.real_name if self.user_profile else "未知"
+        return f"{self.club.name} - {real_name} ({self.get_position_display()})"
 
 
 class SubmissionReview(models.Model):
@@ -172,6 +168,7 @@ class SubmissionReview(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='审核结果')
     comment = models.TextField(blank=True, verbose_name='审核意见')
     reviewed_at = models.DateTimeField(auto_now_add=True, verbose_name='审核时间')
+    submission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
     
     # 添加被拒绝的材料字段，使用JSONField存储被拒绝的材料列表
     rejected_materials = models.JSONField(default=list, blank=True, verbose_name='被拒绝的材料')
@@ -180,7 +177,7 @@ class SubmissionReview(models.Model):
         verbose_name = '审核记录'
         verbose_name_plural = '审核记录'
         ordering = ['-reviewed_at']
-        unique_together = ['submission', 'reviewer']  # 防止同一干事多次审核同一材料
+        unique_together = ['submission', 'reviewer', 'submission_attempt']  # 防止同一干事多次审核同一材料
     
     def __str__(self):
         return f"{self.reviewer.profile.real_name} 审核 {self.submission} - {self.get_status_display()}"
@@ -257,6 +254,27 @@ class Reimbursement(models.Model):
     
     def __str__(self):
         return f"{self.club.name} - {self.submission_date} - ¥{self.reimbursement_amount}"
+
+
+class ReimbursementHistory(models.Model):
+    """报销审核历史"""
+    reimbursement = models.ForeignKey(Reimbursement, on_delete=models.CASCADE, related_name='history', verbose_name='关联报销')
+    attempt_number = models.IntegerField(verbose_name='提交次数')
+    
+    submission_date = models.DateField(verbose_name='报销日期')
+    reimbursement_amount = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='报销金额')
+    description = models.TextField(verbose_name='报销说明')
+    
+    submitted_at = models.DateTimeField(verbose_name='提交时间')
+    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reimbursement_history_reviews', verbose_name='审核人')
+    status = models.CharField(max_length=20, choices=Reimbursement.STATUS_CHOICES, verbose_name='状态')
+    reviewer_comment = models.TextField(blank=True, verbose_name='审核意见')
+    
+    class Meta:
+        verbose_name = '报销审核历史'
+        verbose_name_plural = '报销审核历史'
+        ordering = ['-attempt_number']
 
 
 class Template(models.Model):
@@ -346,36 +364,7 @@ class Announcement(models.Model):
         return self.title
 
 
-class ClubInfoChangeRequest(models.Model):
-    """社团信息修改申请模型"""
-    STATUS_CHOICES = [
-        ('pending', '待审核'),
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
-    ]
-    
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='info_change_requests', verbose_name='社团')
-    new_name = models.CharField(max_length=100, verbose_name='新社团名称', blank=True)
-    new_description = models.TextField(verbose_name='新社团介绍', blank=True)
-    new_members_count = models.IntegerField(null=True, blank=True, verbose_name='新成员数')
-    change_reason = models.TextField(verbose_name='变更原因')
-    supporting_document = models.FileField(upload_to='club_info_changes/%Y/%m/', blank=True, verbose_name='支持文件')
-    
-    requested_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='申请用户')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='状态')
-    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name='提交时间')
-    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
-    reviewer_comment = models.TextField(blank=True, verbose_name='审核意见')
-    # 重新提交追踪 - 表示这是第几次提交（1为初始提交，2+ 为重新提交）
-    resubmission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    
-    class Meta:
-        verbose_name = '社团信息修改申请'
-        verbose_name_plural = '社团信息修改申请'
-        ordering = ['-submitted_at']
-    
-    def __str__(self):
-        return f"{self.club.name} 信息修改申请 - {self.get_status_display()}"
+
 
 
 class StaffClubRelation(models.Model):
@@ -501,6 +490,7 @@ class ClubApplicationReview(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='审核结果')
     comment = models.TextField(blank=True, verbose_name='审核意见')
     reviewed_at = models.DateTimeField(auto_now_add=True, verbose_name='审核时间')
+    submission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
     
     # 存储被拒绝的材料列表
     rejected_materials = models.JSONField(default=list, verbose_name='被拒绝的材料', blank=True)
@@ -508,7 +498,7 @@ class ClubApplicationReview(models.Model):
     class Meta:
         verbose_name = '社团申请审核记录'
         verbose_name_plural = '社团申请审核记录'
-        unique_together = ['application', 'reviewer']  # 防止同一干事多次审核同一申请
+        unique_together = ['application', 'reviewer', 'submission_attempt']  # 防止同一干事多次审核同一申请
 
 
 class RegistrationPeriod(models.Model):
@@ -652,6 +642,7 @@ class ClubRegistrationReview(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='审核结果')
     comment = models.TextField(blank=True, verbose_name='审核意见')
     reviewed_at = models.DateTimeField(auto_now_add=True, verbose_name='审核时间')
+    submission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
     
     # 存储被拒绝的材料列表
     rejected_materials = models.JSONField(default=list, verbose_name='被拒绝的材料', blank=True)
@@ -660,7 +651,7 @@ class ClubRegistrationReview(models.Model):
         verbose_name = '社团注册审核记录'
         verbose_name_plural = '社团注册审核记录'
         ordering = ['-reviewed_at']
-        unique_together = ['registration', 'reviewer']  # 防止同一干事多次审核同一注册
+        unique_together = ['registration', 'reviewer', 'submission_attempt']  # 防止同一干事多次审核同一注册
     
     def __str__(self):
         return f"{self.registration.club.name} - 注册申请 - {self.get_status_display()}"
@@ -736,7 +727,7 @@ class ActivityApplication(models.Model):
     activity_time_end = models.TimeField(verbose_name='活动结束时间')
     activity_location = models.CharField(max_length=200, verbose_name='活动地点')
     expected_participants = models.IntegerField(verbose_name='预计参与人数')
-    budget = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='活动预算', default=0)
+    budget = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='活动预算', default=0.00)
     
     # 活动申请表文件
     application_form = models.FileField(
@@ -791,72 +782,25 @@ class ActivityApplication(models.Model):
         self.save()
 
 
-
-
-class Room222Booking(models.Model):
-    """222房间借用模型"""
-    STATUS_CHOICES = [
-        ('active', '有效'),
-        ('cancelled', '已取消'),
-    ]
+class ActivityApplicationHistory(models.Model):
+    """活动申请审核历史"""
+    activity_application = models.ForeignKey(ActivityApplication, on_delete=models.CASCADE, related_name='history', verbose_name='关联活动申请')
+    attempt_number = models.IntegerField(verbose_name='提交次数')
     
-    # 借用人信息（可以是社团或个人）
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room_bookings', verbose_name='借用人')
-    club = models.ForeignKey(Club, on_delete=models.SET_NULL, null=True, blank=True, related_name='room_bookings', verbose_name='所属社团')
+    activity_name = models.CharField(max_length=200, verbose_name='活动名称')
+    activity_date = models.DateField(verbose_name='活动日期')
     
-    # 借用时间
-    booking_date = models.DateField(verbose_name='借用日期')
-    start_time = models.TimeField(verbose_name='开始时间')
-    end_time = models.TimeField(verbose_name='结束时间')
+    submitted_at = models.DateTimeField(verbose_name='提交时间')
+    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='activity_history_reviews', verbose_name='审核人')
     
-    # 借用信息
-    purpose = models.TextField(verbose_name='借用目的')
-    participant_count = models.IntegerField(verbose_name='预计使用人数')
-    contact_phone = models.CharField(max_length=20, verbose_name='联系电话')
-    
-    # 特殊需求
-    special_requirements = models.TextField(blank=True, verbose_name='特殊需求', help_text='如需要投影仪、音响等设备')
-    
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='状态')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    status = models.CharField(max_length=20, choices=ActivityApplication.STATUS_CHOICES, verbose_name='状态')
+    reviewer_comment = models.TextField(blank=True, verbose_name='审核意见')
     
     class Meta:
-        verbose_name = '222房间借用'
-        verbose_name_plural = '222房间借用'
-        ordering = ['booking_date', 'start_time']
-        # 防止同一时间段重复预订
-        constraints = [
-            models.CheckConstraint(
-                condition=models.Q(end_time__gt=models.F('start_time')),
-                name='room222_end_time_after_start_time'
-            )
-        ]
-    
-    def __str__(self):
-        return f"{self.user.profile.get_full_name()} - {self.booking_date} {self.start_time}-{self.end_time}"
-    
-    def has_conflict(self):
-        """检查是否与已有效的预订有时间冲突"""
-        # 排除自己和已取消的，查找同一天内有效的预订
-        conflicting_bookings = Room222Booking.objects.filter(
-            booking_date=self.booking_date,
-            status='active'
-        ).exclude(pk=self.pk)
-        
-        for booking in conflicting_bookings:
-            # 检查时间是否重叠
-            if (self.start_time < booking.end_time and self.end_time > booking.start_time):
-                return True
-        return False
-    
-    def can_edit(self, user):
-        """检查用户是否可以编辑此预订"""
-        return self.user == user or user.profile.role in ['staff', 'admin']
-    
-    def can_delete(self, user):
-        """检查用户是否可以删除此预订"""
-        return self.user == user or user.profile.role in ['staff', 'admin']
+        verbose_name = '活动申请审核历史'
+        verbose_name_plural = '活动申请审核历史'
+        ordering = ['-attempt_number']
 
 
 class EmailVerificationCode(models.Model):
@@ -946,34 +890,13 @@ class CarouselImage(models.Model):
         return self.title or f"轮播图片 {self.id}"
 
 
-class DepartmentIntroduction(models.Model):
-    """部门介绍模型"""
-    DEPARTMENT_CHOICES = [
-        ('office', '办公室'),
-        ('review', '评审部'),
-        ('activity', '活动部'),
-        ('organization', '组织部'),
-        ('propaganda', '宣传部'),
-    ]
-    
-    department = models.CharField(
-        max_length=20, 
-        choices=DEPARTMENT_CHOICES, 
-        unique=True,
-        verbose_name='部门'
-    )
+class Department(models.Model):
+    """部门模型"""
+    name = models.CharField(max_length=50, unique=True, verbose_name='部门名称')
     description = models.TextField(verbose_name='职责描述')
-    highlights = models.TextField(
-        blank=True,
-        verbose_name='重点工作',
-        help_text='多个重点工作用换行分隔'
-    )
-    icon = models.CharField(
-        max_length=50,
-        default='work',
-        verbose_name='图标名称',
-        help_text='Material Icons图标名称'
-    )
+    highlights = models.TextField(blank=True, help_text='多个重点工作用换行分隔', verbose_name='重点工作')
+    icon = models.CharField(max_length=50, default='work', help_text='Material Icons图标名称', verbose_name='图标名称')
+    order = models.IntegerField(default=0, verbose_name='排序')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     updated_by = models.ForeignKey(
         User, 
@@ -983,15 +906,199 @@ class DepartmentIntroduction(models.Model):
     )
     
     class Meta:
-        verbose_name = '部门介绍'
-        verbose_name_plural = '部门介绍'
-        ordering = ['department']
+        verbose_name = '部门'
+        verbose_name_plural = '部门'
+        ordering = ['order', 'name']
     
     def __str__(self):
-        return self.get_department_display()
+        return self.name
     
     def get_highlights_list(self):
         """将highlights转换为列表"""
         if self.highlights:
             return [h.strip() for h in self.highlights.split('\n') if h.strip()]
         return []
+
+
+class TimeSlot(models.Model):
+    """时间段配置"""
+    start_time = models.TimeField(verbose_name='开始时间')
+    end_time = models.TimeField(verbose_name='结束时间')
+    label = models.CharField(max_length=50, verbose_name='显示名称')
+    is_active = models.BooleanField(default=True, verbose_name='是否启用')
+    
+    class Meta:
+        verbose_name = '时间段'
+        verbose_name_plural = '时间段'
+        ordering = ['start_time']
+        
+    def __str__(self):
+        return f"{self.label} ({self.start_time.strftime('%H:%M')}-{self.end_time.strftime('%H:%M')})"
+
+
+class Room(models.Model):
+    STATUS_CHOICES = [
+        ('available', '可用'),
+        ('maintenance', '维护中'),
+        ('closed', '关闭'),
+    ]
+    
+    name = models.CharField(max_length=100, unique=True, verbose_name='房间名称')
+    capacity = models.IntegerField(default=50, verbose_name='容纳人数')
+    location = models.CharField(max_length=200, blank=True, verbose_name='位置')
+    description = models.TextField(blank=True, verbose_name='描述')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available', verbose_name='状态')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    
+    class Meta:
+        verbose_name = '房间'
+        verbose_name_plural = '房间'
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+
+class RoomBooking(models.Model):
+    """房间借用模型"""
+    STATUS_CHOICES = [
+        ('active', '有效'),
+        ('cancelled', '已取消'),
+    ]
+    
+    # 关联房间
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='bookings', verbose_name='房间')
+    
+    # 借用人信息（可以是社团或个人）
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room_bookings', verbose_name='借用人')
+    club = models.ForeignKey(Club, on_delete=models.SET_NULL, null=True, blank=True, related_name='room_bookings', verbose_name='所属社团')
+    
+    # 借用时间
+    booking_date = models.DateField(verbose_name='借用日期')
+    start_time = models.TimeField(verbose_name='开始时间')
+    end_time = models.TimeField(verbose_name='结束时间')
+    
+    # 借用信息
+    purpose = models.TextField(verbose_name='借用目的')
+    participant_count = models.IntegerField(verbose_name='预计使用人数')
+    contact_phone = models.CharField(max_length=20, verbose_name='联系电话')
+    
+    # 特殊需求
+    special_requirements = models.TextField(blank=True, verbose_name='特殊需求', help_text='如需要投影仪、音响等设备')
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='状态')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    
+    class Meta:
+        verbose_name = '房间借用'
+        verbose_name_plural = '房间借用'
+        ordering = ['booking_date', 'start_time']
+        # 防止同一房间同一时间段重复预订
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(end_time__gt=models.F('start_time')),
+                name='room_end_time_after_start_time'
+            )
+        ]
+    
+    def __str__(self) -> str:
+        return f"{self.room.name} - {self.user.profile.get_full_name()} - {self.booking_date} {self.start_time}-{self.end_time}"  # type: ignore[attr-defined]
+    
+    def has_conflict(self):
+        """检查是否与已有效的预订有时间冲突"""
+        # 排除自己和已取消的，查找同一房间同一天内有效的预订
+        conflicting_bookings = RoomBooking.objects.filter(
+            room=self.room,
+            booking_date=self.booking_date,
+            status='active'
+        ).exclude(pk=self.pk)
+        
+        for booking in conflicting_bookings:
+            # 检查时间是否重叠
+            if (self.start_time < booking.end_time and self.end_time > booking.start_time):
+                return True
+        return False
+
+    def can_delete(self, user):
+        """检查用户是否有权限删除此预约"""
+        # 管理员和干事可以删除任何预约
+        if hasattr(user, 'profile') and user.profile.role in ['admin', 'staff']:
+            return True
+        # 借用人本人可以删除
+        if self.user == user:
+            return True
+        # 社团社长可以删除本社团的预约
+        if self.club and self.club.president == user:
+            return True
+        return False
+
+    def can_edit(self, user):
+        """检查用户是否有权限编辑此预约"""
+        # 管理员和干事可以编辑任何预约
+        if hasattr(user, 'profile') and user.profile.role in ['admin', 'staff']:
+            return True
+        # 借用人本人可以编辑
+        if self.user == user:
+            return True
+        # 社团社长可以编辑本社团的预约
+        if self.club and self.club.president == user:
+            return True
+        return False
+
+
+class MaterialRequirement(models.Model):
+    """材料上传要求配置"""
+    REQUEST_TYPE_CHOICES = [
+        ('annual_review', '社团年审'),
+        ('club_registration', '社团注册'),
+        ('club_application', '社团申请'),
+        ('info_change', '信息变更'),
+        ('president_transition', '社长换届'),
+        ('reimbursement', '报销申请'),
+        ('activity_application', '活动申请'),
+    ]
+
+    request_type = models.CharField(max_length=50, choices=REQUEST_TYPE_CHOICES, verbose_name='申请类型')
+    name = models.CharField(max_length=200, verbose_name='材料名称')
+    description = models.TextField(blank=True, verbose_name='材料描述')
+    is_required = models.BooleanField(default=True, verbose_name='是否必填')
+    allowed_extensions = models.CharField(max_length=200, default='.docx,.pdf,.jpg,.png,.zip', verbose_name='允许的文件扩展名')
+    max_size_mb = models.IntegerField(default=10, verbose_name='最大文件大小(MB)')
+    order = models.IntegerField(default=0, verbose_name='排序权重')
+    is_active = models.BooleanField(default=True, verbose_name='是否启用')
+    
+    # 映射到旧字段名 (用于兼容性)
+    legacy_field_name = models.CharField(max_length=100, blank=True, null=True, verbose_name='旧字段名')
+    
+    # 模板文件
+    template_file = models.FileField(upload_to='templates/', blank=True, null=True, verbose_name='模板文件', help_text='供用户下载的模板文件')
+    
+    # Material Icon
+    icon = models.CharField(max_length=50, default='cloud_upload', verbose_name='图标', help_text='Material Icons 图标名称')
+
+    class Meta:
+        verbose_name = '材料要求'
+        verbose_name_plural = '材料要求'
+        ordering = ['request_type', 'order']
+        
+    def __str__(self):
+        return f"{self.get_request_type_display()} - {self.name}"
+
+
+class SubmittedFile(models.Model):
+    """通用的提交文件模型"""
+    requirement = models.ForeignKey(MaterialRequirement, on_delete=models.CASCADE, verbose_name='对应材料要求', null=True, blank=True)
+    file = models.FileField(upload_to='submissions/%Y/%m/', verbose_name='文件')
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
+    
+    # 使用GenericForeignKey关联到各种申请模型
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    
+    class Meta:
+        verbose_name = '提交文件'
+        verbose_name_plural = '提交文件'
+        ordering = ['uploaded_at']

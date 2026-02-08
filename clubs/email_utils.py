@@ -71,7 +71,7 @@ CManager系统
         msg.attach(part1)
         msg.attach(part2)
         
-        # 连接SMTP服务器
+        # 连接SMTP服务器并发送邮件
         if config.use_tls:
             server = smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=10)
             server.starttls()

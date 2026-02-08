@@ -8,6 +8,7 @@
         max-width: 1400px;
         margin: 0 auto;
         padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 120px);
         box-sizing: border-box;
     }
     
@@ -15,37 +16,33 @@
     .page-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: var(--md3-spacing-md);
+        gap: var(--md3-spacing-lg);
         margin-bottom: var(--md3-spacing-2xl);
-        padding: var(--md3-spacing-2xl);
-        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-tertiary-container) 100%);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
         border-radius: var(--md3-radius-xl);
-        box-shadow: var(--md3-elevation-1);
+        border: 1px solid var(--md3-outline-variant);
     }
-    
-    .header-content {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-    }
-    
-    .header-content .material-icons {
+
+    .page-header .material-icons {
         font-size: 2.5rem;
         color: var(--md3-primary);
     }
-    
-    .header-text h1 {
-        margin: 0;
-        font-size: 2rem;
+
+    .page-header-content {
+        flex: 1;
+    }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.75rem;
         font-weight: 600;
         color: var(--md3-on-surface);
     }
-    
-    .header-text p {
-        margin: var(--md3-spacing-xs) 0 0 0;
-        font-size: 0.875rem;
+
+    .page-header .subtitle {
         color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
     }
     
     .stats-badge {
@@ -102,6 +99,25 @@
     
     .form-input::placeholder {
         color: var(--md3-on-surface-variant);
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-input-wrapper .material-icons {
+        position: absolute;
+        left: 12px;
+        color: var(--md3-on-surface-variant);
+        pointer-events: none;
+    }
+
+    .form-input.with-icon {
+        padding-left: 40px;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     .btn-search {
@@ -360,12 +376,10 @@
 <div class="users-container">
     <!-- 页面标题 -->
     <div class="page-header">
-        <div class="header-content">
-            <span class="material-icons">group</span>
-            <div class="header-text">
-                <h1>系统用户管理</h1>
-                <p>管理所有用户账户和权限</p>
-            </div>
+        <span class="material-icons">group</span>
+        <div class="page-header-content">
+            <h1>系统用户管理</h1>
+            <p class="subtitle">管理所有用户账户和权限</p>
         </div>
         <div style="display: flex; align-items: center; gap: var(--md3-spacing-md);">
             <a href="{% url 'clubs:create_user' %}" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;">
@@ -382,13 +396,16 @@
     <!-- 搜索过滤 -->
     <div class="search-card">
         <form method="get" class="search-form">
-            <input 
-                type="text" 
-                name="search" 
-                class="form-input"
-                placeholder="🔍 搜索用户名、邮箱..." 
-                value="{{ search }}"
-            >
+            <div class="search-input-wrapper">
+                <span class="material-icons">search</span>
+                <input 
+                    type="text" 
+                    name="search" 
+                    class="form-input with-icon"
+                    placeholder="搜索用户名、邮箱、全名..." 
+                    value="{{ search|default:'' }}"
+                >
+            </div>
             <select name="role" class="form-select">
                 <option value="">所有角色</option>
                 <option value="president" {% if role == 'president' %}selected{% endif %}>社长</option>

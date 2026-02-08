@@ -1,0 +1,398 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}预约房间{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 页面容器 - 保持与其他页面一致的布局 */
+    .page-container {
+        max-width: 1000px; /* 表单页面稍微窄一点，提升阅读体验 */
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 80px); /* 防止被底部导航栏遮挡 */
+    }
+    
+    /* 页面标题区域 - removed in favor of global style */
+    
+    /* 内容卡片 */
+    .content-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+        overflow: hidden;
+        box-shadow: var(--md3-elevation-1);
+        padding: var(--md3-spacing-2xl);
+    }
+    
+    /* 表单样式 */
+    .booking-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xl);
+    }
+    
+    .form-section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-md);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .form-section-title::before {
+        content: '';
+        display: block;
+        width: 4px;
+        height: 1.2em;
+        background: var(--md3-primary);
+        border-radius: 2px;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--md3-spacing-lg);
+    }
+    
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xs);
+    }
+    
+    .form-field.full-width {
+        grid-column: 1 / -1;
+    }
+    
+    .form-field label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+    }
+    
+    .form-field label .material-icons {
+        font-size: 1.125rem;
+        color: var(--md3-primary);
+    }
+    
+    .form-field label .required {
+        color: var(--md3-error);
+    }
+    
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        font-size: 1rem;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: inherit;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 2px var(--md3-primary-container);
+    }
+    
+    .form-field textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .field-hint {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        margin-top: 4px;
+    }
+    
+    /* 信息提示框 */
+    .info-box {
+        background: var(--md3-tertiary-container);
+        color: var(--md3-on-tertiary-container);
+        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-lg);
+        margin-bottom: var(--md3-spacing-xl);
+        display: flex;
+        gap: var(--md3-spacing-md);
+        align-items: flex-start;
+    }
+    
+    .info-box .material-icons {
+        font-size: 1.5rem;
+    }
+    
+    .info-box-content h3 {
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .info-box-content p {
+        margin: 0;
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+    
+    /* 按钮样式 */
+    .form-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        justify-content: flex-end;
+        margin-top: var(--md3-spacing-lg);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn {
+        padding: var(--md3-spacing-md) var(--md3-spacing-2xl);
+        border-radius: var(--md3-radius-full);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        transition: all 0.2s ease;
+        text-decoration: none;
+        border: none;
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-dim); /* 假设有这个变量，或者变暗 */
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background: transparent;
+        color: var(--md3-primary);
+        border: 1px solid var(--md3-outline);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .page-container {
+            padding: var(--md3-spacing-md);
+            padding-bottom: 100px;
+        }
+        
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .content-card {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <span class="material-icons">event_available</span>
+        <div class="page-header-content">
+            <h1>预约房间</h1>
+            <div class="subtitle">填写以下表单申请使用活动室，请提前规划时间</div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'clubs:room_calendar' %}" class="btn btn-primary">
+                <span>返回日历</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- 提示信息 -->
+    <div class="info-box">
+        <span class="material-icons">info</span>
+        <div class="info-box-content">
+            <h3>使用须知</h3>
+            <p>无需审核，提交即预约成功。请确保预约时间不冲突，并在使用完毕后清理现场。</p>
+        </div>
+    </div>
+    
+    <!-- 预约表单 -->
+    <div class="content-card">
+        <form method="post" class="booking-form">
+            {% csrf_token %}
+            
+            <div class="form-section-title">基本信息</div>
+            
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="room_id">
+                        <span class="material-icons">meeting_room</span>
+                        选择房间 <span class="required">*</span>
+                    </label>
+                    <select name="room_id" id="room_id" required>
+                        <option value="">请选择房间...</option>
+                        {% for room in rooms %}
+                        <option value="{{ room.id }}" {% if selected_room_id == room.id %}selected{% endif %}>{{ room.name }} (容量: {{ room.capacity }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="club_id">
+                        <span class="material-icons">groups</span>
+                        申请社团 {% if not is_staff_or_admin %}<span class="required">*</span>{% endif %}
+                    </label>
+                    <select name="club_id" id="club_id" {% if not is_staff_or_admin %}required{% endif %}>
+                        <option value="">{% if is_staff_or_admin %}个人申请 (无社团){% else %}请选择社团...{% endif %}</option>
+                        {% for club in user_clubs %}
+                        <option value="{{ club.id }}">{{ club.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="participant_count">
+                        <span class="material-icons">group</span>
+                        参与人数 <span class="required">*</span>
+                    </label>
+                    <input type="number" name="participant_count" id="participant_count" min="1" max="50" placeholder="例如：20" required>
+                </div>
+            </div>
+            
+            <div class="form-section-title">时间安排</div>
+            
+            <div class="form-row">
+                <div class="form-field full-width">
+                    <label for="booking_date">
+                        <span class="material-icons">event</span>
+                        使用日期 <span class="required">*</span>
+                    </label>
+                    <input type="date" name="booking_date" id="booking_date" value="{{ selected_date|default:today }}" min="{{ today }}" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="start_time">
+                        <span class="material-icons">schedule</span>
+                        开始时间 <span class="required">*</span>
+                    </label>
+                    <input type="time" name="start_time" id="start_time" value="{{ selected_start_time }}" min="08:00" max="22:00" required>
+                </div>
+                
+                <div class="form-field">
+                    <label for="end_time">
+                        <span class="material-icons">schedule</span>
+                        结束时间 <span class="required">*</span>
+                    </label>
+                    <input type="time" name="end_time" id="end_time" value="{{ selected_end_time }}" min="08:00" max="22:00" required>
+                </div>
+            </div>
+
+            <!-- 时间段占用提示 -->
+            <div id="time-conflict-warning" class="field-hint" style="color: var(--md3-error); display: none;">
+                <span class="material-icons" style="font-size: 14px; vertical-align: middle;">warning</span>
+                该时间段已被占用
+            </div>
+            
+            <div class="form-section-title">活动详情</div>
+            
+            <div class="form-field full-width">
+                <label for="purpose">
+                    <span class="material-icons">description</span>
+                    活动主题/用途 <span class="required">*</span>
+                </label>
+                <input type="text" name="purpose" id="purpose" placeholder="简要描述活动内容" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="contact_phone">
+                        <span class="material-icons">phone</span>
+                        联系电话 <span class="required">*</span>
+                    </label>
+                    <input type="tel" name="contact_phone" id="contact_phone" value="{{ user.profile.phone_number }}" required>
+                </div>
+                
+                <div class="form-field">
+                    <label for="special_requirements">
+                        <span class="material-icons">stars</span>
+                        特殊需求
+                    </label>
+                    <input type="text" name="special_requirements" id="special_requirements" placeholder="如：需使用投影仪、白板等">
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'clubs:room_calendar' %}" class="btn btn-secondary">取消</a>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">check</span>
+                    提交预约
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 简单的客户端时间检查（可选）
+        const startTimeInput = document.getElementById('start_time');
+        const endTimeInput = document.getElementById('end_time');
+        
+        function validateTime() {
+            if(startTimeInput.value && endTimeInput.value) {
+                if(startTimeInput.value >= endTimeInput.value) {
+                    endTimeInput.setCustomValidity('结束时间必须晚于开始时间');
+                } else {
+                    endTimeInput.setCustomValidity('');
+                }
+            }
+        }
+        
+        startTimeInput.addEventListener('change', validateTime);
+        endTimeInput.addEventListener('change', validateTime);
+    });
+</script>
+{% endblock %}

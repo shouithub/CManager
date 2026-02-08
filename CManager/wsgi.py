@@ -5,7 +5,7 @@ It exposes the WSGI callable as a module-level variable named ``application``.
 For more information on this file, see
 https://docs.djangoproject.com/en/3.2/howto/deployment/wsgi/
 
-特别注意：本配置文件已针对宝塔面板环境优化
+特别注意：本配置文件已针对宝塔面板环境优化。
 """
 
 import os

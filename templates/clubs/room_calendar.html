@@ -1,7 +1,7 @@
 {% extends 'clubs/base.html' %}
 {% load static %}
 
-{% block title %}222房间预约日历{% endblock %}
+{% block title %}房间预约日历{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -23,6 +23,7 @@
     .calendar-shell {
         position: relative;
         padding: 32px 24px 48px;
+        padding-bottom: calc(48px + 80px); 
         margin: 0 auto 40px;
         max-width: 1280px;
         font-family: var(--calendar-font);
@@ -467,11 +468,135 @@
         background: var(--md3-error, #ba1a1a);
         color: var(--md3-on-error, #fff);
     }
+    
+    /* 房间选择下拉样式 - Custom Dropdown */
+    .custom-dropdown {
+        position: relative;
+        display: inline-block;
+        font-family: var(--calendar-font);
+        z-index: 50;
+    }
+
+    .dropdown-trigger {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px 0 20px;
+        height: 40px;
+        background: var(--md3-surface-container-high, #ecf0ff);
+        border: 1px solid var(--calendar-outline);
+        border-radius: 999px;
+        color: var(--md3-on-surface);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        outline: none;
+        min-width: 180px;
+        justify-content: space-between;
+        user-select: none;
+    }
+
+    .dropdown-trigger:hover {
+        background: var(--md3-surface-container-highest);
+        border-color: var(--md3-primary);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .dropdown-icon {
+        color: var(--md3-on-surface-variant);
+        transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    .custom-dropdown.active .dropdown-icon {
+        transform: rotate(180deg);
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        min-width: 100%;
+        width: max-content;
+        background: var(--md3-surface-container-high);
+        border: 1px solid var(--calendar-outline);
+        border-radius: 16px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.1);
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+        visibility: hidden;
+        transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), visibility 0.2s;
+        z-index: 100;
+        overflow: hidden;
+        padding: 6px;
+    }
+
+    .custom-dropdown.active .dropdown-menu {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        visibility: visible;
+    }
+
+    .dropdown-item {
+        padding: 10px 16px;
+        font-size: 14px;
+        color: var(--md3-on-surface);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-radius: 10px;
+        transition: background 0.2s ease;
+        margin-bottom: 2px;
+    }
+
+    .dropdown-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .dropdown-item:hover {
+        background: var(--md3-surface-variant);
+    }
+
+    .dropdown-item.selected {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        font-weight: 600;
+    }
+
+    .check-icon {
+        font-size: 18px;
+        color: var(--md3-primary);
+    }
+
+    /* 导出表单样式 */
+    .export-form-group {
+        margin-bottom: 16px;
+    }
+    
+    .export-form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+    }
+    
+    .export-form-select {
+        width: 100%;
+        padding: 10px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--md3-outline);
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        font-size: 14px;
+    }
 
     @media (max-width: 900px) {
         .calendar-shell {
             padding: 24px 16px 32px;
-            --calendar-height: clamp(620px, 80vh, 900px);
+            /* Increase height for tablet/mobile to prevent overlap */
+            --calendar-height: 1200px;
         }
 
         .calendar-grid {
@@ -500,10 +625,18 @@
         }
     }
 
+    @media (max-width: 768px) {
+        .calendar-shell {
+            /* Increase bottom padding to prevent nav bar overlap */
+            padding-bottom: 180px !important;
+        }
+    }
+
     @media (max-width: 600px) {
         .calendar-shell {
             padding: 16px 12px 28px;
-            --calendar-height: 720px;
+            /* Further increase height for small screens */
+            --calendar-height: 1400px;
         }
 
         .calendar-toolbar {
@@ -531,7 +664,9 @@
         }
 
         .pill-btn,
-        .action-btn {
+        .action-btn,
+        .custom-dropdown,
+        .dropdown-trigger {
             width: 100%;
             justify-content: center;
         }
@@ -548,8 +683,16 @@
         }
 
         .time-slot {
-            padding: 10px 6px 8px 0;
+            padding: 8px 4px 0 0;
             font-size: 10px;
+            line-height: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        
+        .time-slot span {
+             white-space: nowrap;
         }
 
         .events-grid {
@@ -581,40 +724,55 @@
 <div class="calendar-shell">
     <div class="calendar-toolbar">
         <div class="toolbar-left">
-            <a href="{% url 'clubs:room222_calendar' %}" class="pill-btn today-btn{% if is_today %} disabled{% endif %}" {% if is_today %}aria-disabled="true"{% endif %}>今天</a>
+            <!-- 房间选择 -->
+            <div class="custom-dropdown" id="roomDropdown">
+                <button class="dropdown-trigger" onclick="toggleRoomDropdown(event)">
+                    <span class="selected-text">{{ selected_room.name }}</span>
+                    <span class="material-icons dropdown-icon">arrow_drop_down</span>
+                </button>
+                <div class="dropdown-menu">
+                    {% for room in rooms %}
+                    <div class="dropdown-item {% if selected_room.id == room.id %}selected{% endif %}" onclick="selectRoom('{{ room.id }}')">
+                        {{ room.name }}
+                        {% if selected_room.id == room.id %}
+                        <span class="material-icons check-icon">check</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <a href="?room_id={{ selected_room.id }}" class="pill-btn today-btn{% if is_today %} disabled{% endif %}" {% if is_today %}aria-disabled="true"{% endif %}>今天</a>
+            
             <div class="date-group" role="group" aria-label="日期切换">
-                <a href="?date={{ prev_date|date:'Y-m-d' }}" class="pill-btn nav-btn" title="前一天">
+                <a href="?room_id={{ selected_room.id }}&date={{ prev_date|date:'Y-m-d' }}" class="pill-btn nav-btn" title="前一天">
                     <span class="material-icons">chevron_left</span>
                 </a>
                 <span class="current-date">{{ view_date|date:'Y年n月j日' }}</span>
-                <a href="?date={{ next_date|date:'Y-m-d' }}" class="pill-btn nav-btn" title="后一天">
+                <a href="?room_id={{ selected_room.id }}&date={{ next_date|date:'Y-m-d' }}" class="pill-btn nav-btn" title="后一天">
                     <span class="material-icons">chevron_right</span>
                 </a>
             </div>
         </div>
         <div class="toolbar-right">
-            <a href="{% url 'clubs:my_room222_bookings' %}" class="pill-btn action-btn secondary">
+            <a href="{% url 'clubs:my_room_bookings' %}" class="pill-btn action-btn secondary">
                 <span class="material-icons">event_note</span>
                 我的预约
             </a>
             {% if user.profile.role == 'staff' or user.profile.role == 'admin' or user.is_superuser %}
-            <a href="{% url 'clubs:export_room222_bookings_weekly' %}?week_start={{ week_start|date:'Y-m-d' }}" class="pill-btn action-btn secondary">
+            <button onclick="openExportModal()" class="pill-btn action-btn secondary">
                 <span class="material-icons">file_download</span>
                 导出周表
-            </a>
+            </button>
             {% endif %}
-            <a href="{% url 'clubs:submit_room222_booking' %}" class="pill-btn action-btn">
-                <span class="material-icons">add</span>
-                新建预约
-            </a>
         </div>
     </div>
 
     <div class="calendar-container">
         <div class="calendar-grid">
-            <div class="time-column" style="height: var(--calendar-height);">
+            <div class="time-column" style="height: var(--calendar-height); position: relative;">
                 {% for slot in time_slots %}
-                <div class="time-slot" style="height: calc(var(--calendar-height) * {{ slot.height_percent }} / 100);">
+                <div class="time-slot" style="position: absolute; width: 100%; top: calc(var(--calendar-height) * {{ slot.top_percent }} / 100); height: calc(var(--calendar-height) * {{ slot.height_percent }} / 100);">
                     <span>{{ slot.start|time:'H:i' }} - {{ slot.end|time:'H:i' }}</span>
                     <span class="period-label">{{ slot.label }}</span>
                 </div>
@@ -624,7 +782,7 @@
                 <div class="events-grid">
                     {% for slot in time_slots %}
                     <div class="grid-slot{% if slot.has_booking %} has-booking{% endif %}" 
-                         style="height: calc(var(--calendar-height) * {{ slot.height_percent }} / 100);"
+                         style="position: absolute; width: 100%; top: calc(var(--calendar-height) * {{ slot.top_percent }} / 100); height: calc(var(--calendar-height) * {{ slot.height_percent }} / 100);"
                          {% if not slot.has_booking %}onclick="bookTimeSlot('{{ slot.start|time:"H:i" }}', '{{ slot.end|time:"H:i" }}')"{% endif %}
                          title="{% if slot.has_booking %}该时段已有预约{% else %}点击预约 {{ slot.label }}{% endif %}">
                         <span class="slot-hint">
@@ -660,6 +818,7 @@
     </div>
 </div>
 
+<!-- 预约详情模态框 -->
 <div class="event-modal" id="eventModal" onclick="if(event.target === this) closeEventModal()">
     <div class="modal-content">
         <div class="modal-header">
@@ -673,16 +832,90 @@
     </div>
 </div>
 
+<!-- 导出设置模态框 -->
+<div class="event-modal" id="exportModal" onclick="if(event.target === this) closeExportModal()">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">导出预约周表</div>
+            <button class="close-btn" type="button" onclick="closeExportModal()">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="exportForm" action="{% url 'clubs:export_room_bookings_weekly' %}" method="get">
+                <div class="export-form-group">
+                    <label class="export-form-label">选择房间</label>
+                    <select name="room_id" class="export-form-select">
+                        {% for room in rooms %}
+                        <option value="{{ room.id }}" {% if selected_room.id == room.id %}selected{% endif %}>{{ room.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="export-form-group">
+                    <label class="export-form-label">选择周起始日期 (周一)</label>
+                    <input type="date" name="week_start" class="export-form-select" value="{{ week_start|date:'Y-m-d' }}" required>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn" onclick="closeExportModal()">取消</button>
+            <button class="modal-btn primary" onclick="document.getElementById('exportForm').submit(); closeExportModal();">
+                <span class="material-icons" style="font-size: 18px;">download</span>
+                确认导出
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // 切换房间下拉菜单
+    function toggleRoomDropdown(event) {
+        event.stopPropagation();
+        const dropdown = document.getElementById('roomDropdown');
+        dropdown.classList.toggle('active');
+    }
+
+    // 选择房间
+    function selectRoom(roomId) {
+        changeRoom(roomId);
+    }
+
+    // 点击外部关闭下拉菜单
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('roomDropdown');
+        if (dropdown && dropdown.classList.contains('active')) {
+            if (!dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        }
+    });
+
+    // 切换房间
+    function changeRoom(roomId) {
+        const currentDate = '{{ view_date|date:"Y-m-d" }}';
+        window.location.href = `?room_id=${roomId}&date=${currentDate}`;
+    }
+
     // 全局函数 - 需要在 onclick 调用之前定义
     function bookTimeSlot(startTime, endTime) {
         const currentDate = '{{ view_date|date:"Y-m-d" }}';
-        const baseUrl = '{% url "clubs:submit_room222_booking" %}';
+        const currentRoomId = '{{ selected_room.id }}';
+        const baseUrl = '{% url "clubs:submit_room_booking" %}';
         const params = new URLSearchParams();
+        params.set('room_id', currentRoomId);
         params.set('date', currentDate);
         params.set('start_time', startTime);
         params.set('end_time', endTime);
         window.location.href = baseUrl + '?' + params.toString();
+    }
+    
+    // 导出模态框控制
+    function openExportModal() {
+        document.getElementById('exportModal').classList.add('active');
+    }
+    
+    function closeExportModal() {
+        document.getElementById('exportModal').classList.remove('active');
     }
 </script>
 {% endblock %}
@@ -701,10 +934,10 @@
             purpose: '{{ booking_data.booking.purpose|default:""|escapejs }}',
             participantCount: {{ booking_data.booking.participant_count }},
             contactPhone: '{{ booking_data.booking.contact_phone|default:""|escapejs }}',
-            specialRequirements: '{{ booking_data.booking.special_requirements|default:""|escapejs }}',
+            specialRequirements: '{{ booking_data.booking.special_requirements|default:"无"|escapejs }}',
             canEdit: {{ booking_data.can_edit|yesno:"true,false" }},
             canDelete: {{ booking_data.can_delete|yesno:"true,false" }}
-        }{% if not forloop.last %},{% endif %}
+        },
         {% endfor %}
     };
 
@@ -712,10 +945,9 @@
         const booking = bookingsData[bookingId];
         if (!booking) return;
 
-        document.getElementById('modalTitle').textContent = booking.club || '个人预约';
-
-        const modalBody = document.getElementById('modalBody');
-        modalBody.innerHTML = `
+        document.getElementById('modalTitle').textContent = '预约详情';
+        
+        let html = `
             <div class="modal-detail">
                 <span class="material-icons">event</span>
                 <div>
@@ -737,6 +969,21 @@
                     <div class="detail-value">${booking.user}</div>
                 </div>
             </div>
+        `;
+        
+        if (booking.club) {
+            html += `
+                <div class="modal-detail">
+                    <span class="material-icons">groups</span>
+                    <div>
+                        <div class="detail-label">申请社团</div>
+                        <div class="detail-value">${booking.club}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += `
             <div class="modal-detail">
                 <span class="material-icons">phone</span>
                 <div>
@@ -754,45 +1001,47 @@
             <div class="modal-detail">
                 <span class="material-icons">group</span>
                 <div>
-                    <div class="detail-label">预计人数</div>
-                    <div class="detail-value">${booking.participantCount} 人</div>
+                    <div class="detail-label">参与人数</div>
+                    <div class="detail-value">${booking.participantCount}人</div>
                 </div>
             </div>
-            ${booking.specialRequirements ? `
-            <div class="modal-detail">
-                <span class="material-icons">info</span>
-                <div>
-                    <div class="detail-label">特殊需求</div>
-                    <div class="detail-value">${booking.specialRequirements}</div>
+        `;
+        
+        if (booking.specialRequirements && booking.specialRequirements !== '无') {
+             html += `
+                <div class="modal-detail">
+                    <span class="material-icons">assignment</span>
+                    <div>
+                        <div class="detail-label">特殊需求</div>
+                        <div class="detail-value">${booking.specialRequirements}</div>
+                    </div>
                 </div>
-            </div>` : ''}
-        `;
+            `;
+        }
 
-        const modalFooter = document.getElementById('modalFooter');
-        modalFooter.innerHTML = `
-            ${booking.canEdit ? `
-                <a class="modal-btn primary" href="/clubs/room222/edit-booking/${booking.id}/">
-                    <span class="material-icons">edit</span>
-                    编辑
-                </a>` : ''}
-            ${booking.canDelete ? `
-                <a class="modal-btn error" href="/clubs/room222/delete-booking/${booking.id}/">
-                    <span class="material-icons">delete</span>
-                    删除
-                </a>` : ''}
-        `;
+        document.getElementById('modalBody').innerHTML = html;
 
+        let footerHtml = '';
+        if (booking.canEdit) {
+            footerHtml += `<a href="{% url 'clubs:edit_room_booking' 0 %}`.replace('0', booking.id) + `" class="modal-btn primary">
+                <span class="material-icons" style="font-size: 18px;">edit</span> 编辑
+            </a>`;
+        }
+        if (booking.canDelete) {
+            footerHtml += `<a href="{% url 'clubs:delete_room_booking' 0 %}`.replace('0', booking.id) + `" class="modal-btn error">
+                <span class="material-icons" style="font-size: 18px;">delete</span> 删除
+            </a>`;
+        }
+        if (!footerHtml) {
+            footerHtml = `<button class="modal-btn" onclick="closeEventModal()">关闭</button>`;
+        }
+        
+        document.getElementById('modalFooter').innerHTML = footerHtml;
         document.getElementById('eventModal').classList.add('active');
     }
 
     function closeEventModal() {
         document.getElementById('eventModal').classList.remove('active');
     }
-
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-            closeEventModal();
-        }
-    });
 </script>
 {% endblock %}

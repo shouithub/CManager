@@ -1,0 +1,292 @@
+{% comment %}
+附件材料展示组件
+使用方式: {% include 'clubs/components/_materials_display.html' with materials=materials_list title="附件材料" show_zip=True zip_url=zip_download_url %}
+
+参数:
+- materials: 材料列表,格式[{'name': '显示名称', 'file': file_field对象, 'icon': 'material-icon名称'}, ...]
+- title: 标题 (默认: "附件材料")
+- show_zip: 是否显示打包下载按钮 (默认: False)
+- zip_url: 打包下载链接
+- show_card_wrapper: 是否显示外围卡片容器 (默认: True)
+{% endcomment %}
+{% load custom_filters %}
+
+<style>
+    .component-materials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: var(--md3-spacing-lg);
+        padding: var(--md3-spacing-lg);
+        margin-bottom: 0;
+    }
+    
+    .component-materials-grid .material-card-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: var(--md3-spacing-xl) var(--md3-spacing-lg);
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 0;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .component-materials-grid .material-card-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--md3-primary);
+        opacity: 0;
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+    }
+    
+    .component-materials-grid .material-card-item:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-outline);
+        box-shadow: var(--md3-elevation-1);
+        transform: translateY(-2px);
+    }
+    
+    .component-materials-grid .material-card-item:hover::before {
+        opacity: 0.04;
+    }
+    
+    .component-materials-grid .material-card-item:active {
+        transform: translateY(0);
+        box-shadow: var(--md3-elevation-0);
+    }
+    
+    .component-materials-grid .material-card-item .file-icon {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+        margin-bottom: var(--md3-spacing-md);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .component-materials-grid .material-card-item:hover .file-icon {
+        transform: scale(1.1);
+        color: var(--md3-primary);
+    }
+    
+    .component-materials-grid .material-card-item .file-name {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+        line-height: 1.3;
+        word-break: break-word;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .component-materials-grid .material-card-item .file-path {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        word-break: break-all;
+        margin-bottom: var(--md3-spacing-lg);
+        line-height: 1.2;
+        opacity: 0.8;
+    }
+    
+    .component-materials-grid .material-card-item .file-actions {
+        display: flex;
+        flex-direction: row;
+        gap: var(--md3-spacing-sm);
+        width: 100%;
+        margin-top: auto;
+    }
+    
+    .component-materials-grid .material-card-item .file-actions .btn {
+        flex: 1;
+        font-size: 0.8125rem;
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        justify-content: center;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .component-materials-grid .material-card-item .file-actions .btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.12;
+        transform: translate(-50%, -50%);
+        transition: width 0.4s, height 0.4s;
+    }
+    
+    .component-materials-grid .material-card-item .file-actions .btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .component-materials-grid .material-card-item .file-actions .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+    }
+    
+    .component-materials-grid .material-card-item .file-actions .btn-primary:hover {
+        background: var(--md3-primary);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .component-materials-grid .material-card-item .file-actions .btn-primary:active {
+        box-shadow: var(--md3-elevation-0);
+    }
+    
+    .component-materials-grid .material-card-item .file-actions .btn-secondary {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        border: none;
+    }
+    
+    .component-materials-grid .material-card-item .file-actions .btn-secondary:hover {
+        background: var(--md3-secondary-container);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .component-materials-grid .material-card-item .file-actions .btn-secondary:active {
+        box-shadow: var(--md3-elevation-0);
+    }
+    
+    .component-materials-grid .material-card-item .file-actions .btn .material-icons {
+        font-size: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .component-materials-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: var(--md3-spacing-sm) !important;
+            padding: var(--md3-spacing-sm) !important;
+        }
+        
+        .component-materials-grid .material-card-item {
+            padding: var(--md3-spacing-lg) var(--md3-spacing-sm) !important;
+        }
+        
+        .component-materials-grid .material-card-item .file-icon {
+            font-size: 2rem !important;
+            margin-bottom: var(--md3-spacing-sm) !important;
+        }
+        
+        .component-materials-grid .material-card-item .file-name {
+            font-size: 0.8125rem !important;
+        }
+        
+        .component-materials-grid .material-card-item .file-path {
+            font-size: 0.6875rem !important;
+            margin-bottom: var(--md3-spacing-md) !important;
+        }
+        
+        .component-materials-grid .material-card-item .file-actions {
+            gap: var(--md3-spacing-xs) !important;
+            flex-direction: column !important;
+        }
+        
+        .component-materials-grid .material-card-item .file-actions .btn {
+            padding: var(--md3-spacing-sm) var(--md3-spacing-md) !important;
+            width: 100%;
+        }
+        
+        .component-materials-grid .material-card-item .file-actions .btn .material-icons {
+            font-size: 0.875rem !important;
+        }
+    }
+</style>
+
+{% if show_card_wrapper|default:True %}
+<div class="card">
+    <div class="card-header">
+        <span class="material-icons">attach_file</span>
+        <h2>{{ title|default:"附件材料" }}</h2>
+    </div>
+{% endif %}
+    
+    {% if materials %}
+    <div class="component-materials-grid">
+        {% for item in materials %}
+        {% if item.file %}
+        <div class="material-card-item">
+            <span class="material-icons file-icon">{{ item.icon|default:"description" }}</span>
+            <span class="file-name" title="{{ item.name }}">{{ item.name }}</span>
+            <span class="file-path" title="{{ item.file|get_file_name_with_ext }}">{{ item.file|get_file_name_with_ext|truncatechars:25 }}</span>
+            <div class="file-actions">
+                <a href="{{ item.file.url }}" class="btn btn-primary" target="_blank" download>
+                    <span class="material-icons">download</span>
+                </a>
+                {% if item.file.url|is_office_file %}
+                <button type="button" class="btn btn-secondary" onclick="previewFile('{{ item.file.url }}', '{{ item.name }}'); event.stopPropagation();">
+                    <span class="material-icons">visibility</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    
+    {% if show_zip and zip_url %}
+    <div style="margin-top: var(--md3-spacing-lg); padding-top: var(--md3-spacing-lg); border-top: 1px solid var(--md3-outline-variant);">
+        <a href="{{ zip_url }}" class="btn btn-primary" style="width: 100%; justify-content: center;">
+            <span class="material-icons">folder_zip</span>
+            打包所有材料为ZIP文件
+        </a>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div style="text-align: center; padding: var(--md3-spacing-2xl); color: var(--md3-on-surface-variant);">
+        <span class="material-icons" style="font-size: 3rem; opacity: 0.3;">folder_open</span>
+        <p style="margin: var(--md3-spacing-md) 0 0 0;">暂无上传的材料</p>
+    </div>
+    {% endif %}
+
+{% if show_card_wrapper|default:True %}
+</div>
+{% endif %}
+
+<script>
+// 文件预览功能 (如果页面中未定义则使用默认实现)
+if (typeof previewFile === 'undefined') {
+    function previewFile(fileUrl, fileName) {
+        const currentDomain = window.location.origin;
+        let fullUrl = fileUrl;
+        if (fileUrl.startsWith('/')) {
+            fullUrl = currentDomain + fileUrl;
+        } else if (!fileUrl.startsWith('http')) {
+            fullUrl = currentDomain + '/' + fileUrl;
+        }
+        
+        const officeExtensions = ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'];
+        const fileExtension = fullUrl.toLowerCase().substring(fullUrl.lastIndexOf('.'));
+        
+        if (officeExtensions.includes(fileExtension)) {
+            const officePreviewUrl = 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(fullUrl);
+            window.open(officePreviewUrl, '_blank');
+        } else if (fileExtension === '.pdf') {
+            window.open(fullUrl, '_blank');
+        } else {
+            window.open(fullUrl, '_blank');
+        }
+    }
+}
+</script>

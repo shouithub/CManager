@@ -1,6 +1,7 @@
 from django import template
 from django.conf import settings
 import os
+import builtins
 
 register = template.Library()
 
@@ -9,7 +10,7 @@ def getattr(obj, attr):
     """
     获取对象的属性，如果属性不存在返回None
     """
-    return getattr(obj, attr, None)
+    return builtins.getattr(obj, attr, None)
 
 @register.filter
 
@@ -62,8 +63,58 @@ def material_name(field_name):
         'member_composition_list': '社团成员构成表',
         'new_media_account_report': '新媒体账号及运维情况表',
         'other_materials': '其他材料',
+        # 新社团申请材料
+        'establishment_application': '社团成立申请表',
+        'constitution_draft': '社团章程草案',
+        'three_year_plan': '社团三年发展规划',
+        'leaders_resumes': '负责人和指导老师简历',
+        'one_month_activity_plan': '一个月活动计划',
+        'advisor_certificates': '指导老师专业证书',
+        # 社团注册材料
+        'registration_form': '社团注册申请表',
+        'basic_info_form': '学生社团基础信息表',
+        'membership_fee_form': '会费表或免收会费说明表',
+        'fee_form': '会费表或免收会费说明表',
+        'leader_change_application': '社团主要负责人变动申请表',
+        'leader_change_form': '社团主要负责人变动申请表',
+        'meeting_minutes': '社团大会会议记录',
+        'name_change_application': '社团名称变更申请表',
+        'name_change_form': '社团名称变更申请表',
+        'advisor_change_application': '社团指导老师变动申请表',
+        'advisor_change_form': '社团指导老师变动申请表',
+        'business_advisor_change_application': '社团业务指导单位变动申请表',
+        'business_unit_change_form': '社团业务指导单位变动申请表',
+        'new_media_application': '新媒体平台建立申请表',
+        'new_media_form': '新媒体平台建立申请表',
     }
     return material_names.get(field_name, field_name)
+
+
+@register.filter
+def is_office_file(file_url):
+    """检查文件是否支持Office Online 预览"""
+    if not file_url:
+        return False
+    # 支持 Office Online 预览的文件扩展名
+    office_extensions = {
+        '.doc', '.docx',  # Word
+        '.xls', '.xlsx',  # Excel
+        '.ppt', '.pptx',  # PowerPoint
+        '.pdf',           # PDF
+    }
+    ext = os.path.splitext(str(file_url))[1].lower()
+    return ext in office_extensions
+
+
+@register.filter
+def get_file_name_with_ext(file_field):
+    """获取带扩展名的文件名"""
+    if not file_field:
+        return ''
+    try:
+        return os.path.basename(str(file_field.name))
+    except:
+        return str(file_field)
     
     # 如果以上方法都失败，返回原始路径
     return file_url
@@ -113,3 +164,8 @@ def safe_emoji_to_icon(text):
     """
     from django.utils.safestring import mark_safe
     return mark_safe(emoji_to_icon(text))
+
+@register.filter
+def concat_str(value, arg):
+    """字符串拼接"""
+    return str(value) + str(arg)

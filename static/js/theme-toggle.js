@@ -49,13 +49,14 @@
         // 更新侧边栏的主题图标
         const themeIcon = document.getElementById('theme-icon');
         if (themeIcon) {
-            themeIcon.textContent = theme === THEME_DARK ? '☀️' : '🌙';
+            themeIcon.textContent = theme === THEME_DARK ? 'brightness_7' : 'brightness_4';
         }
 
         // 更新旧版按钮（如果存在）
         const btn = document.getElementById('theme-toggle-btn');
         if (btn) {
-            btn.textContent = theme === THEME_DARK ? '☀️' : '🌙';
+            btn.textContent = theme === THEME_DARK ? 'brightness_7' : 'brightness_4';
+            btn.classList.add('material-icons'); // 确保有 material-icons 类
             btn.setAttribute('title', theme === THEME_DARK ? '切换到浅色模式' : '切换到深色模式');
             btn.setAttribute('aria-label', theme === THEME_DARK ? '切换到浅色模式' : '切换到深色模式');
         }

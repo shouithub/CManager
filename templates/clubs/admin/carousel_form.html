@@ -1,0 +1,290 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}{% if carousel %}编辑轮播图{% else %}添加轮播图{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 120px); /* 预留底栏空间 */
+        box-sizing: border-box;
+    }
+    
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .page-header .material-icons {
+        font-size: 3rem;
+        color: var(--md3-primary);
+        flex-shrink: 0;
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        white-space: nowrap;
+    }
+    
+    .form-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .form-group {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+    }
+    
+    .form-group input[type="text"],
+    .form-group input[type="url"],
+    .form-group input[type="number"],
+    .form-group input[type="file"],
+    .form-group textarea {
+        width: 100%;
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        font-size: 1rem;
+        font-family: inherit;
+        transition: all 0.2s ease;
+    }
+    
+    .form-group input[type="text"]:focus,
+    .form-group input[type="url"]:focus,
+    .form-group input[type="number"]:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 2px rgba(var(--md3-primary-rgb), 0.1);
+    }
+    
+    .form-group textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .form-help {
+        font-size: 0.813rem;
+        color: var(--md3-on-surface-variant);
+        margin-top: var(--md3-spacing-xs);
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .image-preview {
+        margin-top: var(--md3-spacing-md);
+        border-radius: var(--md3-radius-lg);
+        overflow: hidden;
+        max-width: 100%;
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: auto;
+        max-height: 400px;
+        object-fit: cover;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        padding-top: var(--md3-spacing-xl);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-full);
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn-primary:hover {
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+    }
+    
+    .error {
+        color: var(--md3-error);
+        font-size: 0.813rem;
+        margin-top: var(--md3-spacing-xs);
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <span class="material-icons">{% if carousel %}edit{% else %}add{% endif %}</span>
+        <h1>{% if carousel %}编辑轮播图{% else %}添加轮播图{% endif %}</h1>
+    </div>
+    
+    <div class="form-card">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_title">标题</label>
+                <input type="text" id="id_title" name="title" value="{{ carousel.title|default:'' }}" maxlength="200">
+                <div class="form-help">轮播图下方显示的标题文字</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_description">描述</label>
+                <textarea id="id_description" name="description">{{ carousel.description|default:'' }}</textarea>
+                <div class="form-help">标题下方显示的详细描述</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_link">跳转链接</label>
+                <input type="url" id="id_link" name="link" value="{{ carousel.link|default:'' }}" placeholder="https://example.com">
+                <div class="form-help">点击轮播图时跳转的URL地址（选填）</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_order">排序顺序</label>
+                <input type="number" id="id_order" name="order" value="{{ carousel.order|default:0 }}" min="0">
+                <div class="form-help">数字越小越靠前，相同数字按上传时间排列</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_image">轮播图片 {% if carousel %}(选择新图片将替换原图){% endif %}</label>
+                <input type="file" id="id_image" name="image" accept="image/*" {% if not carousel %}required{% endif %}>
+                <div class="form-help">推荐尺寸: 1920x500 像素，支持 JPG、PNG 格式</div>
+                {% if carousel and carousel.image %}
+                <div class="image-preview">
+                    <img src="{{ carousel.image.url }}" alt="{{ carousel.title }}">
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="id_is_active" name="is_active" {% if carousel.is_active or not carousel %}checked{% endif %}>
+                    <label for="id_is_active" style="margin: 0;">激活显示</label>
+                </div>
+                <div class="form-help">仅激活的轮播图会在首页显示</div>
+            </div>
+            
+            {% if form.errors %}
+            <div class="error">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">save</span>
+                    保存
+                </button>
+                <a href="{% url 'clubs:manage_carousel' %}" class="btn btn-secondary">
+                    <span class="material-icons">cancel</span>
+                    取消
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// 图片预览
+document.getElementById('id_image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            let preview = document.querySelector('.image-preview');
+            if (!preview) {
+                preview = document.createElement('div');
+                preview.className = 'image-preview';
+                e.target.parentElement.appendChild(preview);
+            }
+            preview.innerHTML = `<img src="${event.target.result}" alt="预览">`;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

@@ -7,7 +7,17 @@
     <meta name="color-scheme" content="light dark">
     <meta name="format-detection" content="telephone=no">
     <title>{% block title %}社团管理系统{% endblock %}</title>
-    <link href="https://cdn.bootcss.com/material-design-icons/3.0.1/iconfont/material-icons.css" rel="stylesheet">
+    <!-- 阻止页面闪烁：在CSS加载前立即设置主题 -->
+    <script>
+        (function() {
+            var theme = localStorage.getItem('md3-theme-mode');
+            if (!theme) {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <link href="https://fonts.font.im/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20251207">
     <style>
         /* 防止移动设备自动缩放 */
@@ -65,10 +75,6 @@
                             <span class="icon"><span class="material-icons">business_center</span></span>
                             <span>社团管理</span>
                         </a>
-                        <a href="{% url 'clubs:publish_announcement' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">book</span></span>
-                            <span>发布公告</span>
-                        </a>
                     {% elif user.profile.role == 'staff' %}
                         <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">business_center</span></span>
@@ -80,46 +86,73 @@
                             <span>部门管理</span>
                         </a>
                         {% endif %}
-                    {% elif user.profile.role == 'president' %}
+                    {% endif %}
+                    
+                    {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
+                        <a href="{% url 'clubs:admin_booking_management' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">calendar_month</span></span>
+                            <span>预约概览</span>
+                        </a>
+                    {% endif %}
+
+                    {% if user.profile.role == 'president' %}
                         <a href="{% url 'clubs:user_dashboard' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">folder</span></span>
                             <span>我的社团</span>
                         </a>
-                    {% else %}
-                        <!-- 普通用户只能看到活动列表 -->
                     {% endif %}
                 </div>
                 
                 {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
+
+
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
                         <span>审核中心</span>
                         <span class="material-icons expand-icon">expand_more</span>
                     </div>
                     <div class="sidebar-menu-items">
-                        <a href="{% url 'clubs:staff_audit_center' 'annual_review' %}" class="sidebar-menu-item">
+                        <a href="{% url 'clubs:staff_audit_center' 'annual-review' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">assignment</span></span>
                             <span>年审材料</span>
+                            {% if audit_center_counts.annual_review > 0 %}
+                            <span class="badge-count">{{ audit_center_counts.annual_review }}</span>
+                            {% endif %}
                         </a>
                         <a href="{% url 'clubs:staff_audit_center' 'registration' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">add_circle</span></span>
                             <span>社团注册</span>
+                            {% if audit_center_counts.registration > 0 %}
+                            <span class="badge-count">{{ audit_center_counts.registration }}</span>
+                            {% endif %}
                         </a>
                         <a href="{% url 'clubs:staff_audit_center' 'application' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">create</span></span>
                             <span>新社团申请</span>
+                            {% if audit_center_counts.application > 0 %}
+                            <span class="badge-count">{{ audit_center_counts.application }}</span>
+                            {% endif %}
                         </a>
                         <a href="{% url 'clubs:staff_audit_center' 'reimbursement' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">receipt</span></span>
                             <span>报销申请</span>
+                            {% if audit_center_counts.reimbursement > 0 %}
+                            <span class="badge-count">{{ audit_center_counts.reimbursement }}</span>
+                            {% endif %}
                         </a>
-                        <a href="{% url 'clubs:staff_audit_center' 'activity_application' %}" class="sidebar-menu-item">
+                        <a href="{% url 'clubs:staff_audit_center' 'activity-application' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">event</span></span>
                             <span>活动申请</span>
+                            {% if audit_center_counts.activity_application > 0 %}
+                            <span class="badge-count">{{ audit_center_counts.activity_application }}</span>
+                            {% endif %}
                         </a>
-                        <a href="{% url 'clubs:staff_audit_center' 'president_transition' %}" class="sidebar-menu-item">
+                        <a href="{% url 'clubs:staff_audit_center' 'president-transition' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">swap_horiz</span></span>
                             <span>社长换届</span>
+                            {% if audit_center_counts.president_transition > 0 %}
+                            <span class="badge-count">{{ audit_center_counts.president_transition }}</span>
+                            {% endif %}
                         </a>
                     </div>
                 </div>
@@ -130,57 +163,68 @@
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
                         <span>审批中心</span>
-                        {% if unread_approval_counts.total > 0 %}
-                        <span class="badge-count">{{ unread_approval_counts.total }}</span>
-                        {% endif %}
                         <span class="material-icons expand-icon">expand_more</span>
                     </div>
                     <div class="sidebar-menu-items">
                         <a href="{% url 'clubs:approval_center' 'annual_review' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">assignment</span></span>
                             <span>年审记录</span>
+                            {% if unread_approval_counts.annual_review > 0 %}
+                            <span class="badge-count">{{ unread_approval_counts.annual_review }}</span>
+                            {% endif %}
                         </a>
                         <a href="{% url 'clubs:approval_center' 'registration' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">add_circle</span></span>
                             <span>社团注册</span>
+                            {% if unread_approval_counts.registration > 0 %}
+                            <span class="badge-count">{{ unread_approval_counts.registration }}</span>
+                            {% endif %}
                         </a>
                         <a href="{% url 'clubs:approval_center' 'application' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">create</span></span>
                             <span>社团申请</span>
+                            {% if unread_approval_counts.application > 0 %}
+                            <span class="badge-count">{{ unread_approval_counts.application }}</span>
+                            {% endif %}
                         </a>
                         <a href="{% url 'clubs:approval_center' 'reimbursement' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">receipt</span></span>
                             <span>报销记录</span>
+                            {% if unread_approval_counts.reimbursement > 0 %}
+                            <span class="badge-count">{{ unread_approval_counts.reimbursement }}</span>
+                            {% endif %}
                         </a>
                         <a href="{% url 'clubs:approval_center' 'activity_application' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">event</span></span>
                             <span>活动申请</span>
+                            {% if unread_approval_counts.activity > 0 %}
+                            <span class="badge-count">{{ unread_approval_counts.activity }}</span>
+                            {% endif %}
                         </a>
                         <a href="{% url 'clubs:approval_center' 'president_transition' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">swap_horiz</span></span>
                             <span>社长换届</span>
+                            {% if unread_approval_counts.transition > 0 %}
+                            <span class="badge-count">{{ unread_approval_counts.transition }}</span>
+                            {% endif %}
                         </a>
                     </div>
                 </div>
                 {% endif %}
                 
-                <!-- 222房间借用 - 仅社长和干事可见 -->
+                <!-- 房间管理 - 仅社长和干事可见 -->
                 {% if user.profile.role == 'president' or user.profile.role == 'staff' or user.profile.role == 'admin' %}
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
                         <span>房间管理</span>
                         <span class="material-icons expand-icon">expand_more</span>
                     </div>
-                    <div class="sidebar-menu-items collapsed">
-                        <a href="{% url 'clubs:room222_calendar' %}" class="sidebar-menu-item">
+                    <div class="sidebar-menu-items">
+                        <a href="{% url 'clubs:room_calendar' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">event</span></span>
-                            <span>222房间日历</span>
+                            <span>房间日历</span>
                         </a>
-                        <a href="{% url 'clubs:submit_room222_booking' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">add_circle</span></span>
-                            <span>预约房间</span>
-                        </a>
-                        <a href="{% url 'clubs:my_room222_bookings' %}" class="sidebar-menu-item">
+                        <a href="{% url 'clubs:my_room_bookings' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">list</span></span>
                             <span>我的预约</span>
                         </a>
@@ -206,12 +250,10 @@
                             干事
                         {% elif user.profile.role == 'president' %}
                             社长
-                        {% else %}
-                            普通用户
                         {% endif %}
                     </div>
                 </div>
-                <span class="dropdown-arrow">▲</span>
+                <span class="dropdown-arrow"></span>
             </div>
             
             <div class="sidebar-user-dropdown" id="userDropdown">
@@ -230,12 +272,52 @@
             </div>
             
             <div class="sidebar-theme-toggle" onclick="toggleTheme()" title="切换主题">
-                <span id="theme-icon">🌙</span>
+                <span id="theme-icon" class="material-icons">brightness_4</span>
                 <span class="theme-text">切换主题</span>
             </div>
         </div>
         {% endif %}
     </nav>
+    <script>
+        (function() {
+            // 立即恢复侧边栏折叠状态，防止页面闪烁
+            // Restore collapsed state immediately to prevent flicker
+            function initMenuSections() {
+                const collapsibleTitles = document.querySelectorAll('.sidebar-menu-title.collapsible');
+                collapsibleTitles.forEach(title => {
+                    const sectionName = title.textContent.trim().split('\n')[0].trim();
+                    let shouldCollapse = localStorage.getItem(`sidebar-${sectionName}-collapsed`);
+                    
+                    // 默认折叠逻辑 (Default collapse logic)
+                    if (sectionName === '房间管理' && shouldCollapse === null) shouldCollapse = 'false';
+                    if (sectionName === '审批中心' && shouldCollapse === null) shouldCollapse = 'false';
+                    if (sectionName === '审核中心' && shouldCollapse === null) shouldCollapse = 'false';
+                    
+                    if (shouldCollapse === 'true') {
+                        title.classList.add('collapsed');
+                        const items = title.parentElement.querySelector('.sidebar-menu-items');
+                        if (items) items.classList.add('collapsed');
+                    }
+                });
+            }
+            initMenuSections();
+
+            // 恢复侧边栏滚动位置
+            // Restore sidebar scroll position
+            const sidebarMenu = document.querySelector('.sidebar-menu');
+            if (sidebarMenu) {
+                const savedScroll = localStorage.getItem('sidebar-menu-scroll-position');
+                if (savedScroll) {
+                    sidebarMenu.scrollTop = parseInt(savedScroll, 10);
+                }
+
+                // 保存滚动位置 (Save scroll position)
+                sidebarMenu.addEventListener('scroll', function() {
+                    localStorage.setItem('sidebar-menu-scroll-position', sidebarMenu.scrollTop);
+                });
+            }
+        })();
+    </script>
     
     <!-- 主内容区 -->
     <div class="main-wrapper" id="mainWrapper">
@@ -274,8 +356,15 @@
                     <span class="icon"><span class="material-icons">settings</span></span>
                     <span>管理</span>
                 </a>
-                <a href="{% url 'clubs:staff_dashboard' %}" class="bottom-nav-item">
-                    <span class="icon"><span class="material-icons">check_circle</span></span>
+                <a href="{% url 'clubs:staff_audit_center_mobile' %}" class="bottom-nav-item">
+                    <span class="icon">
+                        <span class="material-icons">check_circle</span>
+                        {% with total=audit_center_counts.annual_review|add:audit_center_counts.registration|add:audit_center_counts.application|add:audit_center_counts.reimbursement|add:audit_center_counts.activity_application|add:audit_center_counts.president_transition %}
+                        {% if total > 0 %}
+                        <span class="nav-badge">{{ total }}</span>
+                        {% endif %}
+                        {% endwith %}
+                    </span>
                     <span>审核</span>
                 </a>
                 <a href="{% url 'clubs:staff_management' %}" class="bottom-nav-item">
@@ -283,8 +372,15 @@
                     <span>社团</span>
                 </a>
             {% elif user.profile.role == 'staff' %}
-                <a href="{% url 'clubs:staff_dashboard' %}" class="bottom-nav-item">
-                    <span class="icon"><span class="material-icons">check_circle</span></span>
+                <a href="{% url 'clubs:staff_audit_center_mobile' %}" class="bottom-nav-item">
+                    <span class="icon">
+                        <span class="material-icons">check_circle</span>
+                        {% with total=audit_center_counts.annual_review|add:audit_center_counts.registration|add:audit_center_counts.application|add:audit_center_counts.reimbursement|add:audit_center_counts.activity_application|add:audit_center_counts.president_transition %}
+                        {% if total > 0 %}
+                        <span class="nav-badge">{{ total }}</span>
+                        {% endif %}
+                        {% endwith %}
+                    </span>
                     <span>审核</span>
                 </a>
                 <a href="{% url 'clubs:staff_management' %}" class="bottom-nav-item">
@@ -296,21 +392,20 @@
                     <span class="icon"><span class="material-icons">folder</span></span>
                     <span>我的</span>
                 </a>
-                <a href="{% url 'clubs:approval_center' 'annual_review' %}" class="bottom-nav-item">
-                    <span class="icon"><span class="material-icons">check_circle</span></span>
+                <a href="{% url 'clubs:approval_center_mobile' %}" class="bottom-nav-item">
+                    <span class="icon">
+                        <span class="material-icons">check_circle</span>
+                        {% if unread_approval_counts.total > 0 %}
+                        <span class="nav-badge">{{ unread_approval_counts.total }}</span>
+                        {% endif %}
+                    </span>
                     <span>审批</span>
-                </a>
-            {% else %}
-                <!-- 普通用户 -->
-                <a href="{% url 'clubs:public_activities' %}" class="bottom-nav-item">
-                    <span class="icon"><span class="material-icons">event</span></span>
-                    <span>活动</span>
                 </a>
             {% endif %}
             
             <a href="javascript:void(0)" class="bottom-nav-item" onclick="toggleSidebar()">
                 <span class="icon"><span class="material-icons">person</span></span>
-                <span>我</span>
+                <span>用户</span>
             </a>
         </div>
     </nav>
@@ -362,22 +457,6 @@
                 localStorage.setItem(`sidebar-${sectionName}-collapsed`, titleElement.classList.contains('collapsed'));
             }
 
-            function initMenuSections() {
-                const collapsibleTitles = document.querySelectorAll('.sidebar-menu-title.collapsible');
-                collapsibleTitles.forEach(title => {
-                    const sectionName = title.textContent.trim().split('\n')[0].trim();
-                    let shouldCollapse = localStorage.getItem(`sidebar-${sectionName}-collapsed`);
-                    if (sectionName === '房间管理' && shouldCollapse === null) shouldCollapse = 'true';
-                    if (sectionName === '审批中心' && shouldCollapse === null) shouldCollapse = 'false';
-                    if (sectionName === '审核中心' && shouldCollapse === null) shouldCollapse = 'false';
-                    if (shouldCollapse === 'true') {
-                        title.classList.add('collapsed');
-                        const items = title.parentElement.querySelector('.sidebar-menu-items');
-                        if (items) items.classList.add('collapsed');
-                    }
-                });
-            }
-
             document.addEventListener('click', function(event) {
                 const userDropdown = document.getElementById('userDropdown');
                 const userButton = event.target.closest('.sidebar-user');
@@ -398,8 +477,6 @@
                 const currentPath = window.location.pathname;
                 const menuItems = document.querySelectorAll('.sidebar-menu-item, .bottom-nav-item');
                 menuItems.forEach(item => { try { if (item.getAttribute('href') === currentPath) item.classList.add('active'); } catch (e) {} });
-
-                initMenuSections();
             });
         })();
     </script>

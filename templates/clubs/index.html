@@ -5,119 +5,447 @@
 
 {% block extra_css %}
 <style>
+    /* ===== 基础容器 ===== */
     .home-container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: var(--md3-spacing-3xl) var(--md3-spacing-xl);
+        padding: var(--md3-spacing-xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 80px);
     }
     
-    /* 顶部标题 */
-    .page-header {
-        background: linear-gradient(135deg, var(--md3-primary) 0%, var(--md3-tertiary) 100%);
-        border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-3xl);
+    /* ===== Hero 区域 ===== */
+    .hero-section {
+        position: relative;
+        border-radius: var(--md3-radius-2xl);
+        overflow: hidden;
         margin-bottom: var(--md3-spacing-2xl);
-        color: var(--md3-on-primary);
-        box-shadow: var(--md3-elevation-2);
+        background: linear-gradient(135deg, var(--md3-primary) 0%, var(--md3-tertiary) 100%);
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        padding: var(--md3-spacing-xl) var(--md3-spacing-2xl);
+        color: white;
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-lg);
     }
     
-    .page-header .material-icons {
-        font-size: 3rem;
+    .hero-icon-wrapper {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: var(--md3-radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
     }
     
-    .page-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin: 0;
+    .hero-icon-wrapper .material-icons {
+        font-size: 2rem;
     }
     
-    .page-subtitle {
-        font-size: 1.1rem;
+    .hero-text h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .hero-text p {
+        font-size: 0.9375rem;
         opacity: 0.95;
         margin: 0;
+        line-height: 1.5;
     }
     
-    /* 部门卡片网格 */
-    .departments-section {
+    .hero-decoration {
+        position: absolute;
+        right: -50px;
+        bottom: -50px;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+        z-index: 1;
+    }
+    
+    .hero-decoration::before {
+        content: '';
+        position: absolute;
+        top: -100px;
+        left: -100px;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+    }
+    
+    /* ===== 轮播 ===== */
+    .carousel-section {
+        margin-bottom: var(--md3-spacing-2xl);
+        border-radius: var(--md3-radius-2xl);
+        overflow: hidden;
+        box-shadow: var(--md3-elevation-2);
+        position: relative;
+        background: var(--md3-surface-container);
+    }
+    
+    .carousel-container {
+        position: relative;
+        width: 100%;
+        height: 420px;
+        overflow: hidden;
+    }
+    
+    .carousel-slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.6s ease-in-out;
+        cursor: pointer;
+    }
+    
+    .carousel-slide.active {
+        opacity: 1;
+    }
+    
+    .carousel-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .carousel-caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+        color: white;
+        padding: var(--md3-spacing-3xl) var(--md3-spacing-2xl) var(--md3-spacing-xl);
+    }
+    
+    .carousel-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .carousel-description {
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        margin: 0;
+        opacity: 0.9;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    .carousel-controls {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+        display: flex;
+        justify-content: space-between;
+        padding: 0 var(--md3-spacing-md);
+        pointer-events: none;
+    }
+    
+    .carousel-btn {
+        pointer-events: all;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.95);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .carousel-btn:hover {
+        background: white;
+        transform: scale(1.1);
+        box-shadow: var(--md3-elevation-3);
+    }
+    
+    .carousel-btn .material-icons {
+        color: var(--md3-on-surface);
+        font-size: 24px;
+    }
+    
+    .carousel-indicators {
+        position: absolute;
+        bottom: var(--md3-spacing-md);
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: var(--md3-spacing-sm);
+        z-index: 10;
+    }
+    
+    .carousel-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.4);
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 0;
+    }
+    
+    .carousel-indicator.active {
+        background: white;
+        width: 28px;
+        border-radius: 5px;
+    }
+    
+    /* ===== 未登录欢迎区 ===== */
+    .welcome-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--md3-spacing-xl);
         margin-bottom: var(--md3-spacing-2xl);
     }
     
-    .section-title {
+    .welcome-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        border: 1px solid var(--md3-outline-variant);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+    }
+    
+    .welcome-card:hover {
+        box-shadow: var(--md3-elevation-2);
+        border-color: var(--md3-primary);
+    }
+    
+    .welcome-card-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .welcome-card-icon .material-icons {
+        font-size: 2.5rem;
+    }
+    
+    .welcome-card.login .welcome-card-icon {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+    
+    .welcome-card.register .welcome-card-icon {
+        background: var(--md3-tertiary-container);
+        color: var(--md3-on-tertiary-container);
+    }
+    
+    .welcome-card h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-sm) 0;
+    }
+    
+    .welcome-card p {
+        font-size: 0.9375rem;
+        color: var(--md3-on-surface-variant);
+        margin: 0 0 var(--md3-spacing-xl) 0;
+        line-height: 1.6;
+    }
+    
+    .welcome-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-2xl);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.9375rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+    }
+    
+    .welcome-btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+    
+    .welcome-btn-primary:hover {
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-2px);
+    }
+    
+    .welcome-btn-secondary {
+        background: var(--md3-surface);
+        color: var(--md3-tertiary);
+        border: 2px solid var(--md3-tertiary);
+    }
+    
+    .welcome-btn-secondary:hover {
+        background: var(--md3-tertiary-container);
+        transform: translateY(-2px);
+    }
+    
+    /* ===== 统计卡片 ===== */
+    .stats-section {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+    
+    .stat-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .stat-card:nth-child(1) .stat-icon { background: var(--md3-primary-container); color: var(--md3-on-primary-container); }
+    .stat-card:nth-child(2) .stat-icon { background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); }
+    .stat-card:nth-child(3) .stat-icon { background: var(--md3-secondary-container); color: var(--md3-on-secondary-container); }
+    
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--md3-radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .stat-icon .material-icons {
         font-size: 1.75rem;
+    }
+    
+    .stat-info {
+        flex: 1;
+    }
+    
+    .stat-label {
+        font-size: 0.8125rem;
+        color: var(--md3-on-surface-variant);
+        font-weight: 500;
+        margin-bottom: var(--md3-spacing-xs);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
         font-weight: 700;
         color: var(--md3-on-surface);
-        margin: 0 0 var(--md3-spacing-xl) 0;
+        line-height: 1;
+    }
+    
+    /* ===== 区块标题 ===== */
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--md3-spacing-xl);
+        gap: var(--md3-spacing-md);
+    }
+    
+    .section-title {
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-md);
-        justify-content: space-between;
+        margin: 0;
     }
     
     .section-title .material-icons {
-        font-size: 2rem;
+        font-size: 1.75rem;
         color: var(--md3-primary);
     }
     
-    .section-actions {
-        display: flex;
-        gap: var(--md3-spacing-sm);
-        align-items: center;
+    .section-title span {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--md3-on-surface);
     }
     
-    .edit-btn {
+    .section-action {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
         gap: var(--md3-spacing-xs);
         padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
-        border-radius: var(--md3-radius-md);
+        border-radius: var(--md3-radius-full);
         background: var(--md3-primary);
         color: var(--md3-on-primary);
-        border: none;
-        cursor: pointer;
+        font-size: 0.8125rem;
         font-weight: 600;
-        font-size: 0.85rem;
         text-decoration: none;
-        transition: all 0.2s ease;
+        transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
     }
     
-    .edit-btn:hover {
+    .section-action:hover {
         box-shadow: var(--md3-elevation-2);
         transform: translateY(-1px);
     }
     
-    .edit-btn .material-icons {
+    .section-action .material-icons {
         font-size: 1rem;
-        color: white;
+    }
+    
+    /* ===== 部门卡片 ===== */
+    .departments-section {
+        margin-bottom: var(--md3-spacing-2xl);
     }
     
     .departments-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         gap: var(--md3-spacing-lg);
     }
     
     .dept-card {
         background: var(--md3-surface-container);
         border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
+        border-radius: var(--md3-radius-xl);
         overflow: hidden;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: var(--md3-elevation-1);
+        transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
     }
     
     .dept-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-3px);
+        box-shadow: var(--md3-elevation-3);
     }
     
     .dept-header {
         background: var(--md3-primary-container);
-        color: var(--md3-on-primary-container);
         padding: var(--md3-spacing-lg);
         display: flex;
         align-items: center;
@@ -125,11 +453,11 @@
     }
     
     .dept-icon {
-        width: 48px;
-        height: 48px;
+        width: 52px;
+        height: 52px;
         background: var(--md3-primary);
         color: var(--md3-on-primary);
-        border-radius: var(--md3-radius-md);
+        border-radius: var(--md3-radius-lg);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -137,12 +465,13 @@
     }
     
     .dept-icon .material-icons {
-        font-size: 28px;
+        font-size: 1.75rem;
     }
     
     .dept-name {
         font-size: 1.25rem;
         font-weight: 700;
+        color: var(--md3-on-primary-container);
         margin: 0;
     }
     
@@ -152,450 +481,272 @@
     
     .dept-description {
         color: var(--md3-on-surface);
-        line-height: 1.6;
-        margin-bottom: var(--md3-spacing-md);
-        font-size: 0.95rem;
+        line-height: 1.7;
+        font-size: 0.9375rem;
+        margin: 0 0 var(--md3-spacing-md) 0;
     }
     
     .dept-highlights {
-        background: var(--md3-tertiary-container);
-        color: var(--md3-on-tertiary-container);
-        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
-        border-radius: var(--md3-radius-sm);
         display: inline-flex;
         align-items: center;
         gap: var(--md3-spacing-xs);
+        background: var(--md3-tertiary-container);
+        color: var(--md3-on-tertiary-container);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.8125rem;
         font-weight: 600;
-        font-size: 0.85rem;
     }
     
     .dept-highlights .material-icons {
         font-size: 1rem;
     }
     
-    /* 统计卡片 */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: var(--md3-spacing-lg);
+    /* ===== 公告区域 ===== */
+    .announcements-section {
         margin-bottom: var(--md3-spacing-2xl);
     }
     
-    .stat-card {
+    .announcements-card {
         background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
         border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-lg);
-        text-align: center;
-        border-left: 4px solid;
-        transition: transform 0.2s ease;
-    }
-    
-    .stat-card:nth-child(1) { border-left-color: var(--md3-primary); }
-    .stat-card:nth-child(2) { border-left-color: var(--md3-tertiary); }
-    .stat-card:nth-child(3) { border-left-color: var(--md3-secondary); }
-    
-    .stat-card:hover {
-        transform: translateY(-2px);
-    }
-    
-    .stat-label {
-        font-size: 0.85rem;
-        color: var(--md3-on-surface-variant);
-        font-weight: 600;
-        margin-bottom: var(--md3-spacing-sm);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--md3-spacing-xs);
-    }
-    
-    .stat-label .material-icons {
-        font-size: 1.1rem;
-    }
-    
-    .stat-value {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: var(--md3-on-surface);
-    }
-    
-    /* 公告卡片 */
-    .announcement-section {
-        margin-bottom: var(--md3-spacing-2xl);
-    }
-    
-    .announcement-card {
-        background: var(--md3-secondary-container);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-lg);
-        border: 1px solid var(--md3-secondary);
-        margin-bottom: var(--md3-spacing-lg);
+        overflow: hidden;
         box-shadow: var(--md3-elevation-1);
     }
     
-    .announcement-header {
+    .announcements-header {
+        background: var(--md3-secondary-container);
+        padding: var(--md3-spacing-lg);
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-lg);
-        padding-bottom: var(--md3-spacing-md);
-        border-bottom: 1px solid var(--md3-outline-variant);
     }
     
-    .announcement-header .material-icons {
-        font-size: 1.75rem;
+    .announcements-header .material-icons {
+        font-size: 1.5rem;
         color: var(--md3-on-secondary-container);
     }
     
-    .announcement-header h3 {
+    .announcements-header h3 {
         margin: 0;
-        font-size: 1.25rem;
+        font-size: 1.125rem;
         font-weight: 600;
         color: var(--md3-on-secondary-container);
     }
     
-    .announcement-item {
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-md);
+    .announcements-list {
         padding: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-md);
-        border: 1px solid var(--md3-outline-variant);
-        transition: box-shadow 0.2s ease;
-    }
-    
-    .announcement-item:hover {
-        box-shadow: var(--md3-elevation-2);
-    }
-    
-    .announcement-item:last-child {
-        margin-bottom: 0;
-    }
-    
-    .announcement-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-        margin: 0 0 var(--md3-spacing-sm) 0;
-    }
-    
-    .announcement-date {
-        font-size: 0.85rem;
-        color: var(--md3-on-surface-variant);
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-xs);
-        margin-bottom: var(--md3-spacing-md);
-    }
-    
-    .announcement-content {
-        color: var(--md3-on-surface);
-        line-height: 1.6;
-        margin-bottom: var(--md3-spacing-md);
-    }
-    
-    /* 社团列表 */
-    .clubs-section {
-        margin-bottom: var(--md3-spacing-2xl);
-    }
-    
-    .clubs-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        grid-template-columns: 1fr;
         gap: var(--md3-spacing-lg);
     }
     
-    .club-card {
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-lg);
+    .announcement-item {
         padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-xl);
+        background: var(--md3-surface-container-highest);
         border: 1px solid var(--md3-outline-variant);
-        transition: all 0.2s ease;
+        transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
     }
     
-    .club-card:hover {
+    .announcement-item:hover {
         background: var(--md3-surface-container-high);
         box-shadow: var(--md3-elevation-2);
-        transform: translateY(-2px);
     }
     
-    .club-card-header {
-        margin-bottom: var(--md3-spacing-lg);
-        padding-bottom: var(--md3-spacing-md);
-        border-bottom: 1px solid var(--md3-outline-variant);
+    .announcement-top {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
         gap: var(--md3-spacing-md);
     }
     
-    .club-name {
-        font-size: 1.15rem;
+    .announcement-title {
+        font-size: 1.0625rem;
         font-weight: 600;
         color: var(--md3-on-surface);
         margin: 0;
     }
     
-    .club-info {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-lg);
-    }
-    
-    .club-info-item {
+    .announcement-meta {
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-sm);
-        font-size: 0.85rem;
-    }
-    
-    .club-info-item .material-icons {
-        font-size: 1.1rem;
-        color: var(--md3-primary);
-    }
-    
-    .club-info-label {
+        font-size: 0.8125rem;
         color: var(--md3-on-surface-variant);
-        min-width: 50px;
     }
     
-    .club-info-value {
-        color: var(--md3-on-surface);
-        font-weight: 500;
+    .announcement-meta .material-icons {
+        font-size: 0.875rem;
     }
     
-    .status-badge {
+    .announcement-chip {
         display: inline-flex;
         align-items: center;
         gap: var(--md3-spacing-xs);
-        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
-        border-radius: var(--md3-radius-sm);
+        padding: 2px var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
         font-size: 0.75rem;
         font-weight: 600;
-        white-space: nowrap;
     }
     
-    .status-badge.active {
-        background: var(--md3-success-container);
-        color: var(--md3-on-success-container);
-    }
-    
-    .status-badge.inactive {
-        background: var(--md3-warning-container);
-        color: var(--md3-on-warning-container);
-    }
-    
-    .status-badge.stopped {
-        background: var(--md3-error-container);
-        color: var(--md3-on-error-container);
-    }
-    
-    .club-description {
+    .announcement-content {
         color: var(--md3-on-surface-variant);
-        font-size: 0.85rem;
-        line-height: 1.5;
-        margin-bottom: var(--md3-spacing-lg);
+        font-size: 0.875rem;
+        line-height: 1.6;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
     
-    .club-actions {
+    .announcement-footer {
         display: flex;
+        align-items: center;
+        justify-content: space-between;
         gap: var(--md3-spacing-sm);
-    }
-    
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--md3-spacing-xs);
-        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
-        border-radius: var(--md3-radius-md);
-        font-size: 0.85rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        border: none;
-    }
-    
-    .btn-primary {
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
-    }
-    
-    .btn-primary:hover {
-        box-shadow: var(--md3-elevation-1);
-        transform: translateY(-1px);
-    }
-    
-    .btn .material-icons {
-        font-size: 1rem;
-    }
-    
-    /* 登录提示 */
-    .login-prompt {
-        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
-        border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-3xl) var(--md3-spacing-2xl);
-        text-align: center;
-        box-shadow: var(--md3-elevation-1);
-        margin: var(--md3-spacing-2xl) auto;
-        max-width: 600px;
-    }
-    
-    .login-prompt-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto var(--md3-spacing-lg);
-        background: var(--md3-surface);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: var(--md3-elevation-2);
-    }
-    
-    .login-prompt-icon .material-icons {
-        font-size: 3rem;
-        color: var(--md3-primary);
-    }
-    
-    .login-prompt-title {
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-        margin-bottom: var(--md3-spacing-md);
-    }
-    
-    .login-prompt-message {
-        font-size: 1rem;
-        color: var(--md3-on-surface-variant);
-        margin-bottom: var(--md3-spacing-2xl);
-        line-height: 1.5;
-    }
-    
-    .login-actions {
-        display: flex;
-        gap: var(--md3-spacing-lg);
-        justify-content: center;
         flex-wrap: wrap;
     }
     
-    .login-btn {
+    .announcement-attachment {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: var(--md3-spacing-sm);
-        padding: var(--md3-spacing-lg) var(--md3-spacing-2xl);
-        border-radius: var(--md3-radius-full);
-        font-size: 1rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        min-width: 160px;
-        box-shadow: var(--md3-elevation-1);
-    }
-    
-    .login-btn-primary {
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
-    }
-    
-    .login-btn-primary:hover {
-        box-shadow: var(--md3-elevation-3);
-        transform: translateY(-2px);
-    }
-    
-    .login-btn-secondary {
-        background: var(--md3-surface);
+        gap: var(--md3-spacing-xs);
+        font-size: 0.8125rem;
         color: var(--md3-primary);
-        border: 2px solid var(--md3-primary);
-    }
-    
-    .login-btn-secondary:hover {
+        text-decoration: none;
+        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
         background: var(--md3-primary-container);
-        box-shadow: var(--md3-elevation-2);
-        transform: translateY(-2px);
+        border-radius: var(--md3-radius-full);
     }
     
-    /* 空状态 */
+    /* ===== 空状态 ===== */
     .empty-state {
         background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-lg);
+        border: 2px dashed var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
         padding: var(--md3-spacing-3xl);
         text-align: center;
-        border: 2px dashed var(--md3-outline-variant);
     }
     
     .empty-state .material-icons {
         font-size: 4rem;
         color: var(--md3-on-surface-variant);
-        opacity: 0.5;
-        margin-bottom: var(--md3-spacing-lg);
+        opacity: 0.4;
+        margin-bottom: var(--md3-spacing-md);
     }
     
     .empty-state p {
         color: var(--md3-on-surface-variant);
-        font-size: 1rem;
         margin: 0;
+        font-size: 1rem;
     }
     
-    .empty-state a {
-        color: var(--md3-primary);
-        text-decoration: none;
-        font-weight: 600;
-    }
-    
-    /* 轮播 */
-    .carousel-section {
-        margin-bottom: var(--md3-spacing-2xl);
-        border-radius: var(--md3-radius-lg);
-        overflow: hidden;
-        box-shadow: var(--md3-elevation-2);
-    }
-    
-    .carousel-image {
-        height: 400px;
-        object-fit: cover;
-        width: 100%;
-    }
-    
-    /* 响应式 */
-    @media (max-width: 768px) {
-        .home-container {
-            padding: var(--md3-spacing-lg);
-        }
-        
-        .page-header {
-            flex-direction: column;
-            text-align: center;
-            padding: var(--md3-spacing-xl);
-        }
-        
-        .page-title {
-            font-size: 1.8rem;
-        }
-        
-        .departments-grid,
-        .clubs-grid {
+    /* ===== 响应式 ===== */
+    @media (max-width: 1024px) {
+        .departments-grid {
             grid-template-columns: 1fr;
         }
         
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
+        .stats-section {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .home-container {
+            padding: var(--md3-spacing-md);
+            padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
         }
         
-        .login-prompt {
-            padding: var(--md3-spacing-xl);
+        .hero-section {
+            min-height: auto;
         }
         
-        .carousel-image {
-            height: 250px;
+        .hero-content {
+            flex-direction: column;
+            text-align: center;
+            padding: var(--md3-spacing-lg);
         }
         
-        .club-card-header {
+        .hero-icon-wrapper {
+            width: 56px;
+            height: 56px;
+        }
+        
+        .hero-icon-wrapper .material-icons {
+            font-size: 1.75rem;
+        }
+        
+        .hero-text h1 {
+            font-size: 1.25rem;
+        }
+        
+        .hero-text p {
+            font-size: 0.875rem;
+        }
+        
+        .hero-decoration {
+            display: none;
+        }
+        
+        .welcome-section {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-section {
+            grid-template-columns: 1fr;
+        }
+        
+        .stat-card {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .carousel-container {
+            height: 280px;
+        }
+        
+        .carousel-title {
+            font-size: 1.125rem;
+        }
+        
+        .carousel-description {
+            font-size: 0.8125rem;
+            -webkit-line-clamp: 1;
+        }
+        
+        .carousel-btn {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .carousel-btn .material-icons {
+            font-size: 20px;
+        }
+        
+        .section-header {
             flex-direction: column;
             align-items: flex-start;
+            gap: var(--md3-spacing-md);
+        }
+        
+        .section-title .material-icons {
+            font-size: 1.5rem;
+        }
+        
+        .section-title span {
+            font-size: 1.25rem;
+        }
+        
+        .departments-grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -603,42 +754,137 @@
 
 {% block content %}
 <div class="home-container">
-    <!-- 顶部标题 -->
-    <div class="page-header">
-        <span class="material-icons">groups</span>
-        <div>
-            <h1 class="page-title">社团管理服务中心</h1>
-            <p class="page-subtitle">致力于为社团提供全方位的管理与服务支持，促进社团健康发展</p>
+    <!-- Hero 区域 -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-icon-wrapper">
+                <span class="material-icons">groups</span>
+            </div>
+            <div class="hero-text">
+                <h1>社团管理服务中心</h1>
+                <p>致力于为社团提供全方位的管理与服务支持，促进社团健康发展</p>
+            </div>
         </div>
+        <div class="hero-decoration"></div>
     </div>
     
-    <!-- 未登录状态 -->
+    <!-- 轮播图 -->
+    {% if carousel_images %}
+    <div class="carousel-section">
+        <div class="carousel-container">
+            {% for image in carousel_images %}
+            <div class="carousel-slide {% if forloop.first %}active{% endif %}" 
+                 data-slide="{{ forloop.counter0 }}"
+                 {% if image.link %}onclick="window.location.href='{{ image.link }}'"{% endif %}>
+                <img src="{{ image.image.url }}" alt="{{ image.title }}">
+                {% if image.title or image.description %}
+                <div class="carousel-caption">
+                    {% if image.title %}<h3 class="carousel-title">{{ image.title }}</h3>{% endif %}
+                    {% if image.description %}<p class="carousel-description">{{ image.description }}</p>{% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            {% if carousel_images|length > 1 %}
+            <div class="carousel-controls">
+                <button class="carousel-btn" onclick="event.stopPropagation(); prevSlide()">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                <button class="carousel-btn" onclick="event.stopPropagation(); nextSlide()">
+                    <span class="material-icons">chevron_right</span>
+                </button>
+            </div>
+            
+            <div class="carousel-indicators">
+                {% for image in carousel_images %}
+                <button class="carousel-indicator {% if forloop.first %}active{% endif %}" 
+                        onclick="event.stopPropagation(); goToSlide({{ forloop.counter0 }})"></button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- 公告区域 -->
+    {% if announcements %}
+    <div class="announcements-section">
+        <div class="announcements-card">
+            <div class="announcements-header">
+                <span class="material-icons">campaign</span>
+                <h3>最新公告</h3>
+            </div>
+            <div class="announcements-list">
+                {% for announcement in announcements %}
+                <div class="announcement-item">
+                    <div class="announcement-top">
+                        <h4 class="announcement-title">{{ announcement.title }}</h4>
+                        <span class="announcement-chip">
+                            <span class="material-icons">notifications</span>
+                            公告
+                        </span>
+                    </div>
+                    <div class="announcement-meta">
+                        <span class="material-icons">schedule</span>
+                        {{ announcement.published_at|date:"Y年m月d日" }}
+                    </div>
+                    {% if announcement.content %}
+                    <p class="announcement-content">{{ announcement.content|truncatewords:50 }}</p>
+                    {% endif %}
+                    <div class="announcement-footer">
+                        {% if announcement.attachment %}
+                        <a href="{{ announcement.attachment.url }}" class="announcement-attachment" target="_blank" rel="noopener">
+                            <span class="material-icons">attach_file</span>
+                            {{ announcement.attachment.name|slice:"-24:" }}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     {% if is_anonymous %}
-    <div class="login-prompt">
-        <div class="login-prompt-icon">
-            <span class="material-icons">lock</span>
-        </div>
-        <h2 class="login-prompt-title">欢迎来到社团管理系统</h2>
-        <p class="login-prompt-message">请登录后查看部门信息与社团详情</p>
-        <div class="login-actions">
-            <a href="{% url 'clubs:login' %}" class="login-btn login-btn-primary">
-                <span class="material-icons">group</span>
-                <span>登录</span>
+    <!-- ===== 未登录状态===== -->
+    
+    <!-- 登录/注册卡片 -->
+    <div class="welcome-section">
+        <div class="welcome-card login">
+            <div class="welcome-card-icon">
+                <span class="material-icons">login</span>
+            </div>
+            <h3>已有账号</h3>
+            <p>登录后查看完整的部门信息、社团详情，管理您的社团事务</p>
+            <a href="{% url 'clubs:login' %}" class="welcome-btn welcome-btn-primary">
+                <span class="material-icons">arrow_forward</span>
+                立即登录
             </a>
-            <a href="{% url 'clubs:register' %}" class="login-btn login-btn-secondary">
+        </div>
+        <div class="welcome-card register">
+            <div class="welcome-card-icon">
                 <span class="material-icons">person_add</span>
-                <span>注册</span>
+            </div>
+            <h3>新用户？</h3>
+            <p>注册账号后即可使用社团管理系统的全部功能</p>
+            <a href="{% url 'clubs:register' %}" class="welcome-btn welcome-btn-secondary">
+                <span class="material-icons">arrow_forward</span>
+                注册账号
             </a>
         </div>
     </div>
     
-    <!-- 部门介绍 - 未登录用户可见 -->
+    <!-- 部门介绍（未登录状态） -->
     {% if departments %}
     <div class="departments-section">
-        <h2 class="section-title">
-            <span class="material-icons">info</span>
-            部门介绍
-        </h2>
+        <div class="section-header">
+            <h2 class="section-title">
+                <span class="material-icons">info</span>
+                <span>部门介绍</span>
+            </h2>
+        </div>
         <div class="departments-grid">
             {% for dept in departments %}
             <div class="dept-card">
@@ -646,7 +892,7 @@
                     <div class="dept-icon">
                         <span class="material-icons">{{ dept.icon }}</span>
                     </div>
-                    <h3 class="dept-name">{{ dept.get_department_display }}</h3>
+                    <h3 class="dept-name">{{ dept.name }}</h3>
                 </div>
                 <div class="dept-body">
                     <p class="dept-description">{{ dept.description }}</p>
@@ -663,49 +909,49 @@
     </div>
     {% endif %}
     
-    <!-- 登录用户内容 -->
     {% else %}
+    <!-- ===== 已登录状态===== -->
     
-    <!-- 统计卡片（仅干事管理员可见） -->
+    <!-- 统计卡片（干事管理员可见） -->
     {% if is_staff_or_admin %}
-    <div class="stats-grid">
+    <div class="stats-section">
         <div class="stat-card">
-            <div class="stat-label">
+            <div class="stat-icon">
                 <span class="material-icons">groups</span>
-                干事总数
             </div>
-            <div class="stat-value">{{ total_staff }}</div>
+            <div class="stat-info">
+                <div class="stat-label">干事总数</div>
+                <div class="stat-value">{{ total_staff }}</div>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">
+            <div class="stat-icon">
                 <span class="material-icons">stars</span>
-                部长人数
             </div>
-            <div class="stat-value">{{ total_directors }}</div>
+            <div class="stat-info">
+                <div class="stat-label">部长人数</div>
+                <div class="stat-value">{{ total_directors }}</div>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">
+            <div class="stat-icon">
                 <span class="material-icons">person</span>
-                部员人数
             </div>
-            <div class="stat-value">{{ total_members }}</div>
+            <div class="stat-info">
+                <div class="stat-label">部员人数</div>
+                <div class="stat-value">{{ total_members }}</div>
+            </div>
         </div>
     </div>
     
     <!-- 部门介绍（干事管理员） -->
     {% if departments %}
     <div class="departments-section">
-        <div class="section-title">
-            <div style="display: flex; align-items: center; gap: var(--md3-spacing-md);">
+        <div class="section-header">
+            <h2 class="section-title">
                 <span class="material-icons">info</span>
-                <h2 style="margin: 0; font-size: 1.75rem; font-weight: 700;">部门介绍</h2>
-            </div>
-            <div class="section-actions">
-                <a href="{% url 'clubs:edit_department_introduction' %}" class="edit-btn">
-                    <span class="material-icons">edit</span>
-                    <span>编辑部门</span>
-                </a>
-            </div>
+                <span>部门介绍</span>
+            </h2>
         </div>
         <div class="departments-grid">
             {% for dept in departments %}
@@ -714,7 +960,7 @@
                     <div class="dept-icon">
                         <span class="material-icons">{{ dept.icon }}</span>
                     </div>
-                    <h3 class="dept-name">{{ dept.get_department_display }}</h3>
+                    <h3 class="dept-name">{{ dept.name }}</h3>
                 </div>
                 <div class="dept-body">
                     <p class="dept-description">{{ dept.description }}</p>
@@ -732,30 +978,65 @@
     {% endif %}
     {% endif %}
     
-    <!-- 公告区域 -->
-    {% if announcements %}
-    <div class="announcement-section">
-        <div class="announcement-card">
-            <div class="announcement-header">
-                <span class="material-icons">notifications</span>
-                <h3>最新公告</h3>
-            </div>
-            {% for announcement in announcements %}
-            <div class="announcement-item">
-                <h4 class="announcement-title">{{ announcement.title }}</h4>
-                <div class="announcement-date">
-                    <span class="material-icons">schedule</span>
-                    {{ announcement.published_at|date:"Y年m月d日" }}
-                </div>
-                {% if announcement.content %}
-                <div class="announcement-content">{{ announcement.content|truncatewords:50 }}</div>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-    
     {% endif %}
 </div>
+
+<script>
+{% if carousel_images and carousel_images|length > 1 %}
+let currentSlide = 0;
+const slides = document.querySelectorAll('.carousel-slide');
+const indicators = document.querySelectorAll('.carousel-indicator');
+const totalSlides = slides.length;
+let autoplayInterval;
+
+function showSlide(n) {
+    slides[currentSlide].classList.remove('active');
+    indicators[currentSlide].classList.remove('active');
+    
+    currentSlide = (n + totalSlides) % totalSlides;
+    
+    slides[currentSlide].classList.add('active');
+    indicators[currentSlide].classList.add('active');
+}
+
+function nextSlide() {
+    showSlide(currentSlide + 1);
+    resetAutoplay();
+}
+
+function prevSlide() {
+    showSlide(currentSlide - 1);
+    resetAutoplay();
+}
+
+function goToSlide(n) {
+    showSlide(n);
+    resetAutoplay();
+}
+
+function startAutoplay() {
+    autoplayInterval = setInterval(() => {
+        showSlide(currentSlide + 1);
+    }, 5000);
+}
+
+function resetAutoplay() {
+    clearInterval(autoplayInterval);
+    startAutoplay();
+}
+
+startAutoplay();
+
+const carouselContainer = document.querySelector('.carousel-container');
+if (carouselContainer) {
+    carouselContainer.addEventListener('mouseenter', () => {
+        clearInterval(autoplayInterval);
+    });
+    
+    carouselContainer.addEventListener('mouseleave', () => {
+        startAutoplay();
+    });
+}
+{% endif %}
+</script>
 {% endblock %}

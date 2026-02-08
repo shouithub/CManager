@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load custom_filters %}
 
 {% block title %}提交报销材料 - {{ club.name }}{% endblock %}
 
@@ -7,6 +8,7 @@
 @media (max-width: 768px) {
     .submit-container {
         padding: var(--md3-spacing-lg) !important;
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px) !important;
     }
     .form-grid {
         grid-template-columns: 1fr !important;
@@ -21,30 +23,12 @@
     max-width: 800px;
     margin: 0 auto;
     padding: var(--md3-spacing-2xl);
+    padding-bottom: 120px; /* 防止被底栏遮挡 */
     box-sizing: border-box;
 }
 
 /* 页面标题 */
-.page-title {
-    display: flex;
-    align-items: center;
-    gap: var(--md3-spacing-md);
-    margin-bottom: var(--md3-spacing-xl);
-    padding-bottom: var(--md3-spacing-lg);
-    border-bottom: 2px solid var(--md3-outline-variant);
-}
-
-.page-title .material-icons {
-    font-size: 2.5rem;
-    color: var(--md3-primary);
-}
-
-.page-title h1 {
-    margin: 0;
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--md3-on-surface);
-}
+/* .page-title removed in favor of global .page-header */
 
 /* 信息卡片 */
 .info-card {
@@ -217,46 +201,70 @@
 }
 
 /* 按钮组 */
-.button-group {
+.action-buttons {
     display: flex;
     gap: var(--md3-spacing-md);
+    margin-top: var(--md3-spacing-2xl);
     justify-content: flex-end;
-    padding-top: var(--md3-spacing-lg);
-    border-top: 1px solid var(--md3-outline-variant);
-}
-
-.btn {
-    padding: var(--md3-spacing-md) var(--md3-spacing-xl);
-    border: none;
-    border-radius: var(--md3-radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--md3-spacing-sm);
-    text-decoration: none;
 }
 
 .btn-primary {
     background: var(--md3-primary);
     color: var(--md3-on-primary);
+    border: none;
+    padding: 10px 24px;
+    border-radius: var(--md3-radius-full);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
+    box-shadow: var(--md3-elevation-1);
 }
 
 .btn-primary:hover {
-    background: var(--md3-primary-hover);
+    background: var(--md3-primary-dim);
     box-shadow: var(--md3-elevation-2);
 }
 
-.btn-success {
-    background: var(--md3-tertiary);
-    color: var(--md3-on-tertiary);
+.btn-secondary {
+    background: var(--md3-surface-container-high);
+    color: var(--md3-on-surface);
+    border: 1px solid var(--md3-outline);
+    padding: 10px 24px;
+    border-radius: var(--md3-radius-full);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-sm);
 }
 
-.btn-success:hover {
-    background: var(--md3-tertiary-hover);
-    box-shadow: var(--md3-elevation-2);
+.btn-secondary:hover {
+    background: var(--md3-surface-container-highest);
+    box-shadow: var(--md3-elevation-1);
+}
+
+.btn-primary .material-icons,
+.btn-secondary .material-icons {
+    font-size: 1.125rem;
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons button, 
+    .action-buttons a {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* 错误消息 */
@@ -315,9 +323,12 @@
 {% block content %}
 <div class="submit-container">
     <!-- 页面标题 -->
-    <div class="page-title">
+    <div class="page-header">
         <span class="material-icons">attach_money</span>
-        <h1>提交报销材料 - {{ club.name }}</h1>
+        <div class="page-header-content">
+            <h1>提交报销材料</h1>
+            <p class="subtitle">{{ club.name }}</p>
+        </div>
     </div>
 
     <!-- 错误消息 -->
@@ -391,30 +402,20 @@
                               placeholder="请详细说明报销事由和明细"></textarea>
                 </div>
 
+                {% for req in requirements %}
                 <div class="form-group full-width">
-                    <label for="receipt_file">
-                        <span class="material-icons">receipt</span>
-                        报销凭证 (Word) *
-                    </label>
-                    <div class="file-upload-area" id="receiptFileUploadArea">
-                        <span class="material-icons">cloud_upload</span>
-                        <p>点击选择文件或拖放文件</p>
-                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">支持 Word (.doc, .docx)</p>
-                    </div>
-                    <input type="file" id="receipt_file" name="receipt_file" required accept=".doc,.docx" style="display: none;">
-                    <div id="receiptFileNameDisplay" style="margin-top: var(--md3-spacing-md); padding: var(--md3-spacing-md); background: var(--md3-surface-container-highest); border-radius: var(--md3-radius-md); display: none;">
-                        <strong>已选择文件:</strong> <span id="receiptSelectedFileName"></span>
-                    </div>
+                    {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon=req.icon|default:"folder" %}
                 </div>
+                {% endfor %}
             </div>
 
-            <div class="button-group">
-                <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-primary">
+            <div class="action-buttons">
+                <a href="{% url 'clubs:user_dashboard' %}" class="btn-secondary">
                     <span class="material-icons">arrow_back</span>
                     返回
                 </a>
-                <button type="submit" class="btn btn-success">
-                    <span class="material-icons">send</span>
+                <button type="submit" class="btn-primary">
+                    <span class="material-icons">check_circle</span>
                     提交报销
                 </button>
             </div>
@@ -423,53 +424,7 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const receiptFileUploadArea = document.getElementById('receiptFileUploadArea');
-    const receiptFileInput = document.getElementById('receipt_file');
-    const receiptFileNameDisplay = document.getElementById('receiptFileNameDisplay');
-    const receiptSelectedFileName = document.getElementById('receiptSelectedFileName');
-
-    // 点击上传区域触发文件选择
-    receiptFileUploadArea.addEventListener('click', function() {
-        receiptFileInput.click();
-    });
-
-    // 文件选择后更新显示
-    receiptFileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            receiptSelectedFileName.textContent = this.files[0].name;
-            receiptFileNameDisplay.style.display = 'block';
-        } else {
-            receiptFileNameDisplay.style.display = 'none';
-        }
-    });
-
-    // 拖放上传
-    receiptFileUploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        receiptFileUploadArea.style.borderColor = 'var(--md3-primary)';
-        receiptFileUploadArea.style.background = 'var(--md3-primary-container)';
-    });
-
-    receiptFileUploadArea.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        receiptFileUploadArea.style.borderColor = 'var(--md3-outline)';
-        receiptFileUploadArea.style.background = 'var(--md3-surface-container-highest)';
-    });
-
-    receiptFileUploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        receiptFileUploadArea.style.borderColor = 'var(--md3-outline)';
-        receiptFileUploadArea.style.background = 'var(--md3-surface-container-highest)';
-
-        if (e.dataTransfer.files.length > 0) {
-            receiptFileInput.files = e.dataTransfer.files;
-            // 触发 change 事件
-            const event = new Event('change', { bubbles: true });
-            receiptFileInput.dispatchEvent(event);
-        }
-    });
-});
+// Component scripts are self-contained
 </script>
 
 {% endblock %}

@@ -1,0 +1,221 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}时间段设置{% endblock %}
+
+{% block extra_css %}
+<style>
+    .approval-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 80px);
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+    }
+
+    .header-left .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .header-content h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .header-content .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        margin-top: 4px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 24px;
+        height: 40px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .btn-primary:hover {
+        background: var(--md3-primary-hover);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .table-container {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+        overflow: hidden;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: var(--md3-spacing-lg);
+        text-align: left;
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .data-table th {
+        background: var(--md3-surface-container);
+        color: var(--md3-on-surface-variant);
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .status-active {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .status-inactive {
+        background: var(--md3-surface-variant);
+        color: var(--md3-on-surface-variant);
+    }
+
+    .actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .icon-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--md3-on-surface-variant);
+        text-decoration: none;
+        transition: all 0.2s;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+    }
+
+    .icon-btn:hover {
+        background: var(--md3-surface-variant);
+        color: var(--md3-primary);
+    }
+
+    .icon-btn.delete:hover {
+        color: var(--md3-error);
+        background: var(--md3-error-container);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="approval-container">
+    <div class="page-header">
+        <div class="header-left">
+            <span class="material-icons">schedule</span>
+            <div class="header-content">
+                <h1>时间段设置</h1>
+                <div class="subtitle">管理房间预约的可选时间段</div>
+            </div>
+        </div>
+        <a href="{% url 'clubs:admin_time_slot_add' %}" class="btn btn-primary">
+            <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">add</span>
+            添加时间段
+        </a>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>显示名称</th>
+                    <th>开始时间</th>
+                    <th>结束时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for slot in time_slots %}
+                <tr>
+                    <td>{{ slot.label }}</td>
+                    <td>{{ slot.start_time|time:"H:i" }}</td>
+                    <td>{{ slot.end_time|time:"H:i" }}</td>
+                    <td>
+                        {% if slot.is_active %}
+                        <span class="status-badge status-active">启用</span>
+                        {% else %}
+                        <span class="status-badge status-inactive">禁用</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a href="{% url 'clubs:admin_time_slot_edit' slot.id %}" class="icon-btn" title="编辑">
+                                <span class="material-icons" style="font-size: 1.25rem;">edit</span>
+                            </a>
+                            <form action="{% url 'clubs:admin_time_slot_delete' slot.id %}" method="POST" style="display: inline;" onsubmit="return confirm('确定要删除这个时间段吗？');">
+                                {% csrf_token %}
+                                <button type="submit" class="icon-btn delete" title="删除">
+                                    <span class="material-icons" style="font-size: 1.25rem;">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: var(--md3-spacing-xl);">
+                        <span class="material-icons" style="font-size: 48px; color: var(--md3-outline-variant); margin-bottom: 16px; display: block;">schedule</span>
+                        <p style="color: var(--md3-on-surface-variant); margin: 0;">暂无时间段配置</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

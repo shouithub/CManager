@@ -1,0 +1,420 @@
+{% comment %}
+通用文件上传组件
+使用方式: 
+{% include 'clubs/components/_file_upload.html' with 
+    field_name="form_field_name" 
+    label="显示名称" 
+    is_required=True/False 
+    allowed_extensions=".doc,.docx,.pdf" 
+    description="帮助文本" 
+    existing_file=existing_file_obj 
+    icon="icon_name" 
+    max_size_mb=10
+%}
+{% endcomment %}
+
+<div class="file-upload-component" id="container_{{ field_id|default:field_name }}">
+    <label class="upload-label" for="{{ field_id|default:field_name }}">
+        <span class="material-icons component-icon">
+            {% if icon %}{{ icon }}{% else %}cloud_upload{% endif %}
+        </span>
+        <span class="label-text">{{ label }}</span>
+        {% if is_required %}
+        <span class="required-mark">*</span>
+        {% else %}
+        <span class="optional-mark">(可选)</span>
+        {% endif %}
+    </label>
+
+    <div class="upload-area">
+        <div class="upload-placeholder">
+            <span class="material-icons placeholder-icon">add_circle_outline</span>
+            <div class="placeholder-content">
+                <div class="placeholder-text">
+                    <span class="desktop-text">点击或拖拽文件至此</span>
+                    <span class="mobile-text">点击选择文件</span>
+                </div>
+                <div class="upload-hint">
+                    {% if allowed_extensions %}支持格式: {{ allowed_extensions }} {% endif %}
+                    {% if max_size_mb %}(最大 {{ max_size_mb }}MB){% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="file-preview" style="display: none;">
+            <span class="material-icons file-icon">insert_drive_file</span>
+            <div class="file-info">
+                <span class="file-name"></span>
+                <span class="file-size"></span>
+            </div>
+            <button type="button" class="remove-btn" title="移除文件">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+
+        <input type="file" 
+               id="{{ field_id|default:field_name }}" 
+               name="{{ field_name }}" 
+               class="file-input" 
+               {% if allowed_extensions %}accept="{{ allowed_extensions }}"{% endif %}
+               {% if is_required and not existing_file %}required{% endif %}>
+    </div>
+
+    {% if description %}
+    <p class="field-description">{{ description }}</p>
+    {% endif %}
+
+    {% if existing_file %}
+    <div class="existing-file-info">
+        <span class="material-icons">check_circle</span>
+        <span>当前文件: </span>
+        <a href="{{ existing_file.url }}" target="_blank" class="existing-file-link">
+            {{ existing_file.name }}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .file-upload-component {
+        margin-bottom: var(--md3-spacing-lg);
+        font-family: var(--md3-font-family);
+    }
+
+    .upload-label {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-on-surface);
+        font-weight: 500;
+        font-size: 0.9375rem;
+        cursor: pointer;
+    }
+
+    .component-icon {
+        color: var(--md3-primary);
+        font-size: 1.25rem;
+    }
+
+    .required-mark {
+        color: var(--md3-error);
+        margin-left: 4px;
+    }
+
+    .optional-mark {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.8125rem;
+        font-weight: normal;
+        margin-left: 4px;
+    }
+
+    .upload-area {
+        position: relative;
+        background: var(--md3-surface-container-highest);
+        border: 2px dashed var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        text-align: center;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        overflow: hidden;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .upload-area:hover, .upload-area.drag-over {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+    }
+
+    .upload-area.drag-over {
+        background: var(--md3-primary-container);
+    }
+
+    .upload-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+        pointer-events: none;
+    }
+
+    .placeholder-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .placeholder-icon {
+        font-size: 2rem;
+        color: var(--md3-on-surface-variant);
+        opacity: 0.6;
+        margin-bottom: 4px;
+    }
+
+    .upload-area:hover .placeholder-icon {
+        color: var(--md3-primary);
+        opacity: 1;
+    }
+
+    .placeholder-text {
+        font-weight: 500;
+        color: var(--md3-on-surface);
+    }
+
+    .mobile-text { display: none; }
+
+    .upload-hint {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        margin-top: 4px;
+    }
+
+    .file-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 10; /* Ensure it's on top */
+    }
+
+    .file-preview {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        width: 100%;
+        background: var(--md3-secondary-container);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-md);
+        z-index: 20; /* Above input when visible */
+        position: relative;
+        pointer-events: auto;
+    }
+
+    .file-icon {
+        color: var(--md3-on-secondary-container);
+    }
+
+    .file-info {
+        flex: 1;
+        text-align: left;
+        overflow: hidden;
+    }
+
+    .file-name {
+        display: block;
+        font-weight: 500;
+        color: var(--md3-on-secondary-container);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.875rem;
+    }
+
+    .file-size {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--md3-on-secondary-container);
+        opacity: 0.8;
+    }
+
+    .remove-btn {
+        background: none;
+        border: none;
+        color: var(--md3-on-secondary-container);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        z-index: 30; /* Top most */
+    }
+
+    .remove-btn:hover {
+        background: rgba(0,0,0,0.1);
+    }
+
+    .field-description {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        margin: var(--md3-spacing-xs) 0 0 0;
+        padding-left: 4px;
+    }
+
+    .existing-file-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        font-size: 0.8125rem;
+        color: var(--md3-primary);
+        background: var(--md3-surface-container);
+        padding: 6px 12px;
+        border-radius: var(--md3-radius-sm);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .existing-file-link {
+        color: var(--md3-primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .existing-file-link:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+        .desktop-text { display: none; }
+        .mobile-text { display: inline; }
+        
+        .upload-area {
+            padding: 12px 16px;
+            min-height: 100px;
+            background: var(--md3-surface);
+        }
+
+        .upload-placeholder {
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+            text-align: left;
+        }
+
+        .placeholder-content {
+            align-items: flex-start;
+            gap: 0;
+        }
+        
+        .placeholder-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0;
+            color: var(--md3-primary);
+            opacity: 1;
+        }
+
+        .placeholder-text {
+            font-size: 0.9375rem;
+        }
+    }
+</style>
+
+<script>
+(function() {
+    const containerId = "container_{{ field_id|default:field_name }}";
+    const container = document.getElementById(containerId);
+    
+    // Safety check: if container not found, likely ID conflict or DOM issue
+    if (!container) {
+        console.warn('File upload container not found:', containerId);
+        return;
+    }
+
+    const input = container.querySelector('.file-input');
+    const uploadArea = container.querySelector('.upload-area');
+    const placeholder = container.querySelector('.upload-placeholder');
+    const preview = container.querySelector('.file-preview');
+    const fileName = container.querySelector('.file-name');
+    const fileSize = container.querySelector('.file-size');
+    const removeBtn = container.querySelector('.remove-btn');
+
+    if (!input || !uploadArea || !placeholder || !preview || !removeBtn) return;
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function updateDisplay(file) {
+        if (file) {
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            placeholder.style.display = 'none';
+            preview.style.display = 'flex';
+            uploadArea.classList.add('has-file');
+            // Hide input so it doesn't block the preview area clicks (except remove btn)
+            // Actually we keep it but maybe adjust z-index if needed.
+            // But we want to allow re-clicking to change file? 
+            // If we want to allow change, we keep input on top or handle click on preview.
+            // Let's keep input accessible but maybe moved or sized differently?
+            // Current CSS puts input on top (z-index 10) but preview on z-index 20.
+            // So preview covers input. Clicking preview does nothing unless we handle it.
+        } else {
+            fileName.textContent = '';
+            fileSize.textContent = '';
+            placeholder.style.display = 'flex';
+            preview.style.display = 'none';
+            uploadArea.classList.remove('has-file');
+            input.value = ''; // Clear input value
+        }
+    }
+
+    // Input change handler
+    input.addEventListener('change', function(e) {
+        if (this.files && this.files.length > 0) {
+            updateDisplay(this.files[0]);
+        } else {
+            updateDisplay(null);
+        }
+    });
+
+    // Remove button handler
+    removeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Stop bubbling
+        updateDisplay(null);
+    });
+    
+    // Allow clicking on preview to re-select file (optional UX)
+    preview.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-btn')) return;
+        input.click();
+    });
+
+    // Drag and drop visual feedback
+    uploadArea.addEventListener('dragenter', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove('drag-over');
+        
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            input.files = e.dataTransfer.files;
+            // Trigger change event manually
+            const event = new Event('change', { bubbles: true });
+            input.dispatchEvent(event);
+        }
+    });
+})();
+</script>

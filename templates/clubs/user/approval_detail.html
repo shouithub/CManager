@@ -70,6 +70,43 @@
         font-weight: 500;
     }
 
+    /* 卡片样式 - 供复用组件使用 */
+    .card {
+        background: var(--md3-surface-container-low);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .card-header .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .detail-item {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-lg);
+    }
+
     /* 状态徽章 */
     .status-badge {
         display: inline-flex;
