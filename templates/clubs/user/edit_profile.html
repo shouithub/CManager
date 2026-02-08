@@ -1,606 +1,679 @@
 {% extends 'clubs/base.html' %}
+{% load custom_filters %}
 
-{% block title %}编辑个人信息 - CManager{% endblock %}
+{% block title %}编辑个人信息{% endblock %}
 
 {% block extra_css %}
 <style>
-@media (max-width: 768px) {
+    /* ===== MD3 完整重构 ===== */
+    
+    :root {
+        /* MD3 间距系统 */
+        --md3-spacing-xs: 4px;
+        --md3-spacing-sm: 8px;
+        --md3-spacing-md: 12px;
+        --md3-spacing-lg: 16px;
+        --md3-spacing-xl: 24px;
+        --md3-spacing-2xl: 32px;
+    }
+    
+    body {
+        background: var(--md3-surface);
+    }
+
     .profile-container {
-        padding: var(--md3-spacing-lg) !important;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+        box-sizing: border-box;
     }
+    
+    /* ===== 页面顶部标题 ===== */
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl) var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
+    
+    /* ===== 卡片容器 MD3 风格 ===== */
+    .card {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .card:hover {
+        box-shadow: var(--md3-elevation-3);
+        background: var(--md3-surface-container);
+    }
+    
+    /* ===== 卡片标题 ===== */
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+    
+    .card-header .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
+    
+    /* ===== 信息网格布局 ===== */
     .form-grid {
-        grid-template-columns: 1fr !important;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
     }
-    .profile-form-row {
-        grid-template-columns: 1fr !important;
+    
+    /* ===== 表单元素 ===== */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
     }
-}
-
-/* MD3 个人资料页面样式 */
-.profile-container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: var(--md3-spacing-2xl);
-    box-sizing: border-box;
-}
-
-/* 页面标题 */
-.page-title {
-    display: flex;
-    align-items: center;
-    gap: var(--md3-spacing-md);
-    margin-bottom: var(--md3-spacing-xl);
-    padding-bottom: var(--md3-spacing-lg);
-    border-bottom: 2px solid var(--md3-outline-variant);
-}
-
-.page-title .material-icons {
-    font-size: 2.5rem;
-    color: var(--md3-primary);
-}
-
-.page-title h1 {
-    margin: 0;
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--md3-on-surface);
-}
-
-.page-title .subtitle {
-    margin: var(--md3-spacing-xs) 0 0 0;
-    font-size: 0.875rem;
-    color: var(--md3-on-surface-variant);
-    font-weight: 400;
-}
-
-/* 信息卡片 */
-.info-card {
-    background: var(--md3-surface-container);
-    border: 1px solid var(--md3-outline-variant);
-    border-radius: var(--md3-radius-lg);
-    padding: var(--md3-spacing-xl);
-    margin-bottom: var(--md3-spacing-xl);
-    box-shadow: var(--md3-elevation-1);
-}
-
-.info-card.error {
-    background: var(--md3-error-container);
-    border-color: var(--md3-error);
-}
-
-.info-card h5 {
-    margin: 0 0 var(--md3-spacing-md) 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: var(--md3-spacing-sm);
-}
-
-.info-card.error h5 {
-    color: var(--md3-on-error-container);
-}
-
-.info-card.error h5 .material-icons {
-    color: var(--md3-on-error-container);
-}
-
-.info-card p {
-    margin: 0 0 var(--md3-spacing-sm) 0;
-    line-height: 1.5;
-}
-
-/* 表单卡片 */
-.form-card {
-    background: var(--md3-surface-container-low);
-    border: 1px solid var(--md3-outline-variant);
-    border-radius: var(--md3-radius-lg);
-    padding: var(--md3-spacing-xl);
-    box-shadow: var(--md3-elevation-1);
-}
-
-.form-card h3 {
-    margin: 0 0 var(--md3-spacing-lg) 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--md3-on-surface);
-    display: flex;
-    align-items: center;
-    gap: var(--md3-spacing-sm);
-}
-
-.form-card h3 .material-icons {
-    color: var(--md3-primary);
-}
-
-/* 表单组 */
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--md3-spacing-xs);
-    margin-bottom: var(--md3-spacing-lg);
-}
-
-.form-group label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--md3-on-surface);
-    display: flex;
-    align-items: center;
-    gap: var(--md3-spacing-xs);
-}
-
-.form-group label .material-icons {
-    font-size: 1.125rem;
-    color: var(--md3-primary);
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    padding: var(--md3-spacing-md);
-    border: 1px solid var(--md3-outline);
-    border-radius: var(--md3-radius-md);
-    background: var(--md3-surface-container-highest);
-    color: var(--md3-on-surface);
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: var(--md3-primary);
-    box-shadow: 0 0 0 2px var(--md3-primary-container);
-}
-
-.form-group textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-.form-group small {
-    font-size: 0.75rem;
-    color: var(--md3-on-surface-variant);
-    margin-top: var(--md3-spacing-xs);
-}
-
-/* 表单网格 */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--md3-spacing-lg);
-    margin-bottom: var(--md3-spacing-xl);
-}
-
-.profile-form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--md3-spacing-lg);
-    margin-bottom: var(--md3-spacing-lg);
-}
-
-@media (max-width: 768px) {
-    .form-grid,
-    .profile-form-row {
-        grid-template-columns: 1fr;
+    
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
     }
-}
-
-/* 字段集 */
-.fieldset {
-    margin-bottom: var(--md3-spacing-xl);
-    padding: var(--md3-spacing-lg);
-    border: 1px solid var(--md3-outline-variant);
-    border-radius: var(--md3-radius-md);
-    background: var(--md3-surface-container-highest);
-}
-
-.fieldset.readonly-section {
-    background: var(--md3-surface-container);
-}
-
-.fieldset legend {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--md3-on-surface);
-    padding: 0 var(--md3-spacing-sm);
-    display: flex;
-    align-items: center;
-    gap: var(--md3-spacing-xs);
-}
-
-.fieldset legend .material-icons {
-    font-size: 1.125rem;
-    color: var(--md3-primary);
-}
-
-/* 只读字段 */
-.readonly-field {
-    padding: var(--md3-spacing-md);
-    background: var(--md3-surface-container);
-    border: 1px solid var(--md3-outline-variant);
-    border-radius: var(--md3-radius-md);
-    color: var(--md3-on-surface);
-    font-size: 0.875rem;
-}
-
-/* 复选框组 */
-.checkbox-group {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--md3-spacing-sm);
-    padding: var(--md3-spacing-md);
-    background: var(--md3-surface-container-highest);
-    border: 1px solid var(--md3-outline);
-    border-radius: var(--md3-radius-md);
-}
-
-.checkbox-group input[type="checkbox"] {
-    margin: 0;
-    width: 18px;
-    height: 18px;
-    accent-color: var(--md3-primary);
-}
-
-.checkbox-group label {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--md3-on-surface);
-    line-height: 1.4;
-    cursor: pointer;
-}
-
-/* 状态徽章 */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--md3-spacing-xs);
-    padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
-    border-radius: var(--md3-radius-sm);
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.status-badge.pending {
-    background: var(--md3-tertiary-container);
-    color: var(--md3-on-tertiary-container);
-}
-
-.status-badge.approved {
-    background: var(--md3-primary-container);
-    color: var(--md3-on-primary-container);
-}
-
-.status-badge.rejected {
-    background: var(--md3-error-container);
-    color: var(--md3-on-error-container);
-}
-
-/* 按钮组 */
-.button-group {
-    display: flex;
-    gap: var(--md3-spacing-md);
-    justify-content: flex-end;
-    padding-top: var(--md3-spacing-lg);
-    border-top: 1px solid var(--md3-outline-variant);
-}
-
-.btn {
-    padding: var(--md3-spacing-md) var(--md3-spacing-xl);
-    border: none;
-    border-radius: var(--md3-radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--md3-spacing-sm);
-    text-decoration: none;
-}
-
-.btn-primary {
-    background: var(--md3-primary);
-    color: var(--md3-on-primary);
-}
-
-.btn-primary:hover {
-    background: var(--md3-primary-hover);
-    box-shadow: var(--md3-elevation-2);
-}
-
-.btn-outlined {
-    background: transparent;
-    color: var(--md3-primary);
-    border: 1px solid var(--md3-outline);
-}
-
-.btn-outlined:hover {
-    background: var(--md3-primary-container);
-    border-color: var(--md3-primary);
-}
-
-/* 提示信息 */
-.info-notice {
-    background: var(--md3-primary-container);
-    border: 1px solid var(--md3-primary);
-    border-radius: var(--md3-radius-md);
-    padding: var(--md3-spacing-md);
-    margin-top: var(--md3-spacing-xl);
-    font-size: 0.875rem;
-    color: var(--md3-on-primary-container);
-}
-
-.info-notice strong {
-    display: flex;
-    align-items: center;
-    gap: var(--md3-spacing-xs);
-    margin-bottom: var(--md3-spacing-xs);
-}
-
-.info-notice .material-icons {
-    font-size: 1rem;
-}
-
-/* 错误消息 */
-.message {
-    padding: var(--md3-spacing-md);
-    border-radius: var(--md3-radius-md);
-    margin-bottom: var(--md3-spacing-md);
-    font-size: 0.875rem;
-}
-
-.message.error {
-    background: var(--md3-error-container);
-    color: var(--md3-on-error-container);
-    border: 1px solid var(--md3-error);
-}
+    
+    .form-label .material-icons {
+        font-size: 1.125rem;
+        color: var(--md3-primary);
+    }
+    
+    .form-label .required {
+        color: var(--md3-error);
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+    }
+    
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="tel"]:focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+        background: var(--md3-surface-container-highest);
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    /* ===== 分组标题 ===== */
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-md);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+    
+    .section-title .material-icons {
+        font-size: 1.25rem;
+        color: var(--md3-primary);
+    }
+    
+    .section-title h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    
+    /* ===== 复选框 ===== */
+    .checkbox-wrapper {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        transition: all 0.2s ease;
+    }
+    
+    .checkbox-wrapper:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+    }
+    
+    .checkbox-input {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        accent-color: var(--md3-primary);
+        cursor: pointer;
+        margin-top: 2px;
+    }
+    
+    .checkbox-label {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xs);
+        cursor: pointer;
+        flex: 1;
+    }
+    
+    .checkbox-label-text {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+    }
+    
+    .checkbox-hint {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        line-height: 1.5;
+        margin: 0;
+    }
+    
+    .checkbox-hint .material-icons {
+        font-size: 1rem;
+        vertical-align: middle;
+        margin-right: 4px;
+    }
+    
+    /* ===== 只读字段 ===== */
+    .readonly-field {
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        color: var(--md3-on-surface);
+        font-size: 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+    
+    /* ===== 状态徽章 ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .status-badge .material-icons {
+        font-size: 1rem;
+    }
+    
+    .status-badge.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+    
+    .status-badge.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .status-badge.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    /* ===== 消息提示 ===== */
+    .message-box {
+        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        margin-bottom: var(--md3-spacing-lg);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .message-box .material-icons {
+        font-size: 1.5rem;
+        min-width: 24px;
+    }
+    
+    .message-box.error {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border: 1px solid var(--md3-error);
+    }
+    
+    .message-box.success {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+        border: 1px solid var(--md3-success);
+    }
+    
+    .message-content {
+        flex: 1;
+    }
+    
+    .message-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    
+    /* ===== 按钮 ===== */
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        justify-content: flex-end;
+        margin-top: var(--md3-spacing-2xl);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-full);
+        border: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    /* ===== 提示 ===== */
+    .info-card {
+        background: var(--md3-primary-container);
+        border: 1px solid var(--md3-primary);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-lg);
+        margin-top: var(--md3-spacing-xl);
+        color: var(--md3-on-primary-container);
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+    
+    .info-card strong {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        margin-bottom: var(--md3-spacing-sm);
+        font-size: 1rem;
+    }
+    
+    .info-card .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    /* ===== 响应式设计 ===== */
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+            padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        }
+        
+        .card {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    /* ===== 暗色主题 ===== */
+    @media (prefers-color-scheme: dark) {
+        .card {
+            background: var(--md3-surface-container);
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="profile-container">
-    <!-- 页面标题 -->
-    <div class="page-title">
+    <!-- 页面顶部标题 -->
+    <div class="page-header">
         <span class="material-icons">person</span>
         <h1>编辑个人信息</h1>
-        <p class="subtitle">用户名：<strong>{{ user.username }}</strong></p>
     </div>
-
-    <!-- 消息显示 -->
+    
+    <!-- 错误消息 -->
+    {% if errors %}
+    <div class="message-box error">
+        <span class="material-icons">error</span>
+        <div class="message-content">
+            <div class="message-title">表单验证失败</div>
+            <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                {% for error in errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- 成功消息 -->
     {% if messages %}
     {% for message in messages %}
-    <div class="info-card{% if message.tags == 'error' %} error{% endif %}">
-        <h5>
-            <span class="material-icons">
-                {% if message.tags == 'error' %}error{% else %}info{% endif %}
-            </span>
-            {% if message.tags == 'error' %}错误{% else %}提示{% endif %}
-        </h5>
-        <p>{{ message }}</p>
+    {% if message.tags == 'success' %}
+    <div class="message-box success">
+        <span class="material-icons">check_circle</span>
+        <div class="message-content">
+            <div class="message-title">成功</div>
+            <p style="margin: 0;">{{ message }}</p>
+        </div>
     </div>
+    {% endif %}
     {% endfor %}
     {% endif %}
-
+    
     <!-- 表单卡片 -->
-    <div class="form-card">
-        <h3>
-            <span class="material-icons">assignment</span>
-            个人基本信息
-        </h3>
-
-        <form method="post">
+    <div class="card">
+        <form method="post" id="profile_form">
             {% csrf_token %}
-
+            
             <!-- 基本信息 -->
-            <div class="fieldset">
-                <legend>
-                    <span class="material-icons">person</span>
-                    基本信息
-                </legend>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="real_name">
-                            <span class="material-icons">person</span>
-                            真实姓名 *
-                        </label>
-                        <input
-                            type="text"
-                            id="real_name"
-                            name="real_name"
-                            value="{{ profile.real_name }}"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label for="student_id">
-                            <span class="material-icons">school</span>
-                            学号 *
-                        </label>
-                        <input
-                            type="text"
-                            id="student_id"
-                            name="student_id"
-                            value="{{ profile.student_id }}"
-                            required
-                        >
-                    </div>
-                </div>
+            <div class="card-header">
+                <span class="material-icons">person</span>
+                <h2>基本信息</h2>
             </div>
-
-            <!-- 联系方式 -->
-            <div class="fieldset">
-                <legend>
-                    <span class="material-icons">phone</span>
-                    联系方式
-                </legend>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="email">
-                            <span class="material-icons">email</span>
-                            邮箱 (可选)
-                        </label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value="{{ user.email }}"
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label for="phone">
-                            <span class="material-icons">phone</span>
-                            电话 *
-                        </label>
-                        <input
-                            type="tel"
-                            id="phone"
-                            name="phone"
-                            value="{{ profile.phone }}"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label for="wechat">
-                            <span class="material-icons">chat</span>
-                            微信 *
-                        </label>
-                        <input
-                            type="text"
-                            id="wechat"
-                            name="wechat"
-                            value="{{ profile.wechat }}"
-                            required
-                        >
-                    </div>
-                </div>
-            </div>
-
-            <!-- 信息公开设置 -->
-            <div class="fieldset readonly-section">
-                <legend>
-                    <span class="material-icons">lock</span>
-                    信息公开设置
-                </legend>
-
+            
+            <div class="form-grid">
                 <div class="form-group">
-                    <div class="checkbox-group">
-                        <input
-                            type="checkbox"
-                            id="is_info_public"
-                            name="is_info_public"
-                            {% if profile.is_info_public %}checked{% endif %}
-                        >
-                        <label for="is_info_public">
-                            <strong>公开我的个人信息</strong>
-                        </label>
-                    </div>
-                    <small>
-                        <span class="material-icons" style="font-size: 14px; vertical-align: middle;">check_circle</span> 勾选后，您的个人电话和邮箱将对所有用户可见<br>
-                        <span class="material-icons" style="font-size: 14px; vertical-align: middle;">cancel</span> 不勾选则仅对干事、管理员和社团内部人员可见
-                    </small>
-                </div>
-            </div>
-
-            <!-- 政治身份信息 (仅社长和干事需要) -->
-            {% if profile.role == 'president' or profile.role == 'staff' %}
-            <div class="fieldset">
-                <legend>
-                    <span class="material-icons">flag</span>
-                    政治身份
-                </legend>
-
-                <div class="form-group">
-                    <label for="political_status">
-                        <span class="material-icons">flag</span>
-                        政治面貌 *
+                    <label for="real_name" class="form-label">
+                        <span class="material-icons">person</span>
+                        真实姓名
+                        <span class="required">*</span>
                     </label>
-                    <select
-                        id="political_status"
-                        name="political_status"
+                    <input
+                        type="text"
+                        id="real_name"
+                        name="real_name"
+                        value="{{ profile.real_name }}"
                         required
                     >
-                        <option value="">-- 请选择政治面貌 --</option>
+                </div>
+                
+                <div class="form-group">
+                    <label for="student_id" class="form-label">
+                        <span class="material-icons">school</span>
+                        学号
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="student_id"
+                        name="student_id"
+                        value="{{ profile.student_id }}"
+                        required
+                    >
+                </div>
+            </div>
+            
+            <!-- 联系方式 -->
+            <div class="section-title" style="margin-top: var(--md3-spacing-xl);">
+                <span class="material-icons">phone</span>
+                <h3>联系方式</h3>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <span class="material-icons">email</span>
+                        邮箱 (可选)
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ user.email }}"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone" class="form-label">
+                        <span class="material-icons">phone</span>
+                        电话
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value="{{ profile.phone }}"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="wechat" class="form-label">
+                        <span class="material-icons">chat</span>
+                        微信
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="wechat"
+                        name="wechat"
+                        value="{{ profile.wechat }}"
+                        required
+                    >
+                </div>
+            </div>
+            
+            <!-- 信息公开设置 -->
+            <div class="section-title" style="margin-top: var(--md3-spacing-xl);">
+                <span class="material-icons">lock</span>
+                <h3>隐私设置</h3>
+            </div>
+            
+            <div class="checkbox-wrapper">
+                <input
+                    type="checkbox"
+                    id="is_info_public"
+                    name="is_info_public"
+                    class="checkbox-input"
+                    {% if profile.is_info_public %}checked{% endif %}
+                >
+                <label for="is_info_public" class="checkbox-label">
+                    <span class="checkbox-label-text">公开我的个人信息</span>
+                    <p class="checkbox-hint">
+                        <span class="material-icons">info</span>
+                        勾选后，您的电话和邮箱将对所有用户可见
+                    </p>
+                </label>
+            </div>
+            
+            <!-- 政治身份 (仅社长和干事) -->
+            {% if profile.role == 'president' or profile.role == 'staff' %}
+            <div class="section-title" style="margin-top: var(--md3-spacing-xl);">
+                <span class="material-icons">flag</span>
+                <h3>政治身份</h3>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="political_status" class="form-label">
+                        <span class="material-icons">flag</span>
+                        政治面貌
+                        <span class="required">*</span>
+                    </label>
+                    <select id="political_status" name="political_status" required>
+                        <option value="">-- 请选择 --</option>
                         <option value="communist_party_member" {% if profile.political_status == 'communist_party_member' %}selected{% endif %}>中共党员</option>
                         <option value="communist_party_probationary" {% if profile.political_status == 'communist_party_probationary' %}selected{% endif %}>中共预备党员</option>
                         <option value="communist_youth_league" {% if profile.political_status == 'communist_youth_league' %}selected{% endif %}>共青团员</option>
-                        <option value="revolutionary_committee" {% if profile.political_status == 'revolutionary_committee' %}selected{% endif %}>民革党员</option>
-                        <option value="china_democratic_league" {% if profile.political_status == 'china_democratic_league' %}selected{% endif %}>民盟盟员</option>
-                        <option value="democratic_national_construction" {% if profile.political_status == 'democratic_national_construction' %}selected{% endif %}>民建会员</option>
-                        <option value="china_peasants_workers_democratic" {% if profile.political_status == 'china_peasants_workers_democratic' %}selected{% endif %}>农工党党员</option>
-                        <option value="china_council_for_promoting" {% if profile.political_status == 'china_council_for_promoting' %}selected{% endif %}>致公党党员</option>
-                        <option value="jiusanshe" {% if profile.political_status == 'jiusanshe' %}selected{% endif %}>九三学社社员</option>
-                        <option value="taiwan_democratic_self_government" {% if profile.political_status == 'taiwan_democratic_self_government' %}selected{% endif %}>台盟盟员</option>
                         <option value="non_party_personage" {% if profile.political_status == 'non_party_personage' %}selected{% endif %}>无党派人士</option>
                         <option value="progressive" {% if profile.political_status == 'progressive' %}selected{% endif %}>入党积极分子</option>
                         <option value="non_member" {% if profile.political_status == 'non_member' %}selected{% endif %}>群众</option>
                     </select>
-                    <small>请准确填写您的政治身份</small>
                 </div>
             </div>
             {% endif %}
-
-            <!-- 角色和状态信息 (只读) -->
-            <div class="fieldset readonly-section">
-                <legend>
-                    <span class="material-icons">info</span>
-                    账户信息 (只读)
-                </legend>
-
-                <div class="profile-form-row">
-                    <div class="form-group">
-                        <label>用户名</label>
-                        <div class="readonly-field">
-                            {{ user.username }}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>当前角色</label>
-                        <div class="readonly-field">
-                            {% if profile.role == 'president' %}社长{% elif profile.role == 'staff' %}干事{% elif profile.role == 'admin' %}管理员{% else %}未设定{% endif %}
-                        </div>
+            
+            <!-- 账户信息 (只读) -->
+            <div class="section-title" style="margin-top: var(--md3-spacing-xl);">
+                <span class="material-icons">info</span>
+                <h3>账户信息</h3>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <div class="readonly-field">
+                        <span class="material-icons" style="color: var(--md3-primary);">account_circle</span>
+                        {{ user.username }}
                     </div>
                 </div>
-
-                {% if profile.role == 'staff' %}
+                
                 <div class="form-group">
-                    <label>申请状态</label>
+                    <label class="form-label">账户角色</label>
                     <div class="readonly-field">
-                        {% if profile.status == 'pending' %}
-                            <span class="status-badge pending">
-                                <span class="material-icons" style="font-size: 14px;">schedule</span>
-                                待审核
-                            </span>
-                        {% elif profile.status == 'approved' %}
-                            <span class="status-badge approved">
-                                <span class="material-icons" style="font-size: 14px;">check_circle</span>
-                                已批准
-                            </span>
-                        {% elif profile.status == 'rejected' %}
-                            <span class="status-badge rejected">
-                                <span class="material-icons" style="font-size: 14px;">cancel</span>
-                                已拒绝
-                            </span>
+                        <span class="material-icons" style="color: var(--md3-primary);">security</span>
+                        {% if profile.role == 'president' %}
+                            社长
+                        {% elif profile.role == 'staff' %}
+                            干事
+                        {% elif profile.role == 'admin' %}
+                            管理员
                         {% else %}
-                            {{ profile.get_status_display }}
+                            未设置
                         {% endif %}
                     </div>
                 </div>
-                {% endif %}
             </div>
-
+            
+            <!-- 干事申请状态 -->
+            {% if profile.role == 'staff' %}
+            <div class="form-group">
+                <label class="form-label">申请状态</label>
+                <div class="readonly-field">
+                    {% if profile.status == 'pending' %}
+                        <span class="status-badge pending">
+                            <span class="material-icons">schedule</span>
+                            待审核
+                        </span>
+                    {% elif profile.status == 'approved' %}
+                        <span class="status-badge approved">
+                            <span class="material-icons">check_circle</span>
+                            已批准
+                        </span>
+                    {% elif profile.status == 'rejected' %}
+                        <span class="status-badge rejected">
+                            <span class="material-icons">cancel</span>
+                            已拒绝
+                        </span>
+                    {% else %}
+                        {{ profile.get_status_display }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
             <!-- 操作按钮 -->
-            <div class="button-group">
-                <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-outlined">
+            <div class="action-buttons">
+                <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-secondary">
                     <span class="material-icons">arrow_back</span>
-                    取消
+                    返回
                 </a>
                 <button type="submit" class="btn btn-primary">
                     <span class="material-icons">save</span>
@@ -609,14 +682,38 @@
             </div>
         </form>
     </div>
-
+    
     <!-- 提示信息 -->
-    <div class="info-notice">
+    <div class="info-card">
         <strong>
             <span class="material-icons">info</span>
-            提示：
+            提示
         </strong>
-        标记为 <span style="color: var(--md3-error);">*</span> 的字段为必填项。修改个人信息后，系统将自动保存您的更改。
+        标记<span style="color: var(--md3-error);">*</span> 的字段为必填项。修改信息后点击「保存修改」按钮提交您的更改
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('profile_form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // 获取表单数据进行验证
+            const realName = document.getElementById('real_name').value.trim();
+            const studentId = document.getElementById('student_id').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const wechat = document.getElementById('wechat').value.trim();
+            
+            if (!realName || !studentId || !phone || !wechat) {
+                e.preventDefault();
+                alert('请填写所有必填项');
+                return false;
+            }
+            
+            return true;
+        });
+    }
+});
+</script>
+
 {% endblock %}

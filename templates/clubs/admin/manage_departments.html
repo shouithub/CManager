@@ -1,0 +1,329 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}管理部门介绍{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 120px); /* 预留底栏高度，防遮挡 */
+        box-sizing: border-box;
+    }
+    
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header-content {
+        flex: 1;
+    }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .page-header .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+    }
+    
+    .add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border-radius: var(--md3-radius-full);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        box-shadow: var(--md3-elevation-2);
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+        white-space: nowrap;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .add-btn:hover {
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-1px);
+    }
+    
+    .add-btn .material-icons {
+        font-size: 1.125rem;
+        color: var(--md3-on-primary);
+    }
+    
+    .department-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+    
+    .department-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        overflow: hidden;
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .department-card:hover {
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-2px);
+    }
+    
+    .department-icon-preview {
+        width: 100%;
+        height: 120px;
+        background: var(--md3-surface-container-highest);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--md3-primary);
+    }
+    
+    .department-icon-preview .material-icons {
+        font-size: 4rem;
+    }
+    
+    .department-card-body {
+        padding: var(--md3-spacing-lg);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .department-card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-sm) 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .department-order {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        font-weight: normal;
+        background: var(--md3-surface-variant);
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+    
+    .department-card-description {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        line-height: 1.6;
+        margin: 0 0 var(--md3-spacing-md) 0;
+        flex-grow: 1;
+        white-space: pre-line;
+    }
+    
+    .department-card-bottom {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
+    }
+
+    .department-card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xs);
+        font-size: 0.813rem;
+        color: var(--md3-on-surface-variant);
+        border-top: 1px dashed var(--md3-outline-variant);
+        padding-top: var(--md3-spacing-md);
+    }
+    
+    .department-card-meta .meta-item {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+    }
+    
+    .department-card-meta .material-icons {
+        font-size: 1rem;
+    }
+    
+    .department-card-actions {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+        padding-top: var(--md3-spacing-md);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn .material-icons {
+        font-size: 1.125rem;
+    }
+    
+    .btn-edit {
+        flex: 1;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+    
+    .btn-edit:hover {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-delete {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    .btn-delete:hover {
+        background: var(--md3-error);
+        color: var(--md3-on-error);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: var(--md3-spacing-2xl);
+        color: var(--md3-on-surface-variant);
+        grid-column: 1 / -1;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header {
+            flex-direction: column;
+            gap: var(--md3-spacing-lg);
+            text-align: center;
+        }
+        
+        .page-title-group {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .add-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <span class="material-icons">category</span>
+        <div class="page-header-content">
+            <h1>管理部门介绍</h1>
+            <p class="subtitle">管理社团部门的介绍信息和图标</p>
+        </div>
+        <a href="{% url 'clubs:add_department' %}" class="add-btn">
+            <span class="material-icons">add</span>
+            添加部门
+        </a>
+    </div>
+    
+    <div class="department-grid">
+        {% for department in departments %}
+        <div class="department-card">
+            <div class="department-icon-preview">
+                <span class="material-icons">{{ department.icon }}</span>
+            </div>
+            
+            <div class="department-card-body">
+                <h3 class="department-card-title">
+                    {{ department.name }}
+                    <span class="department-order">#{{ department.order }}</span>
+                </h3>
+                
+                <div class="department-card-description">{{ department.description|truncatechars:100 }}</div>
+                
+                <div class="department-card-bottom">
+                    <div class="department-card-meta">
+                        {% if department.highlights %}
+                        <div class="meta-item">
+                            <span class="material-icons">star</span>
+                            <span>{{ department.highlights|linebreaksbr|truncatechars:50 }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="meta-item">
+                            <span class="material-icons">update</span>
+                            <span>更新于 {{ department.updated_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% if department.updated_by %}
+                        <div class="meta-item">
+                            <span class="material-icons">person</span>
+                            <span>{{ department.updated_by.get_full_name|default:department.updated_by.username }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="department-card-actions">
+                        <a href="{% url 'clubs:edit_department' department.id %}" class="btn btn-edit">
+                            <span class="material-icons">edit</span>
+                            编辑
+                        </a>
+                        <form action="{% url 'clubs:delete_department' department.id %}" method="post" style="display: inline;" onsubmit="return confirm('确定要删除这个部门吗？');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-delete" title="删除">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <span class="material-icons" style="font-size: 4rem; color: var(--md3-outline);">info</span>
+            <p>暂无部门信息，点击右上角添加</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

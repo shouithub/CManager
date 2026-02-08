@@ -1,0 +1,320 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}编辑预约{% endblock %}
+
+{% block extra_css %}
+<style>
+    .approval-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 80px);
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header-content h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .page-header-content .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        margin-top: 4px;
+    }
+
+    .form-card {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .form-group {
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--md3-spacing-xs);
+        color: var(--md3-on-surface);
+        font-weight: 500;
+    }
+    
+    .form-label .required {
+        color: var(--md3-error);
+        margin-left: 4px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--md3-outline);
+        border-radius: 8px;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        font-size: 1rem;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        border-color: var(--md3-primary);
+        outline: 2px solid var(--md3-primary-container);
+    }
+    
+    select.form-control {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%236750a4' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 20px;
+        padding-right: 40px;
+        cursor: pointer;
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-xl);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 24px;
+        height: 40px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: var(--md3-primary);
+        border: 1px solid var(--md3-outline);
+    }
+
+    .btn-secondary:hover {
+        background: var(--md3-surface-variant);
+    }
+
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .btn-primary:hover {
+        background: var(--md3-primary-hover);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .info-box {
+        border-radius: 12px;
+        padding: 16px;
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        font-size: 0.875rem;
+        line-height: 1.5;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--md3-primary);
+        margin: var(--md3-spacing-xl) 0 var(--md3-spacing-md);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+    
+    .section-title:first-of-type {
+        margin-top: 0;
+    }
+    
+    @media (max-width: 600px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="approval-container">
+    <div class="page-header">
+        <span class="material-icons">edit_calendar</span>
+        <div class="page-header-content">
+            <h1>编辑预约</h1>
+            <div class="subtitle">修改房间预约信息</div>
+        </div>
+    </div>
+
+    <form method="POST" class="form-card" id="bookingForm">
+        {% csrf_token %}
+        
+        <div class="info-box">
+            <span class="material-icons" style="font-size: 20px;">info</span>
+            <div>修改预约时间时会自动检查冲突，若与其他预约重叠将无法保存。</div>
+        </div>
+
+        <div class="section-title">
+            <span class="material-icons" style="font-size: 20px;">event</span> 基本信息
+        </div>
+        
+        <div class="form-row">
+            <div>
+                <label class="form-label">选择房间 <span class="required">*</span></label>
+                <select name="room_id" class="form-control" required>
+                    <option value="">请选择房间...</option>
+                    {% for room in rooms %}
+                    <option value="{{ room.id }}" {% if booking.room.id == room.id %}selected{% endif %}>{{ room.name }} (容量: {{ room.capacity }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">预约类型 {% if not is_staff_or_admin %}<span class="required">*</span>{% endif %}</label>
+                <select name="club_id" class="form-control" {% if not is_staff_or_admin %}required{% endif %}>
+                     <option value="">{% if is_staff_or_admin %}个人申请 (无社团){% else %}请选择社团...{% endif %}</option>
+                    {% for club in user_clubs %}
+                    <option value="{{ club.id }}" {% if booking.club.id == club.id %}selected{% endif %}>
+                        {{ club.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">借用日期 <span class="required">*</span></label>
+            <input type="date" name="booking_date" class="form-control" value="{{ booking.booking_date|date:'Y-m-d' }}" required>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label class="form-label">开始时间 <span class="required">*</span></label>
+                <select name="start_time" id="startTime" class="form-control" required>
+                    <option value="">请选择开始时间...</option>
+                    {% for slot in time_slots %}
+                    <option value="{{ slot.start_time|time:'H:i' }}" {% if booking.start_time|time:'H:i' == slot.start_time|time:'H:i' %}selected{% endif %}>
+                        {{ slot.label }} 开始 ({{ slot.start_time|time:'H:i' }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">结束时间 <span class="required">*</span></label>
+                <select name="end_time" id="endTime" class="form-control" required>
+                    <option value="">请选择结束时间...</option>
+                    {% for slot in time_slots %}
+                    <option value="{{ slot.end_time|time:'H:i' }}" {% if booking.end_time|time:'H:i' == slot.end_time|time:'H:i' %}selected{% endif %}>
+                        {{ slot.label }} 结束 ({{ slot.end_time|time:'H:i' }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <span class="material-icons" style="font-size: 20px;">description</span> 使用详情
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">使用目的 <span class="required">*</span></label>
+            <textarea name="purpose" class="form-control" placeholder="请简要说明房间使用目的..." required>{{ booking.purpose }}</textarea>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label class="form-label">预计使用人数 <span class="required">*</span></label>
+                <input type="number" name="participant_count" class="form-control" min="1" value="{{ booking.participant_count }}" required>
+            </div>
+            <div>
+                <label class="form-label">联系电话 <span class="required">*</span></label>
+                <input type="tel" name="contact_phone" class="form-control" value="{{ booking.contact_phone }}" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">特殊需求</label>
+            <textarea name="special_requirements" class="form-control" placeholder="如需要投影仪、音响等设备，请在此说明...">{{ booking.special_requirements }}</textarea>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'clubs:my_room_bookings' %}" class="btn btn-secondary">
+                <span class="material-icons" style="font-size: 1.125rem;">arrow_back</span> 取消
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">save</span>
+                保存修改
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+
+        if (startTime >= endTime) {
+            e.preventDefault();
+            alert('结束时间必须晚于开始时间！');
+            return false;
+        }
+    });
+</script>
+{% endblock %}

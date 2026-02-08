@@ -1,0 +1,233 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}{% if department %}编辑部门{% else %}添加部门{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 120px); /* 预留底栏空间 */
+        box-sizing: border-box;
+    }
+    
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .page-header .material-icons {
+        font-size: 3rem;
+        color: var(--md3-primary);
+        flex-shrink: 0;
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        white-space: nowrap;
+    }
+    
+    .form-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .form-group {
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+    }
+    
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        font-size: 1rem;
+        font-family: inherit;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+    
+    .form-group input[type="text"]:focus,
+    .form-group input[type="number"]:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 2px rgba(var(--md3-primary-rgb), 0.1);
+    }
+    
+    .form-group textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .form-help {
+        font-size: 0.813rem;
+        color: var(--md3-on-surface-variant);
+        margin-top: var(--md3-spacing-xs);
+    }
+    
+    .icon-preview-container {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-sm);
+    }
+    
+    #icon-preview {
+        font-size: 2rem;
+        color: var(--md3-primary);
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        padding-top: var(--md3-spacing-xl);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-full);
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn-primary:hover {
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <span class="material-icons">{% if department %}edit{% else %}add{% endif %}</span>
+        <h1>{% if department %}编辑部门{% else %}添加部门{% endif %}</h1>
+    </div>
+    
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_name">部门名称</label>
+                <input type="text" id="id_name" name="name" value="{{ department.name|default:'' }}" maxlength="50" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_description">职责描述</label>
+                <textarea id="id_description" name="description" required>{{ department.description|default:'' }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_highlights">重点工作</label>
+                <textarea id="id_highlights" name="highlights" placeholder="多个重点工作用换行分隔">{{ department.highlights|default:'' }}</textarea>
+                <div class="form-help">多个重点工作请用换行分隔</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_icon">图标名称 (Material Icons)</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="id_icon" name="icon" value="{{ department.icon|default:'work' }}" maxlength="50" required oninput="updateIconPreview(this.value)">
+                    <span class="material-icons" id="icon-preview">{{ department.icon|default:'work' }}</span>
+                </div>
+                <div class="form-help">请参考 <a href="https://fonts.google.com/icons" target="_blank">Google Material Icons</a></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_order">排序顺序</label>
+                <input type="number" id="id_order" name="order" value="{{ department.order|default:'0' }}" required>
+                <div class="form-help">数字越小越靠前</div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">save</span>
+                    保存
+                </button>
+                <a href="{% url 'clubs:manage_departments' %}" class="btn btn-secondary">
+                    <span class="material-icons">cancel</span>
+                    取消
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function updateIconPreview(iconName) {
+        document.getElementById('icon-preview').textContent = iconName;
+    }
+</script>
+{% endblock %}

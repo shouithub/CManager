@@ -37,6 +37,7 @@ db.sqlite3
 *.swo
 *~
 .DS_Store
+.trae/
 
 # OS
 .DS_Store

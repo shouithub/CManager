@@ -8,6 +8,7 @@
         max-width: 1400px;
         margin: 0 auto;
         padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 120px);
         box-sizing: border-box;
     }
     
@@ -17,22 +18,31 @@
         align-items: center;
         gap: var(--md3-spacing-lg);
         margin-bottom: var(--md3-spacing-2xl);
-        padding: var(--md3-spacing-2xl);
-        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
         border-radius: var(--md3-radius-xl);
-        box-shadow: var(--md3-elevation-2);
+        border: 1px solid var(--md3-outline-variant);
     }
-    
+
     .page-header .material-icons {
-        font-size: 3rem;
+        font-size: 2.5rem;
         color: var(--md3-primary);
     }
-    
+
+    .page-header-content {
+        flex: 1;
+    }
+
     .page-header h1 {
-        margin: 0;
-        font-size: 2rem;
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.75rem;
         font-weight: 600;
         color: var(--md3-on-surface);
+    }
+
+    .page-header .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
     }
     
     /* 统计卡片网格 */
@@ -95,35 +105,50 @@
     /* 快速操作网格 */
     .actions-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: var(--md3-spacing-md);
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: var(--md3-spacing-lg);
+        padding: var(--md3-spacing-xs);
     }
     
     .action-btn {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: var(--md3-spacing-sm);
         padding: var(--md3-spacing-lg);
-        background: var(--md3-primary-container);
-        color: var(--md3-on-primary-container);
-        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border-radius: var(--md3-radius-xl);
         text-decoration: none;
-        font-weight: 600;
-        font-size: 0.875rem;
         transition: all 0.2s ease;
         border: 1px solid transparent;
+        min-height: 100px;
+        gap: var(--md3-spacing-sm);
+        text-align: center;
     }
     
     .action-btn .material-icons {
-        font-size: 1.25rem;
+        font-size: 2rem;
+        color: var(--md3-primary);
+        transition: all 0.2s ease;
+    }
+    
+    .action-btn span:not(.material-icons) {
+        font-size: 0.9rem;
+        font-weight: 500;
+        line-height: 1.4;
     }
     
     .action-btn:hover {
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
+        background: var(--md3-surface-container-highest);
+        transform: translateY(-4px);
         box-shadow: var(--md3-elevation-2);
-        transform: translateY(-1px);
+        border-color: var(--md3-primary);
+        text-decoration: none;
+    }
+
+    .action-btn:hover .material-icons {
+        transform: scale(1.1);
     }
     
     /* 角色分布 */
@@ -181,28 +206,34 @@
         color: var(--md3-error);
     }
     
-    /* 公告列表 */
+    /* 公告列表（MD3 UI） */
     .announcement-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-md);
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--md3-spacing-lg);
     }
     
     .announcement-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: var(--md3-spacing-lg);
         padding: var(--md3-spacing-lg);
         background: var(--md3-surface-container-highest);
-        border-radius: var(--md3-radius-lg);
+        border-radius: var(--md3-radius-xl);
         border: 1px solid var(--md3-outline-variant);
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
         transition: all 0.2s ease;
     }
     
     .announcement-item:hover {
         background: var(--md3-surface-container-high);
-        box-shadow: var(--md3-elevation-1);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .announcement-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--md3-spacing-lg);
     }
     
     .announcement-info {
@@ -213,14 +244,14 @@
     }
     
     .announcement-title {
-        font-size: 1rem;
+        font-size: 1.0625rem;
         font-weight: 600;
         color: var(--md3-on-surface);
         margin: 0;
     }
     
     .announcement-meta {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         color: var(--md3-on-surface-variant);
         display: flex;
         align-items: center;
@@ -232,10 +263,11 @@
         display: inline-flex;
         align-items: center;
         gap: var(--md3-spacing-xs);
-        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+        padding: 2px var(--md3-spacing-sm);
         border-radius: var(--md3-radius-full);
         font-size: 0.75rem;
         font-weight: 600;
+        border: 1px solid transparent;
     }
     
     .status-badge.published {
@@ -246,6 +278,7 @@
     .status-badge.draft {
         background: var(--md3-surface-container-highest);
         color: var(--md3-on-surface-variant);
+        border-color: var(--md3-outline-variant);
     }
     
     .status-badge.archived {
@@ -257,18 +290,39 @@
         font-size: 0.875rem;
     }
     
+    .announcement-excerpt {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        line-height: 1.6;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .announcement-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        flex-wrap: wrap;
+    }
+    
     .attachment-link {
         display: inline-flex;
         align-items: center;
         gap: var(--md3-spacing-xs);
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         color: var(--md3-primary);
         text-decoration: none;
-        margin-top: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+        background: var(--md3-primary-container);
+        border-radius: var(--md3-radius-full);
     }
     
     .attachment-link:hover {
-        text-decoration: underline;
+        box-shadow: var(--md3-elevation-1);
     }
     
     .attachment-link .material-icons {
@@ -276,7 +330,7 @@
     }
     
     .announcement-actions {
-        display: flex;
+        display: inline-flex;
         gap: var(--md3-spacing-sm);
         flex-shrink: 0;
     }
@@ -324,6 +378,8 @@
     @media (max-width: 768px) {
         .dashboard-container {
             padding: var(--md3-spacing-lg);
+            /* 增加底部内边距，防止被底栏遮挡 */
+            padding-bottom: 120px;
         }
         
         .page-header {
@@ -331,12 +387,40 @@
             text-align: center;
         }
         
+        /* 统计卡片改为一行两个 */
         .stats-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--md3-spacing-md);
+        }
+
+        .stat-card {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
         }
         
         .actions-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--md3-spacing-sm);
+        }
+
+        .action-btn {
+            min-height: 80px;
+            padding: var(--md3-spacing-md);
+        }
+
+        .action-btn .material-icons {
+            font-size: 1.5rem;
+        }
+
+        .action-btn span:not(.material-icons) {
+            font-size: 0.75rem;
         }
         
         .role-grid {
@@ -345,11 +429,23 @@
         
         .announcement-item {
             flex-direction: column;
+            gap: var(--md3-spacing-sm);
         }
         
+        .announcement-top {
+            flex-direction: column;
+            gap: var(--md3-spacing-sm);
+        }
+
         .announcement-actions {
             width: 100%;
             justify-content: flex-end;
+            margin-top: var(--md3-spacing-xs);
+        }
+        
+        /* 公告列表适配 */
+        .announcement-list {
+            padding-bottom: 0;
         }
     }
 </style>
@@ -359,7 +455,10 @@
 <div class="dashboard-container">
     <div class="page-header">
         <span class="material-icons">dashboard</span>
-        <h1>管理员仪表板</h1>
+        <div class="page-header-content">
+            <h1>管理员仪表板</h1>
+            <p class="subtitle">系统概览与管理中心</p>
+        </div>
     </div>
     
     <!-- 统计信息 -->
@@ -373,10 +472,6 @@
             <div class="stat-label">已注册社团数</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">{{ pending_registrations }}</div>
-            <div class="stat-label">待审核注册申请</div>
-        </div>
-        <div class="stat-card">
             <div class="stat-value">{{ published_announcements }}</div>
             <div class="stat-label">已发布公告数</div>
         </div>
@@ -388,22 +483,30 @@
     
     <!-- 快速操作 -->
     <div class="card">
-        <h3>快速操作</h3>
         <div class="actions-grid">
-            <a href="{% url 'clubs:staff_dashboard' %}" class="action-btn">
-                查看社团注册审核
+            <a href="{% url 'clubs:manage_departments' %}" class="action-btn">
+                <span class="material-icons">category</span>
+                <span>管理部门介绍</span>
             </a>
-            <a href="{% url 'clubs:manage_users' %}" class="action-btn">
-                管理用户
+            <a href="{% url 'clubs:manage_carousel' %}" class="action-btn">
+                <span class="material-icons">view_carousel</span>
+                <span>管理轮播图</span>
             </a>
-            <a href="{% url 'clubs:publish_announcement' %}" class="action-btn">
-                发布公告
+            <a href="{% url 'clubs:manage_material_requirements' %}" class="action-btn">
+                <span class="material-icons">description</span>
+                <span>修改材料</span>
             </a>
-            <a href="{% url 'clubs:staff_dashboard' %}" class="action-btn">
-                查看待审核项目
+            <a href="{% url 'clubs:admin_room_list' %}" class="action-btn">
+                <span class="material-icons">meeting_room</span>
+                <span>房间管理</span>
+            </a>
+            <a href="{% url 'clubs:manage_smtp_config' %}" class="action-btn">
+                <span class="material-icons">mail</span>
+                <span>邮箱设置</span>
             </a>
             <a href="{% url 'clubs:index' %}" class="action-btn">
-                返回首页
+                <span class="material-icons">home</span>
+                <span>返回首页</span>
             </a>
         </div>
     </div>
@@ -440,40 +543,47 @@
         <div class="announcement-list">
             {% for announcement in announcements %}
             <div class="announcement-item">
-                <div class="announcement-info">
-                    <div class="announcement-title">{{ announcement.title }}</div>
-                    <div class="announcement-meta">
-                        <span>发布于 {{ announcement.created_at|date:"Y-m-d H:i" }}</span>
-                        <span class="status-badge {{ announcement.status }}">
-                            <span class="material-icons">
-                                {% if announcement.status == 'published' %}check_circle
-                                {% elif announcement.status == 'draft' %}edit_note
-                                {% else %}archive{% endif %}
+                <div class="announcement-top">
+                    <div class="announcement-info">
+                        <div class="announcement-title">{{ announcement.title }}</div>
+                        <div class="announcement-meta">
+                            <span>发布于 {{ announcement.created_at|date:"Y-m-d H:i" }}</span>
+                            <span class="status-badge {{ announcement.status }}">
+                                <span class="material-icons">
+                                    {% if announcement.status == 'published' %}check_circle
+                                    {% elif announcement.status == 'draft' %}edit_note
+                                    {% else %}archive{% endif %}
+                                </span>
+                                {% if announcement.status == 'published' %}已发布
+                                {% elif announcement.status == 'draft' %}草稿
+                                {% else %}已归档{% endif %}
                             </span>
-                            {% if announcement.status == 'published' %}已发布
-                            {% elif announcement.status == 'draft' %}草稿
-                            {% else %}已归档{% endif %}
-                        </span>
+                        </div>
                     </div>
+                    <div class="announcement-actions">
+                        <a href="{% url 'clubs:edit_announcement' announcement.id %}" class="btn-action btn-edit">
+                            <span class="material-icons">edit</span>
+                            编辑
+                        </a>
+                        <form method="post" action="{% url 'clubs:delete_announcement' announcement.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-action btn-delete" onclick="return confirm('确定要删除此公告吗？');">
+                                <span class="material-icons">delete</span>
+                                删除
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% if announcement.content %}
+                <p class="announcement-excerpt">{{ announcement.content|truncatewords:28 }}</p>
+                {% endif %}
+                <div class="announcement-footer">
                     {% if announcement.attachment %}
-                    <a href="{{ announcement.attachment.url }}" class="attachment-link" target="_blank">
+                    <a href="{{ announcement.attachment.url }}" class="attachment-link" target="_blank" rel="noopener">
                         <span class="material-icons">attach_file</span>
-                        {{ announcement.attachment.name|slice:"-30:" }}
+                        {{ announcement.attachment.name|slice:"-24:" }}
                     </a>
                     {% endif %}
-                </div>
-                <div class="announcement-actions">
-                    <a href="{% url 'clubs:edit_announcement' announcement.id %}" class="btn-action btn-edit">
-                        <span class="material-icons">edit</span>
-                        编辑
-                    </a>
-                    <form method="post" action="{% url 'clubs:delete_announcement' announcement.id %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-action btn-delete" onclick="return confirm('确定要删除此公告吗？');">
-                            <span class="material-icons">delete</span>
-                            删除
-                        </button>
-                    </form>
                 </div>
             </div>
             {% endfor %}

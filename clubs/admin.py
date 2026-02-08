@@ -1,21 +1,44 @@
 from django.contrib import admin
-from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, Template, Announcement, ClubRegistrationRequest, EmailVerificationCode, SMTPConfig, CarouselImage, DepartmentIntroduction
+from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, Template, Announcement, ClubRegistrationRequest, EmailVerificationCode, SMTPConfig, CarouselImage, Department, Room, TimeSlot, RoomBooking
+
+
+@admin.register(Room)
+class RoomAdmin(admin.ModelAdmin):
+    list_display = ('name', 'capacity', 'status', 'created_at')
+    list_filter = ('status',)
+    search_fields = ('name', 'description')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(TimeSlot)
+class TimeSlotAdmin(admin.ModelAdmin):
+    list_display = ('label', 'start_time', 'end_time', 'is_active')
+    list_filter = ('is_active',)
+    ordering = ('start_time',)
+
+
+@admin.register(RoomBooking)
+class RoomBookingAdmin(admin.ModelAdmin):
+    list_display = ('room', 'user', 'club', 'booking_date', 'start_time', 'end_time', 'status')
+    list_filter = ('status', 'booking_date', 'room')
+    search_fields = ('user__username', 'club__name', 'purpose')
+    readonly_fields = ('created_at', 'updated_at')
 
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'real_name', 'role', 'department', 'staff_level', 'student_id', 'created_at')
-    list_filter = ('role', 'department', 'staff_level', 'political_status', 'created_at')
+    list_display = ('user', 'real_name', 'role', 'department_link', 'staff_level', 'student_id', 'created_at')
+    list_filter = ('role', 'department_link', 'staff_level', 'political_status', 'created_at')
     search_fields = ('user__username', 'user__email', 'real_name', 'student_id')
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'department')
     fieldsets = (
         ('基本信息', {
             'fields': ('user', 'role', 'created_at', 'updated_at')
         }),
         ('干事信息', {
-            'fields': ('department', 'staff_level'),
+            'fields': ('department_link', 'department', 'staff_level'),
             'classes': ('collapse',),
-            'description': '仅对干事角色有效'
+            'description': '仅对干事角色有效。部门关联为主要字段，部门文本字段为兼容保留。'
         }),
         ('实名信息', {
             'fields': ('real_name', 'student_id', 'phone', 'wechat', 'political_status')
@@ -40,11 +63,11 @@ class OfficerAdmin(admin.ModelAdmin):
     
     def get_name(self, obj):
         return obj.user_profile.real_name
-    get_name.short_description = '姓名'
+    get_name.short_description = '姓名'  # type: ignore
     
     def get_student_id(self, obj):
         return obj.user_profile.student_id
-    get_student_id.short_description = '学号'
+    get_student_id.short_description = '学号'  # type: ignore
 
 
 @admin.register(ReviewSubmission)
@@ -135,15 +158,15 @@ class CarouselImageAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(DepartmentIntroduction)
-class DepartmentIntroductionAdmin(admin.ModelAdmin):
-    list_display = ('get_department_display', 'updated_at', 'updated_by')
-    list_filter = ('department', 'updated_at')
-    search_fields = ('description', 'highlights')
+@admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'order', 'updated_at', 'updated_by')
+    list_filter = ('updated_at',)
+    search_fields = ('name', 'description', 'highlights')
     readonly_fields = ('updated_at',)
     fieldsets = (
         ('基本信息', {
-            'fields': ('department', 'description', 'highlights', 'icon')
+            'fields': ('name', 'description', 'highlights', 'icon', 'order')
         }),
         ('更新信息', {
             'fields': ('updated_by', 'updated_at'),

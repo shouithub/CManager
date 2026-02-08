@@ -1,0 +1,367 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}管理轮播图{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 120px); /* 预留底栏高度，防遮挡 */
+        box-sizing: border-box;
+    }
+    
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .page-title-group {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        flex: 1;
+    }
+    
+    .page-header .material-icons {
+        font-size: 3rem;
+        color: var(--md3-primary);
+        flex-shrink: 0;
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        white-space: nowrap;
+    }
+    
+    .add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border-radius: var(--md3-radius-full);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        box-shadow: var(--md3-elevation-2);
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+    
+    .add-btn:hover {
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-1px);
+    }
+    
+    .add-btn .material-icons {
+        font-size: 1.125rem;
+        color: var(--md3-on-primary);
+    }
+    
+    .carousel-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-2xl);
+    }
+    
+    .carousel-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        overflow: hidden;
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .carousel-card:hover {
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-2px);
+    }
+    
+    .carousel-image-preview {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background: var(--md3-surface-container-highest);
+    }
+    
+    .carousel-card-body {
+        padding: var(--md3-spacing-lg);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .carousel-card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-sm) 0;
+    }
+    
+    .carousel-card-description {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        line-height: 1.6;
+        margin: 0 0 var(--md3-spacing-md) 0;
+    }
+    
+    .carousel-card-bottom {
+        margin-top: auto; /* 将元信息和操作区域固定在底部 */
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
+    }
+
+    .carousel-card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xs);
+        font-size: 0.813rem;
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .carousel-card-meta .meta-item {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+    }
+    
+    .carousel-card-meta .material-icons {
+        font-size: 1rem;
+    }
+    
+    .carousel-card-actions {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+        padding-top: var(--md3-spacing-md);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn .material-icons {
+        font-size: 1.125rem;
+    }
+    
+    .btn-edit {
+        flex: 1;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+    
+    .btn-edit:hover {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-delete {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    .btn-delete:hover {
+        background: var(--md3-error);
+        color: var(--md3-on-error);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-badge.active {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .status-badge.inactive {
+        background: var(--md3-surface-container-highest);
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: var(--md3-spacing-4xl) var(--md3-spacing-2xl);
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        border: 2px dashed var(--md3-outline-variant);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .empty-state .material-icons {
+        font-size: 4rem;
+        color: var(--md3-on-surface-variant);
+        opacity: 0.5;
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .empty-state h3 {
+        font-size: 1.5rem;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-sm) 0;
+        font-weight: 600;
+    }
+    
+    .empty-state p {
+        color: var(--md3-on-surface-variant);
+        margin: 0 0 var(--md3-spacing-2xl) 0;
+        font-size: 0.938rem;
+        line-height: 1.5;
+    }
+    
+    .empty-state .add-btn {
+        display: inline-flex;
+    }
+    
+    .empty-state .add-btn .material-icons {
+        font-size: 1.125rem;
+        color: var(--md3-on-primary);
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header {
+            flex-direction: column;
+            gap: var(--md3-spacing-lg);
+            text-align: center;
+        }
+        
+        .page-title-group {
+            flex-direction: column;
+        }
+        
+        .carousel-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <div class="page-title-group">
+            <span class="material-icons">view_carousel</span>
+            <h1>管理轮播图</h1>
+        </div>
+        <a href="{% url 'clubs:add_carousel' %}" class="add-btn">
+            <span class="material-icons">add</span>
+            <span>添加轮播图</span>
+        </a>
+    </div>
+    
+    {% if carousel_images %}
+    <div class="carousel-grid">
+        {% for image in carousel_images %}
+        <div class="carousel-card">
+            <img src="{{ image.image.url }}" alt="{{ image.title }}" class="carousel-image-preview">
+            <div class="carousel-card-body">
+                <h3 class="carousel-card-title">{{ image.title|default:"无标题" }}</h3>
+                
+                {% if image.description %}
+                <p class="carousel-card-description" title="{{ image.description }}">{{ image.description|truncatechars:100 }}</p>
+                {% endif %}
+                
+                <div class="carousel-card-bottom">
+                    <div class="carousel-card-meta">
+                        <div class="meta-item">
+                            <span class="material-icons">sort</span>
+                            <span>排序: {{ image.order }}</span>
+                        </div>
+                        {% if image.link %}
+                        <div class="meta-item">
+                            <span class="material-icons">link</span>
+                            <span>{{ image.link|truncatechars:40 }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="meta-item">
+                            <span class="material-icons">person</span>
+                            <span>上传者: {{ image.uploaded_by.username }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="material-icons">schedule</span>
+                            <span>{{ image.uploaded_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="status-badge {% if image.is_active %}active{% else %}inactive{% endif %}">
+                                <span class="material-icons">{{ image.is_active|yesno:"check_circle,cancel" }}</span>
+                                {{ image.is_active|yesno:"已激活,未激活" }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="carousel-card-actions">
+                        <a href="{% url 'clubs:edit_carousel' image.id %}" class="btn btn-edit">
+                            <span class="material-icons">edit</span>
+                            编辑
+                        </a>
+                        <form method="post" action="{% url 'clubs:delete_carousel' image.id %}" 
+                              onsubmit="return confirm('确定要删除这张轮播图吗？');" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-delete">
+                                <span class="material-icons">delete</span>
+                                删除
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="material-icons">image</span>
+        <h3>还没有轮播图</h3>
+        <p>点击上方"添加轮播图"按钮创建第一张轮播图</p>
+        <a href="{% url 'clubs:add_carousel' %}" class="add-btn">
+            <span class="material-icons">add</span>
+            <span>添加轮播图</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

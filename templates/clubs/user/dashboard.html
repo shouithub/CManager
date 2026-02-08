@@ -13,6 +13,7 @@
         max-width: 1400px;
         margin: 0 auto;
         padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
         box-sizing: border-box;
         overflow-x: hidden;
     }
@@ -50,37 +51,6 @@
         color: var(--md3-on-surface-variant);
         font-size: 1rem;
         margin-bottom: var(--md3-spacing-2xl);
-    }
-    
-    /* 未读通知卡片 */
-    .unread-alert {
-        background: var(--md3-error-container);
-        color: var(--md3-on-error-container);
-        padding: var(--md3-spacing-xl);
-        border-radius: var(--md3-radius-xl);
-        margin-bottom: var(--md3-spacing-2xl);
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-lg);
-        border: 1px solid var(--md3-error);
-    }
-    
-    .unread-alert .material-icons {
-        font-size: 2rem;
-    }
-    
-                <a href="{% url 'clubs:approval_center' 'annual_review' %}" class="btn btn-primary">
-                    <span class="material-icons">visibility</span>
-                    <span class="see-detail-text">查看详情</span>
-                </a>
-    
-    .unread-alert-content h3 {
-        margin: 0 0 var(--md3-spacing-sm) 0;
-        font-size: 1.25rem;
-    }
-    
-    .unread-alert-content p {
-        margin: 0;
     }
     
     /* 社团卡片网格 */
@@ -316,6 +286,7 @@
     @media (max-width: 900px) {
         .dashboard-container {
             padding: var(--md3-spacing-lg);
+            padding-bottom: calc(var(--md3-spacing-2xl) + 80px);
             overflow-x: hidden;
         }
         
@@ -380,58 +351,6 @@
         </div>
     </div>
     <p class="dashboard-subtitle">欢迎 {{ user.profile.get_full_name }}，以下是您的社团管理信息</p>
-
-    <!-- 未读通知 -->
-    {% if unread_approval_counts.total > 0 %}
-    <div class="unread-alert">
-        <span class="material-icons">notifications_active</span>
-        <div class="unread-alert-content">
-            <h3>未读通知</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--md3-spacing-md);">
-                {% if unread_approval_counts.annual_review > 0 %}
-                <div style="display: flex; align-items: center; gap: var(--md3-spacing-xs);">
-                    <span class="material-icons" style="font-size: 1.25rem;">assignment</span>
-                    <span>年审: <strong>{{ unread_approval_counts.annual_review }}</strong></span>
-                </div>
-                {% endif %}
-                {% if unread_approval_counts.registration > 0 %}
-                <div style="display: flex; align-items: center; gap: var(--md3-spacing-xs);">
-                    <span class="material-icons" style="font-size: 1.25rem;">add_circle</span>
-                    <span>注册: <strong>{{ unread_approval_counts.registration }}</strong></span>
-                </div>
-                {% endif %}
-                {% if unread_approval_counts.application > 0 %}
-                <div style="display: flex; align-items: center; gap: var(--md3-spacing-xs);">
-                    <span class="material-icons" style="font-size: 1.25rem;">description</span>
-                    <span>申请: <strong>{{ unread_approval_counts.application }}</strong></span>
-                </div>
-                {% endif %}
-                {% if unread_approval_counts.reimbursement > 0 %}
-                <div style="display: flex; align-items: center; gap: var(--md3-spacing-xs);">
-                    <span class="material-icons" style="font-size: 1.25rem;">receipt</span>
-                    <span>报销: <strong>{{ unread_approval_counts.reimbursement }}</strong></span>
-                </div>
-                {% endif %}
-                {% if unread_approval_counts.activity > 0 %}
-                <div style="display: flex; align-items: center; gap: var(--md3-spacing-xs);">
-                    <span class="material-icons" style="font-size: 1.25rem;">event</span>
-                    <span>活动: <strong>{{ unread_approval_counts.activity }}</strong></span>
-                </div>
-                {% endif %}
-                {% if unread_approval_counts.transition > 0 %}
-                <div style="display: flex; align-items: center; gap: var(--md3-spacing-xs);">
-                    <span class="material-icons" style="font-size: 1.25rem;">swap_horiz</span>
-                    <span>换届: <strong>{{ unread_approval_counts.transition }}</strong></span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        <a href="{% url 'clubs:approval_center' 'annual_review' %}" class="btn btn-primary">
-            <span class="material-icons">visibility</span>
-            <span class="see-detail-text">查看详情</span>
-        </a>
-    </div>
-    {% endif %}
 
     <!-- 我的社团 -->
     <div class="section-header">
@@ -505,20 +424,6 @@
                         </div>
                         {% else %}
                         <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="club-info-item">
-                <span class="material-icons">notifications</span>
-                <div class="club-info-content">
-                    <div class="club-info-label">未读审核</div>
-                    <div class="club-info-value">
-                        {% if club_data.unread_submissions_count > 0 %}
-                        <span class="status-badge pending">{{ club_data.unread_submissions_count }} 条</span>
-                        {% else %}
-                        <span class="status-badge success">0 条</span>
                         {% endif %}
                     </div>
                 </div>

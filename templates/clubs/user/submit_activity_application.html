@@ -1,5 +1,6 @@
 {% extends 'clubs/base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}提交活动申请{% endblock %}
 
@@ -9,28 +10,16 @@
         max-width: 900px;
         margin: 0 auto;
         padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
     }
     
-    .form-header {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-2xl);
-        padding: var(--md3-spacing-xl);
-        background: var(--md3-surface-container-low);
-        border-radius: var(--md3-radius-xl);
+    @media (max-width: 768px) {
+        .form-container {
+            padding-bottom: calc(var(--md3-spacing-2xl) + 100px) !important;
+        }
     }
     
-    .form-header .material-icons {
-        font-size: 2.5rem;
-        color: var(--md3-primary);
-    }
-    
-    .form-header h1 {
-        margin: 0;
-        font-size: 2rem;
-        font-weight: 600;
-    }
+    /* .form-header removed in favor of global .page-header */
     
     .form-card {
         background: var(--md3-surface-container);
@@ -161,41 +150,87 @@
         margin-bottom: var(--md3-spacing-sm);
     }
     
-    .form-actions {
+    .action-buttons {
         display: flex;
         gap: var(--md3-spacing-md);
-        justify-content: center;
         margin-top: var(--md3-spacing-2xl);
+        justify-content: flex-end;
     }
     
-    .form-actions .btn {
-        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+        padding: 10px 24px;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-sm);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+        padding: 10px 24px;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
         text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
     }
     
-    .form-actions .btn .material-icons {
-        font-size: 1.25rem;
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        box-shadow: var(--md3-elevation-1);
     }
-    
+
+    .btn-primary .material-icons,
+    .btn-secondary .material-icons {
+        font-size: 1.125rem;
+    }
+
     @media (max-width: 768px) {
         .form-container {
             padding: var(--md3-spacing-lg);
+            padding-bottom: calc(var(--md3-spacing-lg) + 50px);
         }
         
         .form-row {
             grid-template-columns: 1fr;
         }
         
-        .form-header {
+        .page-header {
             flex-direction: column;
             text-align: center;
         }
         
-        .form-header h1 {
+        .page-header h1 {
             font-size: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons button, 
+        .action-buttons a {
+            width: 100%;
+            justify-content: center;
         }
     }
 </style>
@@ -204,9 +239,12 @@
 {% block content %}
 <div class="form-container">
     <!-- 页面标题 -->
-    <div class="form-header">
+    <div class="page-header">
         <span class="material-icons">event</span>
-        <h1>提交活动申请</h1>
+        <div class="page-header-content">
+            <h1>提交活动申请</h1>
+            <p class="subtitle">{{ club.name }}</p>
+        </div>
     </div>
     
     <!-- 错误提示 -->
@@ -270,6 +308,13 @@
                     <label for="activity_time_start">活动开始时间 <span class="required">*</span></label>
                     <input type="time" id="activity_time_start" name="activity_time_start" required value="{{ activity_time_start }}">
                 </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="activity_location">活动地点 <span class="required">*</span></label>
+                    <input type="text" id="activity_location" name="activity_location" required value="{{ activity_location }}" placeholder="例如：大学生活动中心205">
+                </div>
                 <div class="form-group">
                     <label for="activity_time_end">活动结束时间 <span class="required">*</span></label>
                     <input type="time" id="activity_time_end" name="activity_time_end" required value="{{ activity_time_end }}">
@@ -278,19 +323,12 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="activity_location">活动地点 <span class="required">*</span></label>
-                    <input type="text" id="activity_location" name="activity_location" required value="{{ activity_location }}" placeholder="例如：学生中心107">
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="expected_participants">预计参与人数</label>
-                    <input type="number" id="expected_participants" name="expected_participants" min="1" value="{{ expected_participants }}" placeholder="例如：50">
+                    <label for="expected_participants">预计参与人数 <span class="required">*</span></label>
+                    <input type="number" id="expected_participants" name="expected_participants" min="1" value="{{ expected_participants }}" placeholder="例如：50" required>
                 </div>
                 <div class="form-group">
-                    <label for="budget">活动预算（元）</label>
-                    <input type="number" id="budget" name="budget" min="0" step="0.01" value="{{ budget }}" placeholder="例如：1000.00">
+                    <label for="budget">活动预算（元）<span class="required">*</span></label>
+                    <input type="number" id="budget" name="budget" min="0" step="0.01" value="{{ budget }}" placeholder="例如：1000.00" required>
                 </div>
             </div>
             
@@ -322,81 +360,30 @@
         <div class="form-section">
             <h2><span class="material-icons">attach_file</span> 附件上传</h2>
             
+            {% for req in requirements %}
             <div class="form-row">
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    <label for="application_form">活动申请表 <span class="required">*</span></label>
-                    <div class="file-upload-area" id="fileUploadArea">
-                        <span class="material-icons">cloud_upload</span>
-                        <p>点击选择文件或拖放文件</p>
-                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">支持 Word(.docx) 和 PDF 文件</p>
-                    </div>
-                    <input type="file" id="application_form" name="application_form" required accept=".docx,.pdf" style="display: none;">
-                    <div id="fileNameDisplay" style="margin-top: var(--md3-spacing-md); padding: var(--md3-spacing-md); background: var(--md3-surface-container-highest); border-radius: var(--md3-radius-md); display: none;">
-                        <strong>已选择文件:</strong> <span id="selectedFileName"></span>
-                    </div>
+                    {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description max_size_mb=req.max_size_mb icon=req.icon|default:"cloud_upload" %}
                 </div>
             </div>
+            {% endfor %}
         </div>
         
         <!-- 操作按钮 -->
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">
-                <span class="material-icons">check_circle</span> 提交申请
-            </button>
-            <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-outlined">
-                <span class="material-icons">cancel</span> 返回
+        <div class="action-buttons">
+            <a href="{% url 'clubs:club_detail' club.id %}" class="btn-secondary">
+                <span class="material-icons">arrow_back</span>
+                返回
             </a>
+            <button type="submit" class="btn-primary">
+                <span class="material-icons">check_circle</span>
+                提交申请
+            </button>
         </div>
     </form>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const fileUploadArea = document.getElementById('fileUploadArea');
-    const fileInput = document.getElementById('application_form');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    const selectedFileName = document.getElementById('selectedFileName');
-    
-    // 点击上传区域触发文件选择
-    fileUploadArea.addEventListener('click', function() {
-        fileInput.click();
-    });
-    
-    // 文件选择后更新显示
-    fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            selectedFileName.textContent = this.files[0].name;
-            fileNameDisplay.style.display = 'block';
-        } else {
-            fileNameDisplay.style.display = 'none';
-        }
-    });
-    
-    // 拖放上传
-    fileUploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        fileUploadArea.style.borderColor = 'var(--md3-primary)';
-        fileUploadArea.style.background = 'var(--md3-primary-container)';
-    });
-    
-    fileUploadArea.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        fileUploadArea.style.borderColor = 'var(--md3-outline)';
-        fileUploadArea.style.background = 'var(--md3-surface-container-highest)';
-    });
-    
-    fileUploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        fileUploadArea.style.borderColor = 'var(--md3-outline)';
-        fileUploadArea.style.background = 'var(--md3-surface-container-highest)';
-        
-        if (e.dataTransfer.files.length > 0) {
-            fileInput.files = e.dataTransfer.files;
-            // 触发 change 事件
-            const event = new Event('change', { bubbles: true });
-            fileInput.dispatchEvent(event);
-        }
-    });
-});
+// Component scripts are self-contained
 </script>
 {% endblock %}

@@ -1,0 +1,132 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}预约管理{% endblock %}
+
+{% block extra_css %}
+<style>
+    .approval-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header-content {
+        flex: 1;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .page-header .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        margin-top: 4px;
+    }
+
+    .action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-top: var(--md3-spacing-xl);
+    }
+
+    .action-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        text-decoration: none;
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline-variant);
+        transition: all 0.3s ease;
+    }
+
+    .action-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--md3-elevation-3);
+        background: var(--md3-surface-container-high);
+    }
+
+    .action-card .icon-wrapper {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .action-card .icon-wrapper .material-icons {
+        font-size: 32px;
+    }
+
+    .action-card h3 {
+        margin: 0 0 var(--md3-spacing-xs);
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .action-card p {
+        margin: 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="approval-container">
+    <div class="page-header">
+        <span class="material-icons">calendar_today</span>
+        <div class="page-header-content">
+            <h1>预约管理</h1>
+            <div class="subtitle">管理房间和时间段设置</div>
+        </div>
+    </div>
+
+    <div class="action-grid">
+        <a href="{% url 'clubs:admin_room_list' %}" class="action-card">
+            <div class="icon-wrapper">
+                <span class="material-icons">meeting_room</span>
+            </div>
+            <h3>房间管理</h3>
+            <p>管理可预约的房间信息，包括房间名称、容量和设备等</p>
+        </a>
+
+        <a href="{% url 'clubs:admin_time_slots' %}" class="action-card">
+            <div class="icon-wrapper">
+                <span class="material-icons">schedule</span>
+            </div>
+            <h3>时间段设置</h3>
+            <p>设置房间预约的可选时间段，管理课程和休息时间</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

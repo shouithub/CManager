@@ -1,0 +1,178 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}{% if slot %}编辑时间段{% else %}添加时间段{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .approval-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header-content h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .page-header-content .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        margin-top: 4px;
+    }
+
+    .form-card {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .form-group {
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--md3-spacing-xs);
+        color: var(--md3-on-surface);
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--md3-outline);
+        border-radius: 8px;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: var(--md3-primary);
+        outline: 2px solid var(--md3-primary-container);
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+    }
+
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--md3-primary);
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-xl);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 24px;
+        height: 40px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: var(--md3-primary);
+        border: 1px solid var(--md3-outline);
+    }
+
+    .btn-secondary:hover {
+        background: var(--md3-surface-variant);
+    }
+
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .btn-primary:hover {
+        background: var(--md3-primary-hover);
+        box-shadow: var(--md3-elevation-2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="approval-container">
+    <div class="page-header">
+        <span class="material-icons">schedule</span>
+        <div class="page-header-content">
+            <h1>{% if slot %}编辑时间段{% else %}添加时间段{% endif %}</h1>
+            <div class="subtitle">{% if slot %}修改现有时间段配置{% else %}创建新的可选时间段{% endif %}</div>
+        </div>
+    </div>
+
+    <form method="POST" class="form-card">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="label" class="form-label">显示名称</label>
+            <input type="text" id="label" name="label" class="form-control" value="{{ slot.label|default:'' }}" required placeholder="例如：第1-2节">
+        </div>
+
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+                <label for="start_time" class="form-label">开始时间</label>
+                <input type="time" id="start_time" name="start_time" class="form-control" value="{{ slot.start_time|time:'H:i' }}" required>
+            </div>
+            <div>
+                <label for="end_time" class="form-label">结束时间</label>
+                <input type="time" id="end_time" name="end_time" class="form-control" value="{{ slot.end_time|time:'H:i' }}" required>
+            </div>
+        </div>
+
+        <div class="form-check">
+            <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {% if not slot or slot.is_active %}checked{% endif %}>
+            <label for="is_active" class="form-label" style="margin: 0;">启用此时间段</label>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'clubs:admin_time_slots' %}" class="btn btn-secondary">取消</a>
+            <button type="submit" class="btn btn-primary">
+                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">save</span>
+                保存
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

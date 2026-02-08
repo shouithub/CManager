@@ -1,0 +1,256 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}房间管理{% endblock %}
+
+{% block extra_css %}
+<style>
+    .approval-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 120px);
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header-content {
+        flex: 1;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .page-header .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        margin-top: 4px;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .filter-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        color: var(--md3-on-surface);
+        font-weight: 500;
+    }
+
+    .filter-form {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        gap: var(--md3-spacing-lg);
+        align-items: end;
+    }
+
+    /* Table Card */
+    .table-card {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+        overflow: hidden;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .md3-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .md3-table th {
+        background: var(--md3-surface-container-high);
+        padding: var(--md3-spacing-lg);
+        text-align: left;
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+        white-space: nowrap;
+    }
+
+    .md3-table td {
+        padding: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+        color: var(--md3-on-surface);
+        vertical-align: middle;
+    }
+
+    .md3-table tr:hover td {
+        background: var(--md3-surface-container-highest);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .status-available {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .status-maintenance {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+    
+    .status-closed {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    @media (max-width: 768px) {
+        .filter-form {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="approval-container">
+    <div class="page-header">
+        <span class="material-icons">meeting_room</span>
+        <div class="page-header-content">
+            <h1>房间管理</h1>
+            <p class="subtitle">管理系统中的所有可借用房间资源</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'clubs:admin_room_add' %}" class="btn btn-primary">
+                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">add</span>
+                <span>增加房间</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="filter-card">
+        <div class="filter-header">
+            <span class="material-icons">filter_list</span>
+            筛选和搜索
+        </div>
+        <form method="get" class="filter-form">
+            <div class="form-group">
+                <label class="label-small" style="display:block;margin-bottom:8px;color:var(--md3-on-surface-variant)">搜索</label>
+                <div style="position:relative;">
+                    <span class="material-icons" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md3-outline);">search</span>
+                    <input type="text" name="search" class="form-input" placeholder="输入房间名称或位置" value="{{ search_query }}" style="padding-left:40px;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="label-small" style="display:block;margin-bottom:8px;color:var(--md3-on-surface-variant)">房间状态</label>
+                <select name="status" class="form-select">
+                    <option value="">全部状态</option>
+                    <option value="available" {% if status_filter == 'available' %}selected{% endif %}>可用</option>
+                    <option value="maintenance" {% if status_filter == 'maintenance' %}selected{% endif %}>维护中</option>
+                    <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>关闭</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="label-small" style="display:block;margin-bottom:8px;color:var(--md3-on-surface-variant)">&nbsp;</label>
+                <div style="display:flex;gap:8px;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                        <span class="material-icons">search</span> 搜索
+                    </button>
+                    {% if search_query or status_filter %}
+                    <a href="{% url 'clubs:admin_room_list' %}" class="btn btn-secondary" style="padding:0 12px;">
+                        <span class="material-icons">close</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-card">
+        {% if rooms %}
+        <div class="table-responsive">
+            <table class="md3-table">
+                <thead>
+                    <tr>
+                        <th>房间名称</th>
+                        <th>容量 (人)</th>
+                        <th>位置</th>
+                        <th>当前状态</th>
+                        <th style="text-align:right;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for room in rooms %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:500;">{{ room.name }}</div>
+                            <div class="body-small" style="color:var(--md3-on-surface-variant);">{{ room.description|truncatechars:20 }}</div>
+                        </td>
+                        <td>{{ room.capacity }}</td>
+                        <td>{{ room.location }}</td>
+                        <td>
+                            {% if room.status == 'available' %}
+                            <span class="status-badge status-available">
+                                <span class="material-icons" style="font-size:16px;">check_circle</span> 可用
+                            </span>
+                            {% elif room.status == 'maintenance' %}
+                            <span class="status-badge status-maintenance">
+                                <span class="material-icons" style="font-size:16px;">build</span> 维护中
+                            </span>
+                            {% else %}
+                            <span class="status-badge status-closed">
+                                <span class="material-icons" style="font-size:16px;">block</span> 关闭
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:right;">
+                            <a href="{% url 'clubs:admin_room_edit' room.id %}" class="btn btn-secondary" style="padding: 6px 12px; display:inline-flex; border:none; background:transparent;">
+                                <span class="material-icons" style="font-size:20px; color:var(--md3-primary);">edit</span>
+                            </a>
+                            <a href="{% url 'clubs:admin_room_delete' room.id %}" class="btn btn-secondary" style="padding: 6px 12px; display:inline-flex; border:none; background:transparent;">
+                                <span class="material-icons" style="font-size:20px; color:var(--md3-error);">delete</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="padding:48px; text-align:center; color:var(--md3-on-surface-variant);">
+            <span class="material-icons" style="font-size:48px; opacity:0.5; margin-bottom:16px;">meeting_room</span>
+            <p>没有找到符合条件的房间</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

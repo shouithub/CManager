@@ -1,0 +1,88 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}{% if action == 'edit' %}编辑房间{% else %}添加房间{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    .content-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+        padding: var(--md3-spacing-xl);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="page-header">
+        <span class="material-icons">{% if action == 'edit' %}edit{% else %}add_circle{% endif %}</span>
+        <div class="page-header-content">
+            <h1>{% if action == 'edit' %}编辑房间{% else %}添加房间{% endif %}</h1>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="content-card">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">房间名称</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ room.name }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="capacity" class="form-label">容纳人数</label>
+                        <input type="number" class="form-control" id="capacity" name="capacity" value="{{ room.capacity|default:50 }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="location" class="form-label">位置</label>
+                        <input type="text" class="form-control" id="location" name="location" value="{{ room.location }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ room.description }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="status" class="form-label">状态</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="available" {% if room.status == 'available' %}selected{% endif %}>可用</option>
+                            <option value="maintenance" {% if room.status == 'maintenance' %}selected{% endif %}>维护中</option>
+                            <option value="closed" {% if room.status == 'closed' %}selected{% endif %}>关闭</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{% url 'clubs:admin_room_list' %}" class="btn btn-secondary">取消</a>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

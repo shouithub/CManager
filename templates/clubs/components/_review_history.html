@@ -1,0 +1,166 @@
+{% comment %}
+审核记录时间轴组件
+使用方式: {% include 'clubs/components/_review_history.html' with reviews=existing_reviews approved_count=approved_count rejected_count=rejected_count %}
+
+参数:
+- reviews: 审核记录列表 (QuerySet 或 List)
+- approved_count: 已批准数(可选)
+- rejected_count: 已拒绝数(可选)
+- show_stats: 是否显示统计信息 (默认: True)
+- title: 标题 (默认: "审核记录")
+- show_card_wrapper: 是否显示外围卡片容器 (默认: True)
+- current_attempt: 当前提交版本 (可选，用于显示"当前版本"标识)
+{% endcomment %}
+{% load custom_filters %}
+
+{% if show_card_wrapper|default:True %}
+<div class="card">
+    <div class="card-header">
+        <span class="material-icons">history</span>
+        <h2>{{ title|default:"审核记录" }}</h2>
+    </div>
+{% endif %}
+    
+    {% if reviews %}
+    <div style="position: relative; padding-left: 40px; margin-top: var(--md3-spacing-lg);">
+        <!-- 时间轴线 -->
+        <div style="position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: var(--md3-outline-variant); border-radius: 1px;"></div>
+        
+        {% comment %}检测是否存在attempt_number或submission_attempt字段来决定是否分组{% endcomment %}
+        {% with reviews|first as sample_review %}
+            {% if sample_review.attempt_number != None or sample_review.submission_attempt != None %}
+                {% comment %}有attempt_number或submission_attempt字段，按批次分组{% endcomment %}
+                {% if sample_review.attempt_number != None %}
+                    {% regroup reviews by attempt_number as batch_groups %}
+                {% else %}
+                    {% regroup reviews by submission_attempt as batch_groups %}
+                {% endif %}
+                {% for group in batch_groups %}
+                <div style="margin-bottom: var(--md3-spacing-xl);">
+                    {% if batch_groups|length > 1 %}
+                    <div style="display: flex; align-items: center; gap: var(--md3-spacing-sm); margin-bottom: var(--md3-spacing-lg); padding: var(--md3-spacing-sm) var(--md3-spacing-md); background: var(--md3-surface-container-highest); border-radius: var(--md3-radius-md); border-left: 3px solid var(--md3-primary);">
+                        <span class="material-icons" style="font-size: 1rem; color: var(--md3-primary);">upload_file</span>
+                        <span style="font-size: 0.875rem; font-weight: 500; color: var(--md3-on-surface);">第{{ group.grouper }} 次提交</span>
+                        <span style="font-size: 0.75rem; color: var(--md3-on-surface-variant); margin-left: auto;">{{ group.list|length }} 条审核记录</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% for review in group.list %}
+                    {% firstof review.comment review.reviewer_comment review.comments "" as comment_text %}
+                    <div class="detail-item" style="position: relative; margin-bottom: var(--md3-spacing-lg); {% if review.status == 'approved' %}border-left: 3px solid var(--md3-success);{% elif review.status == 'rejected' %}border-left: 3px solid var(--md3-error);{% endif %}">
+                        <!-- 时间轴节点 -->
+                        <div style="position: absolute; left: -33px; top: 16px; width: 12px; height: 12px; border-radius: 50%; {% if review.status == 'approved' %}background: var(--md3-success);{% elif review.status == 'rejected' %}background: var(--md3-error);{% else %}background: var(--md3-primary);{% endif %} border: 2px solid var(--md3-surface-container-low); z-index: 1;"></div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--md3-spacing-md); flex-wrap: wrap; gap: var(--md3-spacing-sm);">
+                            <span style="font-size: 0.8125rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 4px;">
+                                <span class="material-icons" style="font-size: 0.875rem;">schedule</span>
+                                {{ review.reviewed_at|date:"Y-m-d H:i" }}
+                            </span>
+                            <span class="status-badge {% if review.status == 'approved' %}approved{% elif review.status == 'rejected' %}rejected{% else %}pending{% endif %}">
+                                <span class="material-icons" style="font-size: 0.875rem;">
+                                    {% if review.status == 'approved' %}check_circle{% elif review.status == 'rejected' %}cancel{% else %}schedule{% endif %}
+                                </span>
+                                {{ review.get_status_display|default:"待处理" }}
+                            </span>
+                        </div>
+                        
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-sm); display: flex; align-items: center; gap: 4px;">
+                            <span class="material-icons" style="font-size: 1rem; color: var(--md3-on-surface-variant);">person</span>
+                            审核者：<strong>{% if review.reviewer %}{{ review.reviewer.profile.get_full_name|default:review.reviewer.username }}{% else %}系统管理员{% endif %}</strong>
+                        </div>
+                        
+                        {% if comment_text %}
+                        <div style="font-size: 0.9375rem; color: var(--md3-on-surface); {% if review.status == 'rejected' %}background: var(--md3-error-container); color: var(--md3-on-error-container);{% else %}background: var(--md3-surface-container);{% endif %} padding: var(--md3-spacing-md); border-radius: var(--md3-radius-md); line-height: 1.6; margin-top: var(--md3-spacing-sm);">
+                            {{ comment_text|linebreaks }}
+                        </div>
+                        {% endif %}
+                        
+                        {% if review.rejected_materials %}
+                        <div style="margin-top: var(--md3-spacing-md); padding: var(--md3-spacing-sm); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-md);">
+                            <div style="font-size: 0.75rem; font-weight: 500; color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xs); text-transform: uppercase;">被拒绝的材料</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                {% for material in review.rejected_materials %}
+                                <span style="display: inline-flex; padding: 2px 8px; background: var(--md3-error-container); color: var(--md3-on-error-container); border-radius: var(--md3-radius-full); font-size: 0.75rem;">{{ material|material_name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+                
+            {% else %}
+                {% comment %}没有attempt_number字段，直接显示所有记录不分组{% endcomment %}
+                {% for review in reviews %}
+                {% firstof review.comment review.reviewer_comment review.comments "" as comment_text %}
+                <div class="detail-item" style="position: relative; margin-bottom: var(--md3-spacing-lg); {% if review.status == 'approved' %}border-left: 3px solid var(--md3-success);{% elif review.status == 'rejected' %}border-left: 3px solid var(--md3-error);{% endif %}">
+                    <!-- 时间轴节点 -->
+                    <div style="position: absolute; left: -33px; top: 16px; width: 12px; height: 12px; border-radius: 50%; {% if review.status == 'approved' %}background: var(--md3-success);{% elif review.status == 'rejected' %}background: var(--md3-error);{% else %}background: var(--md3-primary);{% endif %} border: 2px solid var(--md3-surface-container-low); z-index: 1;"></div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--md3-spacing-md); flex-wrap: wrap; gap: var(--md3-spacing-sm);">
+                        <span style="font-size: 0.8125rem; color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 4px;">
+                            <span class="material-icons" style="font-size: 0.875rem;">schedule</span>
+                            {{ review.reviewed_at|date:"Y-m-d H:i" }}
+                        </span>
+                        <span class="status-badge {% if review.status == 'approved' %}approved{% elif review.status == 'rejected' %}rejected{% else %}pending{% endif %}">
+                            <span class="material-icons" style="font-size: 0.875rem;">
+                                {% if review.status == 'approved' %}check_circle{% elif review.status == 'rejected' %}cancel{% else %}schedule{% endif %}
+                            </span>
+                            {{ review.get_status_display|default:"待处理" }}
+                        </span>
+                    </div>
+                    
+                    <div style="font-size: 0.875rem; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-sm); display: flex; align-items: center; gap: 4px;">
+                        <span class="material-icons" style="font-size: 1rem; color: var(--md3-on-surface-variant);">person</span>
+                        审核者：<strong>{% if review.reviewer %}{{ review.reviewer.profile.get_full_name|default:review.reviewer.username }}{% else %}系统管理员{% endif %}</strong>
+                    </div>
+                    
+                    {% if comment_text %}
+                    <div style="font-size: 0.9375rem; color: var(--md3-on-surface); {% if review.status == 'rejected' %}background: var(--md3-error-container); color: var(--md3-on-error-container);{% else %}background: var(--md3-surface-container);{% endif %} padding: var(--md3-spacing-md); border-radius: var(--md3-radius-md); line-height: 1.6; margin-top: var(--md3-spacing-sm);">
+                        {{ comment_text|linebreaks }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if review.rejected_materials %}
+                    <div style="margin-top: var(--md3-spacing-md); padding: var(--md3-spacing-sm); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-md);">
+                        <div style="font-size: 0.75rem; font-weight: 500; color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xs); text-transform: uppercase;">被拒绝的材料</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            {% for material in review.rejected_materials %}
+                            <span style="display: inline-flex; padding: 2px 8px; background: var(--md3-error-container); color: var(--md3-on-error-container); border-radius: var(--md3-radius-full); font-size: 0.75rem;">{{ material|material_name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    {% if show_stats|default:True and approved_count is not None and rejected_count is not None %}
+    <div style="margin-top: var(--md3-spacing-xl); padding-top: var(--md3-spacing-lg); border-top: 1px solid var(--md3-outline-variant); display: flex; align-items: center; gap: var(--md3-spacing-lg); flex-wrap: wrap;">
+        <span style="font-size: 0.875rem; color: var(--md3-on-surface-variant);">
+            {% if current_attempt %}当前版本（第 {{ current_attempt }} 次）审核状态：{% else %}当前审核状态：{% endif %}
+        </span>
+        <span class="status-badge approved">
+            <span class="material-icons" style="font-size: 0.875rem;">check_circle</span>
+            <strong>{{ approved_count|default:0 }}</strong> 人批准
+        </span>
+        <span class="status-badge rejected">
+            <span class="material-icons" style="font-size: 0.875rem;">cancel</span>
+            <strong>{{ rejected_count|default:0 }}</strong> 人拒绝
+        </span>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div style="text-align: center; padding: var(--md3-spacing-2xl); color: var(--md3-on-surface-variant);">
+        <span class="material-icons" style="font-size: 3rem; opacity: 0.3;">history</span>
+        <p style="margin: var(--md3-spacing-md) 0 0 0;">暂无审核记录</p>
+    </div>
+    {% endif %}
+
+{% if show_card_wrapper|default:True %}
+</div>
+{% endif %}

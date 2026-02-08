@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load custom_filters %}
 
 {% block title %}提交年审材料 - {{ club.name }}{% endblock %}
 
@@ -7,6 +8,8 @@
 @media (max-width: 768px) {
     .submit-container {
         padding: var(--md3-spacing-lg) !important;
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px) !important;
+
     }
     .form-grid {
         grid-template-columns: 1fr !important;
@@ -21,30 +24,12 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: var(--md3-spacing-2xl);
+    padding-bottom: 120px; /* 防止被底栏遮挡 */
     box-sizing: border-box;
 }
 
 /* 页面标题 */
-.page-title {
-    display: flex;
-    align-items: center;
-    gap: var(--md3-spacing-md);
-    margin-bottom: var(--md3-spacing-xl);
-    padding-bottom: var(--md3-spacing-lg);
-    border-bottom: 2px solid var(--md3-outline-variant);
-}
-
-.page-title .material-icons {
-    font-size: 2.5rem;
-    color: var(--md3-primary);
-}
-
-.page-title h1 {
-    margin: 0;
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--md3-on-surface);
-}
+    /* .page-title removed in favor of .page-header in style.css */
 
 /* 信息卡片 */
 .info-card {
@@ -288,76 +273,84 @@
     margin-bottom: var(--md3-spacing-xs);
 }
 
-/* 按钮组 */
-.button-group {
-    display: flex;
-    gap: var(--md3-spacing-md);
-    justify-content: flex-start;
-    align-items: center;
-    padding-top: var(--md3-spacing-lg);
-    border-top: 1px solid var(--md3-outline-variant);
-    margin-top: var(--md3-spacing-xl);
-}
-
-.btn {
-    padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
-    border: none;
-    border-radius: var(--md3-radius-md);
-    font-weight: 500;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--md3-spacing-sm);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
-}
-
-.btn-primary {
-    background: var(--md3-primary);
-    color: var(--md3-on-primary);
-}
-
-.btn-primary:hover {
-    background: var(--md3-primary-hover);
-    box-shadow: var(--md3-elevation-2);
-}
-
-.btn-success {
-    background: var(--md3-tertiary);
-    color: var(--md3-on-tertiary);
-}
-
-.btn-success:hover {
-    background: var(--md3-tertiary-hover);
-    box-shadow: var(--md3-elevation-2);
-}
-
-.btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--md3-primary-container);
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .button-group {
-        flex-direction: column;
-        align-items: stretch;
+.action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-2xl);
+        justify-content: flex-end;
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+        padding: 10px 24px;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+        padding: 10px 24px;
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        box-shadow: var(--md3-elevation-1);
     }
 
-    .btn {
-        justify-content: center;
+    .btn-primary .material-icons,
+    .btn-secondary .material-icons {
+        font-size: 1.125rem;
     }
-}
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+    
+        .action-buttons button, 
+        .action-buttons a {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="submit-container">
     <!-- 页面标题 -->
-    <div class="page-title">
+    <div class="page-header">
         <span class="material-icons">assignment</span>
-        <h1>{% if is_resubmission %}重新提交年审材料{% else %}提交年审材料{% endif %} - {{ club.name }}</h1>
+        <div class="page-header-content">
+            <h1>{% if is_resubmission %}重新提交年审材料{% else %}提交年审材料{% endif %}</h1>
+            <p class="subtitle">{{ club.name }}</p>
+        </div>
     </div>
 
     <!-- 错误信息 -->
@@ -587,223 +580,39 @@
             </div>
 
             <div class="form-grid">
-                <!-- 自查表 -->
-                {% if not is_resubmission or 'self_assessment_form' in rejected_materials %}
-                <div class="form-group">
-                    <label for="self_assessment_form">
-                        <span class="material-icons">assignment</span>
-                        自查表
-                        {% if is_resubmission %}
-                            {% for review in rejected_submission.submissionreview_set.all %}
-                                {% if 'self_assessment_form' in review.rejected_materials %}
-                                    <span style="color: var(--md3-error);">*</span>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span style="color: var(--md3-error);">*</span>
+                {% for req in requirements %}
+                    {% if not is_resubmission or req.id in rejected_req_ids or not req.is_required %}
+                    
+                    {% comment %} Prepare existing file object if resubmission {% endcomment %}
+                    {% if is_resubmission %}
+                        {% for req_id, file_info in existing_files.items %}
+                            {% if req_id == req.id %}
+                                {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description existing_file=file_info icon=req.icon|default:"folder" %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% comment %} If no existing file found in loop (should be rare if logic correct), just render upload {% endcomment %}
+                        {% if req.id not in existing_files %}
+                             {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon=req.icon|default:"folder" %}
                         {% endif %}
-                    </label>
-                    <input type="file" id="self_assessment_form" name="self_assessment_form" accept=".doc,.docx">
-                    {% if is_resubmission and rejected_submission.self_assessment_form %}
-                        <small>现有文件: <a href="{{ rejected_submission.self_assessment_form.url }}" target="_blank">{{ rejected_submission.self_assessment_form.name }}</a></small>
                     {% else %}
-                        <small>支持格式: Word (.doc, .docx)</small>
+                        {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon=req.icon|default:"folder" %}
                     {% endif %}
-                </div>
-                {% endif %}
 
-                <!-- 社团章程 -->
-                {% if not is_resubmission or 'club_constitution' in rejected_materials %}
-                <div class="form-group">
-                    <label for="club_constitution">
-                        <span class="material-icons">description</span>
-                        社团章程
-                        {% if is_resubmission %}
-                            {% for review in rejected_submission.submissionreview_set.all %}
-                                {% if 'club_constitution' in review.rejected_materials %}
-                                    <span style="color: var(--md3-error);">*</span>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span style="color: var(--md3-error);">*</span>
-                        {% endif %}
-                    </label>
-                    <input type="file" id="club_constitution" name="club_constitution" accept=".doc,.docx">
-                    {% if is_resubmission and rejected_submission.club_constitution %}
-                        <small>现有文件: <a href="{{ rejected_submission.club_constitution.url }}" target="_blank">{{ rejected_submission.club_constitution.name }}</a></small>
-                    {% else %}
-                        <small>支持格式: Word (.doc, .docx)</small>
                     {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- 负责人学习及工作情况表 -->
-                {% if not is_resubmission or 'leader_learning_work_report' in rejected_materials %}
-                <div class="form-group">
-                    <label for="leader_learning_work_report">
-                        <span class="material-icons">person</span>
-                        负责人学习及工作情况表
-                        {% if is_resubmission %}
-                            {% for review in rejected_submission.submissionreview_set.all %}
-                                {% if 'leader_learning_work_report' in review.rejected_materials %}
-                                    <span style="color: var(--md3-error);">*</span>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span style="color: var(--md3-error);">*</span>
-                        {% endif %}
-                    </label>
-                    <input type="file" id="leader_learning_work_report" name="leader_learning_work_report" accept=".doc,.docx">
-                    {% if is_resubmission and rejected_submission.leader_learning_work_report %}
-                        <small>现有文件: <a href="{{ rejected_submission.leader_learning_work_report.url }}" target="_blank">{{ rejected_submission.leader_learning_work_report.name }}</a></small>
-                    {% else %}
-                        <small>支持格式: Word (.doc, .docx)</small>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- 社团年度活动清单 -->
-                {% if not is_resubmission or 'annual_activity_list' in rejected_materials %}
-                <div class="form-group">
-                    <label for="annual_activity_list">
-                        <span class="material-icons">event_note</span>
-                        社团年度活动清单
-                        {% if is_resubmission %}
-                            {% for review in rejected_submission.submissionreview_set.all %}
-                                {% if 'annual_activity_list' in review.rejected_materials %}
-                                    <span style="color: var(--md3-error);">*</span>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span style="color: var(--md3-error);">*</span>
-                        {% endif %}
-                    </label>
-                    <input type="file" id="annual_activity_list" name="annual_activity_list" accept=".doc,.docx">
-                    {% if is_resubmission and rejected_submission.annual_activity_list %}
-                        <small>现有文件: <a href="{{ rejected_submission.annual_activity_list.url }}" target="_blank">{{ rejected_submission.annual_activity_list.name }}</a></small>
-                    {% else %}
-                        <small>支持格式: Word (.doc, .docx)</small>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- 指导教师履职情况表 -->
-                {% if not is_resubmission or 'advisor_performance_report' in rejected_materials %}
-                <div class="form-group">
-                    <label for="advisor_performance_report">
-                        <span class="material-icons">school</span>
-                        指导教师履职情况表
-                        {% if is_resubmission %}
-                            {% for review in rejected_submission.submissionreview_set.all %}
-                                {% if 'advisor_performance_report' in review.rejected_materials %}
-                                    <span style="color: var(--md3-error);">*</span>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span style="color: var(--md3-error);">*</span>
-                        {% endif %}
-                    </label>
-                    <input type="file" id="advisor_performance_report" name="advisor_performance_report" accept=".doc,.docx">
-                    {% if is_resubmission and rejected_submission.advisor_performance_report %}
-                        <small>现有文件: <a href="{{ rejected_submission.advisor_performance_report.url }}" target="_blank">{{ rejected_submission.advisor_performance_report.name }}</a></small>
-                    {% else %}
-                        <small>支持格式: Word (.doc, .docx)</small>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- 年度财务情况表 -->
-                {% if not is_resubmission or 'financial_report' in rejected_materials %}
-                <div class="form-group">
-                    <label for="financial_report">
-                        <span class="material-icons">attach_money</span>
-                        年度财务情况表
-                        {% if is_resubmission %}
-                            {% for review in rejected_submission.submissionreview_set.all %}
-                                {% if 'financial_report' in review.rejected_materials %}
-                                    <span style="color: var(--md3-error);">*</span>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span style="color: var(--md3-error);">*</span>
-                        {% endif %}
-                    </label>
-                    <input type="file" id="financial_report" name="financial_report" accept=".doc,.docx">
-                    {% if is_resubmission and rejected_submission.financial_report %}
-                        <small>现有文件: <a href="{{ rejected_submission.financial_report.url }}" target="_blank">{{ rejected_submission.financial_report.name }}</a></small>
-                    {% else %}
-                        <small>支持格式: Word (.doc, .docx)</small>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- 社团成员构成表 -->
-                {% if not is_resubmission or 'member_composition_list' in rejected_materials %}
-                <div class="form-group">
-                    <label for="member_composition_list">
-                        <span class="material-icons">group</span>
-                        社团成员构成表
-                        {% if is_resubmission %}
-                            {% for review in rejected_submission.submissionreview_set.all %}
-                                {% if 'member_composition_list' in review.rejected_materials %}
-                                    <span style="color: var(--md3-error);">*</span>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span style="color: var(--md3-error);">*</span>
-                        {% endif %}
-                    </label>
-                    <input type="file" id="member_composition_list" name="member_composition_list" accept=".doc,.docx">
-                    {% if is_resubmission and rejected_submission.member_composition_list %}
-                        <small>现有文件: <a href="{{ rejected_submission.member_composition_list.url }}" target="_blank">{{ rejected_submission.member_composition_list.name }}</a></small>
-                    {% else %}
-                        <small>支持格式: Word (.doc, .docx)</small>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- 新媒体账号及运维情况表 -->
-                <div class="form-group">
-                    <label for="new_media_account_report">
-                        <span class="material-icons">smartphone</span>
-                        新媒体账号及运维情况表
-                        <small style="color: var(--md3-on-surface-variant);"> (可选)</small>
-                    </label>
-                    <input type="file" id="new_media_account_report" name="new_media_account_report" accept=".doc,.docx">
-                    {% if is_resubmission and rejected_submission.new_media_account_report %}
-                        <small>现有文件: <a href="{{ rejected_submission.new_media_account_report.url }}" target="_blank">{{ rejected_submission.new_media_account_report.name }}</a></small>
-                    {% else %}
-                        <small>支持格式: Word (.doc, .docx)</small>
-                    {% endif %}
-                </div>
-
-                <!-- 其他材料 -->
-                {% if not is_resubmission or 'other_materials' in rejected_materials %}
-                <div class="form-group">
-                    <label for="other_materials">
-                        其他材料
-                        <small style="color: var(--md3-on-surface-variant);"> (可选)</small>
-                    </label>
-                    <input type="file" id="other_materials" name="other_materials" accept=".doc,.docx">
-                    {% if is_resubmission and rejected_submission.other_materials %}
-                        <small>现有文件: <a href="{{ rejected_submission.other_materials.url }}" target="_blank">{{ rejected_submission.other_materials.name }}</a></small>
-                    {% else %}
-                        <small>支持格式: Word (.doc, .docx)</small>
-                    {% endif %}
-                </div>
-                {% endif %}
+                {% endfor %}
             </div>
 
             <!-- 按钮组 -->
-            <div class="button-group">
-                <button type="submit" class="btn btn-success">
-                    <span class="material-icons">send</span>
+            <div class="action-buttons">
+                <a href="{% url 'clubs:club_detail' club.id %}" class="btn-secondary">
+                    <span class="material-icons">arrow_back</span>
+                    返回
+                </a>
+                <button type="submit" class="btn-primary">
+                    <span class="material-icons">check_circle</span>
                     提交审核
                 </button>
-                <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-primary">
-                    <span class="material-icons">arrow_back</span>
-                    返回社团详情
-                </a>
             </div>
         </form>
     </div>

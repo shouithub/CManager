@@ -2,423 +2,209 @@
 
 {% block title %}审核年度审查材料{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-    /* MD3 审核页面样式 */
+    /* ===== MD3 完整重构 - 年审页面 ===== */
+    
+    :root {
+        --md3-spacing-xs: 4px;
+        --md3-spacing-sm: 8px;
+        --md3-spacing-md: 12px;
+        --md3-spacing-lg: 16px;
+        --md3-spacing-xl: 24px;
+        --md3-spacing-2xl: 32px;
+    }
+    
+    body {
+        background: var(--md3-surface);
+    }
+
     .review-container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: var(--md3-spacing-xl);
-        padding-bottom: calc(var(--md3-spacing-xl) + 100px);
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+        box-sizing: border-box;
     }
     
-    .review-header {
-        padding: var(--md3-spacing-xl);
-        margin-bottom: var(--md3-spacing-xl);
-    }
-    }
-    
-    .review-header h1 {
-        margin: 0 0 var(--md3-spacing-sm) 0;
-        color: var(--md3-on-surface);
-        font-size: 1.75rem;
-        font-weight: 400;
-        line-height: 2.25rem;
-        letter-spacing: 0;
+    /* ===== 页面顶部标题 ===== */
+    .page-header {
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl) var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
     }
     
-    .info-card {
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
+    
+    /* ===== 卡片容器 MD3 风格 ===== */
+    .card {
         background: var(--md3-surface-container-low);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
         margin-bottom: var(--md3-spacing-xl);
         box-shadow: var(--md3-elevation-1);
+        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
         border: 1px solid var(--md3-outline-variant);
     }
     
+    .card:hover {
+        box-shadow: var(--md3-elevation-3);
+        background: var(--md3-surface-container);
+    }
+    
+    /* ===== 卡片标题 ===== */
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
+    
+    .card-header .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
+    
+    /* ===== 信息网格布局 ===== */
     .info-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: var(--md3-spacing-md);
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-lg);
     }
     
     .info-item {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md);
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-md);
+        border: 1px solid var(--md3-outline-variant);
+        transition: all 0.2s ease;
+    }
+    
+    .info-item:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+        transform: translateY(-1px);
+        box-shadow: var(--md3-elevation-1);
     }
     
     .info-label {
-        color: var(--md3-on-surface-variant);
-        font-size: 12px;
+        font-size: 0.75rem;
         font-weight: 500;
+        color: var(--md3-on-surface-variant);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     
     .info-value {
-        color: var(--md3-on-surface);
-        font-size: 14px;
+        font-size: 1rem;
         font-weight: 500;
+        color: var(--md3-on-surface);
+        word-break: break-word;
+        line-height: 1.5;
     }
     
-    .staff-chip {
+    /* ===== 状态徽章 ===== */
+    .status-badge {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        background: var(--md3-info-container);
-        color: var(--md3-on-info-container);
-        padding: 8px 16px;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
         border-radius: var(--md3-radius-full);
-        font-size: 13px;
-        font-weight: 500;
-        margin-top: var(--md3-spacing-md);
-    }
-    
-    .materials-section {
-        background: var(--md3-surface-container-lowest);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-xl);
-        margin-bottom: var(--md3-spacing-xl);
+        font-size: 0.875rem;
+        font-weight: 600;
+        width: fit-content;
         box-shadow: var(--md3-elevation-1);
     }
     
-    .section-title {
-        color: var(--md3-on-surface);
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0 0 var(--md3-spacing-lg) 0;
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-        padding-bottom: var(--md3-spacing-md);
-        border-bottom: 2px solid var(--md3-outline-variant);
-    }
-    
-    .materials-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: var(--md3-spacing-md);
-    }
-    
-    .material-card {
-        background: var(--md3-surface-container);
-        border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-lg);
-        transition: all 0.2s ease;
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-md);
-    }
-    
-    .material-card:hover {
-        background: var(--md3-surface-container-high);
-        box-shadow: var(--md3-elevation-2);
-        transform: translateY(-2px);
-    }
-    
-    .material-title {
-        color: var(--md3-on-surface);
-        font-size: 14px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 0;
-    }
-    
-    .material-title .material-icons {
-        font-size: 20px;
-        color: var(--md3-primary);
-    }
-    
-    .download-btn {
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
-        border: none;
-        border-radius: var(--md3-radius-md);
-        padding: 10px 20px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-    
-    .download-btn:hover {
-        background: var(--md3-primary-dim);
-        box-shadow: var(--md3-elevation-2);
-    }
-    
-    /* 预览按钮样式 */
-    .preview-btn {
-        background: var(--md3-secondary);
-        color: var(--md3-on-secondary);
-        border: none;
-        border-radius: var(--md3-radius-md);
-        padding: 10px 20px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-    
-    .preview-btn:hover {
-        background: var(--md3-secondary-dim);
-        box-shadow: var(--md3-elevation-2);
-    }
-    
-    /* 文件操作按钮容器 */
-    .file-actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-    
-    .file-actions .preview-btn,
-    .file-actions .download-btn {
-        flex: 1;
-        min-width: 120px;
-    }
-    
-    .review-records-section {
-        background: var(--md3-surface-container-lowest);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-xl);
-        margin-bottom: var(--md3-spacing-xl);
-        box-shadow: var(--md3-elevation-1);
-    }
-    
-    .data-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-md);
-        overflow: hidden;
-        box-shadow: var(--md3-elevation-1);
-    }
-    
-    .data-table thead {
-        background: var(--md3-surface-container-high);
-    }
-    
-    .data-table th {
-        color: var(--md3-on-surface-variant);
-        font-weight: 600;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 12px 16px;
-        text-align: left;
-        border-bottom: 2px solid var(--md3-outline-variant);
-    }
-    
-    .data-table td {
-        color: var(--md3-on-surface);
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--md3-outline-variant);
-    }
-    
-    .data-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-    
-    .data-table tbody tr:hover {
-        background: var(--md3-surface-container-low);
-    }
-    
-    .review-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 12px;
-        border-radius: var(--md3-radius-full);
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    
-    .review-badge.approved {
-        background: var(--md3-success-container);
-        color: var(--md3-on-success-container);
-    }
-    
-    .review-badge.rejected {
-        background: var(--md3-error-container);
-        color: var(--md3-on-error-container);
-    }
-    
-    .review-badge.pending {
+    .status-badge.pending {
         background: var(--md3-warning-container);
         color: var(--md3-on-warning-container);
     }
     
-    .review-stats {
-        margin-top: var(--md3-spacing-md);
-        padding: var(--md3-spacing-md);
-        background: var(--md3-surface-container-low);
-        border-radius: var(--md3-radius-md);
-        color: var(--md3-on-surface-variant);
-        font-size: 14px;
+    .status-badge.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
     }
     
-    .review-form-section {
-        background: var(--md3-surface-container-lowest);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-xl);
-        margin-bottom: var(--md3-spacing-xl);
-        box-shadow: var(--md3-elevation-1);
-    }
-    
-    .form-group {
-        margin-bottom: var(--md3-spacing-lg);
-    }
-    
-    .form-label {
-        display: block;
-        color: var(--md3-on-surface);
-        font-weight: 500;
-        margin-bottom: var(--md3-spacing-sm);
-        font-size: 14px;
-    }
-    
-    .form-select, .form-textarea {
-        width: 100%;
-        padding: 12px 16px;
-        background: var(--md3-surface-container);
-        border: 1px solid var(--md3-outline);
-        border-radius: var(--md3-radius-md);
-        color: var(--md3-on-surface);
-        font-family: inherit;
-        font-size: 14px;
-        transition: all 0.2s ease;
-    }
-    
-    .form-select:focus, .form-textarea:focus {
-        outline: none;
-        border-color: var(--md3-primary);
-        box-shadow: 0 0 0 3px var(--md3-primary-container);
-    }
-    
-    .form-textarea {
-        resize: vertical;
-        min-height: 100px;
-    }
-    
-    .rejected-materials-panel {
+    .status-badge.rejected {
         background: var(--md3-error-container);
-        border: 2px solid var(--md3-error);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-lg);
-        margin-top: var(--md3-spacing-md);
-        display: none;
-    }
-    
-    .rejected-materials-panel h5 {
         color: var(--md3-on-error-container);
-        margin: 0 0 var(--md3-spacing-md) 0;
-        font-size: 16px;
-        font-weight: 600;
     }
     
-    .checkbox-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: var(--md3-spacing-md);
+    .status-badge .material-icons {
+        font-size: 1rem;
     }
     
-    .checkbox-label {
-        display: flex;
+    /* ===== 干事芯片 ===== */
+    .staff-chip {
+        display: inline-flex;
         align-items: center;
         gap: var(--md3-spacing-sm);
-        color: var(--md3-on-error-container);
-        font-size: 14px;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: var(--md3-radius-sm);
-        transition: background 0.2s ease;
-    }
-    
-    .checkbox-label:hover {
-        background: rgba(0,0,0,0.05);
-    }
-    
-    .checkbox-label input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-    }
-    
-    .action-buttons {
-        display: flex;
-        gap: var(--md3-spacing-md);
-        margin-top: var(--md3-spacing-xl);
-    }
-    
-    .btn-primary {
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
-        border: none;
-        padding: 12px 32px;
+        background: var(--md3-info-container);
+        color: var(--md3-on-info-container);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
         border-radius: var(--md3-radius-full);
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .btn-primary:hover {
-        background: var(--md3-primary-dim);
-        box-shadow: var(--md3-elevation-2);
-    }
-    
-    .btn-secondary {
-        background: var(--md3-surface-container-high);
-        color: var(--md3-on-surface);
-        border: 1px solid var(--md3-outline);
-        padding: 12px 32px;
-        border-radius: var(--md3-radius-full);
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .btn-secondary:hover {
-        background: var(--md3-surface-container-highest);
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-top: var(--md3-spacing-lg);
         box-shadow: var(--md3-elevation-1);
     }
     
+    .staff-chip .material-icons {
+        font-size: 1.125rem;
+    }
+    
+    /* ===== 详细信息 ===== */
+    .detail-item {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-lg);
+    }
+    
+    /* ===== 状态显示卡片===== */
     .status-display {
         background: var(--md3-surface-container-low);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
         box-shadow: var(--md3-elevation-1);
+        border: 1px solid var(--md3-outline-variant);
     }
     
     .status-display p {
         margin: var(--md3-spacing-md) 0;
         color: var(--md3-on-surface);
-        font-size: 14px;
+        font-size: 1rem;
+        line-height: 1.6;
     }
     
     .status-display strong {
@@ -426,13 +212,69 @@
         font-weight: 600;
     }
     
+    /* ===== 操作按钮 ===== */
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-xl);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-full);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.2, 0.0, 0.1, 1);
+        text-decoration: none;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary:active {
+        transform: translateY(0);
+        box-shadow: var(--md3-elevation-0);
+    }
+    
+    .btn-secondary .material-icons {
+        font-size: 1.125rem;
+    }
+    
+    /* ===== 响应式设计 ===== */
     @media (max-width: 768px) {
         .review-container {
             padding: var(--md3-spacing-md);
+            padding-bottom: calc(var(--md3-spacing-md) + 100px);
         }
         
-        .materials-grid {
-            grid-template-columns: 1fr;
+        .page-header {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .page-header .material-icons {
+            font-size: 2rem;
+        }
+        
+        .card {
+            padding: var(--md3-spacing-lg);
         }
         
         .info-grid {
@@ -446,21 +288,26 @@
         .action-buttons button,
         .action-buttons a {
             width: 100%;
-            justify-content: center;
         }
     }
 </style>
+{% endblock %}
+
+{% block content %}
 
 <div class="review-container">
-    <div class="review-header">
-        <h1>
-            <span class="material-icons">assignment</span>
-            审核年度审查材料
-        </h1>
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <span class="material-icons">assignment</span>
+        <h1>审核年度审查材料</h1>
     </div>
 
     <!-- 基本信息卡片 -->
-    <div class="info-card">
+    <div class="card">
+        <div class="card-header">
+            <span class="material-icons">info</span>
+            <h2>基本信息</h2>
+        </div>
         <div class="info-grid">
             <div class="info-item">
                 <span class="info-label">社团名称</span>
@@ -473,28 +320,35 @@
             <div class="info-item">
                 <span class="info-label">提交次数</span>
                 <span class="info-value">
-                    第 {{ submission.resubmission_attempt }} 次提交
+                    第{{ submission.resubmission_attempt }} 次提交
                     {% if submission.resubmission_attempt > 1 %}
-                        <span style="color: var(--md3-error);">(已重新提交)</span>
+                        <span style="color: var(--md3-error); font-weight: 600;">(已重新提交)</span>
                     {% endif %}
                 </span>
             </div>
             <div class="info-item">
                 <span class="info-label">当前状态</span>
                 <span class="info-value">
-                    <span class="review-badge {{ submission.status }}">{{ submission.get_status_display }}</span>
+                    <span class="status-badge {{ submission.status }}">
+                        <span class="material-icons">
+                            {% if submission.status == 'approved' %}check_circle
+                            {% elif submission.status == 'rejected' %}cancel
+                            {% else %}schedule{% endif %}
+                        </span>
+                        {{ submission.get_status_display }}
+                    </span>
                 </span>
             </div>
         </div>
         <div class="staff-chip">
-            <span class="material-icons" style="font-size: 16px;">assignment_ind</span>
+            <span class="material-icons">assignment_ind</span>
             <span>
                 负责干事: 
                 {% if submission.club %}
                     {% for relation in submission.club.responsible_staff.all %}
                         {% if relation.is_active %}
                             {% if relation.staff.real_name %}
-                                {{ relation.staff.real_name }} (用户名: {{ relation.staff.user.username }})
+                                {{ relation.staff.real_name }} ({{ relation.staff.user.username }})
                             {% elif relation.staff.user.username %}
                                 {{ relation.staff.user.username }}
                             {% else %}
@@ -512,229 +366,38 @@
         </div>
     </div>
 
-    <!-- 提交材料区域 -->
-    <div class="materials-section">
-        <h2 class="section-title">
-            <span class="material-icons">folder_open</span>
-            提交的材料
-        </h2>
-        <div class="materials-grid">
-            <!-- 自查表 -->
-            {% if submission.self_assessment_form %}
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">fact_check</span>
-                    社团自查表
-                </p>
-                <div class="file-actions">
-                    <a href="{{ submission.self_assessment_form.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ submission.self_assessment_form.url }}', '社团自查表')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- 社团章程 -->
-            {% if submission.club_constitution %}
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">description</span>
-                    社团章程
-                </p>
-                <div class="file-actions">
-                    <a href="{{ submission.club_constitution.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ submission.club_constitution.url }}', '社团章程')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- 负责人学习及工作情况表 -->
-            {% if submission.leader_learning_work_report %}
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">person</span>
-                    负责人学习及工作情况表
-                </p>
-                <div class="file-actions">
-                    <a href="{{ submission.leader_learning_work_report.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ submission.leader_learning_work_report.url }}', '负责人学习及工作情况表')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- 社团年度活动清单 -->
-            {% if submission.annual_activity_list %}
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">event_note</span>
-                    社团年度活动清单
-                </p>
-                <div class="file-actions">
-                    <a href="{{ submission.annual_activity_list.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ submission.annual_activity_list.url }}', '社团年度活动清单')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- 指导教师履职情况表 -->
-            {% if submission.advisor_performance_report %}
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">school</span>
-                    指导教师履职情况表
-                </p>
-                <div class="file-actions">
-                    <a href="{{ submission.advisor_performance_report.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ submission.advisor_performance_report.url }}', '指导教师履职情况表')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- 年度财务情况表 -->
-            {% if submission.financial_report %}
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">account_balance</span>
-                    年度财务情况表
-                </p>
-                <div class="file-actions">
-                    <a href="{{ submission.financial_report.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ submission.financial_report.url }}', '年度财务情况表')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- 社团成员构成表 -->
-            {% if submission.member_composition_list %}
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">group</span>
-                    社团成员构成表
-                </p>
-                <div class="file-actions">
-                    <a href="{{ submission.member_composition_list.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ submission.member_composition_list.url }}', '社团成员构成表')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- 新媒体账号及运维情况表 -->
-            {% if submission.new_media_account_report %}
-            <div class="material-card">
-                <p class="material-title">
-                    新媒体账号及运维情况表
-                </p>
-                <div class="file-actions">
-                    <a href="{{ submission.new_media_account_report.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ submission.new_media_account_report.url }}', '新媒体账号汇总表')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- 其他材料 -->
-            {% if submission.other_materials %}
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">attach_file</span>
-                    其他材料
-                </p>
-                <a href="{{ submission.other_materials.url }}" class="download-btn" download>
-                    下载文件
-                </a>
-            </div>
-            {% endif %}
-        </div>
-        
-        <!-- 合并下载按钮 -->
-        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd; display: flex; gap: 10px;">
-            <a href="{% url 'clubs:zip_review_docs' submission.id %}" class="download-btn" style="flex: 1; text-align: center;">
-                🗜️ 打包所有材料为ZIP文件
-            </a>
-        </div>
-    </div>
+    <!-- 附件材料展示组件 -->
+    {% include 'clubs/components/_materials_display.html' with materials=materials title="提交的材料" show_zip=False %}
 
-    <!-- 审核记录区域 -->
-    <div class="review-records-section">
-        <h2 class="section-title">
-            <span class="material-icons">history</span>
-            审核记录
-        </h2>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>审核人</th>
-                    <th>审核结果</th>
-                    <th>审核时间</th>
-                    <th>审核意见</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if existing_reviews %}
-                    {% for review in existing_reviews %}
-                    <tr>
-                        <td>{% if review.reviewer %}{{ review.reviewer.username|default:"未设置" }}{% else %}未设置{% endif %}</td>
-                        <td>
-                            <span class="review-badge {{ review.status }}">{{ review.get_status_display|default:"未设置" }}</span>
-                        </td>
-                        <td>{{ review.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</td>
-                        <td>{{ review.comment|default:"无" }}</td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: var(--md3-on-surface-variant);">暂无审核记录</td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-        <div class="review-stats">
-            当前已有 <strong>{{ approved_count }}</strong> 人批准，<strong>{{ rejected_count }}</strong> 人拒绝
-        </div>
-    </div>
+    <!-- 审核记录时间轴组件 -->
+    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews approved_count=approved_count rejected_count=rejected_count title="审核记录" %}
 
     <!-- 审核表单或状态显示 -->
     {% if submission.status == 'pending' and not has_reviewed %}
-    {% include 'clubs/components/review_form.html' with show_rejected_materials=True materials_list=submission_materials cancel_url='clubs:staff_audit_center' cancel_url_args='annual_review' %}
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=True materials_list=materials cancel_url='clubs:staff_audit_center' cancel_url_args='annual_review' approve_text="通过审核" reject_text="驳回材料" title="年审审核" %}
     {% else %}
-    <div class="status-display">
-        <p><strong>审核状态:</strong> <span class="review-badge {{ submission.status }}">{{ submission.get_status_display }}</span></p>
+    <div class="card status-display">
+        <div class="card-header">
+            <span class="material-icons">info</span>
+            <h2>审核状态</h2>
+        </div>
+        <p>
+            <strong>审核状态：</strong>
+            <span class="status-badge {{ submission.status }}">
+                <span class="material-icons">
+                    {% if submission.status == 'approved' %}check_circle
+                    {% elif submission.status == 'rejected' %}cancel
+                    {% else %}schedule{% endif %}
+                </span>
+                {{ submission.get_status_display }}
+            </span>
+        </p>
         {% if submission.reviewed_at %}
-        <p><strong>审核时间:</strong> {{ submission.reviewed_at|date:"Y-m-d H:i" }}</p>
+        <p><strong>审核时间：</strong>{{ submission.reviewed_at|date:"Y-m-d H:i" }}</p>
         {% endif %}
         <div class="action-buttons">
             <a href="{% url 'clubs:staff_audit_center' 'annual_review' %}" class="btn-secondary">
-                <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+                <span class="material-icons">arrow_back</span>
                 返回列表
             </a>
         </div>
@@ -743,24 +406,29 @@
 </div>
 
 <script>
-function previewFile(fileUrl, fileName) {
-    // 获取当前域名
-    const currentDomain = window.location.origin;
-    
-    // 如果文件URL是相对路径，转换为完整URL
-    let fullUrl = fileUrl;
-    if (fileUrl.startsWith('/')) {
-        fullUrl = currentDomain + fileUrl;
-    } else if (!fileUrl.startsWith('http')) {
-        fullUrl = currentDomain + '/' + fileUrl;
+// 文件预览功能
+if (typeof previewFile === 'undefined') {
+    function previewFile(fileUrl, fileName) {
+        const currentDomain = window.location.origin;
+        let fullUrl = fileUrl;
+        if (fileUrl.startsWith('/')) {
+            fullUrl = currentDomain + fileUrl;
+        } else if (!fileUrl.startsWith('http')) {
+            fullUrl = currentDomain + '/' + fileUrl;
+        }
+        
+        const officeExtensions = ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'];
+        const fileExtension = fullUrl.toLowerCase().substring(fullUrl.lastIndexOf('.'));
+        
+        if (officeExtensions.includes(fileExtension)) {
+            const officePreviewUrl = 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(fullUrl);
+            window.open(officePreviewUrl, '_blank');
+        } else if (fileExtension === '.pdf') {
+            window.open(fullUrl, '_blank');
+        } else {
+            window.open(fullUrl, '_blank');
+        }
     }
-    
-    // 使用 Office 365 Online 预览服务
-    const encodedUrl = encodeURIComponent(fullUrl);
-    const previewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
-    
-    // 在新标签页打开
-    window.open(previewUrl, '_blank');
 }
 </script>
 

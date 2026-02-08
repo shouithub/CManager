@@ -3,101 +3,575 @@
 
 {% block title %}审核报销申请{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-    /* 复用之前的MD3样式 */
-    .review-container { max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-xl); padding-bottom: calc(var(--md3-spacing-xl) + 100px); }
-    .review-header { padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); }
-    .review-header h1 { margin: 0; color: var(--md3-on-surface); font-size: 1.75rem; font-weight: 400; line-height: 2.25rem; letter-spacing: 0; display: flex; align-items: center; gap: var(--md3-spacing-md); }
-    .info-card { background: var(--md3-surface-container-low); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); border: 1px solid var(--md3-outline-variant); }
-    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--md3-spacing-md); }
-    .info-item { display: flex; flex-direction: column; gap: 4px; }
-    .info-label { color: var(--md3-on-surface-variant); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-    .info-value { color: var(--md3-on-surface); font-size: 14px; font-weight: 500; }
-    .staff-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--md3-info-container); color: var(--md3-on-info-container); padding: 8px 16px; border-radius: var(--md3-radius-full); font-size: 13px; font-weight: 500; margin-top: var(--md3-spacing-md); }
+    /* ===== MD3 完整重构 ===== */
     
-    .amount-card { background: var(--md3-tertiary-container); border-left: 4px solid var(--md3-tertiary); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
-    .amount-card h2 { margin: 0 0 var(--md3-spacing-lg) 0; color: var(--md3-on-tertiary-container); font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: var(--md3-spacing-md); }
-    .amount-table { width: 100%; }
-    .amount-table tr { border-bottom: 1px solid rgba(0,0,0,0.1); }
-    .amount-table tr:last-child { border-bottom: none; }
-    .amount-table td { padding: 12px 0; color: var(--md3-on-tertiary-container); }
-    .amount-table td:first-child { font-weight: 600; width: 30%; }
+    :root {
+        /* MD3 间距系统 */
+        --md3-spacing-xs: 4px;
+        --md3-spacing-sm: 8px;
+        --md3-spacing-md: 12px;
+        --md3-spacing-lg: 16px;
+        --md3-spacing-xl: 24px;
+        --md3-spacing-2xl: 32px;
+    }
     
-    .materials-section { background: var(--md3-surface-container-lowest); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
-    .section-title { color: var(--md3-on-surface); font-size: 18px; font-weight: 600; margin: 0 0 var(--md3-spacing-lg) 0; display: flex; align-items: center; gap: var(--md3-spacing-md); padding-bottom: var(--md3-spacing-md); border-bottom: 2px solid var(--md3-outline-variant); }
-    .materials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--md3-spacing-md); }
-    .material-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-lg); transition: all 0.2s ease; display: flex; flex-direction: column; gap: var(--md3-spacing-md); }
-    .material-card:hover { background: var(--md3-surface-container-high); box-shadow: var(--md3-elevation-2); transform: translateY(-2px); }
-    .material-title { color: var(--md3-on-surface); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; margin: 0; }
-    .material-title .material-icons { font-size: 20px; color: var(--md3-primary); }
-    .download-btn { background: var(--md3-primary); color: var(--md3-on-primary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .download-btn:hover { background: var(--md3-primary-dim); box-shadow: var(--md3-elevation-2); }
+    body {
+        background: var(--md3-surface);
+    }
+
+    .review-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+        box-sizing: border-box;
+    }
     
-    /* 预览按钮样式 */
-    .preview-btn { background: var(--md3-secondary); color: var(--md3-on-secondary); border: none; border-radius: var(--md3-radius-md); padding: 10px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .preview-btn:hover { background: var(--md3-secondary-dim); box-shadow: var(--md3-elevation-2); }
+    /* ===== 页面顶部标题 ===== */
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl) var(--md3-spacing-2xl);
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
     
-    /* 文件操作按钮容器 */
-    .file-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .file-actions .preview-btn, .file-actions .download-btn { flex: 1; min-width: 120px; }
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
     
-    .review-records-section { background: var(--md3-surface-container-lowest); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
-    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--md3-surface-container); border-radius: var(--md3-radius-md); overflow: hidden; box-shadow: var(--md3-elevation-1); }
-    .data-table thead { background: var(--md3-surface-container-high); }
-    .data-table th { color: var(--md3-on-surface-variant); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--md3-outline-variant); }
-    .data-table td { color: var(--md3-on-surface); padding: 12px 16px; border-bottom: 1px solid var(--md3-outline-variant); }
-    .data-table tbody tr:last-child td { border-bottom: none; }
-    .data-table tbody tr:hover { background: var(--md3-surface-container-low); }
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
     
-    .review-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: var(--md3-radius-full); font-size: 12px; font-weight: 600; text-transform: uppercase; }
-    .review-badge.approved { background: var(--md3-success-container); color: var(--md3-on-success-container); }
-    .review-badge.rejected { background: var(--md3-error-container); color: var(--md3-on-error-container); }
-    .review-badge.pending { background: var(--md3-warning-container); color: var(--md3-on-warning-container); }
-    .review-stats { margin-top: var(--md3-spacing-md); padding: var(--md3-spacing-md); background: var(--md3-surface-container-low); border-radius: var(--md3-radius-md); color: var(--md3-on-surface-variant); font-size: 14px; }
+    /* ===== 卡片容器 MD3 风格 ===== */
+    .card {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
+        border: 1px solid var(--md3-outline-variant);
+    }
     
-    .review-form-section { background: var(--md3-surface-container-lowest); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); margin-bottom: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
-    .form-group { margin-bottom: var(--md3-spacing-lg); }
-    .form-label { display: block; color: var(--md3-on-surface); font-weight: 500; margin-bottom: var(--md3-spacing-sm); font-size: 14px; }
-    .form-select, .form-textarea { width: 100%; padding: 12px 16px; background: var(--md3-surface-container); border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-md); color: var(--md3-on-surface); font-family: inherit; font-size: 14px; transition: all 0.2s ease; }
-    .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--md3-primary); box-shadow: 0 0 0 3px var(--md3-primary-container); }
-    .form-textarea { resize: vertical; min-height: 100px; }
+    .card:hover {
+        box-shadow: var(--md3-elevation-3);
+        background: var(--md3-surface-container);
+    }
     
-    .action-buttons { display: flex; gap: var(--md3-spacing-md); margin-top: var(--md3-spacing-xl); }
-    .btn-primary { background: var(--md3-primary); color: var(--md3-on-primary); border: none; padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
-    .btn-primary:hover { background: var(--md3-primary-dim); box-shadow: var(--md3-elevation-2); }
-    .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border: 1px solid var(--md3-outline); padding: 12px 32px; border-radius: var(--md3-radius-full); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-    .btn-secondary:hover { background: var(--md3-surface-container-highest); box-shadow: var(--md3-elevation-1); }
-    .status-display { background: var(--md3-surface-container-low); border-radius: var(--md3-radius-lg); padding: var(--md3-spacing-xl); box-shadow: var(--md3-elevation-1); }
-    .status-display p { margin: var(--md3-spacing-md) 0; color: var(--md3-on-surface); font-size: 14px; }
-    .status-display strong { color: var(--md3-on-surface-variant); font-weight: 600; }
+    /* ===== 卡片标题 ===== */
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 2px solid var(--md3-outline-variant);
+    }
     
+    .card-header .material-icons {
+        font-size: 1.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
+    
+    /* ===== 信息网格布局 ===== */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md);
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-md);
+        border: 1px solid var(--md3-outline-variant);
+        transition: all 0.2s ease;
+    }
+    
+    .info-item:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+    }
+    
+    .info-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        word-break: break-word;
+        line-height: 1.5;
+    }
+    
+    /* ===== 状态徽章 ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 600;
+        width: fit-content;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .status-badge.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+    
+    .status-badge.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+    
+    .status-badge.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    
+    .status-badge .material-icons {
+        font-size: 1rem;
+    }
+    
+    /* ===== 详细信息网格布局 ===== */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
+    }
+    
+    .detail-item:hover {
+        background: var(--md3-surface-container-high);
+        border-color: var(--md3-primary);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-2px);
+    }
+    
+    .detail-label {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .detail-label .material-icons {
+        font-size: 1rem;
+        color: var(--md3-primary);
+    }
+    
+    .detail-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        word-break: break-word;
+        line-height: 1.6;
+    }
+    
+    /* ===== 详情描述部分 ===== */
+    .detail-section {
+        margin-top: var(--md3-spacing-xl);
+        padding-top: var(--md3-spacing-xl);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .detail-section .detail-label.full-width {
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .detail-description {
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        line-height: 1.8;
+        word-break: break-word;
+        white-space: pre-wrap;
+    }
+    
+    /* ===== 附件网格 ===== */
+    .material-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: var(--md3-spacing-lg);
+    }
+    
+    .material-card {
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
+        cursor: default;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .material-card:hover {
+        background: var(--md3-surface-container-high);
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-4px);
+        border-color: var(--md3-primary);
+    }
+    
+    .material-icon {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+    
+    .material-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        margin: 0;
+    }
+    
+    .material-filename {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        margin: 0;
+        word-break: break-all;
+        line-height: 1.4;
+    }
+    
+    /* ===== 文件操作 ===== */
+    .file-actions {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+        width: 100%;
+    }
+    
+    .file-actions .download-btn,
+    .file-actions .preview-btn {
+        flex: 1;
+        margin: 0;
+    }
+    
+    .file-actions .download-btn:only-child {
+        flex: 1;
+        width: 100%;
+    }
+    
+    /* ===== 下载和预览按钮 ===== */
+    .download-btn,
+    .preview-btn {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-xs);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .download-btn:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .preview-btn {
+        background: var(--md3-secondary);
+        color: var(--md3-on-secondary);
+    }
+    
+    .preview-btn:hover {
+        background: var(--md3-secondary-dim);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    /* ===== 表单元素 ===== */
+    .form-group {
+        margin-bottom: var(--md3-spacing-lg);
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        letter-spacing: 0;
+    }
+    
+    .form-select,
+    .form-textarea {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+        transition: all 0.2s ease;
+    }
+    
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+        background: var(--md3-surface-container-highest);
+    }
+    
+    .form-textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    /* ===== 按钮 ===== */
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        justify-content: flex-end;
+        margin-top: var(--md3-spacing-2xl);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-full);
+        border: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+    
+    .btn-primary:hover {
+        background: var(--md3-primary-dim);
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--md3-surface-container-highest);
+        box-shadow: var(--md3-elevation-2);
+    }
+    
+    .btn .material-icons {
+        font-size: 1.25rem;
+    }
+    
+    /* ===== 响应式设计 ===== */
     @media (max-width: 768px) {
-        .review-container { padding: var(--md3-spacing-md); padding-bottom: calc(var(--md3-spacing-md) + 100px); }
-        .materials-grid, .info-grid { grid-template-columns: 1fr; }
-        .action-buttons { flex-direction: column; }
-        .action-buttons button, .action-buttons a { width: 100%; justify-content: center; }
+        .review-container {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+            padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        }
+        
+        .card {
+            padding: var(--md3-spacing-lg);
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .material-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .file-actions {
+            flex-direction: column;
+        }
+    }
+    
+    /* ===== 暗色主题适配 ===== */
+    @media (prefers-color-scheme: dark) {
+        .card {
+            background: var(--md3-surface-container);
+        }
+        
+        .info-item {
+            background: var(--md3-surface-container-low);
+        }
+    }
+    
+    /* ===== 决策按钮样式 ===== */
+    .review-decision-buttons {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        justify-content: center;
+    }
+
+    .decision-btn {
+        flex: 1;
+        padding: 16px 24px;
+        border: 2px solid var(--md3-outline);
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: var(--md3-surface-container);
+        color: var(--md3-on-surface);
+    }
+
+    .decision-btn:hover {
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-2px);
+    }
+
+    .decision-btn.approve-btn {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+        border-color: var(--md3-success);
+    }
+
+    .decision-btn.reject-btn {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border-color: var(--md3-error);
+    }
+
+    .decision-btn.expanded {
+        flex: 0 1 70%;
+        padding: 20px 32px;
+        font-size: 18px;
+    }
+
+    .decision-btn.expanded .material-icons {
+        font-size: 24px;
+    }
+
+    .decision-btn .material-icons {
+        font-size: 20px;
     }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="review-container">
-    <div class="review-header">
-        <h1>
-            <span class="material-icons">account_balance_wallet</span>
-            审核报销申请
-        </h1>
+    <!-- ===== 页面顶部标题 ===== -->
+    <div class="page-header">
+        <span class="material-icons">account_balance_wallet</span>
+        <h1>审核报销申请</h1>
     </div>
-
-    <!-- 基本信息卡片 -->
-    <div class="info-card">
+    
+    <!-- ===== 基本信息卡片 ===== -->
+    <div class="card">
+        <div class="card-header">
+            <span class="material-icons">info</span>
+            <h2>基本信息</h2>
+        </div>
+        
         <div class="info-grid">
             <div class="info-item">
                 <span class="info-label">社团名称</span>
                 <span class="info-value">{{ reimbursement.club.name }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">申请人</span>
-                <span class="info-value">{% if reimbursement.club.president %}{{ reimbursement.club.president.username }}{% else %}未设置{% endif %}</span>
+                <span class="info-label">社长</span>
+                <span class="info-value">
+                    {% if reimbursement.club.president %}
+                        {{ reimbursement.club.president.get_full_name|default:reimbursement.club.president.username }}
+                    {% else %}
+                        未设置
+                    {% endif %}
+                </span>
             </div>
             <div class="info-item">
                 <span class="info-label">申请时间</span>
@@ -114,187 +588,97 @@
             </div>
             <div class="info-item">
                 <span class="info-label">当前状态</span>
-                <span class="info-value">
-                    <span class="review-badge {{ reimbursement.status }}">{{ reimbursement.get_status_display }}</span>
+                <span class="status-badge {{ reimbursement.status }}">
+                    <span class="material-icons">
+                        {% if reimbursement.status == 'approved' %}check_circle{% elif reimbursement.status == 'rejected' %}cancel{% else %}schedule{% endif %}
+                    </span>
+                    {{ reimbursement.get_status_display }}
                 </span>
             </div>
         </div>
-        <div class="staff-chip">
-            <span class="material-icons" style="font-size: 16px;">assignment_ind</span>
-            <span>
-                负责干事: 
-                {% if reimbursement.club %}
-                    {% for relation in reimbursement.club.responsible_staff.all %}
-                        {% if relation.is_active %}
-                            {% if relation.staff.real_name %}
-                                {{ relation.staff.real_name }} (用户名: {{ relation.staff.user.username }})
-                            {% elif relation.staff.user.username %}
-                                {{ relation.staff.user.username }}
-                            {% else %}
-                                未知用户
-                            {% endif %}
-                            {% if not forloop.last %}, {% endif %}
+        
+        {% if reimbursement.club.responsible_staff.all %}
+        <div class="info-item">
+            <span class="info-label">负责干事</span>
+            <div class="info-value">
+                {% for relation in reimbursement.club.responsible_staff.all %}
+                    {% if relation.is_active %}
+                    <div style="margin-bottom: 2px; padding-bottom: 2px;">
+                        <div style="font-weight: 600; margin-bottom: 4px;">{{ relation.staff.real_name|default:relation.staff.user.username }}</div>
+                        {% if relation.staff.phone %}
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-bottom: 2px;">
+                            <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">phone</span>
+                            {{ relation.staff.phone }}
+                        </div>
                         {% endif %}
-                    {% empty %}
-                        未分配
-                    {% endfor %}
-                {% else %}
-                    未分配
-                {% endif %}
-            </span>
+                        {% if relation.staff.wechat %}
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant);">
+                            <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">chat</span>
+                            {{ relation.staff.wechat }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
+        {% endif %}
     </div>
-
-    <!-- 报销信息卡片 -->
-    <div class="amount-card">
-        <h2>
+    
+    <!-- ===== 报销详情卡片 ===== -->
+    <div class="card">
+        <div class="card-header">
             <span class="material-icons">receipt</span>
-            报销信息
-        </h2>
-        <table class="amount-table">
-            <tr>
-                <td><strong>报销金额:</strong></td>
-                <td>¥{{ reimbursement.reimbursement_amount }}</td>
-            </tr>
-            <tr>
-                <td><strong>报销日期:</strong></td>
-                <td>{{ reimbursement.submission_date }}</td>
-            </tr>
-            <tr>
-                <td><strong>报销说明:</strong></td>
-                <td>{{ reimbursement.description }}</td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- 上传材料区域 -->
-    <div class="materials-section">
-        <h2 class="section-title">
-            <span class="material-icons">folder_open</span>
-            上传的材料
-        </h2>
-        <div class="materials-grid">
-            {% if reimbursement.receipt_file %}
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">receipt_long</span>
-                    收据/发票
-                </p>
-                <div class="file-actions">
-                    <a href="{{ reimbursement.receipt_file.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ reimbursement.receipt_file.url }}', '收据/发票')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-            {% endif %}
-
-            {% if reimbursement.proof_document %}
-            <div class="material-card">
-                <p class="material-title">
-                    <span class="material-icons">description</span>
-                    支持文件
-                </p>
-                <div class="file-actions">
-                    <a href="{{ reimbursement.proof_document.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ reimbursement.proof_document.url }}', '支持文件')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-            {% endif %}
+            <h2>报销详情</h2>
         </div>
         
-        <!-- 合并下载按钮 -->
-        {% if reimbursement.receipt_file or reimbursement.proof_document %}
-        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
-            <a href="{% url 'clubs:zip_reimbursement_docs' reimbursement.id %}" class="download-btn" style="width: 100%;">
-                🗜️ 打包所有材料为ZIP文件
-            </a>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <span class="detail-label">
+                    <span class="material-icons">attach_money</span>
+                    报销金额
+                </span>
+                <span class="detail-value" style="font-size: 1.5rem; color: var(--md3-primary); font-weight: 700;">¥{{ reimbursement.reimbursement_amount }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">
+                    <span class="material-icons">today</span>
+                    报销日期
+                </span>
+                <span class="detail-value">{{ reimbursement.submission_date|date:"Y-m-d" }}</span>
+            </div>
         </div>
-        {% endif %}
-    </div>
-
-    <!-- 审核记录区域 -->
-    <div class="review-records-section">
-        <h2 class="section-title">
-            <span class="material-icons">history</span>
-            审核记录
-        </h2>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>审核人</th>
-                    <th>审核结果</th>
-                    <th>审核时间</th>
-                    <th>审核意见</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if existing_reviews %}
-                    {% for review in existing_reviews %}
-                    <tr>
-                        <td>{% if review.reviewer %}{{ review.reviewer.username|default:"未设置" }}{% else %}未设置{% endif %}</td>
-                        <td>
-                            <span class="review-badge {{ review.status }}">{{ review.get_status_display|default:"未设置" }}</span>
-                        </td>
-                        <td>{{ review.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</td>
-                        <td>{{ review.comment|default:"无" }}</td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: var(--md3-on-surface-variant);">暂无审核记录</td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-        <div class="review-stats">
-            当前已有 <strong>{{ approved_count }}</strong> 人批准，<strong>{{ rejected_count }}</strong> 人拒绝
+        
+        <div class="detail-section">
+            <div class="detail-label full-width">
+                <span class="material-icons">description</span>
+                报销说明
+            </div>
+            <div class="detail-description">{{ reimbursement.description }}</div>
         </div>
     </div>
-
-    <!-- 审核表单或状态显示 -->
-    {% if reimbursement.status == 'pending' and not has_reviewed %}
-    {% include 'clubs/components/review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='reimbursement' %}
-    {% else %}
-    <div class="status-display">
-        <p><strong>审核状态:</strong> <span class="review-badge {{ reimbursement.status }}">{{ reimbursement.get_status_display }}</span></p>
-        {% if reimbursement.reviewed_at %}
-        <p><strong>审核时间:</strong> {{ reimbursement.reviewed_at|date:"Y-m-d H:i" }}</p>
-        {% endif %}
-        <div class="action-buttons">
-            <a href="{% url 'clubs:staff_audit_center' 'reimbursement' %}" class="btn-secondary">
-                <span class="material-icons" style="font-size: 18px;">arrow_back</span>
-                返回列表
-            </a>
-        </div>
-    </div>
-    {% endif %}
+    
+    <!-- ===== 附件材料卡片 ===== -->
+    {% include 'clubs/components/_materials_display.html' with materials=materials title="附件材料" %}
+    
+    <!-- ===== 审核历史时间 ===== -->
+    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews title="审核历史" %}
+    
+    <!-- ===== 干事审核表单 ===== -->
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='reimbursement' title="干事审核" approve_text="批准报销" reject_text="拒绝报销" %}
 </div>
 
 <script>
 function previewFile(fileUrl, fileName) {
-    // 获取当前域名
     const currentDomain = window.location.origin;
-    
-    // 如果文件URL是相对路径，转换为完整URL
     let fullUrl = fileUrl;
     if (fileUrl.startsWith('/')) {
         fullUrl = currentDomain + fileUrl;
     } else if (!fileUrl.startsWith('http')) {
         fullUrl = currentDomain + '/' + fileUrl;
     }
-    
-    // 使用 Office 365 Online 预览服务
     const encodedUrl = encodeURIComponent(fullUrl);
     const previewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
-    
-    // 在新标签页打开
     window.open(previewUrl, '_blank');
 }
 </script>

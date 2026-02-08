@@ -1,0 +1,743 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}材料要求管理{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 120px);
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header-content {
+        flex: 1;
+    }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .page-header .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+    }
+
+    .section-card {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-md);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: var(--md3-primary);
+    }
+
+    .requirements-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .requirements-table th,
+    .requirements-table td {
+        padding: var(--md3-spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .requirements-table th {
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+    }
+
+    .requirements-table td {
+        color: var(--md3-on-surface);
+    }
+
+    .requirements-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .badge-required {
+        background-color: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .badge-optional {
+        background-color: var(--md3-surface-variant);
+        color: var(--md3-on-surface-variant);
+    }
+    
+    .badge-active {
+        background-color: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+    
+    .badge-inactive {
+        background-color: var(--md3-surface-variant);
+        color: var(--md3-on-surface-variant);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .btn-icon {
+        color: var(--md3-primary);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .btn-icon:hover {
+        background-color: var(--md3-primary-container);
+    }
+
+    .btn-icon.delete {
+        color: var(--md3-error);
+    }
+
+    .btn-icon.delete:hover {
+        background-color: var(--md3-error-container);
+    }
+    
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-3);
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--md3-on-surface-variant);
+        padding: var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        transition: background 0.2s;
+    }
+
+    .modal-close:hover {
+        background: var(--md3-surface-container-highest);
+    }
+
+    .modal-body {
+        padding: var(--md3-spacing-xl);
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-xl);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .form-group {
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--md3-spacing-xs);
+        color: var(--md3-on-surface);
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--md3-outline);
+        border-radius: 4px;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        box-sizing: border-box;
+    }
+    
+    .form-control:focus {
+        border-color: var(--md3-primary);
+        outline: none;
+    }
+
+    .form-text {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        margin-top: 4px;
+    }
+
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .checkbox-wrapper input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background-color: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .btn-primary:hover {
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .btn-secondary {
+        background-color: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--md3-surface-container-highest);
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .container {
+            padding: var(--md3-spacing-md);
+            padding-bottom: 100px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--md3-spacing-md);
+            padding: var(--md3-spacing-lg);
+        }
+
+        /* Restore outer card styling on mobile */
+        .section-card {
+            padding: var(--md3-spacing-lg);
+            margin-bottom: var(--md3-spacing-lg);
+        }
+
+        /* Adjust section header layout */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: var(--md3-spacing-md);
+            margin-bottom: var(--md3-spacing-md);
+            border-bottom: 1px solid var(--md3-outline-variant);
+            flex-wrap: nowrap; /* Prevent stacking */
+            gap: var(--md3-spacing-sm);
+        }
+
+        .section-header h2 {
+            font-size: 1.1rem;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .section-header button {
+            width: auto;
+            white-space: nowrap;
+        }
+
+        .requirements-table thead {
+            display: none;
+        }
+
+        .requirements-table, 
+        .requirements-table tbody, 
+        .requirements-table tr, 
+        .requirements-table td {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* List Item Styling (Row) */
+        .requirements-table tr {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--md3-outline-variant);
+            border-radius: 0;
+            margin-bottom: 0;
+            padding: var(--md3-spacing-md) 0;
+            position: relative;
+        }
+
+        /* Remove border from last item */
+        .requirements-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .requirements-table td {
+            padding: 2px 0;
+            border: none;
+        }
+
+        /* Order */
+        .requirements-table td:nth-child(1) {
+            font-size: 0.75rem;
+            color: var(--md3-on-surface-variant);
+            position: absolute;
+            top: var(--md3-spacing-md);
+            right: 0;
+            width: auto;
+            text-align: right;
+            padding: 0;
+        }
+        .requirements-table td:nth-child(1)::before {
+            content: "#";
+        }
+
+        /* Name */
+        .requirements-table td:nth-child(2) {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--md3-on-surface);
+            margin-bottom: 4px;
+            padding-right: 30px; /* Space for order */
+        }
+
+        /* Description */
+        .requirements-table td:nth-child(3) {
+            font-size: 0.875rem;
+            color: var(--md3-on-surface-variant);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        /* Badges */
+        .requirements-table td:nth-child(4),
+        .requirements-table td:nth-child(5) {
+            display: inline-block;
+            width: auto;
+            margin-right: 8px;
+            margin-bottom: 4px;
+        }
+        
+        .badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+        }
+
+        /* Format info */
+        .requirements-table td:nth-child(6) {
+            margin-top: 4px;
+            padding-top: 4px;
+            font-size: 0.75rem;
+            color: var(--md3-on-surface-variant);
+            border: none;
+        }
+
+        /* Actions */
+        .requirements-table td:nth-child(7) {
+            margin-top: 8px;
+            padding-top: 8px;
+            border: none;
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--md3-spacing-md);
+        }
+        
+        .action-buttons {
+            width: auto;
+            justify-content: flex-end;
+            gap: var(--md3-spacing-md);
+        }
+
+        .btn-icon {
+            padding: 6px;
+            background-color: var(--md3-surface-container-high);
+            border-radius: 4px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <span class="material-icons">description</span>
+        <div class="page-header-content">
+            <h1>材料要求管理</h1>
+            <p class="subtitle">管理各类申请的材料上传要求</p>
+        </div>
+    </div>
+
+    {% for type_code, group in grouped_requirements.items %}
+    <div class="section-card">
+        <div class="section-header">
+            <h2 style="flex: 1;">{{ group.name }}</h2>
+            <button onclick="openAddModal('{{ type_code }}', '{{ group.name }}')" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.75rem;">
+                <span class="material-icons" style="font-size: 1rem;">add</span>
+                添加要求
+            </button>
+        </div>
+        
+        {% if group.items %}
+        <table class="requirements-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">排序</th>
+                    <th style="width: 25%;">名称</th>
+                    <th style="width: 100px;">图标</th>
+                    <th style="width: 30%;">描述</th>
+                    <th style="width: 100px;">必填</th>
+                    <th style="width: 100px;">状态</th>
+                    <th>格式限制</th>
+                    <th style="width: 100px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in group.items %}
+                <tr>
+                    <td>{{ item.order }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>
+                        <span class="material-icons" style="color: var(--md3-primary); vertical-align: middle;">{{ item.icon|default:"cloud_upload" }}</span>
+                        <span style="font-size: 0.75rem; color: var(--md3-on-surface-variant); margin-left: 4px; vertical-align: middle;">{{ item.icon|default:"cloud_upload" }}</span>
+                    </td>
+                    <td>{{ item.description|default:"-" }}</td>
+                    <td>
+                        {% if item.is_required %}
+                        <span class="badge badge-required">必填</span>
+                        {% else %}
+                        <span class="badge badge-optional">选填</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.is_active %}
+                        <span class="badge badge-active">启用</span>
+                        {% else %}
+                        <span class="badge badge-inactive">停用</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="font-size: 0.75rem;">
+                            <div>{{ item.allowed_extensions }}</div>
+                            <div style="color: var(--md3-on-surface-variant);">最大 {{ item.max_size_mb }}MB</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button onclick="openEditModal('{{ item.id }}', '{{ item.name|escapejs }}', '{{ item.icon|default:'cloud_upload'|escapejs }}', '{{ item.description|escapejs }}', {{ item.is_required|yesno:'true,false' }}, '{{ item.allowed_extensions|escapejs }}', {{ item.max_size_mb }}, {{ item.order }}, {{ item.is_active|yesno:'true,false' }})" class="btn-icon" title="编辑">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <form method="post" action="{% url 'clubs:delete_material_requirement' item.id %}" onsubmit="return confirm('确定要删除这个材料要求吗？已提交的材料可能会受到影响。');" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-icon delete" title="删除">
+                                    <span class="material-icons">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            暂无配置要求
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 添加要求弹窗 -->
+<div id="addModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">添加材料要求</h2>
+            <button onclick="closeAddModal()" class="modal-close">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <form method="post" action="{% url 'clubs:add_material_requirement' %}">
+            {% csrf_token %}
+            <input type="hidden" name="request_type" id="modalRequestType">
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">材料名称</label>
+                    <input type="text" name="name" class="form-control" required placeholder="例如：年度财务报表">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">图标 (Material Icons)</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" name="icon" id="add_icon" class="form-control" value="cloud_upload" placeholder="例如：description" oninput="updateIconPreview(this.value, 'add_icon_preview')">
+                        <span class="material-icons" id="add_icon_preview" style="color: var(--md3-primary); font-size: 24px;">cloud_upload</span>
+                    </div>
+                    <div class="form-text">参考 <a href="https://fonts.google.com/icons" target="_blank">Google Fonts Icons</a></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">描述说明</label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="可选，显示在上传处的提示信息"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" name="is_required" id="is_required" checked>
+                        <label for="is_required">是否必填</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">允许的文件扩展名</label>
+                    <input type="text" name="allowed_extensions" class="form-control" value=".docx,.pdf,.jpg,.png,.zip">
+                    <div class="form-text">用逗号分隔，例如：.docx,.pdf,.jpg</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">最大文件大小 (MB)</label>
+                    <input type="number" name="max_size_mb" class="form-control" value="10" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">排序权重</label>
+                    <input type="number" name="order" class="form-control" value="0">
+                    <div class="form-text">数字越小越靠前</div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" name="is_active" id="is_active" checked>
+                        <label for="is_active">启用此要求</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" onclick="closeAddModal()" class="btn btn-secondary">取消</button>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- 编辑要求弹窗 -->
+<div id="editModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>编辑材料要求</h2>
+            <button onclick="closeEditModal()" class="modal-close">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <form method="post" id="editForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">材料名称</label>
+                    <input type="text" name="name" id="edit_name" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">图标 (Material Icons)</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" name="icon" id="edit_icon" class="form-control" placeholder="例如：description" oninput="updateIconPreview(this.value, 'edit_icon_preview')">
+                        <span class="material-icons" id="edit_icon_preview" style="color: var(--md3-primary); font-size: 24px;">cloud_upload</span>
+                    </div>
+                    <div class="form-text">参考 <a href="https://fonts.google.com/icons" target="_blank">Google Fonts Icons</a></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">描述说明</label>
+                    <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" name="is_required" id="edit_is_required">
+                        <label for="edit_is_required">是否必填</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">允许的文件扩展名</label>
+                    <input type="text" name="allowed_extensions" id="edit_allowed_extensions" class="form-control">
+                    <div class="form-text">用逗号分隔，例如：.docx,.pdf,.jpg</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">最大文件大小 (MB)</label>
+                    <input type="number" name="max_size_mb" id="edit_max_size_mb" class="form-control" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">排序权重</label>
+                    <input type="number" name="order" id="edit_order" class="form-control">
+                    <div class="form-text">数字越小越靠前</div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" name="is_active" id="edit_is_active">
+                        <label for="edit_is_active">启用此要求</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" onclick="closeEditModal()" class="btn btn-secondary">取消</button>
+                <button type="submit" class="btn btn-primary">保存修改</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAddModal(typeCode, typeName) {
+        document.getElementById('modalRequestType').value = typeCode;
+        document.getElementById('modalTitle').textContent = '添加材料要求 - ' + typeName;
+        document.getElementById('addModal').style.display = 'flex';
+    }
+
+    function closeAddModal() {
+        document.getElementById('addModal').style.display = 'none';
+    }
+
+    function openEditModal(id, name, icon, description, isRequired, allowedExtensions, maxSizeMb, order, isActive) {
+        const form = document.getElementById('editForm');
+        // Construct the URL dynamically. Assuming the pattern is consistent.
+        // We use a placeholder and replace it, or we can use a JS variable for the base URL if needed.
+        // However, the cleanest way without hardcoding the base path too much is:
+        form.action = "{% url 'clubs:edit_material_requirement' 999999 %}".replace('999999', id);
+        
+        document.getElementById('edit_name').value = name;
+        document.getElementById('edit_icon').value = icon;
+        updateIconPreview(icon, 'edit_icon_preview');
+        
+        document.getElementById('edit_description').value = description;
+        document.getElementById('edit_is_required').checked = isRequired;
+        document.getElementById('edit_allowed_extensions').value = allowedExtensions;
+        document.getElementById('edit_max_size_mb').value = maxSizeMb;
+        document.getElementById('edit_order').value = order;
+        document.getElementById('edit_is_active').checked = isActive;
+        
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function updateIconPreview(iconName, previewId) {
+        const previewEl = document.getElementById(previewId);
+        if (previewEl) {
+            previewEl.textContent = iconName || 'cloud_upload';
+        }
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    // 点击遮罩层关闭
+    document.getElementById('addModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAddModal();
+        }
+    });
+
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEditModal();
+        }
+    });
+</script>
+
+{% endblock %}

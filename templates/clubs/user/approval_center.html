@@ -18,6 +18,7 @@
         max-width: 1400px;
         margin: 0 auto;
         padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 80px); /* 增加底部padding防止被底部导航栏遮挡 */
     }
 
     /* 页面标题 */
@@ -340,7 +341,7 @@
 <script>
 function checkLayout() {
     if (window.innerWidth <= 768) {
-        window.location.href = '{% url "clubs:approval_center_mobile" current_tab %}';
+        window.location.href = '{% url "clubs:approval_center_mobile" %}';
     }
 }
 // 初始检测
@@ -503,7 +504,6 @@ window.addEventListener('resize', checkLayout);
                     
                     {% if item.status == 'rejected' and not item.has_newer_version %}
                     <div class="record-card-footer">
-                        <span></span>
                         {% if current_tab == 'annual_review' %}
                         <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=review&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
@@ -516,6 +516,21 @@ window.addEventListener('resize', checkLayout);
                         </a>
                         {% elif current_tab == 'application' %}
                         <a href="{% url 'clubs:edit_rejected_review' club_id=item.id %}?type=club_application&request_id={{ item.id }}" 
+                           class="action-btn primary" onclick="event.stopPropagation()">
+                            <span class="material-icons">edit</span> 修改材料
+                        </a>
+                        {% elif current_tab == 'reimbursement' %}
+                        <a href="{% url 'clubs:edit_rejected_review' club_id=item.club.id %}?type=reimbursement&request_id={{ item.id }}" 
+                           class="action-btn primary" onclick="event.stopPropagation()">
+                            <span class="material-icons">edit</span> 修改材料
+                        </a>
+                        {% elif current_tab == 'activity_application' %}
+                        <a href="{% url 'clubs:edit_rejected_review' club_id=item.club.id %}?type=activity_application&request_id={{ item.id }}" 
+                           class="action-btn primary" onclick="event.stopPropagation()">
+                            <span class="material-icons">edit</span> 修改材料
+                        </a>
+                        {% elif current_tab == 'president_transition' %}
+                        <a href="{% url 'clubs:edit_rejected_review' club_id=item.club.id %}?type=president_transition&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
                             <span class="material-icons">edit</span> 修改材料
                         </a>
@@ -545,6 +560,126 @@ window.addEventListener('resize', checkLayout);
             </div>
             
             {% if completed_items %}
+            <div class="records-list">
+                {% for item in completed_items|slice:":3" %}
+                <div class="record-card" onclick="window.location.href='/clubs/approval-center-detail/{{ current_tab }}/{{ item.id }}/';">
+                    <div class="record-card-header">
+                        {% if current_tab == 'annual_review' %}
+                        <span class="club-name">{{ item.club.name }}</span>
+                        {% elif current_tab == 'registration' %}
+                        <span class="club-name">{{ item.club.name }}</span>
+                        {% elif current_tab == 'application' %}
+                        <span class="club-name">{{ item.club_name }}</span>
+                        {% elif current_tab == 'reimbursement' %}
+                        <span class="club-name">{{ item.club.name }}</span>
+                        {% elif current_tab == 'activity_application' %}
+                        <span class="club-name">{{ item.club.name }}</span>
+                        {% elif current_tab == 'president_transition' %}
+                        <span class="club-name">{{ item.club.name }}</span>
+                        {% endif %}
+                        
+                        <span class="status-badge approved">
+                            <span class="material-icons">check_circle</span> 已批准
+                        </span>
+                    </div>
+                    
+                    <div class="record-card-body">
+                        {% if current_tab == 'annual_review' %}
+                        <div class="record-field">
+                            <span class="record-field-label">年份</span>
+                            <span class="record-field-value">{{ item.submission_year }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        
+                        {% elif current_tab == 'registration' %}
+                        <div class="record-field">
+                            <span class="record-field-label">注册期</span>
+                            <span class="record-field-value">{{ item.registration_period.name }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        
+                        {% elif current_tab == 'application' %}
+                        <div class="record-field">
+                            <span class="record-field-label">申请人</span>
+                            <span class="record-field-value">{{ item.requested_by.get_full_name|default:item.requested_by.username }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        
+                        {% elif current_tab == 'reimbursement' %}
+                        <div class="record-field">
+                            <span class="record-field-label">报销金额</span>
+                            <span class="record-field-value" style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        
+                        {% elif current_tab == 'activity_application' %}
+                        <div class="record-field">
+                            <span class="record-field-label">活动日期</span>
+                            <span class="record-field-value">{{ item.activity_date|date:"Y-m-d" }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        
+                        {% elif current_tab == 'president_transition' %}
+                        <div class="record-field">
+                            <span class="record-field-label">新社长</span>
+                            <span class="record-field-value">{{ item.new_president_name }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if completed_items|length > 3 %}
+            <div style="margin-top: var(--md3-spacing-lg); text-align: center;">
+                <button onclick="openHistoryModal()" class="btn btn-secondary" style="border-radius: 20px; padding: 8px 24px;">
+                    查看更多历史记录
+                </button>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <span class="material-icons">inbox</span>
+                </div>
+                <h3>暂无已通过记录</h3>
+                <p>还没有审批通过的申请</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 历史记录弹窗 -->
+<div id="historyModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h2><span class="material-icons" style="vertical-align: middle; margin-right: 8px;">history</span>全部已通过记录</h2>
+            <button onclick="closeHistoryModal()" class="modal-close">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
             <div class="records-list">
                 {% for item in completed_items %}
                 <div class="record-card" onclick="window.location.href='/clubs/approval-center-detail/{{ current_tab }}/{{ item.id }}/';">
@@ -633,16 +768,27 @@ window.addEventListener('resize', checkLayout);
                 </div>
                 {% endfor %}
             </div>
-            {% else %}
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <span class="material-icons">inbox</span>
-                </div>
-                <h3>暂无已通过记录</h3>
-                <p>还没有审批通过的申请</p>
-            </div>
-            {% endif %}
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeHistoryModal()" class="btn btn-secondary">关闭</button>
         </div>
     </div>
 </div>
+
+<script>
+    function openHistoryModal() {
+        document.getElementById('historyModal').style.display = 'flex';
+    }
+
+    function closeHistoryModal() {
+        document.getElementById('historyModal').style.display = 'none';
+    }
+
+    // 点击遮罩层关闭
+    document.getElementById('historyModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeHistoryModal();
+        }
+    });
+</script>
 {% endblock %}

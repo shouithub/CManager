@@ -315,6 +315,14 @@
         margin: 0;
     }
     
+    .material-filename {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        margin: 0;
+        word-break: break-all;
+        line-height: 1.4;
+    }
+    
     /* ===== 文件操作 ===== */
     .file-actions {
         display: flex;
@@ -326,6 +334,11 @@
     .file-actions .preview-btn {
         flex: 1;
         margin: 0;
+    }
+    
+    .file-actions .download-btn:only-child {
+        flex: 1;
+        width: 100%;
     }
     
     /* ===== 下载和预览按钮 ===== */
@@ -605,7 +618,7 @@
             <div class="info-item">
                 <span class="info-label">提交次数</span>
                 <span class="info-value">
-                    第 {{ activity.resubmission_attempt }} 次提交
+                    {{ activity.resubmission_attempt }} 次提交
                     {% if activity.resubmission_attempt > 1 %}
                         <span style="color: var(--md3-error);">(已重新提交)</span>
                     {% endif %}
@@ -625,13 +638,27 @@
         {% if activity.club.responsible_staff.all %}
         <div class="info-item">
             <span class="info-label">负责干事</span>
-            <span class="info-value">
+            <div class="info-value">
                 {% for relation in activity.club.responsible_staff.all %}
                     {% if relation.is_active %}
-                        {{ relation.staff.real_name|default:relation.staff.user.username }}{% if not forloop.last %}, {% endif %}
+                    <div style="margin-bottom: 2px; padding-bottom: 2px;">
+                        <div style="font-weight: 600; margin-bottom: 4px;">{{ relation.staff.real_name|default:relation.staff.user.username }}</div>
+                        {% if relation.staff.phone %}
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-bottom: 2px;">
+                            <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">phone</span>
+                            {{ relation.staff.phone }}
+                        </div>
+                        {% endif %}
+                        {% if relation.staff.wechat %}
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant);">
+                            <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">chat</span>
+                            {{ relation.staff.wechat }}
+                        </div>
+                        {% endif %}
+                    </div>
                     {% endif %}
                 {% endfor %}
-            </span>
+            </div>
         </div>
         {% endif %}
     </div>
@@ -686,76 +713,13 @@
     </div>
     
     <!-- ===== 附件材料卡片 ===== -->
-    {% if activity.application_form %}
-    <div class="card">
-        <div class="card-header">
-            <span class="material-icons">attach_file</span>
-            <h2>附件材料</h2>
-        </div>
-        
-        <div class="material-grid">
-            <div class="material-card">
-                <span class="material-icons material-icon">description</span>
-                <p class="material-name">活动申请表</p>
-                <div class="file-actions">
-                    <a href="{{ activity.application_form.url }}" class="download-btn" target="_blank" title="下载文件">
-                        下载
-                    </a>
-                    <button type="button" class="preview-btn" onclick="previewFile('{{ activity.application_form.url }}', '活动申请表'); event.stopPropagation();" title="在线预览">
-                        预览
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
+    {% include 'clubs/components/_materials_display.html' with materials=materials title="附件材料" %}
+    
+    <!-- ===== 审核历史 ===== -->
+    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews title="审核历史" %}
     
     <!-- ===== 干事审核表单 ===== -->
-    <div class="card">
-        <div class="card-header">
-            <span class="material-icons">rate_review</span>
-            <h2>干事审核</h2>
-        </div>
-        
-        <form method="post" id="review_form">
-            {% csrf_token %}
-            
-            <div class="review-decision-buttons">
-                <button type="button" class="decision-btn approve-btn" id="approve_btn" onclick="selectDecision('approve')">
-                    <span class="material-icons">check_circle</span>
-                    批准活动
-                </button>
-                <button type="button" class="decision-btn reject-btn" id="reject_btn" onclick="selectDecision('reject')">
-                    <span class="material-icons">cancel</span>
-                    拒绝活动
-                </button>
-            </div>
-            
-            <input type="hidden" name="action" id="action_field" value="">
-            
-            <div class="form-group">
-                <label for="comment" class="form-label">审核意见</label>
-                <textarea 
-                    id="comment" 
-                    name="comment" 
-                    class="form-textarea" 
-                    placeholder="请输入您的审核意见...（拒绝时必填）"
-                    rows="4"
-                ></textarea>
-            </div>
-            
-            <div class="action-buttons">
-                <button type="submit" class="btn btn-primary" id="submit_btn" style="display: none;">
-                    <span class="material-icons">send</span>
-                    提交审核
-                </button>
-                <a href="{% url 'clubs:staff_audit_center' 'activity_application' %}" class="btn btn-secondary">
-                    <span class="material-icons">arrow_back</span>
-                    返回
-                </a>
-            </div>
-        </form>
-    </div>
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='activity_application' title="干事审核" approve_text="批准活动" reject_text="拒绝活动" %}
 </div>
 
 <script>
@@ -771,171 +735,7 @@ function previewFile(fileUrl, fileName) {
     const previewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
     window.open(previewUrl, '_blank');
 }
-
-let selectedDecision = null;
-
-function selectDecision(decision) {
-    const approveBtn = document.getElementById('approve_btn');
-    const rejectBtn = document.getElementById('reject_btn');
-    const submitBtn = document.getElementById('submit_btn');
-    const actionField = document.getElementById('action_field');
-    
-    approveBtn.classList.remove('expanded');
-    rejectBtn.classList.remove('expanded');
-    
-    if (decision === 'approve') {
-        approveBtn.classList.add('expanded');
-        selectedDecision = 'approve';
-        actionField.value = 'approve';
-        submitBtn.style.display = 'flex';
-    } else if (decision === 'reject') {
-        rejectBtn.classList.add('expanded');
-        selectedDecision = 'reject';
-        actionField.value = 'reject';
-        submitBtn.style.display = 'flex';
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('review_form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const action = document.getElementById('action_field').value;
-            const comment = document.getElementById('comment').value.trim();
-            
-            if (!action) {
-                e.preventDefault();
-                alert('请先选择审核决定(批准或拒绝)!');
-                return false;
-            }
-            
-            if (action === 'reject' && comment === '') {
-                e.preventDefault();
-                alert('拒绝时必须填写审核意见!');
-                document.getElementById('comment').focus();
-                return false;
-            }
-            
-            return true;
-        });
-    }
-});
 </script>
-
-<style>
-.review-decision-buttons {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
-    justify-content: center;
-}
-
-.decision-btn {
-    flex: 1;
-    padding: 16px 24px;
-    border: 2px solid var(--md3-outline);
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: var(--md3-surface-container);
-    color: var(--md3-on-surface);
-}
-
-.decision-btn:hover {
-    box-shadow: var(--md3-elevation-2);
-    transform: translateY(-2px);
-}
-
-.decision-btn.approve-btn {
-    background: var(--md3-success-container);
-    color: var(--md3-on-success-container);
-    border-color: var(--md3-success);
-}
-
-.decision-btn.reject-btn {
-    background: var(--md3-error-container);
-    color: var(--md3-on-error-container);
-    border-color: var(--md3-error);
-}
-
-.decision-btn.expanded {
-    flex: 0 1 70%;
-    padding: 20px 32px;
-    font-size: 18px;
-}
-
-.decision-btn.expanded .material-icons {
-    font-size: 24px;
-}
-
-.decision-btn .material-icons {
-    font-size: 20px;
-}
-
-.form-group {
-    margin-bottom: 24px;
-}
-
-.form-label {
-    display: block;
-    font-weight: 600;
-    color: var(--md3-on-surface);
-    margin-bottom: 8px;
-}
-
-.form-textarea {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid var(--md3-outline-variant);
-    border-radius: 12px;
-    font-size: 14px;
-    font-family: inherit;
-    background: var(--md3-surface);
-    color: var(--md3-on-surface);
-    resize: vertical;
-    transition: border-color 0.2s ease;
-}
-
-.form-textarea:focus {
-    outline: none;
-    border-color: var(--md3-primary);
-}
-
-.action-buttons {
-    display: flex;
-    gap: 16px;
-    justify-content: flex-end;
-}
-
-.alert {
-    padding: 16px;
-    border-radius: 12px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.alert-info {
-    background: var(--md3-tertiary-container);
-    color: var(--md3-on-tertiary-container);
-    border: 1px solid var(--md3-tertiary);
-}
-
-.alert .material-icons {
-    font-size: 24px;
-}
-
-.alert p {
-    margin: 4px 0;
-}
-</style>
 
 {% endblock %}
 

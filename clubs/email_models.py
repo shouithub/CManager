@@ -18,8 +18,8 @@ class EmailVerificationCode(models.Model):
     expires_at = models.DateTimeField(verbose_name='过期时间')
     
     class Meta:
-        verbose_name = '邮箱验证码'
-        verbose_name_plural = '邮箱验证码'
+        verbose_name = '邮箱验证记录'
+        verbose_name_plural = '邮箱验证记录'
     
     def __str__(self):
         return f"{self.user.username} - {self.email}"
@@ -68,8 +68,8 @@ class SMTPConfig(models.Model):
         verbose_name = 'SMTP配置'
         verbose_name_plural = 'SMTP配置'
     
-    def __str__(self):
-        return f"{self.get_provider_display()} - {self.sender_email}"
+    def __str__(self) -> str:
+        return f"{self.get_provider_display()} - {self.sender_email}"  # type: ignore[attr-defined]
     
     @classmethod
     def get_active_config(cls):

@@ -6,9 +6,38 @@
 <style>
     .management-shell { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
     
-    .management-header { margin-bottom: 24px; }
-    .management-title { font-size: 26px; font-weight: 700; color: var(--md3-on-surface); display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-    .management-subtitle { font-size: 14px; color: var(--md3-on-surface-variant); }
+    /* 页面标题 */
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header-content {
+        flex: 1;
+    }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .page-header .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+    }
 
     .control-panel { display: grid; gap: 16px; margin-bottom: 24px; }
     .control-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 16px; padding: 18px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
@@ -26,13 +55,27 @@
     .btn-success { background: var(--md3-tertiary); color: var(--md3-on-tertiary); }
 
     /* 预警样式 */
-    .copy-toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); padding: 12px 24px; border-radius: 999px; box-shadow: var(--md3-elevation-3); display: none; font-weight: 600; }
+    .copy-toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); padding: 12px 24px; border-radius: 999px; box-shadow: var(--md3-elevation-3); display: none; font-weight: 600; max-width: calc(100% - 40px); box-sizing: border-box; }
     .copy-toast.show { display: block; }
-    .alerts-grid { display: grid; gap: 16px; margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+    .alerts-grid { display: grid; gap: 16px; margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
     .alert-card { border-radius: 16px; padding: 18px 20px; border: 1px solid; display: flex; flex-direction: column; gap: 12px; }
+    .alert-card { word-break: break-word; }
     .alert-card.info { background: var(--md3-secondary-container); color: var(--md3-on-secondary-container); border-color: var(--md3-outline-variant); }
     .alert-card.warning { background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); border-color: var(--md3-outline-variant); }
     .alert-card.error { background: var(--md3-error-container); color: var(--md3-on-error-container); border-color: var(--md3-error); }
+    
+    /* 黑色模式下未提交注册预警使用偏橘色 */
+    @media (prefers-color-scheme: dark) {
+        .alert-card.error { 
+            background: rgba(255, 140, 60, 0.15); 
+            color: #ffb380; 
+            border-color: rgba(255, 140, 60, 0.4); 
+        }
+        .alert-card.error .alert-item {
+            background: rgba(255, 140, 60, 0.08);
+        }
+    }
+    
     .alert-header { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
     .alert-list { display: flex; flex-direction: column; gap: 8px; }
     .alert-item { padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,0.05); font-size: 13px; line-height: 1.5; }
@@ -70,6 +113,13 @@
     }
 
     @media (max-width: 640px) {
+        .alerts-grid { grid-template-columns: 1fr; }
+        .alert-card { padding: 14px 16px; border-radius: 12px; }
+        .alert-item { padding: 8px 10px; }
+        .alert-btn, .btn-copy-all, .btn-copy-my { width: 100%; justify-content: center; }
+        .alert-buttons { flex-direction: column; }
+        /* copy-toast mobile positioning */
+        .copy-toast { left: 16px; right: 16px; transform: none; top: 68px; max-width: none; border-radius: 12px; }
         .control-card { padding: 16px; }
         .control-group { flex-direction: column; align-items: stretch; gap: 8px; padding-bottom: 16px; margin-bottom: 4px; }
         .control-label { width: 100%; min-width: 0; margin-bottom: 4px; font-size: 13px; }
@@ -87,11 +137,12 @@
 <div class="management-shell">
     <div id="copyToast" class="copy-toast">✓ 复制成功</div>
 
-    <div class="management-header">
-        <h1 class="management-title">
-            <span class="material-icons">business_center</span> 社团管理
-        </h1>
-        <p class="management-subtitle">管理社团功能、模板和用户信息</p>
+    <div class="page-header">
+        <span class="material-icons">business_center</span>
+        <div class="page-header-content">
+            <h1>社团管理</h1>
+            <p class="subtitle">管理社团功能、模板和用户信息</p>
+        </div>
     </div>
 
     <!-- 预警功能 -->
@@ -226,6 +277,103 @@
                 {% endif %}
                 {% if clubs_enabled_review_not_submitted_other.count > 0 %}
                 <button onclick="copyUnsubmittedClubsAll()" class="btn-copy-all">
+                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if clubs_enabled_registration_not_submitted.count > 0 %}
+        <div class="alert-card error">
+            <div class="alert-header">
+                <span class="material-icons">error</span> 未提交注册预警 ({{ clubs_enabled_registration_not_submitted.count }})
+            </div>
+            
+            <!-- 我负责的社团 -->
+            <div class="alert-list">
+                {% if clubs_enabled_registration_not_submitted_my.count > 0 %}
+                    {% for club in clubs_enabled_registration_not_submitted_my|slice:":3" %}
+                    <div class="alert-item">
+                        <strong>{{ club.name }}</strong><br>
+                        社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" %}{% else %}未设置{% endif %}<br>
+                        负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% if clubs_enabled_registration_not_submitted_my.count > 3 %}
+                    <div class="collapsible-section">
+                        <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                            <span class="material-icons">expand_more</span>
+                            {% with remaining=clubs_enabled_registration_not_submitted_my.count|add:"-3" %}
+                            更多 (+{{ remaining }})
+                            {% endwith %}
+                        </div>
+                        <div class="alert-list collapsible-content hidden">
+                            {% for club in clubs_enabled_registration_not_submitted_my|slice:"3:" %}
+                            <div class="alert-item">
+                                <strong>{{ club.name }}</strong><br>
+                                社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" %}{% else %}未设置{% endif %}<br>
+                                负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                {% else %}
+                    <div class="alert-item" style="opacity: 0.7; font-style: italic;">暂无你负责的未提交社团</div>
+                {% endif %}
+            </div>
+
+            <!-- 其他干事负责的社团（折叠） -->
+            {% if clubs_enabled_registration_not_submitted_other.count > 0 %}
+            <div class="collapsible-section">
+                <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                    <span class="material-icons">expand_more</span>
+                    其他干事负责的社团 ({{ clubs_enabled_registration_not_submitted_other.count }})
+                </div>
+                <div class="alert-list collapsible-content hidden">
+                    {% for club in clubs_enabled_registration_not_submitted_other|slice:":3" %}
+                    <div class="alert-item">
+                        <strong>{{ club.name }}</strong><br>
+                        社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" %}{% else %}未设置{% endif %}<br>
+                        负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% if clubs_enabled_registration_not_submitted_other.count > 3 %}
+                    <div class="collapsible-section">
+                        <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                            <span class="material-icons">expand_more</span>
+                            {% with remaining=clubs_enabled_registration_not_submitted_other.count|add:"-3" %}
+                            更多 (+{{ remaining }})
+                            {% endwith %}
+                        </div>
+                        <div class="alert-list collapsible-content hidden">
+                            {% for club in clubs_enabled_registration_not_submitted_other|slice:"3:" %}
+                            <div class="alert-item">
+                                <strong>{{ club.name }}</strong><br>
+                                社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" %}{% else %}未设置{% endif %}<br>
+                                负责干事: {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}暂未分配{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 复制按钮 -->
+            <div class="alert-buttons">
+                {% if clubs_enabled_registration_not_submitted_my.count > 0 %}
+                <button onclick="copyUnsubmittedRegistrationClubsMy()" class="btn-copy-my">
+                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
+                </button>
+                {% endif %}
+                {% if clubs_enabled_registration_not_submitted_other.count > 0 %}
+                <button onclick="copyUnsubmittedRegistrationClubsAll()" class="btn-copy-all">
                     <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
                 </button>
                 {% endif %}
@@ -558,6 +706,42 @@ function copyLowMemberClubs() {
 // 保留旧函数以保持兼容性
 function copyUnsubmittedClubs() {
     copyUnsubmittedClubsAll();
+}
+
+// 注册预警 - 复制我负责的
+function copyUnsubmittedRegistrationClubsMy() {
+    let text = '未提交注册的社团名单（第{{ active_registration_period.period_number }}次注册周期） - 我负责的\n==========================\n';
+    {% for club in clubs_enabled_registration_not_submitted_my %}
+    text += '{{ club.name }} - 社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" %}{% else %}未设置{% endif %}';
+    {% if club.responsible_staff.all %}
+    text += ' - 负责干事: ';
+    {% for relation in club.responsible_staff.all %}
+    text += '{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}';
+    {% endfor %}
+    {% else %}
+    text += ' - 暂未分配负责干事';
+    {% endif %}
+    text += '\n';
+    {% endfor %}
+    navigator.clipboard.writeText(text).then(showToast).catch(err => console.error('复制失败:', err));
+}
+
+// 注册预警 - 复制所有
+function copyUnsubmittedRegistrationClubsAll() {
+    let text = '未提交注册的社团名单（第{{ active_registration_period.period_number }}次注册周期）\n==========================\n';
+    {% for club in clubs_enabled_registration_not_submitted %}
+    text += '{{ club.name }} - 社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" %}{% else %}未设置{% endif %}';
+    {% if club.responsible_staff.all %}
+    text += ' - 负责干事: ';
+    {% for relation in club.responsible_staff.all %}
+    text += '{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}';
+    {% endfor %}
+    {% else %}
+    text += ' - 暂未分配负责干事';
+    {% endif %}
+    text += '\n';
+    {% endfor %}
+    navigator.clipboard.writeText(text).then(showToast).catch(err => console.error('复制失败:', err));
 }
 </script>
 {% endblock %}
