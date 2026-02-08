@@ -24,6 +24,7 @@ import tempfile
 from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, ClubRegistrationRequest, ClubApplicationReview, ClubRegistration, Template, Announcement, StaffClubRelation, SubmissionReview, ClubRegistrationReview, RegistrationPeriod, PresidentTransition, ActivityApplication, SMTPConfig, CarouselImage, ActivityApplicationHistory, MaterialRequirement, SubmittedFile, Department, Room, RoomBooking, TimeSlot
 from django.contrib.contenttypes.models import ContentType
 import shutil
+from PIL import Image
 
 
 def rename_uploaded_file(file, club_name, request_type, material_type):
@@ -7023,4 +7024,47 @@ def admin_time_slot_delete(request, slot_id):
     if request.method == 'POST':
         slot.delete()
     return redirect('clubs:admin_time_slots')
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def manage_favicon(request):
+    """管理网站图标"""
+    if not is_staff_or_admin(request.user):
+        messages.error(request, '权限不足')
+        return redirect('clubs:index')
+        
+    if request.method == 'POST':
+        if 'favicon' in request.FILES:
+            upload = request.FILES['favicon']
+            ext = os.path.splitext(upload.name)[1].lower()
+            if ext not in ['.ico', '.png', '.jpg', '.jpeg']:
+                messages.error(request, '仅支持 .ico, .png, .jpg 格式')
+                return redirect('clubs:manage_favicon')
+            site_dir = os.path.join(settings.MEDIA_ROOT, 'site')
+            os.makedirs(site_dir, exist_ok=True)
+            file_path = os.path.join(site_dir, 'favicon.ico')
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    messages.error(request, f'删除旧图标失败: {str(e)}')
+            try:
+                img = Image.open(upload)
+                if img.mode not in ('RGB', 'RGBA'):
+                    img = img.convert('RGBA')
+                w, h = img.size
+                side = min(w, h)
+                left = (w - side) // 2
+                top = (h - side) // 2
+                img = img.crop((left, top, left + side, top + side))
+                preview_path = os.path.join(site_dir, 'favicon.png')
+                preview_img = img.resize((128, 128), Image.LANCZOS)
+                preview_img.save(preview_path, format='PNG')
+                img.save(file_path, format='ICO', sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
+                messages.success(request, '网站图标已更新')
+            except Exception as e:
+                messages.error(request, f'保存图标失败: {str(e)}')
+            return redirect('clubs:manage_favicon')
+            
+    return render(request, 'clubs/admin/manage_favicon.html')
 

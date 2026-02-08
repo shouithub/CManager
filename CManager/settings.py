@@ -81,6 +81,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'clubs.context_processors.unread_approvals',
+                'clubs.context_processors.site_settings',
             ],
         },
     },
