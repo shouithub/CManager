@@ -1,3 +1,11 @@
+# type: ignore[attr-defined]
+"""
+Django 社团管理系统视图模块
+
+此文件包含大量 Django 模型交互代码。由于 Pylance 无法完全识别 Django ORM 的动态特性
+（如自动生成的 id 字段、相关管理器等），我们在文件顶部添加全局类型忽略指令。
+这对代码的实际功能没有影响，只是消除了 IDE 中的假性错误警告。
+"""
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
@@ -13,7 +21,7 @@ import os
 import urllib.parse
 import os
 import tempfile
-from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, ClubRegistrationRequest, ClubApplicationReview, ClubRegistration, Template, Announcement, StaffClubRelation, SubmissionReview, ClubRegistrationReview, ClubInfoChangeRequest, RegistrationPeriod, PresidentTransition, ActivityApplication, Room222Booking, SMTPConfig, CarouselImage, DepartmentIntroduction
+from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, ClubRegistrationRequest, ClubApplicationReview, ClubRegistration, Template, Announcement, StaffClubRelation, SubmissionReview, ClubRegistrationReview, ClubInfoChangeRequest, RegistrationPeriod, PresidentTransition, ActivityApplication, Room222Booking, SMTPConfig, CarouselImage, DepartmentIntroduction, ActivityApplicationHistory
 import shutil
 
 
@@ -117,7 +125,7 @@ def _validate_file_allowed(file, field_name, allowed_extensions, allowed_mimetyp
 
 import json
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def download_file(request):
     """自定义文件下载视图，用于处理文件下载并重命名
     
@@ -267,7 +275,7 @@ def index(request):
     if not request.user.is_authenticated:
         departments = DepartmentIntroduction.objects.all().order_by('department')
         announcements = Announcement.objects.filter(status='published').order_by('-published_at')[:5]
-        carousel_images = CarouselImage.objects.filter(is_active=True).order_by('-uploaded_at')[:10]
+        carousel_images = CarouselImage.objects.filter(is_active=True).order_by('order', '-uploaded_at')
         
         context = {
             'is_anonymous': True,
@@ -311,7 +319,7 @@ def index(request):
             clubs = []
             for relation in relations:
                 clubs.append({
-                    'id': relation.club.id,
+                    'id': relation.club.id,  # type: ignore[attr-defined]
                     'name': relation.club.name,
                     'status': relation.club.status,
                     'members_count': relation.club.members_count,
@@ -320,7 +328,7 @@ def index(request):
                 })
             
             staff_tree_data.append({
-                'staff_id': staff_profile.id,
+                'staff_id': staff_profile.id,  # type: ignore[attr-defined]
                 'staff_name': staff_profile.get_full_name(),
                 'staff_username': staff_profile.user.username,
                 'clubs': clubs,
@@ -331,7 +339,7 @@ def index(request):
         announcements = Announcement.objects.filter(status='published').order_by('-published_at')[:5]
         
         # 获取轮播图片
-        carousel_images = CarouselImage.objects.filter(is_active=True).order_by('-uploaded_at')[:10]
+        carousel_images = CarouselImage.objects.filter(is_active=True).order_by('order', '-uploaded_at')
         
         context = {
             'is_staff_or_admin': staff_admin,
@@ -535,6 +543,20 @@ def register_club(request):
             }
             return render(request, 'clubs/user/register_club.html', context)
         
+        # 重命名上传的文件
+        if establishment_application:
+            establishment_application = rename_uploaded_file(establishment_application, name, '社团申请', '成立申请书')
+        if constitution_draft:
+            constitution_draft = rename_uploaded_file(constitution_draft, name, '社团申请', '章程草案')
+        if three_year_plan:
+            three_year_plan = rename_uploaded_file(three_year_plan, name, '社团申请', '三年规划')
+        if leaders_resumes:
+            leaders_resumes = rename_uploaded_file(leaders_resumes, name, '社团申请', '负责人简历')
+        if one_month_activity_plan:
+            one_month_activity_plan = rename_uploaded_file(one_month_activity_plan, name, '社团申请', '一个月活动计划')
+        if advisor_certificates:
+            advisor_certificates = rename_uploaded_file(advisor_certificates, name, '社团申请', '指导老师聘书')
+        
         # 创建社团注册申请（待审核）
         ClubRegistrationRequest.objects.create(
             club_name=name,
@@ -565,34 +587,7 @@ def register_club(request):
     return render(request, 'clubs/user/register_club.html', context)
 
 
-@login_required(login_url='login')
-@require_http_methods(["GET"])
-def view_club_applications(request):
-    """查看用户提交的社团申请记录"""
-    if not _is_president(request.user):
-        messages.error(request, '仅社长可以查看社团申请记录')
-        return redirect('clubs:index')
-    
-    applications = ClubRegistrationRequest.objects.filter(requested_by=request.user).order_by('-submitted_at')
-
-    # 将已审核的记录标记为已读
-    for application in applications:
-        if application.status in ['approved', 'rejected'] and not application.is_read:
-            application.is_read = True
-            application.save(update_fields=['is_read'])
-    
-    context = {
-        'applications': applications,
-    }
-    return render(request, 'clubs/user/view_club_applications.html', context)
-
-
-@login_required(login_url='login')
-@require_http_methods(["GET", "POST"])
-
-
-
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def edit_rejected_review(request, club_id):
     # 获取查询参数
@@ -607,36 +602,45 @@ def edit_rejected_review(request, club_id):
     - review: 社团年审
     - club_info_change: 社团信息变更
     """
-    if not _is_president(request.user):
-        messages.error(request, '仅社长可以修改被拒绝的申请材料')
-        return redirect('clubs:index')
-    
-    club = get_object_or_404(Club, pk=club_id)
-    
-    # 检查权限 - 只能修改自己社团的申请
-    is_club_president = Officer.objects.filter(
-        user_profile__user=request.user,
-        club=club,
-        position='president',
-        is_current=True
-    ).exists()
-    
-    if not is_club_president:
-        messages.error(request, '您没有权限修改此社团的申请材料')
-        return redirect('clubs:user_dashboard')
     
     # 获取请求类型
     request_type = request.GET.get('type', 'review')
     
+    # 对于社团申请类型，不需要检查是否是社长（因为申请时还没有社团）
+    if request_type == 'club_application':
+        # 社团申请只需要检查是否是申请人本人
+        application = get_object_or_404(ClubRegistrationRequest, pk=request_id)
+        if application.requested_by != request.user:
+            messages.error(request, '您没有权限修改此申请')
+            return redirect('clubs:user_dashboard')
+    else:
+        # 其他类型需要检查是否是社长
+        if not _is_president(request.user):
+            messages.error(request, '仅社长可以修改被拒绝的申请材料')
+            return redirect('clubs:index')
+        
+        club = get_object_or_404(Club, pk=club_id)
+        
+        # 检查权限 - 只能修改自己社团的申请
+        is_club_president = Officer.objects.filter(
+            user_profile__user=request.user,
+            club=club,
+            position='president',
+            is_current=True
+        ).exists()
+        
+        if not is_club_president:
+            messages.error(request, '您没有权限修改此社团的申请材料')
+            return redirect('clubs:user_dashboard')
+    
     # 根据请求类型获取对应的对象和数据
     if request_type == 'club_application':
-        # 处理社团申请重新提交
-        application = get_object_or_404(ClubRegistrationRequest, pk=request_id, requested_by=request.user)
+        # 处理社团申请重新提交（application 已在权限检查时获取）
         
         # 只有被拒绝的申请才能重新提交
         if application.status != 'rejected':
             messages.error(request, '只有被拒绝的申请才能重新提交')
-            return redirect('clubs:view_club_applications')
+            return redirect('clubs:approval_center', tab='application')
         
         # 检查是否已经被修改提交过（通过检查是否已有新的pending申请）
         newer_application = ClubRegistrationRequest.objects.filter(
@@ -647,7 +651,7 @@ def edit_rejected_review(request, club_id):
         
         if newer_application:
             messages.error(request, '该申请已被修改提交，不允许再次修改之前的请求')
-            return redirect('clubs:view_club_applications')
+            return redirect('clubs:approval_center', tab='application')
         
         # 获取社团创建模板
         registration_templates = Template.objects.filter(template_type='club_creation', is_active=True)
@@ -663,7 +667,7 @@ def edit_rejected_review(request, club_id):
             'registration_templates': registration_templates,
             'rejected_materials': rejected_materials,
             'review_type': 'club_application',
-            'club': club
+            'club_id_param': 0,  # 社团申请时还没有club，使用0作为占位符
         }
         
     elif request_type == 'club_registration':
@@ -673,7 +677,7 @@ def edit_rejected_review(request, club_id):
         # 只有被拒绝的申请才能重新提交
         if registration.status != 'rejected':
             messages.error(request, '只有被拒绝的申请才能重新提交')
-            return redirect('clubs:view_club_registrations', club_id=club.id)
+            return redirect('clubs:approval_center', tab='registration')
         
         # 检查是否已经被修改提交过（通过检查是否已有更新的pending申请）
         newer_registration = ClubRegistration.objects.filter(
@@ -684,7 +688,7 @@ def edit_rejected_review(request, club_id):
         
         if newer_registration:
             messages.error(request, '该申请已被修改提交，不允许再次修改之前的请求')
-            return redirect('clubs:view_club_registrations', club_id=club.id)
+            return redirect('clubs:approval_center', tab='registration')
         
         # 获取所有注册相关的模板
         registration_templates = Template.objects.filter(template_type__startswith='registration_').order_by('template_type')
@@ -700,7 +704,8 @@ def edit_rejected_review(request, club_id):
             'registration': registration,
             'registration_templates': registration_templates,
             'rejected_materials': rejected_materials,
-            'review_type': 'club_registration'
+            'review_type': 'club_registration',
+            'club_id_param': club.id,
         }
         
     elif request_type == 'review':
@@ -716,7 +721,7 @@ def edit_rejected_review(request, club_id):
         
         if newer_submission:
             messages.error(request, '该申请已被修改提交，不允许再次修改之前的请求')
-            return redirect('clubs:view_submissions', club_id=club.id)
+            return redirect('clubs:approval_center', tab='annual_review')
         
         is_resubmission = True
         
@@ -767,7 +772,8 @@ def edit_rejected_review(request, club_id):
             'rejected_submission': submission,
             'rejected_materials': rejected_materials,
             'review_comments': review_comments,  # 添加审核意见到上下文
-            'review_type': 'review'
+            'review_type': 'review',
+            'club_id_param': club.id,
         }
     
     elif request_type == 'reimbursement':
@@ -777,7 +783,7 @@ def edit_rejected_review(request, club_id):
         # 只有被拒绝的申请才能重新提交
         if reimbursement.status != 'rejected':
             messages.error(request, '只有被拒绝的报销申请才能重新提交')
-            return redirect('clubs:view_reimbursements', club_id=club.id)
+            return redirect('clubs:view_reimbursements', club_id=club.id)  # type: ignore[attr-defined]
         
         # 获取可用模板
         reimbursement_templates = Template.objects.filter(template_type='reimbursement', is_active=True)
@@ -786,7 +792,8 @@ def edit_rejected_review(request, club_id):
             'club': club,
             'reimbursement': reimbursement,
             'templates': reimbursement_templates,
-            'review_type': 'reimbursement'
+            'review_type': 'reimbursement',
+            'club_id_param': club.id,
         }
     
     elif request_type == 'activity_application':
@@ -796,12 +803,13 @@ def edit_rejected_review(request, club_id):
         # 只有被拒绝的申请才能重新提交
         if activity.status != 'rejected':
             messages.error(request, '只有被拒绝的活动申请才能重新提交')
-            return redirect('clubs:view_activity_applications', club_id=club.id)
+            return redirect('clubs:approval_center', tab='activity_application')
         
         context = {
             'club': club,
             'activity': activity,
-            'review_type': 'activity_application'
+            'review_type': 'activity_application',
+            'club_id_param': club.id,
         }
     
     elif request_type == 'president_transition':
@@ -820,7 +828,8 @@ def edit_rejected_review(request, club_id):
             'club': club,
             'transition': transition,
             'officers': officers,
-            'review_type': 'president_transition'
+            'review_type': 'president_transition',
+            'club_id_param': club.id,
         }
     
     if request.method == 'POST':
@@ -837,17 +846,19 @@ def edit_rejected_review(request, club_id):
             # 验证
             errors = []
             
-            # 验证上传的文件（必传材料）
-            if not establishment_application:
+            # 只验证被拒绝的材料是否重新上传
+            if 'establishment_application' in rejected_materials and not establishment_application:
                 errors.append('请上传社团成立申请书')
-            if not constitution_draft:
+            if 'constitution_draft' in rejected_materials and not constitution_draft:
                 errors.append('请上传社团章程草案')
-            if not three_year_plan:
+            if 'three_year_plan' in rejected_materials and not three_year_plan:
                 errors.append('请上传社团三年发展规划')
-            if not leaders_resumes:
+            if 'leaders_resumes' in rejected_materials and not leaders_resumes:
                 errors.append('请上传社团拟任负责人和指导老师的详细简历和身份证复印件')
-            if not one_month_activity_plan:
+            if 'one_month_activity_plan' in rejected_materials and not one_month_activity_plan:
                 errors.append('请上传社团组建一个月后的活动计划')
+            if 'advisor_certificates' in rejected_materials and not advisor_certificates:
+                errors.append('请上传社团老师的相关专业证书')
             
             # 验证文件类型
             if establishment_application:
@@ -890,6 +901,21 @@ def edit_rejected_review(request, club_id):
                 context['errors'] = errors
                 return render(request, 'clubs/user/edit_rejected_review.html', context)
             
+            # 重命名上传的文件
+            club_name = application.club_name
+            if establishment_application:
+                establishment_application = rename_uploaded_file(establishment_application, club_name, '社团申请', '成立申请书')
+            if constitution_draft:
+                constitution_draft = rename_uploaded_file(constitution_draft, club_name, '社团申请', '章程草案')
+            if three_year_plan:
+                three_year_plan = rename_uploaded_file(three_year_plan, club_name, '社团申请', '三年规划')
+            if leaders_resumes:
+                leaders_resumes = rename_uploaded_file(leaders_resumes, club_name, '社团申请', '负责人简历')
+            if one_month_activity_plan:
+                one_month_activity_plan = rename_uploaded_file(one_month_activity_plan, club_name, '社团申请', '一个月活动计划')
+            if advisor_certificates:
+                advisor_certificates = rename_uploaded_file(advisor_certificates, club_name, '社团申请', '指导老师聘书')
+            
             # 更新现有的社团申请记录而不是创建新的
             # 只更新被拒绝的材料
             if 'establishment_application' in rejected_materials and establishment_application:
@@ -926,12 +952,11 @@ def edit_rejected_review(request, club_id):
             application.reviewed_at = None
             application.reviewer_comment = ''
             application.reviewer = None
-            application.is_read = False
             application.resubmission_attempt += 1
             application.save()
             
             messages.success(request, f'社团申请已重新提交（第{application.resubmission_attempt}次），等待干事审核！')
-            return redirect('clubs:view_club_applications')
+            return redirect('clubs:approval_center', tab='application')
             
         elif request_type == 'club_registration':
             # 获取被拒绝的材料列表
@@ -1043,12 +1068,11 @@ def edit_rejected_review(request, club_id):
             registration.submitted_at = timezone.now()
             registration.reviewed_at = None
             registration.reviewer_comment = ''
-            registration.is_read = False
             registration.resubmission_attempt += 1
             registration.save()
             
             messages.success(request, f'社团注册申请已重新提交（第{registration.resubmission_attempt}次），等待审核')
-            return redirect('clubs:view_club_registrations', club_id=club.id)
+            return redirect('clubs:approval_center', tab='registration')
             
         elif request_type == 'review':
 
@@ -1157,7 +1181,6 @@ def edit_rejected_review(request, club_id):
             submission.status = 'pending'
             submission.review_count = 0
             submission.reviewed_at = None
-            submission.is_read_by_president = False
             submission.resubmission_attempt += 1
             submission.save()
             
@@ -1209,12 +1232,11 @@ def edit_rejected_review(request, club_id):
             reimbursement.reviewed_at = None
             reimbursement.reviewer = None
             reimbursement.reviewer_comment = ''
-            reimbursement.is_read = False
             reimbursement.resubmission_attempt += 1
             reimbursement.save()
             
             messages.success(request, f'报销申请已重新提交（第{reimbursement.resubmission_attempt}次），等待审核')
-            return redirect('clubs:view_reimbursements', club_id=club.id)
+            return redirect('clubs:approval_center', tab='reimbursement')
         
         elif request_type == 'activity_application':
             # 获取表单数据
@@ -1264,12 +1286,11 @@ def edit_rejected_review(request, club_id):
             activity.reviewed_at = None
             activity.reviewer = None
             activity.reviewer_comment = ''
-            activity.is_read = False
             activity.resubmission_attempt += 1
             activity.save()
             
             messages.success(request, f'活动申请已重新提交（第{activity.resubmission_attempt}次），等待审核')
-            return redirect('clubs:view_activity_applications', club_id=club.id)
+            return redirect('clubs:approval_center', tab='activity_application')
         
         elif request_type == 'president_transition':
             # 获取表单数据
@@ -1309,7 +1330,6 @@ def edit_rejected_review(request, club_id):
             transition.reviewed_at = None
             transition.reviewer = None
             transition.reviewer_comment = ''
-            transition.is_read = False
             transition.resubmission_attempt += 1
             transition.save()
             
@@ -1320,7 +1340,7 @@ def edit_rejected_review(request, club_id):
     return render(request, 'clubs/user/edit_rejected_review.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def submit_review(request, club_id):
     """年审材料提交/重新提交 - 仅社长可用"""
@@ -1527,7 +1547,6 @@ def submit_review(request, club_id):
             submission.status = 'pending'
             submission.review_count = 0
             submission.reviewed_at = None
-            submission.is_read_by_president = False
             submission.resubmission_attempt += 1
             submission.save()
             
@@ -1607,136 +1626,8 @@ def submit_review(request, club_id):
     return render(request, 'clubs/user/submit_review.html', context)
 
 
-
-
-
-@login_required(login_url='login')
-def view_submissions(request, club_id):
-    """查看年审提交历史 - 社长和干事可用"""
-    user = request.user
-    
-    # 检查权限：社长或干事
-    if not (_is_president(user) or _is_staff(user)):
-        messages.error(request, '您没有权限查看此页面')
-        return redirect('clubs:index')
-    
-    club = get_object_or_404(Club, pk=club_id)
-    
-    # 社长只能查看自己社团的历史
-    if _is_president(user) and (not club.president or club.president != user):
-        messages.error(request, '您没有权限查看此社团的历史')
-        return redirect('clubs:user_dashboard')
-    
-    # 返回所有年审记录，并将有拒绝状态审核记录的提交放在前面
-    from django.db.models import Q, Case, When, Value, BooleanField
-    
-    # 获取所有提交记录
-    submissions = club.review_submissions.all()
-    
-    # 使用annotate和order_by来将有拒绝记录的提交放在前面
-    submissions = submissions.annotate(
-        has_rejected_reviews=Case(
-            When(reviews__status='rejected', then=Value(True)),
-            default=Value(False),
-            output_field=BooleanField()
-        )
-    ).order_by(
-        '-has_rejected_reviews',  # 有拒绝记录的排在前面
-        '-submission_year',       # 按年份降序
-        '-submitted_at'           # 按提交时间降序
-    ).distinct()
-    
-    # 社长查看时，将审核结果标记为已读
-    if _is_president(user):
-        for submission in submissions:
-            if submission.status in ['approved', 'rejected'] and not submission.is_read_by_president:
-                submission.is_read_by_president = True
-                submission.save()
-    
-    context = {
-        'club': club,
-        'submissions': submissions,
-    }
-    return render(request, 'clubs/user/view_submissions.html', context)
-
-
-@login_required(login_url='login')
-def view_submissions_global(request):
-    """查看所有社团的年审记录 - 社长可用，将有拒绝记录的提交放在前面"""
-    user = request.user
-    
-    # 检查权限：社长或干事
-    if not (_is_president(user) or _is_staff(user)):
-        messages.error(request, '您没有权限查看此页面')
-        return redirect('clubs:index')
-    
-    # 如果用户是社长，则显示该用户所有社团的所有提交
-    if _is_president(user):
-        # 获取用户所有社团
-        clubs = user.clubs_as_president.all()
-        if not clubs:
-            messages.error(request, '您还没有管理任何社团')
-            return redirect('clubs:user_dashboard')
-        
-        # 返回所有年审记录，并将有拒绝状态审核记录的提交放在前面
-        from django.db.models import Q, Case, When, Value, BooleanField
-        
-        # 获取所有提交记录
-        submissions = ReviewSubmission.objects.filter(club__in=clubs)
-        
-        # 使用annotate和order_by来将有拒绝记录的提交放在前面
-        submissions = submissions.annotate(
-            has_rejected_reviews=Case(
-                When(reviews__status='rejected', then=Value(True)),
-                default=Value(False),
-                output_field=BooleanField()
-            )
-        ).order_by(
-            '-has_rejected_reviews',  # 有拒绝记录的排在前面
-            '-submission_year',       # 按年份降序
-            '-submitted_at'           # 按提交时间降序
-        ).distinct()
-        
-        # 社长查看时，将审核结果标记为已读
-        for submission in submissions:
-            if submission.status in ['approved', 'rejected'] and not submission.is_read_by_president:
-                submission.is_read_by_president = True
-                submission.save()
-        
-        context = {
-            'clubs': clubs,
-            'submissions': submissions,
-        }
-        return render(request, 'clubs/user/view_submissions_global.html', context)
-    elif _is_staff(user):
-        # 如果用户是干事，则显示所有社团的所有提交
-        from django.db.models import Q, Case, When, Value, BooleanField
-        
-        # 获取所有提交记录
-        submissions = ReviewSubmission.objects.all()
-        
-        # 使用annotate和order_by来将有拒绝记录的提交放在前面
-        submissions = submissions.annotate(
-            has_rejected_reviews=Case(
-                When(reviews__status='rejected', then=Value(True)),
-                default=Value(False),
-                output_field=BooleanField()
-            )
-        ).order_by(
-            '-has_rejected_reviews',  # 有拒绝记录的排在前面
-            '-submission_year',       # 按年份降序
-            '-submitted_at'           # 按提交时间降序
-        ).distinct()
-        
-        context = {
-            'submissions': submissions,
-        }
-        return render(request, 'clubs/user/view_submissions_global.html', context)
-
-
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET"])
-@login_required(login_url='login')
 def approval_center_tabs(request, tab='annual_review'):
     """审批中心"""
     if not _is_president(request.user):
@@ -1754,43 +1645,31 @@ def approval_center_tabs(request, tab='annual_review'):
         all_items = ReviewSubmission.objects.filter(club__in=clubs).order_by('-submitted_at')
         active_items = all_items.filter(status__in=['pending', 'rejected'])
         completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read_by_president=False).update(is_read_by_president=True)
         
     elif tab == 'registration':
-        all_items = ClubRegistration.objects.filter(club__in=clubs).order_by('-submitted_at')
+        all_items = ClubRegistration.objects.filter(club__in=clubs).select_related('registration_period', 'club').order_by('-submitted_at')
         active_items = all_items.filter(status__in=['pending', 'rejected'])
         completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read=False).update(is_read=True)
         
     elif tab == 'application':
         all_items = ClubRegistrationRequest.objects.filter(requested_by=request.user).order_by('-submitted_at')
         active_items = all_items.filter(status__in=['pending', 'rejected'])
         completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read=False).update(is_read=True)
         
     elif tab == 'reimbursement':
         all_items = Reimbursement.objects.filter(club__in=clubs).order_by('-submitted_at')
         active_items = all_items.filter(status__in=['pending', 'rejected', 'partially_rejected'])
         completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read=False).update(is_read=True)
         
     elif tab == 'activity_application':
         all_items = ActivityApplication.objects.filter(club__in=clubs).order_by('-submitted_at')
         active_items = all_items.filter(status__in=['pending', 'rejected'])
         completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read=False).update(is_read=True)
         
     elif tab == 'president_transition':
         all_items = PresidentTransition.objects.filter(club__in=clubs).order_by('-submitted_at')
         active_items = all_items.filter(status__in=['pending', 'rejected'])
         completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read=False).update(is_read=True)
     
     # 标记是否有更新版本
     for item in active_items:
@@ -1834,9 +1713,9 @@ def approval_center_tabs(request, tab='annual_review'):
     
     return render(request, 'clubs/user/approval_center.html', context)
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def approval_center_mobile(request, tab='annual_review'):
-    """审批中心移动版 - 简化UI用于手机端"""
+    """审批中心移动版 - 卡片网格UI用于手机端"""
     if not _is_president(request.user):
         messages.error(request, '仅社团社长可以访问审批中心')
         return redirect('clubs:index')
@@ -1844,96 +1723,89 @@ def approval_center_mobile(request, tab='annual_review'):
     # 获取当前用户作为社长的所有社团
     clubs = Officer.objects.filter(user_profile=request.user.profile, position='president', is_current=True).values_list('club', flat=True)
     
-    # 根据选项卡类型获取数据
-    active_items = []
-    completed_items = []
+    # 获取所有6种审批类型的数据
+    approved_rejected_items = {
+        'annual_review': ReviewSubmission.objects.filter(club__in=clubs, status__in=['approved', 'rejected', 'pending']).order_by('-submitted_at'),
+        'registration': ClubRegistration.objects.filter(club__in=clubs, status__in=['approved', 'rejected', 'pending']).order_by('-submitted_at'),
+        'application': ClubRegistrationRequest.objects.filter(requested_by=request.user, status__in=['approved', 'rejected', 'pending']).order_by('-submitted_at'),
+        'reimbursement': Reimbursement.objects.filter(club__in=clubs, status__in=['approved', 'rejected', 'pending', 'partially_rejected']).order_by('-submitted_at'),
+        'activity_application': ActivityApplication.objects.filter(club__in=clubs, status__in=['approved', 'rejected', 'pending']).order_by('-submitted_at'),
+        'president_transition': PresidentTransition.objects.filter(club__in=clubs, status__in=['approved', 'rejected', 'pending']).order_by('-submitted_at'),
+    }
     
-    if tab == 'annual_review':
-        all_items = ReviewSubmission.objects.filter(club__in=clubs).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected'])
-        completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read_by_president=False).update(is_read_by_president=True)
-        
-    elif tab == 'registration':
-        all_items = ClubRegistration.objects.filter(club__in=clubs).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected'])
-        completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read=False).update(is_read=True)
-        
-    elif tab == 'application':
-        all_items = ClubRegistrationRequest.objects.filter(requested_by=request.user).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected'])
-        completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read=False).update(is_read=True)
-        
-    elif tab == 'reimbursement':
-        all_items = Reimbursement.objects.filter(club__in=clubs).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected', 'partially_rejected'])
-        completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read=False).update(is_read=True)
-        
-    elif tab == 'activity_application':
-        all_items = ActivityApplication.objects.filter(club__in=clubs).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected'])
-        completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read=False).update(is_read=True)
-        
-    elif tab == 'president_transition':
-        all_items = PresidentTransition.objects.filter(club__in=clubs).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected'])
-        completed_items = all_items.filter(status='approved')
-        # 标记已读
-        all_items.filter(status__in=['approved', 'rejected'], is_read=False).update(is_read=True)
+    # 计算未处理数量（pending状态）
+    pending_counts = {
+        'annual_review': ReviewSubmission.objects.filter(club__in=clubs, status='pending').count(),
+        'registration': ClubRegistration.objects.filter(club__in=clubs, status='pending').count(),
+        'application': ClubRegistrationRequest.objects.filter(requested_by=request.user, status='pending').count(),
+        'reimbursement': Reimbursement.objects.filter(club__in=clubs, status='pending').count(),
+        'activity_application': ActivityApplication.objects.filter(club__in=clubs, status='pending').count(),
+        'president_transition': PresidentTransition.objects.filter(club__in=clubs, status='pending').count(),
+    }
+    
+    # 计算需要修改材料的数量（已拒绝且无新版本）
+    rejected_need_action_counts = {item_type: 0 for item_type in approved_rejected_items.keys()}
     
     # 标记是否有更新版本
-    for item in active_items:
-        if hasattr(item, 'status') and item.status == 'rejected':
-            item.has_newer_version = False
-            # 检查是否有更新版本
-            if tab == 'annual_review':
-                newer = ReviewSubmission.objects.filter(
-                    club=item.club,
-                    submission_year=item.submission_year,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-                item.has_newer_version = newer
-            elif tab == 'registration':
-                newer = ClubRegistration.objects.filter(
-                    club=item.club,
-                    registration_period=item.registration_period,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-                item.has_newer_version = newer
-            elif tab == 'application':
-                newer = ClubRegistrationRequest.objects.filter(
-                    requested_by=item.requested_by,
-                    club_name=item.club_name,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-                item.has_newer_version = newer
-            elif tab in ['reimbursement', 'activity_application', 'president_transition']:
-                model_class = type(item)
-                newer = model_class.objects.filter(
-                    club=item.club,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-                item.has_newer_version = newer
+    for item_type, items in approved_rejected_items.items():
+        for item in items:
+            if hasattr(item, 'status') and item.status == 'rejected':
+                item.has_newer_version = False
+                # 检查是否有更新版本
+                if item_type == 'annual_review':
+                    newer = ReviewSubmission.objects.filter(
+                        club=item.club,
+                        submission_year=item.submission_year,
+                        submitted_at__gt=item.submitted_at
+                    ).exists()
+                    item.has_newer_version = newer
+                elif item_type == 'registration':
+                    newer = ClubRegistration.objects.filter(
+                        club=item.club,
+                        registration_period=item.registration_period,
+                        submitted_at__gt=item.submitted_at
+                    ).exists()
+                    item.has_newer_version = newer
+                elif item_type == 'application':
+                    newer = ClubRegistrationRequest.objects.filter(
+                        requested_by=item.requested_by,
+                        club_name=item.club_name,
+                        submitted_at__gt=item.submitted_at
+                    ).exists()
+                    item.has_newer_version = newer
+                elif item_type in ['reimbursement', 'activity_application', 'president_transition']:
+                    model_class = type(item)
+                    newer = model_class.objects.filter(
+                        club=item.club,
+                        submitted_at__gt=item.submitted_at
+                    ).exists()
+                    item.has_newer_version = newer
+                
+                # 累计需要处理的已拒绝项目（无新版本）
+                if not item.has_newer_version:
+                    rejected_need_action_counts[item_type] += 1
+    
+    # 合并计算：需要处理的总数 = pending + rejected且无新版本
+    unread_approval_counts = {
+        item_type: pending_counts[item_type] + rejected_need_action_counts[item_type]
+        for item_type in pending_counts.keys()
+    }
+    
+    # 计算活跃请求总数（用于底栏显示）
+    total_active_requests = sum(unread_approval_counts.values())
+    # 添加 total 键以便底栏徽章使用（与 context processor 格式一致）
+    unread_approval_counts['total'] = total_active_requests
     
     context = {
-        'current_tab': tab,
-        'active_items': active_items,
-        'completed_items': completed_items,
+        'approved_rejected_items': approved_rejected_items,
+        'unread_approval_counts': unread_approval_counts,
+        'total_active_requests': total_active_requests,
     }
     
     return render(request, 'clubs/user/approval_center_mobile.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def approval_history_by_type(request, item_type):
     """按类型显示审批历史 - 显示某个类型的全部审批记录"""
     if not _is_president(request.user):
@@ -1947,38 +1819,78 @@ def approval_history_by_type(request, item_type):
     title = ''
     
     if item_type == 'annual_review':
-        items = ReviewSubmission.objects.filter(club__in=clubs).order_by('-submitted_at')
+        items = list(ReviewSubmission.objects.filter(club__in=clubs).order_by('-submitted_at'))
         title = '年审材料历史'
+        # 标记是否有更新版本
+        for item in items:
+            if item.status == 'rejected':
+                item.has_newer_version = ReviewSubmission.objects.filter(
+                    club=item.club,
+                    submission_year=item.submission_year,
+                    submitted_at__gt=item.submitted_at
+                ).exists()
+            else:
+                item.has_newer_version = False
     elif item_type == 'club_registration':
-        items = ClubRegistration.objects.filter(club__in=clubs).order_by('-submitted_at')
+        items = list(ClubRegistration.objects.filter(club__in=clubs).order_by('-submitted_at'))
         title = '社团注册历史'
+        for item in items:
+            if item.status == 'rejected':
+                item.has_newer_version = ClubRegistration.objects.filter(
+                    club=item.club,
+                    registration_period=item.registration_period,
+                    submitted_at__gt=item.submitted_at
+                ).exists()
+            else:
+                item.has_newer_version = False
     elif item_type == 'club_application':
-        items = ClubRegistrationRequest.objects.filter(requested_by=request.user).order_by('-submitted_at')
+        items = list(ClubRegistrationRequest.objects.filter(requested_by=request.user).order_by('-submitted_at'))
         title = '社团申请历史'
+        for item in items:
+            if item.status == 'rejected':
+                item.has_newer_version = ClubRegistrationRequest.objects.filter(
+                    requested_by=item.requested_by,
+                    club_name=item.club_name,
+                    submitted_at__gt=item.submitted_at
+                ).exists()
+            else:
+                item.has_newer_version = False
     elif item_type == 'reimbursement':
-        items = Reimbursement.objects.filter(club__in=clubs).order_by('-submitted_at')
+        items = list(Reimbursement.objects.filter(club__in=clubs).order_by('-submitted_at'))
         title = '报销申请历史'
+        for item in items:
+            if item.status == 'rejected':
+                item.has_newer_version = Reimbursement.objects.filter(
+                    club=item.club,
+                    submitted_at__gt=item.submitted_at
+                ).exists()
+            else:
+                item.has_newer_version = False
     elif item_type == 'activity_application':
-        items = ActivityApplication.objects.filter(club__in=clubs).order_by('-submitted_at')
+        items = list(ActivityApplication.objects.filter(club__in=clubs).order_by('-submitted_at'))
         title = '活动申请历史'
+        for item in items:
+            if item.status == 'rejected':
+                item.has_newer_version = ActivityApplication.objects.filter(
+                    club=item.club,
+                    submitted_at__gt=item.submitted_at
+                ).exists()
+            else:
+                item.has_newer_version = False
     elif item_type == 'president_transition':
-        items = PresidentTransition.objects.filter(club__in=clubs).order_by('-submitted_at')
+        items = list(PresidentTransition.objects.filter(club__in=clubs).order_by('-submitted_at'))
         title = '社长换届历史'
+        for item in items:
+            if item.status == 'rejected':
+                item.has_newer_version = PresidentTransition.objects.filter(
+                    club=item.club,
+                    submitted_at__gt=item.submitted_at
+                ).exists()
+            else:
+                item.has_newer_version = False
     else:
         messages.error(request, '无效的审批类型')
         return redirect('clubs:approval_center', 'annual_review')
-    
-    # 标记已审核项为已读
-    for item in items:
-        if item.status in ['approved', 'rejected']:
-            if hasattr(item, 'is_read_by_president'):
-                if not item.is_read_by_president:
-                    item.is_read_by_president = True
-                    item.save(update_fields=['is_read_by_president'])
-            elif hasattr(item, 'is_read'):
-                if not item.is_read:
-                    item.is_read = True
-                    item.save(update_fields=['is_read'])
     
     context = {
         'items': items,
@@ -1988,15 +1900,18 @@ def approval_history_by_type(request, item_type):
     
     return render(request, 'clubs/user/approval_history_by_type.html', context)
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def approval_detail(request, item_type, item_id):
-    """查看审批详情 - 显示审批历史时间轴"""
+    """查看审批详情 - 显示审批历史时间轴 - 社长使用与干事相同的详情页面"""
     if not _is_president(request.user):
         messages.error(request, '仅社团社长可以访问此页面')
         return redirect('clubs:index')
     
+    from types import SimpleNamespace
+    
     context = {}
     item = None
+    materials = []
     
     if item_type == 'annual_review':
         item = get_object_or_404(ReviewSubmission, pk=item_id)
@@ -2007,6 +1922,27 @@ def approval_detail(request, item_type, item_id):
         context['title'] = f'{item.club.name} - 年审记录'
         context['item'] = item
         context['reviews'] = SubmissionReview.objects.filter(submission=item).order_by('-reviewed_at')
+        
+        # 构建材料列表
+        material_fields = [
+            ('self_assessment_form', '自查表', 'description'),
+            ('club_constitution', '社团章程', 'description'),
+            ('leader_learning_work_report', '负责人学习及工作情况表', 'description'),
+            ('annual_activity_list', '社团年度活动清单', 'receipt'),
+            ('advisor_performance_report', '指导教师履职情况表', 'description'),
+            ('financial_report', '年度财务情况表', 'receipt'),
+            ('member_composition_list', '社团成员构成表', 'people'),
+            ('new_media_account_report', '新媒体账号及运维情况表', 'newspaper'),
+            ('other_materials', '其他材料', 'attach_file'),
+        ]
+        for field_name, display_name, icon in material_fields:
+            file_field = getattr(item, field_name, None)
+            if file_field:
+                materials.append({
+                    'name': display_name,
+                    'file': file_field,
+                    'icon': icon
+                })
         
     elif item_type == 'registration':
         item = get_object_or_404(ClubRegistration, pk=item_id)
@@ -2025,16 +1961,25 @@ def approval_detail(request, item_type, item_id):
             return redirect('clubs:approval_center', 'application')
         context['title'] = f'{item.club_name} - 新社团申请'
         context['item'] = item
-        # 为新社团申请创建模拟的审核记录
-        reviews = []
-        if item.status in ['approved', 'rejected'] and item.reviewed_at:
-            reviews.append({
-                'reviewed_at': item.reviewed_at,
-                'reviewer': item.reviewer if item.reviewer else None,
-                'status': item.status,
-                'comment': item.reviewer_comment or '',
-            })
-        context['reviews'] = reviews
+        # 使用 ClubApplicationReview 存储的审核记录
+        context['reviews'] = ClubApplicationReview.objects.filter(application=item).order_by('-reviewed_at')
+        
+        # 构建材料列表
+        material_fields = [
+            ('establishment_application', '社团成立申请书', 'description'),
+            ('constitution_draft', '社团章程草案', 'description'),
+            ('three_year_plan', '社团三年发展规划', 'description'),
+            ('leaders_resumes', '拟任负责人和指导老师简历', 'attach_file'),
+            ('one_month_activity_plan', '一个月后活动计划', 'description'),
+        ]
+        for field_name, display_name, icon in material_fields:
+            file_field = getattr(item, field_name, None)
+            if file_field:
+                materials.append({
+                    'name': display_name,
+                    'file': file_field,
+                    'icon': icon
+                })
         
     elif item_type == 'reimbursement':
         item = get_object_or_404(Reimbursement, pk=item_id)
@@ -2043,16 +1988,20 @@ def approval_detail(request, item_type, item_id):
             return redirect('clubs:approval_center', 'reimbursement')
         context['title'] = f'{item.club.name} - 报销申请'
         context['item'] = item
-        # 为报销申请创建模拟的审核记录
+        # 报销只有一条审核记录，直接从对象字段获取
         reviews = []
-        if item.status in ['approved', 'rejected'] and item.reviewed_at:
-            reviews.append({
-                'reviewed_at': item.reviewed_at,
-                'reviewer': item.reviewer,
-                'status': item.status,
-                'comment': item.reviewer_comment or '',
-            })
+        if item.reviewer or item.reviewed_at:
+            status = 'approved' if item.status == 'approved' else 'rejected' if item.status == 'rejected' else 'pending'
+            reviews.append(SimpleNamespace(reviewer=item.reviewer, status=status, comment=item.reviewer_comment, reviewed_at=item.reviewed_at))
         context['reviews'] = reviews
+        
+        # 构建材料列表
+        if item.receipt_file:
+            materials.append({
+                'name': '报销凭证',
+                'file': item.receipt_file,
+                'icon': 'receipt'
+            })
         
     elif item_type == 'activity_application':
         item = get_object_or_404(ActivityApplication, pk=item_id)
@@ -2061,43 +2010,58 @@ def approval_detail(request, item_type, item_id):
             return redirect('clubs:approval_center', 'activity_application')
         context['title'] = f'{item.club.name} - 活动申请'
         context['item'] = item
-        # 为活动申请创建模拟的审核记录
-        reviews = []
-        if item.status in ['approved', 'rejected'] and item.reviewed_at:
-            reviews.append({
-                'reviewed_at': item.reviewed_at,
-                'reviewer': item.reviewer,
-                'status': item.status,
-                'comment': item.reviewer_comment or '',
+        # 使用 ActivityApplicationHistory 获取审核历史
+        context['reviews'] = ActivityApplicationHistory.objects.filter(activity_application=item).order_by('-attempt_number')
+        
+        # 构建材料列表
+        if item.application_form:
+            materials.append({
+                'name': '活动申请表',
+                'file': item.application_form,
+                'icon': 'description'
             })
-        context['reviews'] = reviews
         
     elif item_type == 'president_transition':
         item = get_object_or_404(PresidentTransition, pk=item_id)
         if item.club.president != request.user:
             messages.error(request, '您没有权限查看此项目')
             return redirect('clubs:approval_center', 'president_transition')
-        context['title'] = f'{item.club.name} - 社长交接'
+        context['title'] = f'{item.club.name} - 社长换届'
         context['item'] = item
         # 为社长换届创建模拟的审核记录
         reviews = []
         if item.status in ['approved', 'rejected'] and item.reviewed_at:
-            reviews.append({
-                'reviewed_at': item.reviewed_at,
-                'reviewer': item.reviewer,
-                'status': item.status,
-                'comment': item.reviewer_comment or '',
-            })
+            reviews.append(SimpleNamespace(
+                reviewed_at=item.reviewed_at,
+                reviewer=item.reviewer,
+                status=item.status,
+                comment=item.reviewer_comment or '',
+            ))
         context['reviews'] = reviews
+        
+        # 构建材料列表 - PresidentTransition可能没有附件，但如果需要可在此扩展
+        material_fields = [
+            ('transition_document', '换届申请文档', 'description'),
+        ]
+        for field_name, display_name, icon in material_fields:
+            file_field = getattr(item, field_name, None)
+            if file_field:
+                materials.append({
+                    'name': display_name,
+                    'file': file_field,
+                    'icon': icon
+                })
     
     else:
         messages.error(request, '无效的项目类型')
         return redirect('clubs:approval_center', 'annual_review')
     
     context['item_type'] = item_type
+    context['materials'] = materials
+    # 使用与干事审核详情相同的模板
     return render(request, 'clubs/user/approval_detail.html', context)
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['POST'])
 def cancel_submission(request, submission_id):
     """取消年审请求并删除已上传的文件 - 仅社长可用"""
@@ -2154,7 +2118,7 @@ def cancel_submission(request, submission_id):
 
 # ==================== 干事审核界面 ====================
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['GET', 'POST'])
 def review_submission(request, submission_id):
     """审核年审材料 - 干事和管理员可用"""
@@ -2169,10 +2133,8 @@ def review_submission(request, submission_id):
         existing_review = SubmissionReview.objects.filter(submission=submission, reviewer=request.user).first()
         if existing_review:
             messages.error(request, '您已经审核过该材料，无法再次查看审核页面')
-            # 根据用户角色选择不同的重定向页面
-            if _is_staff(request.user):
-                return redirect('clubs:staff_dashboard')
-            return redirect('clubs:approval_center', 'annual_review')
+            # 都重定向到审核中心的年审标签页
+            return redirect('clubs:staff_audit_center', 'annual_review')
     
     if request.method == 'POST':
         status = request.POST.get('review_status', '')
@@ -2180,7 +2142,7 @@ def review_submission(request, submission_id):
         
         if status not in ['approved', 'rejected']:
             messages.error(request, '无效的审核状态')
-            return redirect('clubs:admin_dashboard')
+            return redirect('clubs:staff_audit_center', 'annual_review')
         
         # 处理被拒绝的材料
         rejected_materials = []
@@ -2248,10 +2210,8 @@ def review_submission(request, submission_id):
                     submission.save()
                     messages.success(request, f'已完成审核，当前审核次数：{submission.review_count}/3')
         
-        # 根据用户角色选择不同的重定向页面
-        if _is_staff(request.user):
-            return redirect('clubs:staff_dashboard')
-        return redirect('clubs:approval_center', 'annual_review')
+        # 重定向到审核中心的年审标签页
+        return redirect('clubs:staff_audit_center', 'annual_review')
     
     # 准备材料列表用于审核表单
     submission_materials = []
@@ -2275,11 +2235,20 @@ def review_submission(request, submission_id):
                 'icon': icon
             })
     
+    # 获取审核记录
+    existing_reviews = SubmissionReview.objects.filter(submission=submission).order_by('-reviewed_at')
+    
+    # 计算批准和拒绝数量
+    approved_count = existing_reviews.filter(status='approved').count()
+    rejected_count = existing_reviews.filter(status='rejected').count()
+    
     context = {
         'submission': submission,
         'club': submission.club,
-        'existing_reviews': SubmissionReview.objects.filter(submission=submission).order_by('-reviewed_at'),
+        'existing_reviews': existing_reviews,
         'submission_materials': submission_materials,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
     }
     return render(request, 'clubs/staff/review_submission.html', context)
 
@@ -2289,7 +2258,7 @@ def review_submission(request, submission_id):
 
 # ==================== 报销功能 ====================
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def view_reimbursements(request, club_id):
     """查看报销历史 - 社长和干事可用"""
     user = request.user
@@ -2309,13 +2278,6 @@ def view_reimbursements(request, club_id):
     # 获取该社团的所有报销记录，按提交时间降序排列
     reimbursements = club.reimbursements.all().order_by('-submitted_at')
 
-    # 社长查看时，将已审核的记录标记为已读
-    if _is_president(user):
-        for reimbursement in reimbursements:
-            if reimbursement.status in ['approved', 'rejected'] and not reimbursement.is_read:
-                reimbursement.is_read = True
-                reimbursement.save(update_fields=['is_read'])
-    
     context = {
         'club': club,
         'reimbursements': reimbursements,
@@ -2323,7 +2285,7 @@ def view_reimbursements(request, club_id):
     return render(request, 'clubs/user/view_reimbursements.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def submit_reimbursement(request, club_id):
     """提交报销材料 - 仅社长可用"""
@@ -2393,12 +2355,9 @@ def submit_reimbursement(request, club_id):
     return render(request, 'clubs/user/submit_reimbursement.html', context)
 
 
-
-
-
 # ==================== 干事管理功能 ====================
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def get_templates_by_type(template_type):
     """根据模板类型获取活跃的模板列表"""
     return Template.objects.filter(template_type=template_type, is_active=True).order_by('-created_at')
@@ -2446,7 +2405,7 @@ def upload_template(request):
     return render(request, 'clubs/staff/upload_template.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def review_reimbursement(request, reimbursement_id):
     """审核报销材料 - 干事和管理员可用"""
     if not is_staff_or_admin(request.user):
@@ -2456,12 +2415,30 @@ def review_reimbursement(request, reimbursement_id):
     reimbursement = get_object_or_404(Reimbursement, pk=reimbursement_id)
     
     if request.method == 'POST':
-        decision = request.POST.get('decision', '')
-        review_comments = request.POST.get('review_comments', '').strip()
+        # 兼容两种参数名：'decision'（旧版）和'review_status'（新版）
+        decision = request.POST.get('decision', '') or request.POST.get('review_status', '')
+        # 兼容两种参数名：'review_comments'（旧版）和'review_comment'（新版）
+        review_comments = request.POST.get('review_comments', '') or request.POST.get('review_comment', '')
+        review_comments = review_comments.strip()
         
         if decision not in ['approved', 'rejected']:
             messages.error(request, '状态不合法')
-            return redirect('clubs:staff_dashboard')
+            return redirect('clubs:staff_audit_center', 'reimbursement')
+        
+        # 保存历史记录
+        from clubs.models import ReimbursementHistory
+        ReimbursementHistory.objects.create(
+            reimbursement=reimbursement,
+            attempt_number=reimbursement.resubmission_attempt,
+            submission_date=reimbursement.submission_date,
+            reimbursement_amount=reimbursement.reimbursement_amount,
+            description=reimbursement.description,
+            submitted_at=reimbursement.submitted_at,
+            reviewed_at=timezone.now(),
+            reviewer=request.user,
+            status=decision,
+            reviewer_comment=review_comments
+        )
         
         reimbursement.status = decision
         reimbursement.reviewer_comment = review_comments
@@ -2470,15 +2447,23 @@ def review_reimbursement(request, reimbursement_id):
         reimbursement.save()
         
         messages.success(request, f'报销材料已{'批准' if decision == 'approved' else '拒绝'}')
-        return redirect('clubs:staff_dashboard')
+        return redirect('clubs:staff_audit_center', 'reimbursement')
+    
+    # 报销是单人审核，不需要多人审核统计
+    # 检查当前用户是否已经审核过（通过检查reimbursement的reviewer字段）
+    user_has_reviewed = reimbursement.reviewer == request.user if reimbursement.reviewer else False
     
     context = {
         'reimbursement': reimbursement,
+        'user_has_reviewed': user_has_reviewed,
+        'approved_count': 1 if reimbursement.status == 'approved' else 0,
+        'rejected_count': 1 if reimbursement.status == 'rejected' else 0,
+        'existing_reviews': [],  # 报销是单人审核，没有多个审核记录
     }
     return render(request, 'clubs/staff/review_reimbursement.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def review_club_registration(request, registration_id):
     """审核社团注册申请 - 仅干事和管理员可用"""
@@ -2489,11 +2474,14 @@ def review_club_registration(request, registration_id):
     registration = get_object_or_404(ClubRegistrationRequest, pk=registration_id)
     
     # 检查当前用户是否已经审核过该申请
-    if registration.reviews.filter(reviewer=request.user).exists():
-        messages.error(request, '您已经审核过该社团注册申请，无法再次审核')
-        return redirect('clubs:staff_dashboard')
+    user_has_reviewed = registration.reviews.filter(reviewer=request.user).exists()
     
     if request.method == 'POST':
+        # 如果用户已审核过，禁止重复提交
+        if user_has_reviewed:
+            messages.error(request, '您已经审核过该社团注册申请，无法再次审核')
+            return redirect('clubs:review_club_registration', registration_id=registration_id)
+            
         # 兼容两种参数名：'decision'（来自按钮提交）和'review_status'（统一名称）
         decision = request.POST.get('decision', '') or request.POST.get('review_status', '')
         review_comments = request.POST.get('review_comments', '').strip() or request.POST.get('review_comment', '').strip()
@@ -2523,7 +2511,7 @@ def review_club_registration(request, registration_id):
         
         if decision not in ['approved', 'rejected']:
             messages.error(request, '状态不合法')
-            return redirect('clubs:staff_dashboard')
+            return redirect('clubs:staff_audit_center', 'application')
         
         # 如果是拒绝，需要确保至少有一个被拒绝的材料
         if decision == 'rejected' and not rejected_materials:
@@ -2591,10 +2579,10 @@ def review_club_registration(request, registration_id):
     material_fields = [
         ('establishment_application', '社团成立申请表', 'description'),
         ('constitution_draft', '社团章程草案', 'gavel'),
-        ('three_year_plan', '三年规划', 'calendar_today'),
+        ('three_year_plan', '三年规划', 'today'),
         ('leaders_resumes', '负责人简历', 'person'),
         ('one_month_activity_plan', '一个月活动计划', 'event'),
-        ('advisor_certificates', '指导老师聘书', 'badge'),
+        ('advisor_certificates', '指导老师聘书', 'description'),
     ]
     
     materials_list = []
@@ -2606,15 +2594,25 @@ def review_club_registration(request, registration_id):
                 'icon': icon
             })
     
+    # 获取现有审核记录
+    existing_reviews = registration.reviews.all().order_by('-reviewed_at')
+    approved_count = existing_reviews.filter(status='approved').count()
+    rejected_count = existing_reviews.filter(status='rejected').count()
+    
     context = {
         'registration': registration,
         'rejected_materials': ClubApplicationReview.REJECTED_MATERIALS_CHOICES if hasattr(ClubApplicationReview, 'REJECTED_MATERIALS_CHOICES') else [],
         'materials_list': materials_list,
+        'show_rejected_materials': True,
+        'existing_reviews': existing_reviews,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'has_reviewed': user_has_reviewed,
     }
     return render(request, 'clubs/staff/review_club_registration.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['GET', 'POST'])
 def review_request(request, club_id):
     """
@@ -2640,20 +2638,37 @@ def review_request(request, club_id):
         messages.error(request, '无效的审核请求类型')
         return redirect('clubs:staff_dashboard')
     
+    # 映射request_type到audit-center的tab名称
+    audit_center_tab_mapping = {
+        'submission': 'annual_review',
+        'registration': 'application',
+        'club_registration_submission': 'registration',
+        'leader_change': 'info_change',
+        'reimbursement': 'reimbursement',
+        'staff_registration': 'staff_dashboard'  # 使用旧的重定向地址
+    }
+    audit_center_tab = audit_center_tab_mapping.get(request_type, 'staff_dashboard')
+    
     # 对于某些审核类型不需要申请次数
     # - staff_registration: 用 club_id 作为 user_id
     # - registration: 用 club_id 作为申请ID
     if request_type not in ['staff_registration', 'registration']:
         if not submission_number:
             messages.error(request, '无效的申请次数')
-            return redirect('clubs:staff_dashboard')
+            if audit_center_tab == 'staff_dashboard':
+                return redirect('clubs:staff_dashboard')
+            else:
+                return redirect('clubs:staff_audit_center', audit_center_tab)
         
         # 尝试将申请次数转换为整数
         try:
             submission_number = int(submission_number)
         except ValueError:
             messages.error(request, '无效的申请次数格式')
-            return redirect('clubs:staff_dashboard')
+            if audit_center_tab == 'staff_dashboard':
+                return redirect('clubs:staff_dashboard')
+            else:
+                return redirect('clubs:staff_audit_center', audit_center_tab)
     
     # 定义不同审核类型的被拒绝材料字段映射
     rejected_materials_mapping = {
@@ -3406,7 +3421,7 @@ def review_request(request, club_id):
 
 # ==================== 管理员功能 ====================
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def review_staff_registration(request, user_id):
     """
     审核干事注册申请 - 仅管理员可用
@@ -3452,8 +3467,7 @@ def review_staff_registration(request, user_id):
     }
     return render(request, 'clubs/admin/review_staff_registration.html', context)
 
-
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def admin_dashboard(request):
     """管理员仪表板"""
     if not _is_admin(request.user):
@@ -3489,7 +3503,117 @@ def admin_dashboard(request):
     return render(request, 'clubs/admin/dashboard.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
+def manage_carousel(request):
+    """管理轮播图列表"""
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以访问此页面')
+        return redirect('clubs:index')
+    
+    carousel_images = CarouselImage.objects.all().order_by('order', '-uploaded_at')
+    return render(request, 'clubs/admin/manage_carousel.html', {
+        'carousel_images': carousel_images,
+    })
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def add_carousel(request):
+    """添加轮播图"""
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以访问此页面')
+        return redirect('clubs:index')
+    
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        link = request.POST.get('link', '').strip()
+        order = int(request.POST.get('order', 0))
+        is_active = request.POST.get('is_active') == 'on'
+        image = request.FILES.get('image')
+        
+        if not image:
+            messages.error(request, '请选择要上传的图片')
+            return render(request, 'clubs/admin/carousel_form.html')
+        
+        carousel = CarouselImage.objects.create(
+            title=title,
+            description=description,
+            link=link,
+            order=order,
+            is_active=is_active,
+            image=image,
+            uploaded_by=request.user
+        )
+        messages.success(request, '轮播图添加成功')
+        return redirect('clubs:manage_carousel')
+    
+    return render(request, 'clubs/admin/carousel_form.html')
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def edit_carousel(request, carousel_id):
+    """编辑轮播图"""
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以访问此页面')
+        return redirect('clubs:index')
+    
+    carousel = get_object_or_404(CarouselImage, id=carousel_id)
+    
+    if request.method == 'POST':
+        carousel.title = request.POST.get('title', '').strip()
+        carousel.description = request.POST.get('description', '').strip()
+        carousel.link = request.POST.get('link', '').strip()
+        carousel.order = int(request.POST.get('order', 0))
+        carousel.is_active = request.POST.get('is_active') == 'on'
+        
+        # 如果上传了新图片，替换旧图片
+        new_image = request.FILES.get('image')
+        if new_image:
+            # 删除旧图片文件
+            if carousel.image:
+                try:
+                    import os
+                    if os.path.isfile(carousel.image.path):
+                        os.remove(carousel.image.path)
+                except:
+                    pass
+            carousel.image = new_image
+        
+        carousel.save()
+        messages.success(request, '轮播图更新成功')
+        return redirect('clubs:manage_carousel')
+    
+    return render(request, 'clubs/admin/carousel_form.html', {
+        'carousel': carousel,
+    })
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def delete_carousel(request, carousel_id):
+    """删除轮播图"""
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以访问此页面')
+        return redirect('clubs:index')
+    
+    carousel = get_object_or_404(CarouselImage, id=carousel_id)
+    
+    if request.method == 'POST':
+        # 删除图片文件
+        if carousel.image:
+            try:
+                import os
+                if os.path.isfile(carousel.image.path):
+                    os.remove(carousel.image.path)
+            except:
+                pass
+        
+        carousel.delete()
+        messages.success(request, '轮播图删除成功')
+    
+    return redirect('clubs:manage_carousel')
+
+
+@login_required(login_url=settings.LOGIN_URL)
 def locked_accounts(request):
     """列出被锁定的用户名，供管理员解锁或重置密码"""
     if not _is_admin(request.user):
@@ -3505,8 +3629,7 @@ def locked_accounts(request):
 
     return render(request, 'clubs/admin/locked_accounts.html', {'locked': locked})
 
-
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def publish_announcement(request):
     """发布公告 - 仅管理员可用"""
@@ -3520,8 +3643,7 @@ def publish_announcement(request):
 # 如果将来需要恢复，再添加对应的视图和路由即可。
 
 
-
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['POST'])
 def unlock_account(request, username):
     """管理员解锁被锁账号（POST）"""
@@ -3590,7 +3712,7 @@ def publish_announcement(request):
     return render(request, 'clubs/admin/publish_announcement.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def delete_announcement(request, announcement_id):
     """删除公告 - 仅管理员可用"""
     if not _is_admin(request.user):
@@ -3611,7 +3733,7 @@ def delete_announcement(request, announcement_id):
     }
     return render(request, 'clubs/admin/confirm_delete_announcement.html', context)
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def submit_club_registration(request, club_id):
     """提交社团注册 - 仅社团社长可用"""
     # 获取社团对象
@@ -3664,8 +3786,10 @@ def submit_club_registration(request, club_id):
             return redirect('clubs:submit_club_registration', club_id=club_id)
         
         # 验证文件类型
-        allowed_extensions = ['.zip', '.rar', '.docx']
+        allowed_extensions = ['.doc', '.docx', '.pdf']
         errors = []
+        
+        # 验证必填文件
         for f, label in [
             (registration_form, '社团注册申请表'),
             (basic_info_form, '学生社团基础信息表'),
@@ -3674,31 +3798,25 @@ def submit_club_registration(request, club_id):
             err = _validate_file_allowed(f, label, allowed_extensions)
             if err:
                 errors.append(err)
+        
+        # 验证可选文件
+        optional_files = [
+            (leader_change_application, '社团主要负责人变动申请表'),
+            (meeting_minutes, '社团大会会议记录'),
+            (name_change_application, '社团名称变更申请表'),
+            (advisor_change_application, '社团指导老师变动申请表'),
+            (business_advisor_change_application, '社团业务指导单位变动申请表'),
+            (new_media_application, '新媒体平台建立申请表')
+        ]
+        for f, label in optional_files:
+            if f:
+                err = _validate_file_allowed(f, label, allowed_extensions)
+                if err:
+                    errors.append(err)
+        
         if errors:
             for err in errors:
                 messages.error(request, err)
-            return redirect('clubs:submit_club_registration', club_id=club_id)
-        
-        if not validate_file(membership_fee_form, '会费表或免收会费说明书'):
-            return redirect('clubs:submit_club_registration', club_id=club_id)
-        
-        # 验证可选文件
-        if leader_change_application and not validate_file(leader_change_application, '社团主要负责人变动申请表'):
-            return redirect('clubs:submit_club_registration', club_id=club_id)
-        
-        if meeting_minutes and not validate_file(meeting_minutes, '社团大会会议记录'):
-            return redirect('clubs:submit_club_registration', club_id=club_id)
-        
-        if name_change_application and not validate_file(name_change_application, '社团名称变更申请表'):
-            return redirect('clubs:submit_club_registration', club_id=club_id)
-        
-        if advisor_change_application and not validate_file(advisor_change_application, '社团指导老师变动申请表'):
-            return redirect('clubs:submit_club_registration', club_id=club_id)
-        
-        if business_advisor_change_application and not validate_file(business_advisor_change_application, '社团业务指导单位变动申请表'):
-            return redirect('clubs:submit_club_registration', club_id=club_id)
-        
-        if new_media_application and not validate_file(new_media_application, '新媒体平台建立申请表'):
             return redirect('clubs:submit_club_registration', club_id=club_id)
         
         # 创建社团注册记录
@@ -3738,42 +3856,6 @@ def submit_club_registration(request, club_id):
     return render(request, 'clubs/user/submit_club_registration.html', context)
 
 
-@login_required(login_url='login')
-@require_http_methods(["GET", "POST"])
-
-
-@login_required(login_url='login')
-def view_club_registrations(request, club_id):
-    """查看社团注册记录 - 仅社团社长可用"""
-    # 获取社团对象
-    club = get_object_or_404(Club, pk=club_id)
-    
-    # 验证权限：只有当前社团社长可以查看注册记录
-    is_club_president = Officer.objects.filter(
-        user_profile__user=request.user,
-        club=club,
-        position='president',
-        is_current=True
-    ).exists()
-    
-    if not is_club_president:
-        messages.error(request, '仅社团社长可以查看社团注册记录')
-        return redirect('clubs:user_dashboard')
-    
-    registrations = ClubRegistration.objects.filter(club=club).order_by('-submitted_at')
-
-    # 将已审核的记录标记为已读
-    for registration in registrations:
-        if registration.status in ['approved', 'rejected'] and not registration.is_read:
-            registration.is_read = True
-            registration.save(update_fields=['is_read'])
-    
-    context = {
-        'club': club,
-        'registrations': registrations,
-    }
-    return render(request, 'clubs/user/view_club_registrations.html', context)
-
 def review_club_registration_submission(request, registration_id):
     """审核社团注册 - 仅干事和管理员可用"""
     # 简单的权限检查
@@ -3786,14 +3868,14 @@ def review_club_registration_submission(request, registration_id):
             # 检查审核是否已完成，已完成则不允许查看
             if registration.status != 'pending':
                 messages.error(request, '该申请已完成审核，无法再查看审核页面')
-                return redirect('clubs:staff_dashboard')
+                return redirect('clubs:staff_audit_center', 'registration')
             
             # 检查当前用户是否已经审核过该申请
             # 禁止同一干事审核同一个请求两次及以上
             has_reviewed = registration.reviews.filter(reviewer=request.user).exists()
             if has_reviewed:
                 messages.error(request, '您已经审核过该社团注册申请，无法再次审核')
-                return redirect('clubs:staff_dashboard')
+                return redirect('clubs:staff_audit_center', 'registration')
             
             if request.method == 'POST':
                 # 兼容两种参数名：'decision'（旧名称）和'review_status'（统一名称）
@@ -3823,7 +3905,7 @@ def review_club_registration_submission(request, registration_id):
                 
                 if decision not in ['approved', 'rejected']:
                     messages.error(request, '状态不合法')
-                    return redirect('clubs:staff_dashboard')
+                    return redirect('clubs:staff_audit_center', 'registration')
                 
                 # 如果是拒绝，需要确保至少有一个被拒绝的材料
                 if decision == 'rejected' and not rejected_materials:
@@ -3869,7 +3951,7 @@ def review_club_registration_submission(request, registration_id):
                 
                 registration.save()
                 
-                return redirect('clubs:staff_dashboard')
+                return redirect('clubs:staff_audit_center', 'registration')
             
             # 计算审核统计信息
             approved_count = registration.reviews.filter(status='approved').count()
@@ -3892,7 +3974,7 @@ def review_club_registration_submission(request, registration_id):
         return redirect('clubs:index')
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def edit_announcement(request, announcement_id):
     """编辑公告 - 仅管理员可用"""
@@ -3949,8 +4031,7 @@ def edit_announcement(request, announcement_id):
     return render(request, 'clubs/admin/edit_announcement.html', context)
 
 
-@login_required(login_url='login')
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def manage_users(request):
     """用户管理 - 仅管理员可用"""
     if not _is_admin(request.user):
@@ -3990,7 +4071,7 @@ def manage_users(request):
     return render(request, 'clubs/admin/manage_users.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def staff_view_users(request):
     """干事查看用户列表 - 查看专用，无编辑权限"""
     if not _is_staff(request.user):
@@ -4021,7 +4102,7 @@ def staff_view_users(request):
     return render(request, 'clubs/staff/view_users.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def create_user(request):
     """管理员创建用户账户 - 仅管理员可用"""
@@ -4128,7 +4209,7 @@ def create_user(request):
 
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def admin_edit_user_account(request, user_id):
     """管理员编辑用户账户信息 - 仅管理员可用"""
@@ -4281,7 +4362,7 @@ def admin_edit_user_account(request, user_id):
     return render(request, 'clubs/auth/change_account_settings.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def change_user_role(request, user_id):
     """修改用户角色 - 仅管理员可用"""
@@ -4337,7 +4418,7 @@ def change_user_role(request, user_id):
     return render(request, 'clubs/admin/change_user_role.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['GET', 'POST'])
 def change_staff_attributes(request, user_id):
     """修改干事的部门和职级属性 - 仅管理员可用"""
@@ -4400,8 +4481,7 @@ def change_staff_attributes(request, user_id):
 
 
 
-
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['GET', 'POST'])
 def manage_smtp_config(request):
     """管理SMTP邮箱配置"""
@@ -4421,7 +4501,7 @@ def manage_smtp_config(request):
             smtp_port = request.POST.get('smtp_port', '').strip()
             sender_email = request.POST.get('sender_email', '').strip()
             sender_password = request.POST.get('sender_password', '').strip()
-            use_tls = request.POST.get('use_tls', 'on') == 'on'
+            use_tls = 'use_tls' in request.POST  # checkbox 未勾选时不会在 POST 中
             
             errors = []
             if not provider:
@@ -4479,6 +4559,135 @@ def manage_smtp_config(request):
             config.save()
             messages.success(request, f'SMTP配置已激活：{config.sender_email}')
             return redirect('clubs:manage_smtp_config')
+        
+        elif action == 'edit':
+            config = get_object_or_404(SMTPConfig, pk=config_id)
+            
+            provider = request.POST.get('provider', '').strip()
+            smtp_host = request.POST.get('smtp_host', '').strip()
+            smtp_port = request.POST.get('smtp_port', '').strip()
+            sender_email = request.POST.get('sender_email', '').strip()
+            sender_password = request.POST.get('sender_password', '').strip()
+            use_tls = 'use_tls' in request.POST
+            
+            errors = []
+            if not provider:
+                errors.append('邮箱服务商不能为空')
+            if not smtp_host:
+                errors.append('SMTP服务器地址不能为空')
+            if not smtp_port:
+                errors.append('SMTP端口不能为空')
+            if not sender_email:
+                errors.append('发送邮箱不能为空')
+            
+            try:
+                if smtp_port:
+                    int(smtp_port)
+            except ValueError:
+                errors.append('SMTP端口必须是数字')
+            
+            if errors:
+                configs = SMTPConfig.objects.all()
+                return render(request, 'clubs/admin/smtp_config.html', {
+                    'configs': configs,
+                    'errors': errors,
+                    'editing_config': config,
+                })
+            
+            # 更新配置
+            config.provider = provider
+            config.smtp_host = smtp_host
+            config.smtp_port = int(smtp_port)
+            config.sender_email = sender_email
+            if sender_password:  # 只有填写了新密码才更新
+                config.sender_password = sender_password
+            config.use_tls = use_tls
+            config.save()
+            
+            messages.success(request, 'SMTP配置更新成功')
+            return redirect('clubs:manage_smtp_config')
+        
+        elif action == 'test_email':
+            # 发送测试邮件
+            test_email = request.POST.get('test_email', '').strip()
+            if not test_email:
+                messages.error(request, '请输入测试邮箱地址')
+                return redirect('clubs:manage_smtp_config')
+            
+            config = get_object_or_404(SMTPConfig, pk=config_id)
+            
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+            
+            try:
+                # 创建邮件
+                msg = MIMEMultipart()
+                msg['From'] = config.sender_email
+                msg['To'] = test_email
+                msg['Subject'] = 'CManager SMTP配置测试邮件'
+                
+                body = f'''
+您好！
+
+这是一封来自 CManager 系统的测试邮件。
+
+如果您收到了这封邮件，说明 SMTP 配置成功！
+
+配置信息：
+- 服务商：{config.get_provider_display()}
+- SMTP服务器：{config.smtp_host}:{config.smtp_port}
+- 发送邮箱：{config.sender_email}
+- TLS加密：{'已启用' if config.use_tls else '未启用'}
+
+此邮件为系统自动发送，请勿回复。
+                '''
+                msg.attach(MIMEText(body, 'plain', 'utf-8'))
+                
+                # 连接SMTP服务器并发送
+                # 端口465/994通常使用SSL，端口587使用STARTTLS，端口25通常无加密
+                if config.smtp_port in [465, 994]:
+                    # SSL连接（端口465/994）
+                    server = smtplib.SMTP_SSL(config.smtp_host, config.smtp_port, timeout=30)
+                    server.ehlo()
+                elif config.use_tls:
+                    # STARTTLS（端口587等）
+                    server = smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=30)
+                    server.ehlo()
+                    server.starttls()
+                    server.ehlo()
+                else:
+                    # 无加密（端口25等）- 某些服务器需要特殊处理
+                    import socket
+                    # 先测试端口连通性
+                    sock = socket.create_connection((config.smtp_host, config.smtp_port), timeout=30)
+                    sock.close()
+                    # 使用较长超时并设置调试
+                    server = smtplib.SMTP(timeout=30)
+                    server.connect(config.smtp_host, config.smtp_port)
+                    server.ehlo()
+                
+                server.login(config.sender_email, config.sender_password)
+                server.sendmail(config.sender_email, [test_email], msg.as_string())
+                server.quit()
+                
+                messages.success(request, f'测试邮件已成功发送到 {test_email}')
+            except smtplib.SMTPAuthenticationError as e:
+                messages.error(request, f'SMTP认证失败：邮箱或密码/授权码错误 ({e.smtp_code}: {e.smtp_error})')
+            except smtplib.SMTPConnectError as e:
+                messages.error(request, f'SMTP连接失败：无法连接到服务器 ({str(e)})')
+            except smtplib.SMTPServerDisconnected as e:
+                messages.error(request, f'SMTP服务器断开连接：{str(e)}。建议尝试SSL端口(465/994)')
+            except smtplib.SMTPException as e:
+                messages.error(request, f'SMTP错误：{str(e)}')
+            except socket.timeout:
+                messages.error(request, 'SMTP连接超时：请检查服务器地址和端口')
+            except ConnectionRefusedError:
+                messages.error(request, 'SMTP连接被拒绝：请检查端口是否正确')
+            except Exception as e:
+                messages.error(request, f'发送失败：{type(e).__name__}: {str(e)}')
+            
+            return redirect('clubs:manage_smtp_config')
     
     configs = SMTPConfig.objects.all()
     context = {
@@ -4511,7 +4720,7 @@ def toggle_review_enabled(request, club_id):
     messages.success(request, f"社团年审功能已{'启用' if club.review_enabled else '禁用'}")
     return redirect(request.META.get('HTTP_REFERER', 'clubs:staff_management'))
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def zip_materials(request, obj, materials, zip_filename, check_permission_func):
     """通用的材料打包函数，将指定材料列表打包为zip文件并下载"""
     import tempfile
@@ -4556,7 +4765,7 @@ def zip_materials(request, obj, materials, zip_filename, check_permission_func):
         pass
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def zip_review_docs(request, submission_id):
     """打包所有年审材料为zip文件并下载"""
     import tempfile
@@ -4592,7 +4801,7 @@ def zip_review_docs(request, submission_id):
     # 调用通用的zip_materials函数
     return zip_materials(request, submission, materials, zip_filename, check_permission)
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def zip_club_registration_docs(request, registration_id):
     """为已有社团的 `ClubRegistration` 打包材料并下载。"""
     registration = get_object_or_404(ClubRegistration, pk=registration_id)
@@ -4619,7 +4828,7 @@ def zip_club_registration_docs(request, registration_id):
     return zip_materials(request, registration, materials, zip_filename, check_permission)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def zip_registration_request_docs(request, request_id):
     """为社团创建申请 `ClubRegistrationRequest` 打包材料并下载。"""
     registration = get_object_or_404(ClubRegistrationRequest, pk=request_id)
@@ -4650,7 +4859,7 @@ def zip_registration_request_docs(request, request_id):
 # - zip_registration_request_docs(request, request_id)
 # 旧路由和视图已从项目中移除。
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def zip_reimbursement_docs(request, reimbursement_id):
     """打包所有报销材料为zip文件并下载"""
     from clubs.models import Reimbursement
@@ -4678,7 +4887,7 @@ def zip_reimbursement_docs(request, reimbursement_id):
     # 调用通用的zip_materials函数
     return zip_materials(request, reimbursement, materials, zip_filename, check_permission)
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def zip_president_transition_docs(request, transition_id):
     """打包所有社长变更材料为zip文件并下载"""
     from clubs.models import PresidentTransition
@@ -4704,9 +4913,7 @@ def zip_president_transition_docs(request, transition_id):
     # 调用通用的zip_materials函数
     return zip_materials(request, transition, materials, zip_filename, check_permission)
 
-@login_required(login_url='login')
-
-
+@login_required(login_url=settings.LOGIN_URL)
 def toggle_all_review_enabled(request):
     """
     切换所有社团的年审功能启用状态
@@ -4735,7 +4942,7 @@ def toggle_all_review_enabled(request):
     return redirect('clubs:staff_dashboard')
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def toggle_registration_enabled(request):
     """
     统一开启/关闭社团注册功能
@@ -4766,10 +4973,10 @@ def toggle_registration_enabled(request):
         Club.objects.update(registration_enabled=True)
         messages.success(request, f"社团注册功能已开启（第{new_period.period_number}次注册周期已启动）")
     
-    return redirect('clubs:staff_management')
+    return redirect(request.META.get('HTTP_REFERER', 'clubs:staff_management'))
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def toggle_club_registration_enabled(request, club_id):
     """切换单个社团的注册开启状态"""
     if not is_staff_or_admin(request.user):
@@ -4823,7 +5030,7 @@ def change_club_status(request, club_id):
     return render(request, 'clubs/change_club_status.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def submit_club_info_change(request, club_id):
     """
@@ -4902,7 +5109,7 @@ def submit_club_info_change(request, club_id):
     return render(request, 'clubs/user/submit_club_info_change.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def direct_edit_club_info(request, club_id):
     """
@@ -5094,7 +5301,6 @@ def review_president_transition(request, transition_id):
             transition.reviewer = request.user
             transition.reviewer_comment = comment
             transition.reviewed_at = timezone.now()
-            transition.is_read = True  # 换届批准后自动标记为已读，因为结果对原社长是已知的
             transition.save()
             
             # 如果审核通过，可以选择是否自动更新社团社长信息
@@ -5110,12 +5316,11 @@ def review_president_transition(request, transition_id):
             transition.reviewer = request.user
             transition.reviewer_comment = comment
             transition.reviewed_at = timezone.now()
-            transition.is_read = False  # 拒绝后设为未读，用户需要重新修改提交
             transition.save()
             
             messages.success(request, f'社长换届申请已拒绝')
         
-        return redirect('clubs:staff_dashboard')
+        return redirect('clubs:staff_audit_center', 'president_transition')
     
     context = {
         'transition': transition,
@@ -5530,7 +5735,7 @@ def delete_room222_booking(request, booking_id):
 
 # ==================== 活动申请功能 ====================
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def submit_activity_application(request, club_id):
     """提交活动申请 - 仅社团社长可用"""
@@ -5581,20 +5786,26 @@ def submit_activity_application(request, club_id):
         if not application_form:
             errors.append('活动申请表必须上传')
         
-        # 验证预计人数和预算
-        try:
-            expected_participants = int(expected_participants) if expected_participants else 0
-            if expected_participants < 0:
-                errors.append('预计参与人数不能为负数')
-        except ValueError:
-            errors.append('预计参与人数必须是整数')
+        # 验证预计人数和预算（必填）
+        if not expected_participants:
+            errors.append('预计参与人数不能为空')
+        else:
+            try:
+                expected_participants = int(expected_participants)
+                if expected_participants <= 0:
+                    errors.append('预计参与人数必须大于0')
+            except ValueError:
+                errors.append('预计参与人数必须是整数')
         
-        try:
-            budget = float(budget) if budget else 0
-            if budget < 0:
-                errors.append('活动预算不能为负数')
-        except ValueError:
-            errors.append('活动预算必须是数字')
+        if not budget:
+            errors.append('活动预算不能为空')
+        else:
+            try:
+                budget = float(budget)
+                if budget < 0:
+                    errors.append('活动预算不能为负数')
+            except ValueError:
+                errors.append('活动预算必须是数字')
 
         if errors:
             context = {
@@ -5659,7 +5870,7 @@ def submit_activity_application(request, club_id):
     return render(request, 'clubs/user/submit_activity_application.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def submit_president_transition(request, club_id):
     """提交社长换届申请 - 仅社团社长可用"""
@@ -5751,7 +5962,7 @@ def submit_president_transition(request, club_id):
 
 # ==================== 审核活动申请和社长换届 ====================
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def review_activity_application(request, activity_id):
     """审核活动申请 - 干事审核"""
@@ -5771,6 +5982,20 @@ def review_activity_application(request, activity_id):
             activity.staff_comment = comment
             activity.staff_reviewed_at = timezone.now()
             activity.update_status()
+            
+            # 保存审核历史记录
+            ActivityApplicationHistory.objects.create(
+                activity_application=activity,
+                attempt_number=activity.resubmission_attempt,
+                activity_name=activity.activity_name,
+                activity_date=activity.activity_date,
+                submitted_at=activity.submitted_at,
+                reviewed_at=activity.staff_reviewed_at,
+                reviewer=request.user,
+                status='approved',
+                reviewer_comment=comment
+            )
+            
             messages.success(request, '活动申请已批准')
         elif action == 'reject':
             activity.staff_approved = False
@@ -5778,11 +6003,25 @@ def review_activity_application(request, activity_id):
             activity.staff_comment = comment
             activity.staff_reviewed_at = timezone.now()
             activity.update_status()
+            
+            # 保存审核历史记录
+            ActivityApplicationHistory.objects.create(
+                activity_application=activity,
+                attempt_number=activity.resubmission_attempt,
+                activity_name=activity.activity_name,
+                activity_date=activity.activity_date,
+                submitted_at=activity.submitted_at,
+                reviewed_at=activity.staff_reviewed_at,
+                reviewer=request.user,
+                status='rejected',
+                reviewer_comment=comment
+            )
+            
             messages.success(request, '活动申请已拒绝')
         else:
             messages.error(request, '无效的审核操作')
         
-        return redirect('clubs:staff_dashboard')
+        return redirect('clubs:staff_audit_center', 'activity_application')
     
     context = {
         'activity': activity,
@@ -5791,7 +6030,7 @@ def review_activity_application(request, activity_id):
     return render(request, 'clubs/staff/review_activity_application.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 def review_president_transition(request, transition_id):
     """审核社长换届申请 - 干事和管理员可用"""
@@ -5845,14 +6084,25 @@ def review_president_transition(request, transition_id):
         messages.success(request, f'社长换届申请已{'批准' if status == 'approved' else '拒绝'}')
         return redirect('clubs:staff_dashboard')
     
+    # 构建材料列表给组件使用
+    transition_materials = []
+    if transition.transition_form:
+        transition_materials.append({
+            'name': '社长换届申请表',
+            'file': transition.transition_form,
+            'icon': 'description'
+        })
+    
     context = {
         'transition': transition,
         'club': transition.club,
+        'transition_materials': transition_materials,
+        'zip_url': reverse('clubs:zip_president_transition_docs', args=[transition.id]) if transition.transition_form else None,
     }
     return render(request, 'clubs/staff/review_president_transition.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def staff_review_history(request, review_type):
     """干事审核历史记录"""
     if not _is_staff(request.user) and not _is_admin(request.user):
@@ -5917,7 +6167,7 @@ def staff_review_history(request, review_type):
     return render(request, 'clubs/staff/review_history.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url=settings.LOGIN_URL)
 def staff_review_detail(request, item_type, item_id):
     """干事查看审核详情 - 显示完整的审核信息和历史"""
     if not _is_staff(request.user) and not _is_admin(request.user):
@@ -5957,24 +6207,20 @@ def staff_review_detail(request, item_type, item_id):
         item = get_object_or_404(Reimbursement, pk=item_id)
         context['title'] = f'{item.club.name} - 报销申请'
         context['item'] = item
-        context['reviews'] = SubmissionReview.objects.filter(reimbursement=item).order_by('-reviewed_at')
+        # 报销只有一条审核记录，直接从对象字段获取
+        from types import SimpleNamespace
+        reviews = []
+        if item.reviewer or item.reviewed_at:
+            status = 'approved' if item.status == 'approved' else 'rejected' if item.status == 'rejected' else 'pending'
+            reviews.append(SimpleNamespace(reviewer=item.reviewer, status=status, comment=item.reviewer_comment, reviewed_at=item.reviewed_at))
+        context['reviews'] = reviews
         
     elif item_type == 'activity_application':
         item = get_object_or_404(ActivityApplication, pk=item_id)
         context['title'] = f'{item.club.name} - 活动申请'
         context['item'] = item
-        # ActivityApplication doesn't have a separate review model; build reviews list from fields
-        from types import SimpleNamespace
-        reviews = []
-        # staff review
-        if item.staff_approved is not None or item.staff_reviewer or item.staff_reviewed_at:
-            staff_status = 'approved' if item.staff_approved is True else 'rejected' if item.staff_approved is False else 'pending'
-            reviews.append(SimpleNamespace(reviewer=item.staff_reviewer, status=staff_status, comment=item.staff_comment, reviewed_at=item.staff_reviewed_at))
-        # general reviewer (legacy field)
-        if getattr(item, 'reviewer', None) or getattr(item, 'reviewed_at', None):
-            legacy_status = 'approved' if item.status == 'approved' else 'rejected' if item.status == 'rejected' else 'pending'
-            reviews.append(SimpleNamespace(reviewer=item.reviewer, status=legacy_status, comment=getattr(item, 'reviewer_comment', '') or '', reviewed_at=item.reviewed_at))
-        context['reviews'] = sorted(reviews, key=lambda r: r.reviewed_at or timezone.make_aware(timezone.datetime.min), reverse=True)
+        # 使用 ActivityApplicationHistory 获取审核历史
+        context['reviews'] = ActivityApplicationHistory.objects.filter(activity_application=item).order_by('-attempt_number')
         
     elif item_type == 'president_transition':
         item = get_object_or_404(PresidentTransition, pk=item_id)
@@ -6067,7 +6313,7 @@ def public_activities(request):
         # 社长只能看到自己负责的社团
         try:
             user_club = Officer.objects.get(user_profile=request.user.profile, position='president').club
-            all_clubs = Club.objects.filter(id=user_club.id)
+            all_clubs = Club.objects.filter(id=user_club.id)  # type: ignore[attr-defined]
         except Officer.DoesNotExist:
             # 如果找不到社长职位，显示空列表
             all_clubs = Club.objects.none()
@@ -6210,126 +6456,138 @@ def edit_activity_application(request, activity_id):
     return render(request, 'clubs/edit_activity_application.html', context)
 
 
-@login_required(login_url='login')
-def staff_audit_center(request, tab='annual_review'):
+@login_required(login_url=settings.LOGIN_URL)
+def staff_audit_center(request, tab='annual-review'):
     """干事/管理员审核中心 - 类似社长审批中心的界面"""
     if not _is_staff(request.user) and not _is_admin(request.user):
         messages.error(request, '仅干事和管理员可以访问审核中心')
         return redirect('clubs:index')
     
+    # 将连字符转换为下划线以兼容内部处理
+    tab_internal = tab.replace('-', '_')
+    
     # 根据选项卡类型获取数据
     pending_items = []
+    reviewing_items = []
     completed_items = []
     
-    if tab == 'annual_review':
+    if tab_internal == 'annual_review':
         all_items = ReviewSubmission.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
+        pending_items_queryset = all_items.filter(status='pending')
         completed_items = all_items.exclude(status='pending')
         
-    elif tab == 'registration':
+        # 分离待审核和审核中的项目
+        for item in pending_items_queryset:
+            # 检查当前用户是否已审核过
+            user_reviewed = SubmissionReview.objects.filter(submission=item, reviewer=request.user).exists()
+            item.user_reviewed = user_reviewed
+            
+            # 检查是否有其他人审核过（审核中状态）
+            total_reviews = SubmissionReview.objects.filter(submission=item).count()
+            if total_reviews > 0:
+                item.review_count = total_reviews
+                reviewing_items.append(item)
+            else:
+                pending_items.append(item)
+        
+    elif tab_internal == 'registration':
         all_items = ClubRegistration.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
+        pending_items_queryset = all_items.filter(status='pending')
         completed_items = all_items.exclude(status='pending')
         
-    elif tab == 'application':
+        # 分离待审核和审核中的项目
+        for item in pending_items_queryset:
+            # 检查当前用户是否已审核过
+            user_reviewed = ClubRegistrationReview.objects.filter(registration=item, reviewer=request.user).exists()
+            item.user_reviewed = user_reviewed
+            
+            # 检查是否有其他人审核过（审核中状态）
+            total_reviews = ClubRegistrationReview.objects.filter(registration=item).count()
+            if total_reviews > 0:
+                item.review_count = total_reviews
+                reviewing_items.append(item)
+            else:
+                pending_items.append(item)
+        
+    elif tab_internal == 'application':
         all_items = ClubRegistrationRequest.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
+        pending_items_queryset = all_items.filter(status='pending')
         completed_items = all_items.exclude(status='pending')
         
-    elif tab == 'info_change':
+        # 分离待审核和审核中的项目
+        for item in pending_items_queryset:
+            # 检查当前用户是否已审核过
+            user_reviewed = ClubApplicationReview.objects.filter(application=item, reviewer=request.user).exists()
+            item.user_reviewed = user_reviewed
+            
+            # 检查是否有其他人审核过（审核中状态）
+            total_reviews = ClubApplicationReview.objects.filter(application=item).count()
+            if total_reviews > 0:
+                item.review_count = total_reviews
+                reviewing_items.append(item)
+            else:
+                pending_items.append(item)
+        
+    elif tab_internal == 'info_change':
         all_items = ClubInfoChangeRequest.objects.all().order_by('-submitted_at')
         pending_items = all_items.filter(status='pending')
         completed_items = all_items.exclude(status='pending')
         
-    elif tab == 'reimbursement':
+    elif tab_internal == 'reimbursement':
         all_items = Reimbursement.objects.all().order_by('-submitted_at')
         pending_items = all_items.filter(status='pending')
         completed_items = all_items.exclude(status='pending')
         
-    elif tab == 'activity_application':
+    elif tab_internal == 'activity_application':
         all_items = ActivityApplication.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(staff_approved__isnull=True)
-        completed_items = all_items.exclude(staff_approved__isnull=True)
+        pending_items = all_items.filter(status='pending')
+        completed_items = all_items.exclude(status='pending')
         
-    elif tab == 'president_transition':
+    elif tab_internal == 'president_transition':
         all_items = PresidentTransition.objects.all().order_by('-submitted_at')
         pending_items = all_items.filter(status='pending')
         completed_items = all_items.exclude(status='pending')
     
     context = {
-        'current_tab': tab,
+        'current_tab': tab_internal,
         'pending_items': pending_items,
-        'active_items': pending_items,
+        'reviewing_items': reviewing_items if tab_internal in ['annual_review', 'registration', 'application'] else [],
+        'active_items': list(pending_items) + list(reviewing_items) if tab_internal in ['annual_review', 'registration', 'application'] else pending_items,
         'completed_items': completed_items,
     }
     
     return render(request, 'clubs/staff/audit_center.html', context)
 
-@login_required(login_url='login')
-def staff_audit_center_mobile(request, tab='annual_review'):
-    """干事/管理员审核中心移动版 - 简化UI用于手机端"""
+@login_required(login_url=settings.LOGIN_URL)
+def staff_audit_center_mobile(request):
+    """干事/管理员审核中心移动版 - 卡片网格UI用于手机端"""
     if not _is_staff(request.user) and not _is_admin(request.user):
         messages.error(request, '仅干事和管理员可以访问审核中心')
         return redirect('clubs:index')
     
-    # 根据选项卡类型获取数据
-    pending_items = []
-    completed_items = []
+    # 获取所有审核类型的数据
+    audit_items = {
+        'annual_review': ReviewSubmission.objects.all().order_by('-submitted_at'),
+        'registration': ClubRegistration.objects.all().order_by('-submitted_at'),
+        'application': ClubRegistrationRequest.objects.all().order_by('-submitted_at'),
+        'reimbursement': Reimbursement.objects.all().order_by('-submitted_at'),
+        'activity_application': ActivityApplication.objects.all().order_by('-submitted_at'),
+        'president_transition': PresidentTransition.objects.all().order_by('-submitted_at'),
+    }
     
-    if tab == 'annual_review':
-        all_items = ReviewSubmission.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        # 为每个item添加review_url
-        for item in list(pending_items) + list(completed_items):
-            item.review_url = f'/clubs/staff/review-submission/{item.id}/'
-        
-    elif tab == 'registration':
-        all_items = ClubRegistration.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        for item in list(pending_items) + list(completed_items):
-            item.review_url = f'/clubs/staff/review-club-registration/{item.id}/'
-        
-    elif tab == 'application':
-        all_items = ClubRegistrationRequest.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        for item in list(pending_items) + list(completed_items):
-            item.review_url = f'/clubs/staff/review-club-registration-submission/{item.id}/'
-        
-    elif tab == 'info_change':
-        all_items = ClubInfoChangeRequest.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        for item in list(pending_items) + list(completed_items):
-            item.review_url = f'/clubs/staff/review/{item.club.id}/'
-        
-    elif tab == 'reimbursement':
-        all_items = Reimbursement.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        for item in list(pending_items) + list(completed_items):
-            item.review_url = f'/clubs/staff/review-reimbursement/{item.id}/'
-        
-    elif tab == 'activity_application':
-        all_items = ActivityApplication.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(staff_approved__isnull=True)
-        completed_items = all_items.exclude(staff_approved__isnull=True)
-        for item in list(pending_items) + list(completed_items):
-            item.review_url = f'/clubs/staff/review-activity-application/{item.id}/'
-        
-    elif tab == 'president_transition':
-        all_items = PresidentTransition.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        for item in list(pending_items) + list(completed_items):
-            item.review_url = f'/clubs/staff/review-president-transition/{item.id}/'
+    # 计算未审核数量
+    pending_counts = {
+        'annual_review': ReviewSubmission.objects.filter(status='pending').count(),
+        'registration': ClubRegistration.objects.filter(status='pending').count(),
+        'application': ClubRegistrationRequest.objects.filter(status='pending').count(),
+        'reimbursement': Reimbursement.objects.filter(status='pending').count(),
+        'activity_application': ActivityApplication.objects.filter(staff_approved__isnull=True).count(),
+        'president_transition': PresidentTransition.objects.filter(status='pending').count(),
+    }
     
     context = {
-        'current_tab': tab,
-        'pending_items': pending_items,
-        'completed_items': completed_items,
+        'audit_items': audit_items,
+        'pending_counts': pending_counts,
     }
     
     return render(request, 'clubs/staff/audit_center_mobile.html', context)

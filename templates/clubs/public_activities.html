@@ -153,6 +153,7 @@
         display: flex;
         gap: var(--md3-spacing-md);
         justify-content: flex-end;
+        flex-wrap: wrap;
     }
 
     @media (max-width: 768px) {
@@ -163,6 +164,439 @@
         .filters-actions .btn {
             width: 100%;
             justify-content: center;
+        }
+    }
+
+    /* 导出功能样式 */
+    .export-section {
+        margin-top: var(--md3-spacing-lg);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .export-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--md3-spacing-md);
+    }
+
+    .export-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .export-title .material-icons {
+        color: var(--md3-tertiary);
+    }
+
+    .select-all-container {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .select-all-container input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: var(--md3-primary);
+    }
+
+    .select-all-container label {
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .export-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        align-items: center;
+    }
+
+    .selected-count {
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .btn-export {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        background: var(--md3-tertiary);
+        color: var(--md3-on-tertiary);
+        border: none;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-export:hover {
+        background: var(--md3-tertiary);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-2px);
+    }
+
+    .btn-export:disabled {
+        background: var(--md3-surface-variant);
+        color: var(--md3-on-surface-variant);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-export .material-icons {
+        font-size: 1.125rem;
+    }
+
+    /* ============================================================================
+     * 活动网格布局和卡片样式
+     * ============================================================================ */
+
+    /* 活动网格布局 */
+    .activities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 0.5rem;
+        margin: 2rem -0.5rem 0 -0.5rem;
+        padding-bottom: 4rem;
+    }
+
+    /* 活动卡片 */
+    .activity-card {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--md3-elevation-1);
+        transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        z-index: 1;
+    }
+
+    .activity-card:hover {
+        box-shadow: var(--md3-elevation-3);
+        transform: translateY(-4px);
+        z-index: 10;
+    }
+
+    /* 活动选择复选框（仅管理员和干事可见） */
+    .activity-checkbox {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 10;
+    }
+
+    .activity-checkbox input[type="checkbox"] {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        accent-color: var(--md3-primary);
+        border-radius: 4px;
+    }
+
+    /* 卡片头部 */
+    .activity-card-header {
+        padding: 1.5rem 1.5rem 1rem 1.5rem;
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
+        position: relative;
+    }
+
+    .activity-header-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .activity-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 0.75rem 0;
+        line-height: 1.4;
+    }
+
+    .activity-club {
+        display: inline-block;
+        padding: 0.4rem 0.875rem;
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    /* 卡片主体 */
+    .activity-card-body {
+        flex: 1;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* 活动详情 */
+    .activity-details {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .activity-detail-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .detail-icon {
+        color: var(--md3-primary);
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .detail-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        font-size: 0.95rem;
+        color: var(--md3-on-surface);
+        font-weight: 500;
+    }
+
+    /* 活动描述 */
+    .activity-description {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: var(--md3-surface);
+        border-radius: var(--md3-radius-md);
+        border-left: 4px solid var(--md3-secondary);
+    }
+
+    .description-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .activity-description p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        line-height: 1.6;
+    }
+
+    /* 卡片底部 */
+    .activity-card-footer {
+        padding: 1rem 1.5rem 1.5rem 1.5rem;
+        border-top: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container-lowest);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .activity-contact {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .contact-item .material-icons {
+        font-size: 1.125rem;
+        color: var(--md3-tertiary);
+    }
+
+    /* 操作按钮区域 */
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    /* 参加活动按钮 */
+    .btn-join-activity {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        cursor: pointer;
+        border: none;
+        min-width: 100px;
+        gap: 0.5rem;
+    }
+
+    .btn-join-activity:hover:not(.btn-join-activity-disabled) {
+        background: var(--md3-primary);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-2px);
+    }
+
+    .btn-join-activity-disabled {
+        background: var(--md3-outline-variant);
+        color: var(--md3-on-surface-variant);
+        cursor: default;
+    }
+
+    .btn-join-activity-disabled:hover {
+        background: var(--md3-outline-variant);
+        box-shadow: none;
+        transform: none;
+    }
+
+    /* 编辑活动按钮 */
+    .btn-edit-activity {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        background: var(--md3-tertiary);
+        color: var(--md3-on-tertiary);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        cursor: pointer;
+        border: none;
+        gap: 0.5rem;
+    }
+
+    .btn-edit-activity:hover {
+        background: var(--md3-tertiary);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-2px);
+    }
+
+    .btn-edit-activity .material-icons {
+        font-size: 1rem;
+    }
+
+    /* 空状态 */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .empty-state .empty-icon {
+        font-size: 5rem;
+        opacity: 0.4;
+        margin-bottom: 1rem;
+        color: var(--md3-outline);
+    }
+
+    .empty-state p {
+        font-size: 1.125rem;
+        font-weight: 500;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .activities-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding-bottom: 5rem;
+        }
+
+        .activity-name {
+            font-size: 1.125rem;
+        }
+
+        .activity-card-header {
+            padding: 1.25rem;
+        }
+
+        .activity-card-body {
+            padding: 1.25rem;
+            gap: 1.25rem;
+        }
+
+        .activity-card-footer {
+            padding: 1rem 1.25rem;
+        }
+
+        .activity-detail-item {
+            gap: 0.75rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .activities-grid {
+            gap: 0.75rem;
+        }
+
+        .activity-card {
+            border-radius: var(--md3-radius-md);
+        }
+
+        .activity-name {
+            font-size: 1rem;
+        }
+
+        .detail-label {
+            font-size: 0.7rem;
+        }
+
+        .detail-value {
+            font-size: 0.875rem;
         }
     }
 </style>
@@ -284,6 +718,29 @@
                             清除筛选
                         </a>
                     </div>
+
+                    <!-- 导出功能（管理员、干事和社长可见） -->
+                    {% if user.is_authenticated and user.profile.role in 'admin,staff,president' %}
+                    <div class="export-section">
+                        <div class="export-header">
+                            <div class="export-title">
+                                <span class="material-icons">file_download</span>
+                                <span>批量导出</span>
+                            </div>
+                            <div class="select-all-container">
+                                <input type="checkbox" id="select-all" onclick="toggleAllActivities(this)">
+                                <label for="select-all">全选</label>
+                            </div>
+                        </div>
+                        <div class="export-actions">
+                            <span class="selected-count" id="selected-count">已选择 0 个活动</span>
+                            <button type="button" class="btn-export" id="export-btn" onclick="exportActivities()" disabled>
+                                <span class="material-icons">table_chart</span>
+                                导出为 Excel
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -293,6 +750,20 @@
         <div class="activities-grid">
             {% for activity in approved_activities %}
                 <div class="activity-card">
+                    <!-- 选择复选框（管理员、干事和社长可见） -->
+                    {% if user.is_authenticated and user.profile.role in 'admin,staff,president' %}
+                    <div class="activity-checkbox">
+                        <input type="checkbox" 
+                               class="activity-select" 
+                               data-activity-id="{{ activity.id }}"
+                               data-activity-name="{{ activity.activity_name }}"
+                               data-club-name="{{ activity.club.name }}"
+                               data-activity-date="{{ activity.activity_date|date:'Y-m-d' }}"
+                               data-activity-type="{{ activity.get_activity_type_display }}"
+                               onchange="updateSelectedCount()">
+                    </div>
+                    {% endif %}
+                    
                     <div class="activity-card-header">
                         <div class="activity-header-content">
                             <h3 class="activity-name">{{ activity.activity_name }}</h3>
@@ -376,467 +847,72 @@
     {% endif %}
 </div>
 
-<style>
-/* ============================================================================
- * Material Design 3 - 活动列表页面样式
- * ============================================================================ */
-
-.main-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: var(--md3-spacing-lg);
-}
-
-.page-header {
-    display: flex;
-    align-items: center;
-    gap: var(--md3-spacing-md);
-    margin-bottom: var(--md3-spacing-xl);
-}
-
-.page-header .material-icons {
-    font-size: 2.5rem;
-    color: var(--md3-primary);
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--md3-on-surface);
-}
-
-.quick-actions {
-    margin-left: auto;
-    display: flex;
-    gap: 0.75rem;
-}
-
-.quick-actions {
-    display: flex;
-    gap: 0.75rem;
-}
-
-/* 活动网格布局 */
-.activities-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    /* 给卡片留出足够空间显示阴影和hover效果 */
-    padding: 0.5rem;
-    margin: 2rem -0.5rem 0 -0.5rem;
-}
-
-/* 活动卡片 */
-.activity-card {
-    background: var(--md3-surface-container-low);
-    border-radius: var(--md3-radius-lg);
-    overflow: hidden;
-    box-shadow: var(--md3-elevation-1);
-    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    position: relative;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    z-index: 1;
-}
-
-.activity-card:hover {
-    box-shadow: var(--md3-elevation-3);
-    transform: translateY(-4px);
-    z-index: 10;
-}
-
-/* 卡片头部 */
-.activity-card-header {
-    padding: 1.5rem 1.5rem 1rem 1.5rem;
-    background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
-    position: relative;
-}
-
-.activity-header-content {
-    position: relative;
-    z-index: 2;
-}
-
-.activity-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--md3-on-surface);
-    margin: 0 0 0.75rem 0;
-    line-height: 1.4;
-}
-
-.activity-club {
-    display: inline-block;
-    padding: 0.4rem 0.875rem;
-    background: var(--md3-primary);
-    color: var(--md3-on-primary);
-    border-radius: var(--md3-radius-full);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-
-/* 卡片主体 */
-.activity-card-body {
-    flex: 1;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-/* 活动详情 */
-.activity-details {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.activity-detail-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-}
-
-.detail-icon {
-    color: var(--md3-primary);
-    font-size: 1.5rem;
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-.detail-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.detail-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--md3-on-surface-variant);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.detail-value {
-    font-size: 0.95rem;
-    color: var(--md3-on-surface);
-    font-weight: 500;
-}
-
-/* 活动描述 */
-.activity-description {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: var(--md3-surface);
-    border-radius: var(--md3-radius-md);
-    border-left: 4px solid var(--md3-secondary);
-}
-
-.description-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--md3-on-surface-variant);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.activity-description p {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--md3-on-surface-variant);
-    line-height: 1.6;
-}
-
-/* 卡片底部 */
-.activity-card-footer {
-    padding: 1rem 1.5rem 1.5rem 1.5rem;
-    border-top: 1px solid var(--md3-outline-variant);
-    background: var(--md3-surface-container-lowest);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
-}
-
-.activity-contact {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.contact-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--md3-on-surface-variant);
-}
-
-.contact-item .material-icons {
-    font-size: 1.125rem;
-    color: var(--md3-tertiary);
-}
-
-/* 操作按钮区域 */
-.action-buttons {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-/* 参加活动按钮 */
-.btn-join-activity {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 1.5rem;
-    background: var(--md3-primary);
-    color: var(--md3-on-primary);
-    border-radius: var(--md3-radius-full);
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-    cursor: pointer;
-    border: none;
-    min-width: 100px;
-    gap: 0.5rem;
-}
-
-.btn-join-activity:hover:not(.btn-join-activity-disabled) {
-    background: var(--md3-primary);
-    box-shadow: var(--md3-elevation-2);
-    transform: translateY(-2px);
-}
-
-.btn-join-activity-disabled {
-    background: var(--md3-outline-variant);
-    color: var(--md3-on-surface-variant);
-    cursor: default;
-}
-
-.btn-join-activity-disabled:hover {
-    background: var(--md3-outline-variant);
-    box-shadow: none;
-    transform: none;
-}
-
-/* 查看报名名单按钮 */
-.btn-view-participants {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 1.5rem;
-    background: var(--md3-secondary);
-    color: var(--md3-on-secondary);
-    border-radius: var(--md3-radius-full);
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-    cursor: pointer;
-    border: none;
-    gap: 0.5rem;
-}
-
-.btn-view-participants:hover {
-    background: var(--md3-secondary);
-    box-shadow: var(--md3-elevation-2);
-    transform: translateY(-2px);
-}
-
-/* 编辑活动按钮 */
-.btn-edit-activity {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 1.5rem;
-    background: var(--md3-tertiary);
-    color: var(--md3-on-tertiary);
-    border-radius: var(--md3-radius-full);
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-    cursor: pointer;
-    border: none;
-    gap: 0.5rem;
-}
-
-.btn-edit-activity:hover {
-    background: var(--md3-tertiary);
-    box-shadow: var(--md3-elevation-2);
-    transform: translateY(-2px);
-}
-
-.btn-edit-activity .material-icons {
-    font-size: 1rem;
-}
-
-/* 空状态 */
-.empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--md3-on-surface-variant);
-}
-
-.empty-state .empty-icon {
-    font-size: 5rem;
-    opacity: 0.4;
-    margin-bottom: 1rem;
-    color: var(--md3-outline);
-}
-
-.empty-state p {
-    font-size: 1.125rem;
-    font-weight: 500;
-}
-
-/* 响应式设计 */
-@media (min-width: 769px) {
-    /* PC端样式 - 确保内容不会超出视口 */
-    .home-container {
-        max-width: 100%;
-        overflow-x: hidden;
+<script>
+// 更新选中计数
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('.activity-select:checked');
+    const count = checkboxes.length;
+    const countElement = document.getElementById('selected-count');
+    const exportBtn = document.getElementById('export-btn');
+    
+    if (countElement) {
+        countElement.textContent = `已选择 ${count} 个活动`;
     }
     
-    .activities-grid {
-        width: 100%;
-        overflow-x: hidden;
+    if (exportBtn) {
+        exportBtn.disabled = count === 0;
     }
     
-    .activity-card {
-        width: 100%;
-        max-width: 100%;
+    // 更新全选复选框状态
+    const selectAllCheckbox = document.getElementById('select-all');
+    const allCheckboxes = document.querySelectorAll('.activity-select');
+    if (selectAllCheckbox && allCheckboxes.length > 0) {
+        selectAllCheckbox.checked = count === allCheckboxes.length;
+        selectAllCheckbox.indeterminate = count > 0 && count < allCheckboxes.length;
+    }
+}
+
+// 全选/取消全选
+function toggleAllActivities(checkbox) {
+    const allCheckboxes = document.querySelectorAll('.activity-select');
+    allCheckboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+    });
+    updateSelectedCount();
+}
+
+// 导出选中的活动
+function exportActivities() {
+    const checkboxes = document.querySelectorAll('.activity-select:checked');
+    if (checkboxes.length === 0) {
+        alert('请至少选择一个活动');
+        return;
     }
     
-    .activity-card-footer {
-        padding: 1rem 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
+    // 收集选中的活动ID
+    const activityIds = Array.from(checkboxes).map(cb => cb.dataset.activityId);
+    
+    // 获取当前筛选条件
+    const urlParams = new URLSearchParams(window.location.search);
+    const club = urlParams.get('club') || '';
+    const activityType = urlParams.get('activity_type') || '';
+    const date = urlParams.get('date') || '';
+    const search = urlParams.get('search') || '';
+    
+    // 构建导出URL
+    const exportUrl = new URL('{% url "clubs:export_activities" %}', window.location.origin);
+    exportUrl.searchParams.append('ids', activityIds.join(','));
+    if (club) exportUrl.searchParams.append('club', club);
+    if (activityType) exportUrl.searchParams.append('activity_type', activityType);
+    if (date) exportUrl.searchParams.append('date', date);
+    if (search) exportUrl.searchParams.append('search', search);
+    
+    // 触发下载
+    window.location.href = exportUrl.toString();
 }
 
-@media (max-width: 768px) {
-    .main-content {
-        padding: var(--md3-spacing-md);
-    }
-
-    .header-top {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .quick-actions {
-        width: 100%;
-    }
-
-    .content-header h1 {
-        font-size: 1.75rem;
-    }
-
-    .activities-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-
-    .activity-name {
-        font-size: 1.125rem;
-    }
-
-    .activity-card-header {
-        padding: 1.25rem;
-    }
-
-    .activity-card-body {
-        padding: 1.25rem;
-        gap: 1.25rem;
-    }
-
-    .activity-card-footer {
-        padding: 1rem 1.25rem;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-
-    .activity-contact {
-        flex: 1;
-        min-width: 200px;
-    }
-
-    .action-buttons {
-        flex: 1;
-        min-width: 200px;
-        justify-content: flex-end;
-        padding-bottom: 0.5rem;
-    }
-
-    .btn-join-activity {
-        min-width: 90px;
-        padding: 0.6rem 1.25rem;
-        font-size: 0.8125rem;
-    }
-
-    .btn-view-participants {
-        min-width: 90px;
-        padding: 0.6rem 1.25rem;
-        font-size: 0.8125rem;
-    }
-
-    .activity-card {
-        margin-bottom: 0.5rem;
-    }
-
-    .activities-grid {
-        padding-bottom: 3rem;
-    }
-
-    .activity-detail-item {
-        gap: 0.75rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .activities-grid {
-        gap: 0.75rem;
-    }
-
-    .activity-card {
-        border-radius: var(--md3-radius-md);
-    }
-
-    .activity-name {
-        font-size: 1rem;
-    }
-
-    .detail-label {
-        font-size: 0.7rem;
-    }
-
-    .detail-value {
-        font-size: 0.875rem;
-    }
-}
-</style>
-</div>
-{% endblock %}
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectedCount();
+});
+</script>{% endblock %}
