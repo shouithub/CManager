@@ -9,28 +9,24 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: var(--md3-spacing-2xl) var(--md3-spacing-lg);
-        background: linear-gradient(135deg, var(--md3-surface) 0%, var(--md3-surface-container) 100%);
+        padding: var(--md3-spacing-2xl) var(--md3-spacing-lg) 120px;
     }
     
     .auth-card {
         width: 100%;
-        max-width: 480px;
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-3xl);
-        padding: var(--md3-spacing-3xl);
-        box-shadow: var(--md3-elevation-2);
+        max-width: 440px;
+        padding: var(--md3-spacing-2xl);
     }
     
     .auth-header {
         text-align: center;
-        margin-bottom: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
     }
     
     .auth-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto var(--md3-spacing-lg);
+        width: 64px;
+        height: 64px;
+        margin: 0 auto var(--md3-spacing-md);
         background: var(--md3-primary-container);
         border-radius: 50%;
         display: flex;
@@ -39,96 +35,21 @@
     }
     
     .auth-icon .material-icons {
-        font-size: 3rem;
+        font-size: 2rem;
         color: var(--md3-primary);
     }
     
     .auth-title {
-        font-size: 1.75rem;
-        font-weight: 600;
+        font-size: 1.5rem;
+        font-weight: 500;
         color: var(--md3-on-surface);
-        margin: 0 0 var(--md3-spacing-sm) 0;
+        margin: 0 0 var(--md3-spacing-xs) 0;
     }
     
     .auth-subtitle {
-        font-size: 0.938rem;
+        font-size: 0.875rem;
         color: var(--md3-on-surface-variant);
         margin: 0;
-    }
-    
-    .auth-form {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-lg);
-    }
-    
-    .form-field {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-xs);
-    }
-    
-    .form-field label {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--md3-on-surface);
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-xs);
-    }
-    
-    .form-field label .material-icons {
-        font-size: 1.125rem;
-        color: var(--md3-primary);
-    }
-    
-    .form-field input {
-        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
-        border: 2px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
-        font-size: 1rem;
-        background: var(--md3-surface);
-        color: var(--md3-on-surface);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .form-field input:focus {
-        outline: none;
-        border-color: var(--md3-primary);
-        background: var(--md3-surface-container-highest);
-    }
-    
-    .form-field input::placeholder {
-        color: var(--md3-on-surface-variant);
-        opacity: 0.6;
-    }
-    
-    .auth-submit {
-        margin-top: var(--md3-spacing-md);
-        padding: var(--md3-spacing-lg) var(--md3-spacing-2xl);
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
-        border: none;
-        border-radius: var(--md3-radius-full);
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--md3-spacing-sm);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: var(--md3-elevation-1);
-    }
-    
-    .auth-submit:hover {
-        background: var(--md3-primary);
-        box-shadow: var(--md3-elevation-3);
-        transform: translateY(-2px);
-    }
-    
-    .auth-submit .material-icons {
-        font-size: 1.25rem;
     }
     
     .auth-divider {
@@ -150,28 +71,24 @@
     
     .auth-link {
         text-align: center;
-        font-size: 0.938rem;
+        font-size: 0.875rem;
         color: var(--md3-on-surface-variant);
+        margin-top: var(--md3-spacing-lg);
     }
     
     .auth-link a {
-        color: var(--md3-primary);
-        text-decoration: none;
-        font-weight: 600;
+        font-weight: 500;
     }
     
-    .auth-link a:hover {
-        text-decoration: underline;
-    }
-    
+    /* Message styling */
     .message-container {
         margin-bottom: var(--md3-spacing-lg);
     }
     
     .message {
-        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
-        border-radius: var(--md3-radius-lg);
-        font-size: 0.938rem;
+        padding: var(--md3-spacing-md);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.875rem;
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-sm);
@@ -181,48 +98,50 @@
     .message.error {
         background: var(--md3-error-container);
         color: var(--md3-on-error-container);
-        border: 1px solid var(--md3-error);
     }
     
     .message.success {
         background: var(--md3-success-container);
         color: var(--md3-on-success-container);
-        border: 1px solid var(--md3-success);
     }
     
-    .message .material-icons {
-        font-size: 1.25rem;
+    /* Admin reset prompt */
+    .admin-reset-prompt {
+        margin-top: var(--md3-spacing-lg);
+        padding: var(--md3-spacing-md);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        font-size: 0.875rem;
     }
     
-    @media (max-width: 768px) {
-        .auth-container {
-            padding: var(--md3-spacing-lg) var(--md3-spacing-md);
-        }
-        
-        .auth-card {
-            padding: var(--md3-spacing-2xl) var(--md3-spacing-lg);
-            border-radius: var(--md3-radius-2xl);
-        }
-        
-        .auth-icon {
-            width: 64px;
-            height: 64px;
-        }
-        
-        .auth-icon .material-icons {
-            font-size: 2.5rem;
-        }
-        
-        .auth-title {
-            font-size: 1.5rem;
-        }
+    .admin-reset-prompt strong {
+        display: block;
+        margin-bottom: var(--md3-spacing-xs);
+    }
+    
+    .admin-reset-prompt p {
+        margin: 0 0 var(--md3-spacing-sm) 0;
+        opacity: 0.9;
+    }
+    
+    .admin-reset-prompt .action-btn {
+        display: inline-block;
+        padding: 6px 12px;
+        background: var(--md3-error);
+        color: var(--md3-on-error);
+        border-radius: var(--md3-radius-sm);
+        text-decoration: none;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="auth-container">
-    <div class="auth-card">
+    <div class="card auth-card">
         <div class="auth-header">
             <div class="auth-icon">
                 <span class="material-icons">account_circle</span>
@@ -230,15 +149,17 @@
             <h1 class="auth-title">欢迎回来</h1>
             <p class="auth-subtitle">登录您的账户以继续</p>
         </div>
-        
+
         {% if messages %}
         <div class="message-container">
             {% for message in messages %}
-            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            <div class="message {{ message.tags }}">
                 <span class="material-icons">
-                    {% if 'error' in message.tags %}error{% elif 'success' in message.tags %}check_circle{% else %}info{% endif %}
+                    {% if 'error' in message.tags %}error
+                    {% elif 'success' in message.tags %}check_circle
+                    {% else %}info{% endif %}
                 </span>
-                <span>{{ message }}</span>
+                {{ message }}
             </div>
             {% endfor %}
         </div>
@@ -247,47 +168,39 @@
         <form method="post" class="auth-form">
             {% csrf_token %}
             
-            <div class="form-field">
-                <label for="username">
-                    <span class="material-icons">person</span>
-                    <span>用户名</span>
-                </label>
+            <div class="form-group">
+                <label for="username">用户名</label>
                 <input type="text" id="username" name="username" value="{{ username }}" placeholder="请输入用户名" required autocomplete="username">
             </div>
-
-            <div class="form-field">
-                <label for="password">
-                    <span class="material-icons">lock</span>
-                    <span>密码</span>
-                </label>
+            
+            <div class="form-group">
+                <label for="password">密码</label>
                 <input type="password" id="password" name="password" placeholder="请输入密码" required autocomplete="current-password">
             </div>
 
-            <button type="submit" class="auth-submit">
+            <button type="submit" class="btn btn-filled btn-block btn-lg">
                 <span class="material-icons">arrow_forward</span>
-                <span>立即登录</span>
+                立即登录
             </button>
         </form>
 
         {% if show_admin_reset_prompt %}
-        <div id="admin-reset-modal" style="margin-top: var(--md3-spacing-lg); padding: var(--md3-spacing-md); border-radius: var(--md3-radius-lg); background: var(--md3-error-container); color: var(--md3-on-error-container);">
+        <div class="admin-reset-prompt">
             <strong>登录已被锁定</strong>
-            <p style="margin: .5rem 0;">由于多次失败的登录尝试，您的账号（或此 IP）已被暂时锁定 5 分钟。请等待解锁或联系管理员重置密码。</p>
+            <p>由于多次失败的登录尝试，您的账号（或此 IP）已被暂时锁定 5 分钟。请等待解锁或联系管理员重置密码。</p>
             {% if admin_contact_email %}
-            <a href="mailto:{{ admin_contact_email }}" class="action-btn primary" style="background: var(--md3-on-error-container); color: var(--md3-error-container);">联系管理员</a>
+            <a href="mailto:{{ admin_contact_email }}" class="action-btn">联系管理员</a>
             {% else %}
             <button class="action-btn" onclick="alert('请联系系统管理员或使用管理员面板重置密码');">联系管理员</button>
             {% endif %}
         </div>
         {% endif %}
 
-        <div class="auth-divider">
-            <span>还没有账户？</span>
-        </div>
+        <div class="auth-divider">或者</div>
 
-        <p class="auth-link">
-            <a href="{% url 'clubs:register' %}">立即注册</a>
-        </p>
+        <div class="auth-link">
+            还没有账户？ <a href="{% url 'clubs:register' %}">立即注册</a>
+        </div>
     </div>
 </div>
 {% endblock %}

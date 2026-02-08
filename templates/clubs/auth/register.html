@@ -4,307 +4,137 @@
 
 {% block extra_css %}
 <style>
-    .register-page {
-        min-height: 100vh;
+    .auth-container {
+        min-height: calc(100vh - 80px);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: var(--md3-spacing-2xl);
-        background: var(--md3-surface);
+        padding: var(--md3-spacing-2xl) var(--md3-spacing-lg) 120px;
     }
     
-    .register-card {
+    .auth-card {
         width: 100%;
-        max-width: 500px;
-        background: var(--md3-surface-container-lowest);
-        border-radius: var(--md3-radius-2xl);
-        padding: var(--md3-spacing-3xl) var(--md3-spacing-2xl);
-        border: 1px solid var(--md3-outline-variant);
-        box-shadow: var(--md3-elevation-3);
+        max-width: 640px;
+        padding: var(--md3-spacing-2xl);
     }
     
-    .register-header {
+    .auth-header {
         text-align: center;
-        margin-bottom: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
     }
     
-    .register-logo {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto var(--md3-spacing-lg);
-        background: var(--md3-primary);
+    .auth-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto var(--md3-spacing-md);
+        background: var(--md3-primary-container);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: var(--md3-elevation-2);
     }
     
-    .register-logo .material-icons {
-        font-size: 2.5rem;
-        color: var(--md3-on-primary);
+    .auth-icon .material-icons {
+        font-size: 2rem;
+        color: var(--md3-primary);
     }
     
-    .register-title {
-        font-size: 1.75rem;
+    .auth-title {
+        font-size: 1.5rem;
         font-weight: 500;
         color: var(--md3-on-surface);
         margin: 0 0 var(--md3-spacing-xs) 0;
-        letter-spacing: 0;
     }
     
-    .register-subtitle {
-        font-size: 1rem;
+    .auth-subtitle {
+        font-size: 0.875rem;
         color: var(--md3-on-surface-variant);
         margin: 0;
     }
     
-    /* 错误和信息框 */
-    .error-box, .info-box {
-        border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-xl);
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin: var(--md3-spacing-xl) 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
     }
     
-    .error-box {
-        background: var(--md3-error-container);
-        border: 1px solid var(--md3-error);
+    .auth-divider::before,
+    .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--md3-outline-variant);
     }
     
-    .info-box {
-        background: var(--md3-secondary-container);
-        border: 1px solid var(--md3-secondary);
+    .auth-link {
+        text-align: center;
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        margin-top: var(--md3-spacing-lg);
     }
     
-    .error-item, .info-item {
+    .auth-link a {
+        font-weight: 500;
+    }
+    
+    /* Message styling */
+    .message-container {
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .message {
+        padding: var(--md3-spacing-md);
+        border-radius: var(--md3-radius-md);
+        font-size: 0.875rem;
         display: flex;
         align-items: flex-start;
         gap: var(--md3-spacing-sm);
-        font-size: 0.875rem;
+        margin-bottom: var(--md3-spacing-sm);
         line-height: 1.5;
     }
     
-    .error-item {
+    .message.error {
+        background: var(--md3-error-container);
         color: var(--md3-on-error-container);
     }
     
-    .info-item {
+    .message.info {
+        background: var(--md3-secondary-container);
         color: var(--md3-on-secondary-container);
     }
     
-    .error-item + .error-item,
-    .info-item + .info-item {
-        margin-top: var(--md3-spacing-sm);
-    }
-    
-    .error-item .material-icons {
-        font-size: 1.125rem;
-        color: var(--md3-error);
+    .message .material-icons {
+        font-size: 1.25rem;
         flex-shrink: 0;
-        margin-top: 1px;
+        margin-top: 2px;
     }
     
-    .info-item .material-icons {
-        font-size: 1.125rem;
-        color: var(--md3-secondary);
-        flex-shrink: 0;
-        margin-top: 1px;
-    }
-    
-    /* 表单样式 */
-    .register-form {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-lg);
-    }
-    
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--md3-spacing-lg);
-    }
-    
-    /* Material Design 3 输入框 */
-    .md3-field {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .md3-field-input, .md3-field-select {
-        width: 100%;
-        height: 56px;
-        padding: 16px;
-        padding-top: 24px;
-        border: 1px solid var(--md3-outline);
-        border-radius: var(--md3-radius-sm);
-        font-size: 1rem;
-        background: var(--md3-surface);
-        color: var(--md3-on-surface);
-        font-family: inherit;
-        transition: all 0.2s ease;
-        box-sizing: border-box;
-    }
-    
-    .md3-field-input:focus, .md3-field-select:focus {
-        outline: none;
-        border-color: var(--md3-primary);
-        border-width: 2px;
-        padding: 15px;
-        padding-top: 23px;
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 20%, transparent);
-    }
-    
-    .md3-field-input::placeholder {
-        color: transparent;
-    }
-    
-    .md3-field-label {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 1rem;
-        color: var(--md3-on-surface-variant);
-        pointer-events: none;
-        transition: all 0.2s ease;
-        background: var(--md3-surface);
-        padding: 0 4px;
-        z-index: 1;
-    }
-    
-    .md3-field-input:focus + .md3-field-label,
-    .md3-field-input:not(:placeholder-shown) + .md3-field-label {
-        top: 0;
-        font-size: 0.75rem;
-        color: var(--md3-primary);
-        font-weight: 500;
-    }
-    
-    .md3-field-input:not(:focus):not(:placeholder-shown) + .md3-field-label {
-        color: var(--md3-on-surface-variant);
-    }
-    
-    .md3-field-hint {
+    .form-hint {
         font-size: 0.75rem;
         color: var(--md3-on-surface-variant);
         margin-top: var(--md3-spacing-xs);
-        padding-left: 16px;
-        line-height: 1.4;
-    }
-    
-    /* Select 特殊样式 */
-    .md3-field-select {
-        cursor: pointer;
-        appearance: none;
-        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%2349454F' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        background-size: 24px;
-    }
-    
-    /* 提交按钮 */
-    .btn-submit {
-        width: 100%;
-        height: 48px;
-        margin-top: var(--md3-spacing-lg);
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
-        border: none;
-        border-radius: var(--md3-radius-full);
-        font-size: 0.875rem;
-        font-weight: 500;
-        letter-spacing: 0.1px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: var(--md3-elevation-1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--md3-spacing-xs);
-    }
-    
-    .btn-submit:hover {
-        box-shadow: var(--md3-elevation-2);
-        background: color-mix(in srgb, var(--md3-primary) 85%, var(--md3-on-primary));
-    }
-    
-    .btn-submit:active {
-        transform: scale(0.98);
-    }
-    
-    /* 页脚 */
-    .register-footer {
-        margin-top: var(--md3-spacing-2xl);
-        text-align: center;
-    }
-    
-    .register-footer p {
-        font-size: 0.875rem;
-        color: var(--md3-on-surface-variant);
-        margin: 0;
-    }
-    
-    .register-footer a {
-        color: var(--md3-primary);
-        text-decoration: none;
-        font-weight: 500;
-        transition: text-decoration 0.2s ease;
-    }
-    
-    .register-footer a:hover {
-        text-decoration: underline;
-    }
-    
-    /* 响应式 */
-    @media (max-width: 620px) {
-        .register-page {
-            padding: var(--md3-spacing-lg);
-            align-items: flex-start;
-            padding-top: var(--md3-spacing-xl);
-            padding-bottom: 120px;
-        }
-        
-        .register-card {
-            padding: var(--md3-spacing-2xl) var(--md3-spacing-xl);
-            border-radius: var(--md3-radius-xl);
-        }
-        
-        .register-logo {
-            width: 64px;
-            height: 64px;
-        }
-        
-        .register-logo .material-icons {
-            font-size: 2rem;
-        }
-        
-        .register-title {
-            font-size: 1.5rem;
-        }
-        
-        .form-row {
-            grid-template-columns: 1fr;
-        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="register-page">
-    <div class="register-card">
-        <div class="register-header">
-            <div class="register-logo">
-                <span class="material-icons">badge</span>
+<div class="auth-container">
+    <div class="card auth-card">
+        <div class="auth-header">
+            <div class="auth-icon">
+                <span class="material-icons">person_add</span>
             </div>
-            <h1 class="register-title">用户注册</h1>
-            <p class="register-subtitle">欢迎来到系统，注册/登录</p>
+            <h1 class="auth-title">用户注册</h1>
+            <p class="auth-subtitle">欢迎来到系统，请填写以下信息注册</p>
         </div>
         
         {% if errors %}
-        <div class="error-box">
+        <div class="message-container">
             {% for error in errors %}
-            <div class="error-item">
+            <div class="message error">
                 <span class="material-icons">error_outline</span>
                 <span>{{ error }}</span>
             </div>
@@ -312,71 +142,73 @@
         </div>
         {% endif %}
         
-        <div class="info-box">
-            <div class="info-item">
+        <div class="message-container">
+            <div class="message info">
                 <span class="material-icons">info</span>
                 <span>请注册等待管理员审核，社长注册请直接登录</span>
             </div>
         </div>
 
-        <form method="post" class="register-form" id="registerForm">
+        <form method="post" class="auth-form" id="registerForm">
             {% csrf_token %}
             
             <!-- 用户名 & 姓名 -->
-            <div class="form-row">
-                <div class="md3-field">
-                    <input type="text" class="md3-field-input" id="username" name="username" 
-                           value="{{ form_data.username }}" placeholder=" " required autocomplete="username">
-                    <label class="md3-field-label" for="username">用户名 *</label>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="username">用户名 *</label>
+                    <input type="text" id="username" name="username" 
+                           value="{{ form_data.username }}" placeholder="请输入用户名" required autocomplete="username">
                 </div>
-                <div class="md3-field">
-                    <input type="text" class="md3-field-input" id="real_name" name="real_name" 
-                           value="{{ form_data.real_name }}" placeholder=" " required>
-                    <label class="md3-field-label" for="real_name">真实姓名 *</label>
+                <div class="form-group">
+                    <label for="real_name">真实姓名 *</label>
+                    <input type="text" id="real_name" name="real_name" 
+                           value="{{ form_data.real_name }}" placeholder="请输入真实姓名" required>
                 </div>
             </div>
 
             <!-- 邮箱 -->
-            <div class="md3-field">
-                <input type="email" class="md3-field-input" id="email" name="email" 
-                       value="{{ form_data.email }}" placeholder=" " autocomplete="email">
-                <label class="md3-field-label" for="email">邮箱</label>
-                <div class="md3-field-hint">用于接收系统通知（可选）</div>
+            <div class="form-group">
+                <label for="email">邮箱 *</label>
+                <input type="email" id="email" name="email" 
+                       value="{{ form_data.email }}" placeholder="请输入邮箱地址" required autocomplete="email">
+                <div class="form-hint">用于接收系统通知</div>
             </div>
 
             <!-- 密码 -->
-            <div class="form-row">
-                <div class="md3-field">
-                    <input type="password" class="md3-field-input" id="password" name="password" 
-                           placeholder=" " required autocomplete="new-password">
-                    <label class="md3-field-label" for="password">密码 *</label>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="password">密码 *</label>
+                    <input type="password" id="password" name="password" 
+                           placeholder="请输入密码" required autocomplete="new-password">
                 </div>
-                <div class="md3-field">
-                    <input type="password" class="md3-field-input" id="password_confirm" name="password_confirm" 
-                           placeholder=" " required autocomplete="new-password">
-                    <label class="md3-field-label" for="password_confirm">确认密码 *</label>
+                <div class="form-group">
+                    <label for="password_confirm">确认密码 *</label>
+                    <input type="password" id="password_confirm" name="password_confirm" 
+                           placeholder="请再次输入密码" required autocomplete="new-password">
                 </div>
             </div>
 
             <!-- 角色选择 -->
-            <div class="md3-field">
-                <select class="md3-field-select" id="role" name="role" required>
-                    <option value="">请选择角色 *</option>
+            <div class="form-group">
+                <label for="role">角色 *</label>
+                <select id="role" name="role" required>
+                    <option value="">请选择角色</option>
                     <option value="president" {% if form_data.role == 'president' %}selected{% endif %}>社长</option>
                     <option value="staff" {% if form_data.role == 'staff' %}selected{% endif %}>干事</option>
                 </select>
             </div>
 
             <!-- 学号 & 政治面貌 -->
-            <div class="form-row">
-                <div class="md3-field">
-                    <input type="text" class="md3-field-input" id="student_id" name="student_id" 
-                           value="{{ form_data.student_id }}" placeholder=" " required>
-                    <label class="md3-field-label" for="student_id">学号 *</label>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="student_id">学号 *</label>
+                    <input type="text" id="student_id" name="student_id" 
+                           value="{{ form_data.student_id }}" placeholder="请输入学号" required>
                 </div>
-                <div class="md3-field">
-                    <select class="md3-field-select" id="political_status" name="political_status">
-                        <option value="">政治面貌</option>
+                <div class="form-group">
+                    <label for="political_status">政治面貌</label>
+                    <select id="political_status" name="political_status">
+                        <option value="">请选择政治面貌</option>
                         <option value="communist_party_member" {% if form_data.political_status == 'communist_party_member' %}selected{% endif %}>中共党员</option>
                         <option value="communist_party_probationary" {% if form_data.political_status == 'communist_party_probationary' %}selected{% endif %}>中共预备党员</option>
                         <option value="communist_youth_league" {% if form_data.political_status == 'communist_youth_league' %}selected{% endif %}>共青团员</option>
@@ -395,9 +227,10 @@
             </div>
 
             <!-- 部门选择（仅干事） -->
-            <div class="md3-field" id="department-container" style="display: none;">
-                <select class="md3-field-select" id="department" name="department">
-                    <option value="">请选择部门 *</option>
+            <div class="form-group" id="department-container" style="display: none;">
+                <label for="department">部门 *</label>
+                <select id="department" name="department">
+                    <option value="">请选择部门</option>
                     {% for dept in departments %}
                     <option value="{{ dept.id }}" {% if form_data.department == dept.id|stringformat:"s" %}selected{% endif %}>{{ dept.name }}</option>
                     {% endfor %}
@@ -405,27 +238,27 @@
             </div>
 
             <!-- 电话 & 微信 -->
-            <div class="form-row">
-                <div class="md3-field">
-                    <input type="tel" class="md3-field-input" id="phone" name="phone" 
-                           value="{{ form_data.phone }}" placeholder=" " required autocomplete="tel">
-                    <label class="md3-field-label" for="phone">电话 *</label>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="phone">电话 *</label>
+                    <input type="tel" id="phone" name="phone" 
+                           value="{{ form_data.phone }}" placeholder="请输入电话号码" required autocomplete="tel">
                 </div>
-                <div class="md3-field">
-                    <input type="text" class="md3-field-input" id="wechat" name="wechat" 
-                           value="{{ form_data.wechat }}" placeholder=" " required>
-                    <label class="md3-field-label" for="wechat">微信 *</label>
+                <div class="form-group">
+                    <label for="wechat">微信 *</label>
+                    <input type="text" id="wechat" name="wechat" 
+                           value="{{ form_data.wechat }}" placeholder="请输入微信号" required>
                 </div>
             </div>
 
-            <button type="submit" class="btn-submit">
+            <button type="submit" class="btn btn-filled btn-block btn-lg" style="margin-top: var(--md3-spacing-md);">
                 <span class="material-icons">person_add</span>
                 创建账户
             </button>
         </form>
 
-        <div class="register-footer">
-            <p>已有账户？<a href="{% url 'clubs:login' %}">登录</a></p>
+        <div class="auth-link">
+            已有账户？ <a href="{% url 'clubs:login' %}">立即登录</a>
         </div>
     </div>
 </div>
@@ -443,10 +276,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 社长必须选择政治面貌
         politicalStatusSelect.required = isPresident;
+        // 如果是社长且未选择政治面貌，添加星号提示（这里通过label text不好动态改，但required属性已设置）
         
         // 干事必须选择部门
         if (isStaff) {
-            departmentContainer.style.display = 'flex';
+            departmentContainer.style.display = 'block';
             departmentSelect.required = true;
         } else {
             departmentContainer.style.display = 'none';
