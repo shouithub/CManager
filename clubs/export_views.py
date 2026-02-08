@@ -6,13 +6,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
 from django.utils import timezone
+from django.db.models import Q
 from datetime import datetime, timedelta, time
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 import urllib.parse
 
-from .models import Room222Booking
+from .models import Room222Booking, ActivityApplication
 from .views import is_staff_or_admin
 
 
@@ -86,6 +87,8 @@ def export_room222_bookings_weekly(request):
     # 创建工作簿
     wb = Workbook()
     ws = wb.active
+    if ws is None:
+        ws = wb.create_sheet()
     ws.title = f"222房间日程-{week_start.strftime('%Y年%m月%d日')}"
     
     # 定义样式
@@ -206,6 +209,211 @@ def export_room222_bookings_weekly(request):
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     filename = f"222房间日程-{week_start.strftime('%Y%m%d')}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{urllib.parse.quote(filename)}'
+    
+    wb.save(response)
+    return response
+
+
+@login_required(login_url='clubs:login')
+def export_activities(request):
+    """
+    导出活动申请为 Excel 文件
+    支持筛选条件：社团名称、活动类型、日期、活动ID列表
+    管理员、干事可以导出所有批准的活动；社长只能导出本社团的活动
+    """
+    from .models import Officer
+    
+    # 检查权限 - 干事、管理员或社长
+    user_role = getattr(request.user.profile, 'role', None) if hasattr(request.user, 'profile') else None
+    if user_role not in ['staff', 'admin', 'president']:
+        messages.error(request, '您没有权限导出活动数据')
+        return redirect('clubs:public_activities')
+    
+    # 获取筛选参数
+    club_filter = request.GET.get('club', '')
+    activity_type_filter = request.GET.get('activity_type', '')
+    date_filter = request.GET.get('date', '')
+    search_query = request.GET.get('search', '')
+    activity_ids = request.GET.get('ids', '')
+    
+    # 获取基础查询集
+    if activity_ids:
+        # 如果指定了活动ID列表，只导出这些活动
+        id_list = [int(id.strip()) for id in activity_ids.split(',') if id.strip().isdigit()]
+        activities = ActivityApplication.objects.filter(id__in=id_list)
+    else:
+        # 否则根据筛选条件获取所有已批准的活动
+        activities = ActivityApplication.objects.filter(status='approved')
+    
+    # 根据用户角色过滤活动
+    if user_role == 'president':
+        # 社长只能导出本社团的活动
+        try:
+            user_club = Officer.objects.get(user_profile=request.user.profile, position='president', is_current=True).club
+            activities = activities.filter(club=user_club)
+            # 如果指定了club_filter，验证是否与用户所属社团一致
+            if club_filter and club_filter != user_club.name:
+                messages.warning(request, f'您只能导出 {user_club.name} 的活动')
+                club_filter = user_club.name
+        except Officer.DoesNotExist:
+            # 如果找不到社长职位，显示空结果
+            activities = activities.none()
+    
+    # 应用筛选条件
+    if club_filter:
+        activities = activities.filter(club__name__icontains=club_filter)
+    
+    if activity_type_filter:
+        activities = activities.filter(activity_type=activity_type_filter)
+    
+    if date_filter:
+        try:
+            filter_date = datetime.strptime(date_filter, '%Y-%m-%d').date()
+            activities = activities.filter(activity_date=filter_date)
+        except ValueError:
+            pass
+    
+    if search_query:
+        activities = activities.filter(
+            Q(club__name__icontains=search_query) |
+            Q(activity_name__icontains=search_query)
+        )
+    
+    activities = activities.select_related('club').order_by('activity_date', 'activity_time_start')
+    
+    # 创建工作簿
+    wb = Workbook()
+    ws = wb.active
+    if ws is None:
+        ws = wb.create_sheet()
+    ws.title = "活动列表"
+    
+    # 定义样式
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF", size=12)
+    border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    center_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    left_alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+    
+    # 设置列宽
+    columns = [
+        ('A', '序号', 6),
+        ('B', '社团名称', 20),
+        ('C', '活动名称', 25),
+        ('D', '活动类型', 15),
+        ('E', '活动日期', 12),
+        ('F', '开始时间', 10),
+        ('G', '结束时间', 10),
+        ('H', '活动地点', 20),
+        ('I', '预计人数', 10),
+        ('J', '联系人', 12),
+        ('K', '联系电话', 15),
+        ('L', '活动简介', 40),
+        ('M', '审核状态', 12),
+    ]
+    
+    # 写入表头
+    for col_letter, header_text, width in columns:
+        ws[f'{col_letter}1'] = header_text
+        ws[f'{col_letter}1'].fill = header_fill
+        ws[f'{col_letter}1'].font = header_font
+        ws[f'{col_letter}1'].alignment = center_alignment
+        ws[f'{col_letter}1'].border = border
+        ws.column_dimensions[col_letter].width = width
+    
+    # 写入数据
+    for idx, activity in enumerate(activities, start=2):
+        # 序号
+        ws[f'A{idx}'] = idx - 1
+        ws[f'A{idx}'].alignment = center_alignment
+        ws[f'A{idx}'].border = border
+        
+        # 社团名称
+        ws[f'B{idx}'] = activity.club.name
+        ws[f'B{idx}'].alignment = center_alignment
+        ws[f'B{idx}'].border = border
+        
+        # 活动名称
+        ws[f'C{idx}'] = activity.activity_name
+        ws[f'C{idx}'].alignment = left_alignment
+        ws[f'C{idx}'].border = border
+        
+        # 活动类型
+        ws[f'D{idx}'] = activity.get_activity_type_display()
+        ws[f'D{idx}'].alignment = center_alignment
+        ws[f'D{idx}'].border = border
+        
+        # 活动日期
+        ws[f'E{idx}'] = activity.activity_date.strftime('%Y-%m-%d') if activity.activity_date else ''
+        ws[f'E{idx}'].alignment = center_alignment
+        ws[f'E{idx}'].border = border
+        
+        # 开始时间
+        ws[f'F{idx}'] = activity.activity_time_start.strftime('%H:%M') if activity.activity_time_start else ''
+        ws[f'F{idx}'].alignment = center_alignment
+        ws[f'F{idx}'].border = border
+        
+        # 结束时间
+        ws[f'G{idx}'] = activity.activity_time_end.strftime('%H:%M') if activity.activity_time_end else ''
+        ws[f'G{idx}'].alignment = center_alignment
+        ws[f'G{idx}'].border = border
+        
+        # 活动地点
+        ws[f'H{idx}'] = activity.activity_location
+        ws[f'H{idx}'].alignment = left_alignment
+        ws[f'H{idx}'].border = border
+        
+        # 预计人数
+        ws[f'I{idx}'] = activity.expected_participants
+        ws[f'I{idx}'].alignment = center_alignment
+        ws[f'I{idx}'].border = border
+        
+        # 联系人
+        ws[f'J{idx}'] = activity.contact_person
+        ws[f'J{idx}'].alignment = center_alignment
+        ws[f'J{idx}'].border = border
+        
+        # 联系电话
+        ws[f'K{idx}'] = activity.contact_phone
+        ws[f'K{idx}'].alignment = center_alignment
+        ws[f'K{idx}'].border = border
+        
+        # 活动简介
+        ws[f'L{idx}'] = activity.activity_description
+        ws[f'L{idx}'].alignment = left_alignment
+        ws[f'L{idx}'].border = border
+        
+        # 审核状态
+        status_map = {
+            'pending': '待审核',
+            'approved': '已通过',
+            'rejected': '已驳回',
+        }
+        ws[f'M{idx}'] = status_map.get(activity.status, activity.status)
+        ws[f'M{idx}'].alignment = center_alignment
+        ws[f'M{idx}'].border = border
+        
+        # 设置行高
+        ws.row_dimensions[idx].height = 30
+    
+    # 设置打印格式
+    ws.print_options.horizontalCentered = True
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.page_setup.orientation = 'landscape'
+    
+    # 生成响应
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    
+    # 生成文件名
+    filename = f"活动列表-{timezone.now().strftime('%Y%m%d%H%M%S')}.xlsx"
     response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{urllib.parse.quote(filename)}'
     
     wb.save(response)
