@@ -47,6 +47,9 @@ def register(request):
         
         if not real_name:
             errors.append('真实姓名不能为空')
+
+        if not email:
+            errors.append('邮箱不能为空')
         
         if not password:
             errors.append('密码不能为空')
