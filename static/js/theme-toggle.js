@@ -42,6 +42,63 @@
         document.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
     }
 
+    function getTransitionOrigin (event) {
+        if (event && typeof event.clientX === 'number' && typeof event.clientY === 'number') {
+            return { x: event.clientX, y: event.clientY };
+        }
+        const toggle = document.querySelector('.sidebar-theme-toggle');
+        const rect = toggle ? toggle.getBoundingClientRect() : null;
+        return {
+            x: rect ? rect.left + rect.width / 2 : window.innerWidth / 2,
+            y: rect ? rect.top + rect.height / 2 : window.innerHeight / 2
+        };
+    }
+
+    function runThemeTransition (newTheme, event) {
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReduced) {
+            applyTheme(newTheme);
+            return;
+        }
+
+        if (!document.startViewTransition) {
+            applyTheme(newTheme);
+            return;
+        }
+
+        const origin = getTransitionOrigin(event);
+        const maxX = Math.max(origin.x, window.innerWidth - origin.x);
+        const maxY = Math.max(origin.y, window.innerHeight - origin.y);
+        const radius = Math.hypot(maxX, maxY);
+
+        const transition = document.startViewTransition(() => {
+            applyTheme(newTheme);
+        });
+
+        transition.ready.then(() => {
+            const start = `circle(0px at ${origin.x}px ${origin.y}px)`;
+            const end = `circle(${radius}px at ${origin.x}px ${origin.y}px)`;
+
+            document.documentElement.animate(
+                { clipPath: [start, end] },
+                {
+                    duration: 480,
+                    easing: 'cubic-bezier(0.2, 0, 0, 1)',
+                    pseudoElement: '::view-transition-new(root)'
+                }
+            );
+
+            document.documentElement.animate(
+                { clipPath: [end, start] },
+                {
+                    duration: 480,
+                    easing: 'cubic-bezier(0.2, 0, 0, 1)',
+                    pseudoElement: '::view-transition-old(root)'
+                }
+            );
+        });
+    }
+
     /**
      * 更新主题切换按钮
      */
@@ -65,10 +122,10 @@
     /**
      * 切换主题
      */
-    function toggleTheme () {
+    function toggleTheme (event) {
         const currentTheme = document.documentElement.getAttribute('data-theme') || getSavedTheme();
         const newTheme = currentTheme === THEME_DARK ? THEME_LIGHT : THEME_DARK;
-        applyTheme(newTheme);
+        runThemeTransition(newTheme, event);
     }
 
     /**

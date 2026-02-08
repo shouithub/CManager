@@ -58,6 +58,10 @@
     --md3-on-surface: #1c1b1f;
     --md3-surface-variant: #e7e0ec;
     --md3-on-surface-variant: #49454e;
+    --md3-surface-light: #fffbfe;
+    --md3-on-surface-light: #1c1b1f;
+    --md3-surface-dark: #141218;
+    --md3-on-surface-dark: #e6e0e9;
     
     /* Surface Containers - 表面容器 */
     --md3-surface-dim: #ded8e1;
@@ -256,6 +260,18 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0;
     font-weight: 400;
     line-height: 1.2;
+}
+
+.material-icons {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: none !important;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
 }
 
 /* Display Large */
@@ -1801,6 +1817,16 @@ html[data-theme="dark"] select {
     appearance: none;
 }
 
+html[data-theme="light"] select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2349454e' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+    background-position: right var(--md3-spacing-lg) center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
 /* ============================================================================
  * 24. 文件上传选择器 (File Upload Input) - MD3 风格
  * ============================================================================ */
@@ -2305,6 +2331,30 @@ body {
 
 .sidebar-header .logo-icon {
     font-size: 1.5rem;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 3px;
+    box-sizing: border-box;
+    background: color-mix(in srgb, var(--md3-surface) 85%, var(--md3-on-surface) 6%);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--md3-outline-variant) 70%, transparent) inset;
+    border: 1px solid color-mix(in srgb, var(--md3-outline-variant) 60%, transparent);
+}
+[data-theme="dark"] .sidebar-header .logo-icon {
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+}
+.sidebar-header .logo-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 0 1px rgba(0,0,0,0.25));
 }
 
 .sidebar-user-dropdown a span {
@@ -2701,6 +2751,16 @@ body {
 
 .sidebar-theme-toggle #theme-icon {
     font-size: 1.5rem;
+    width: 1.5rem;
+    text-align: center;
+    line-height: 1;
+    display: inline-block;
+    background: linear-gradient(135deg, var(--md3-primary), var(--md3-tertiary));
+    background-size: 200% 200%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: themeIconGradient 3s ease infinite;
 }
 
 .sidebar-theme-toggle span:last-child {
@@ -2709,6 +2769,12 @@ body {
     line-height: 20px;
     letter-spacing: 0.1px;
     color: var(--md3-on-surface);
+}
+
+@keyframes themeIconGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* 主内容区 */

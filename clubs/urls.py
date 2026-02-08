@@ -62,6 +62,7 @@ urlpatterns = [
     # 管理员 - 锁定账号管理
     path('admin/locked-accounts/', views.locked_accounts, name='locked_accounts'),
     path('admin/unlock-account/<str:username>/', views.unlock_account, name='unlock_account'),
+    path('admin/favicon/', views.manage_favicon, name='manage_favicon'),
 
     # 强制重置密码路由已移除，使用管理员重置密码表单：admin-panel/reset-user-password/
     path('staff/manage-clubs/', auth_views.manage_staff_clubs, name='manage_staff_clubs'),

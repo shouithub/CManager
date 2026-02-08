@@ -1,4 +1,6 @@
 """上下文处理器，用于在所有模板中提供全局变量"""
+import os
+from django.conf import settings
 from .models import (
     ReviewSubmission, 
     ClubRegistration, 
@@ -8,6 +10,29 @@ from .models import (
     PresidentTransition,
     Officer
 )
+
+
+def site_settings(request):
+    """全局站点设置，如favicon"""
+    base_media_url = f"/{settings.MEDIA_URL.lstrip('/')}"
+    if not base_media_url.endswith('/'):
+        base_media_url = f"{base_media_url}/"
+    favicon_path = os.path.join(settings.MEDIA_ROOT, 'site', 'favicon.ico')
+    favicon_preview_path = os.path.join(settings.MEDIA_ROOT, 'site', 'favicon.png')
+    import time
+    cache_buster = int(time.time())
+    if os.path.exists(favicon_path):
+        site_favicon_url = f"{base_media_url}site/favicon.ico?v={cache_buster}"
+    else:
+        site_favicon_url = None
+    if os.path.exists(favicon_preview_path):
+        site_favicon_preview_url = f"{base_media_url}site/favicon.png?v={cache_buster}"
+    else:
+        site_favicon_preview_url = None
+    return {
+        'site_favicon_url': site_favicon_url,
+        'site_favicon_preview_url': site_favicon_preview_url
+    }
 
 
 def audit_center_counts(request):

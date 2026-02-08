@@ -7,6 +7,15 @@
     <meta name="color-scheme" content="light dark">
     <meta name="format-detection" content="telephone=no">
     <title>{% block title %}社团管理系统{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.font.im">
+    <link rel="dns-prefetch" href="//fonts.font.im">
+    {% if site_favicon_url %}
+    <link rel="icon" type="image/x-icon" sizes="any" href="{{ site_favicon_url }}">
+    {% endif %}
+    {% if site_favicon_preview_url %}
+    <link rel="icon" type="image/png" sizes="128x128" href="{{ site_favicon_preview_url }}">
+    <link rel="apple-touch-icon" sizes="128x128" href="{{ site_favicon_preview_url }}">
+    {% endif %}
     <!-- 阻止页面闪烁：在CSS加载前立即设置主题 -->
     <script>
         (function() {
@@ -17,6 +26,7 @@
             document.documentElement.setAttribute('data-theme', theme);
         })();
     </script>
+    <link rel="preload" href="https://fonts.font.im/icon?family=Material+Icons" as="style">
     <link href="https://fonts.font.im/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20251207">
     <style>
@@ -41,7 +51,13 @@
     <nav class="sidebar-nav" id="sidebar">
         <!-- 头部 -->
         <div class="sidebar-header">
-            <span class="logo-icon"><span class="material-icons" style="font-size: 1.5em;">flag</span></span>
+            <span class="logo-icon">
+                {% if site_favicon_preview_url %}
+                <img src="{{ site_favicon_preview_url }}" alt="Logo">
+                {% else %}
+                <span class="material-icons" style="font-size: 1.5em;">flag</span>
+                {% endif %}
+            </span>
             <h1>社团管理系统</h1>
         </div>
         
@@ -271,7 +287,7 @@
                 </a>
             </div>
             
-            <div class="sidebar-theme-toggle" onclick="toggleTheme()" title="切换主题">
+            <div class="sidebar-theme-toggle" onclick="toggleTheme(event)" title="切换主题">
                 <span id="theme-icon" class="material-icons">brightness_4</span>
                 <span class="theme-text">切换主题</span>
             </div>

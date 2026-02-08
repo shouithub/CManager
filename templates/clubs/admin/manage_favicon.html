@@ -1,0 +1,252 @@
+{% extends "clubs/base.html" %}
+
+{% block title %}网站图标管理 - 社团管理系统{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <span class="material-icons icon">image</span>
+    <div class="page-header-content">
+        <h1>网站图标管理</h1>
+        <div class="subtitle">上传并更新网站的 Favicon 图标</div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="detail-card">
+        <div class="card-header">
+            <h2>当前图标</h2>
+        </div>
+        <div class="card-body" style="text-align: center; padding: 2rem;">
+            {% if site_favicon_preview_url %}
+                <img src="{{ site_favicon_preview_url }}" alt="Current Favicon" style="width: 64px; height: 64px; border: 1px solid #ddd; padding: 4px; border-radius: 4px;">
+                <p style="margin-top: 1rem; color: var(--md-sys-color-on-surface-variant);">当前使用的网站图标</p>
+            {% else %}
+                <div style="width: 64px; height: 64px; border: 1px dashed #ddd; border-radius: 4px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                    <span class="material-icons" style="color: #ccc;">image_not_supported</span>
+                </div>
+                <p style="margin-top: 1rem; color: var(--md-sys-color-on-surface-variant);">未设置自定义图标</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <div class="card-header">
+            <h2>更新图标</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" class="info-grid" id="favicon-form">
+                {% csrf_token %}
+                
+                <div class="info-item full-width">
+                    <label class="info-label">选择新图标</label>
+                    <div class="info-value">
+                        <input type="file" name="favicon" accept=".ico,.png,.jpg,.jpeg" required class="form-control" id="favicon-input">
+                        <div class="help-text" style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--md-sys-color-outline);">
+                            支持格式: .ico, .png, .jpg (建议使用 .ico 格式，尺寸 32x32 或 64x64)
+                        </div>
+                    </div>
+                </div>
+                <div class="info-item full-width" id="cropper-wrapper" style="display: none;">
+                    <label class="info-label">裁剪预览</label>
+                    <div class="info-value">
+                        <div class="cropper-container">
+                            <canvas id="cropper-canvas" width="256" height="256"></canvas>
+                        </div>
+                        <div class="cropper-controls">
+                            <input type="range" id="cropper-zoom" min="1" max="3" step="0.01" value="1" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-grid full-width" style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">upload</span>
+                        上传更新
+                    </button>
+                    <a href="{% url 'clubs:index' %}" class="btn btn-outline">
+                        <span class="material-icons">arrow_back</span>
+                        返回首页
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid var(--md-sys-color-outline);
+        border-radius: 4px;
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+    }
+    .cropper-container {
+        width: 260px;
+        height: 260px;
+        border: 1px solid var(--md-sys-color-outline);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--md-sys-color-surface);
+        margin-top: 0.75rem;
+    }
+    .cropper-controls {
+        margin-top: 0.75rem;
+        width: 260px;
+    }
+</style>
+<script>
+    (function() {
+        var input = document.getElementById('favicon-input');
+        var wrapper = document.getElementById('cropper-wrapper');
+        var canvas = document.getElementById('cropper-canvas');
+        var zoom = document.getElementById('cropper-zoom');
+        var form = document.getElementById('favicon-form');
+        if (!input || !wrapper || !canvas || !zoom || !form) {
+            return;
+        }
+        var ctx = canvas.getContext('2d');
+        var img = new Image();
+        var imgReady = false;
+        var dragging = false;
+        var lastX = 0;
+        var lastY = 0;
+        var scale = 1;
+        var minScale = 1;
+        var offsetX = 0;
+        var offsetY = 0;
+        function clampOffsets() {
+            var maxX = 0;
+            var maxY = 0;
+            var minX = canvas.width - img.width * scale;
+            var minY = canvas.height - img.height * scale;
+            if (img.width * scale < canvas.width) {
+                minX = maxX = (canvas.width - img.width * scale) / 2;
+            }
+            if (img.height * scale < canvas.height) {
+                minY = maxY = (canvas.height - img.height * scale) / 2;
+            }
+            offsetX = Math.min(maxX, Math.max(minX, offsetX));
+            offsetY = Math.min(maxY, Math.max(minY, offsetY));
+        }
+        function draw() {
+            if (!imgReady) {
+                return;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+        }
+        function fitImage() {
+            minScale = Math.max(canvas.width / img.width, canvas.height / img.height);
+            scale = minScale;
+            offsetX = (canvas.width - img.width * scale) / 2;
+            offsetY = (canvas.height - img.height * scale) / 2;
+            zoom.min = minScale.toFixed(4);
+            zoom.max = (minScale * 3).toFixed(4);
+            zoom.value = scale.toFixed(4);
+            clampOffsets();
+            draw();
+        }
+        function setScale(newScale) {
+            var centerX = canvas.width / 2;
+            var centerY = canvas.height / 2;
+            var imgCenterX = (centerX - offsetX) / scale;
+            var imgCenterY = (centerY - offsetY) / scale;
+            scale = newScale;
+            offsetX = centerX - imgCenterX * scale;
+            offsetY = centerY - imgCenterY * scale;
+            clampOffsets();
+            draw();
+        }
+        input.addEventListener('change', function() {
+            var file = input.files && input.files[0];
+            if (!file) {
+                wrapper.style.display = 'none';
+                imgReady = false;
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                img.onload = function() {
+                    imgReady = true;
+                    wrapper.style.display = 'block';
+                    fitImage();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+        zoom.addEventListener('input', function() {
+            if (!imgReady) {
+                return;
+            }
+            setScale(parseFloat(zoom.value));
+        });
+        canvas.addEventListener('pointerdown', function(e) {
+            if (!imgReady) {
+                return;
+            }
+            dragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            canvas.setPointerCapture(e.pointerId);
+        });
+        canvas.addEventListener('pointermove', function(e) {
+            if (!dragging || !imgReady) {
+                return;
+            }
+            var dx = e.clientX - lastX;
+            var dy = e.clientY - lastY;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            offsetX += dx;
+            offsetY += dy;
+            clampOffsets();
+            draw();
+        });
+        canvas.addEventListener('pointerup', function(e) {
+            dragging = false;
+            canvas.releasePointerCapture(e.pointerId);
+        });
+        canvas.addEventListener('pointerleave', function(e) {
+            dragging = false;
+        });
+        form.addEventListener('submit', function(e) {
+            if (!imgReady) {
+                return;
+            }
+            e.preventDefault();
+            canvas.toBlob(function(blob) {
+                if (!blob) {
+                    form.submit();
+                    return;
+                }
+                var data = new FormData();
+                var csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
+                if (csrf) {
+                    data.append('csrfmiddlewaretoken', csrf.value);
+                }
+                data.append('favicon', blob, 'favicon.png');
+                fetch(form.action || window.location.href, {
+                    method: 'POST',
+                    body: data,
+                    headers: {
+                        'X-CSRFToken': csrf ? csrf.value : ''
+                    }
+                }).then(function(res) {
+                    if (res.ok) {
+                        window.location.reload();
+                    } else {
+                        form.submit();
+                    }
+                }).catch(function() {
+                    form.submit();
+                });
+            }, 'image/png');
+        });
+    })();
+</script>
+{% endblock %}
