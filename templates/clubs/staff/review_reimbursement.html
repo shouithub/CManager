@@ -567,7 +567,18 @@
                 <span class="info-label">社长</span>
                 <span class="info-value">
                     {% if reimbursement.club.president %}
-                        {{ reimbursement.club.president.get_full_name|default:reimbursement.club.president.username }}
+                    <a href="{% url 'clubs:user_detail' reimbursement.club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                        <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                            {% if reimbursement.club.president.profile.avatar %}
+                                <img src="{{ reimbursement.club.president.profile.avatar.url }}" alt="{{ reimbursement.club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                    {{ reimbursement.club.president.profile.get_full_name|slice:":1"|default:reimbursement.club.president.username|slice:":1" }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reimbursement.club.president.profile.get_full_name|default:reimbursement.club.president.username }}</span>
+                    </a>
                     {% else %}
                         未设置
                     {% endif %}
@@ -603,16 +614,27 @@
             <div class="info-value">
                 {% for relation in reimbursement.club.responsible_staff.all %}
                     {% if relation.is_active %}
-                    <div style="margin-bottom: 2px; padding-bottom: 2px;">
-                        <div style="font-weight: 600; margin-bottom: 4px;">{{ relation.staff.real_name|default:relation.staff.user.username }}</div>
+                    <div style="margin-bottom: 8px; padding-bottom: 2px;">
+                        <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit; margin-bottom: 4px;">
+                            <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                {% if relation.staff.avatar %}
+                                    <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.real_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                        {{ relation.staff.real_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <span style="font-weight: 600; border-bottom: 1px dotted var(--md3-outline);">{{ relation.staff.real_name|default:relation.staff.user.username }}</span>
+                        </a>
                         {% if relation.staff.phone %}
-                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-bottom: 2px;">
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-bottom: 2px; padding-left: 28px;">
                             <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">phone</span>
                             {{ relation.staff.phone }}
                         </div>
                         {% endif %}
                         {% if relation.staff.wechat %}
-                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant);">
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); padding-left: 28px;">
                             <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">chat</span>
                             {{ relation.staff.wechat }}
                         </div>

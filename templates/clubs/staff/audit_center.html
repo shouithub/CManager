@@ -792,6 +792,27 @@ window.addEventListener('resize', checkLayout);
                             <span class="record-field-value">{{ item.submission_year }}</span>
                         </div>
                         <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.get_final_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="record-field">
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
@@ -809,7 +830,20 @@ window.addEventListener('resize', checkLayout);
                         {% elif current_tab == 'application' %}
                         <div class="record-field">
                             <span class="record-field-label">申请人</span>
-                            <span class="record-field-value">{{ item.requested_by.get_full_name|default:item.requested_by.username }}</span>
+                            <span class="record-field-value" style="display: flex; align-items: center; gap: 8px;">
+                                <a href="{% url 'clubs:user_detail' item.requested_by.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if item.requested_by.profile.avatar %}
+                                            <img src="{{ item.requested_by.profile.avatar.url }}" alt="{{ item.requested_by.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ item.requested_by.profile.get_full_name|slice:":1"|default:item.requested_by.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <strong style="border-bottom: 1px dotted var(--md3-outline);">{{ item.requested_by.profile.get_full_name|default:item.requested_by.username }}</strong>
+                                </a>
+                            </span>
                         </div>
                         <div class="record-field">
                             <span class="record-field-label">提交时间</span>
@@ -822,6 +856,27 @@ window.addEventListener('resize', checkLayout);
                             <span class="record-field-value" style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
                         </div>
                         <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="record-field">
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
@@ -832,6 +887,27 @@ window.addEventListener('resize', checkLayout);
                             <span class="record-field-value">{{ item.activity_date|date:"Y-m-d" }}</span>
                         </div>
                         <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.staff_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="record-field">
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
@@ -839,7 +915,45 @@ window.addEventListener('resize', checkLayout);
                         {% elif current_tab == 'president_transition' %}
                         <div class="record-field">
                             <span class="record-field-label">新社长</span>
-                            <span class="record-field-value">{{ item.new_president_name }}</span>
+                            <span class="record-field-value" style="display: flex; align-items: center;">
+                                {% if item.new_president_officer and item.new_president_officer.user_profile %}
+                                <a href="{% url 'clubs:user_detail' item.new_president_officer.user_profile.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if item.new_president_officer.user_profile.avatar %}
+                                            <img src="{{ item.new_president_officer.user_profile.avatar.url }}" alt="{{ item.new_president_officer.user_profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ item.new_president_officer.user_profile.get_full_name|slice:":1"|default:item.new_president_officer.user_profile.user.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <strong style="border-bottom: 1px dotted var(--md3-outline);">{{ item.new_president_officer.user_profile.get_full_name }}</strong>
+                                </a>
+                                {% else %}
+                                    {{ item.new_president_name|default:"-" }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
                         </div>
                         <div class="record-field">
                             <span class="record-field-label">提交时间</span>
@@ -938,10 +1052,192 @@ window.addEventListener('resize', checkLayout);
                             <span class="record-field-value">{{ item.submission_year }}</span>
                         </div>
                         <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% if item.reviewer %}
+                            <a href="{% url 'clubs:user_detail' item.reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                    {% if item.reviewer.profile.avatar %}
+                                        <img src="{{ item.reviewer.profile.avatar.url }}" alt="{{ item.reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                            {{ item.reviewer.profile.get_full_name|slice:":1"|default:item.reviewer.username|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span style="border-bottom: 1px dotted var(--md3-outline);">{{ item.reviewer.profile.get_full_name|default:item.reviewer.username }}</span>
+                            </a>
+                            {% else %}
+                            <span class="record-field-value">系统管理员</span>
+                            {% endif %}
+                        </div>
+                        <div class="record-field">
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
-                        {% else %}
+                        {% elif current_tab == 'registration' %}
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% if item.reviewer %}
+                            <a href="{% url 'clubs:user_detail' item.reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                    {% if item.reviewer.profile.avatar %}
+                                        <img src="{{ item.reviewer.profile.avatar.url }}" alt="{{ item.reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                            {{ item.reviewer.profile.get_full_name|slice:":1"|default:item.reviewer.username|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span style="border-bottom: 1px dotted var(--md3-outline);">{{ item.reviewer.profile.get_full_name|default:item.reviewer.username }}</span>
+                            </a>
+                            {% else %}
+                            <span class="record-field-value">系统管理员</span>
+                            {% endif %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% elif current_tab == 'application' %}
+                        <div class="record-field">
+                            <span class="record-field-label">申请人</span>
+                            <a href="{% url 'clubs:user_detail' item.requested_by.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                    {% if item.requested_by.profile.avatar %}
+                                        <img src="{{ item.requested_by.profile.avatar.url }}" alt="{{ item.requested_by.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                            {{ item.requested_by.profile.get_full_name|slice:":1"|default:item.requested_by.username|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span style="border-bottom: 1px dotted var(--md3-outline);">{{ item.requested_by.get_full_name|default:item.requested_by.username }}</span>
+                            </a>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% if item.reviewer %}
+                            <a href="{% url 'clubs:user_detail' item.reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                    {% if item.reviewer.profile.avatar %}
+                                        <img src="{{ item.reviewer.profile.avatar.url }}" alt="{{ item.reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                            {{ item.reviewer.profile.get_full_name|slice:":1"|default:item.reviewer.username|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span style="border-bottom: 1px dotted var(--md3-outline);">{{ item.reviewer.profile.get_full_name|default:item.reviewer.username }}</span>
+                            </a>
+                            {% else %}
+                            <span class="record-field-value">系统管理员</span>
+                            {% endif %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% elif current_tab == 'reimbursement' %}
+                        <div class="record-field">
+                            <span class="record-field-label">报销金额</span>
+                            <span class="record-field-value" style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.get_final_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% elif current_tab == 'activity_application' %}
+                        <div class="record-field">
+                            <span class="record-field-label">活动日期</span>
+                            <span class="record-field-value">{{ item.activity_date|date:"Y-m-d" }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.get_final_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% elif current_tab == 'president_transition' %}
+                        <div class="record-field">
+                            <span class="record-field-label">新社长</span>
+                            {% if item.new_president_officer and item.new_president_officer.user_profile %}
+                            <a href="{% url 'clubs:user_detail' item.new_president_officer.user_profile.user.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                    {% if item.new_president_officer.user_profile.avatar %}
+                                        <img src="{{ item.new_president_officer.user_profile.avatar.url }}" alt="{{ item.new_president_officer.user_profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                            {{ item.new_president_officer.user_profile.get_full_name|slice:":1"|default:item.new_president_officer.user_profile.user.username|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span style="border-bottom: 1px dotted var(--md3-outline);">{{ item.new_president_officer.user_profile.get_full_name }}</span>
+                            </a>
+                            {% else %}
+                            <span class="record-field-value">{{ item.new_president_name|default:"未知" }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.get_final_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
                         <div class="record-field">
                             <span class="record-field-label">提交时间</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
@@ -1016,6 +1312,203 @@ window.addEventListener('resize', checkLayout);
                         <div class="record-field">
                             <span class="record-field-label">年份</span>
                             <span class="record-field-value">{{ item.submission_year }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.get_final_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% elif current_tab == 'registration' %}
+                        <div class="record-field">
+                            <span class="record-field-label">注册周期</span>
+                            <span class="record-field-value">{% if item.registration_period %}{{ item.registration_period }}{% else %}未设置{% endif %}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.get_final_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% elif current_tab == 'application' %}
+                        <div class="record-field">
+                            <span class="record-field-label">申请人</span>
+                            <a href="{% url 'clubs:user_detail' item.requested_by.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                    {% if item.requested_by.profile.avatar %}
+                                        <img src="{{ item.requested_by.profile.avatar.url }}" alt="{{ item.requested_by.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                            {{ item.requested_by.profile.get_full_name|slice:":1"|default:item.requested_by.username|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span style="border-bottom: 1px dotted var(--md3-outline);">{{ item.requested_by.get_full_name|default:item.requested_by.username }}</span>
+                            </a>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.get_final_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% elif current_tab == 'president_transition' %}
+                        <div class="record-field">
+                            <span class="record-field-label">新社长</span>
+                            {% if item.new_president_officer and item.new_president_officer.user_profile %}
+                            <a href="{% url 'clubs:user_detail' item.new_president_officer.user_profile.user.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                    {% if item.new_president_officer.user_profile.avatar %}
+                                        <img src="{{ item.new_president_officer.user_profile.avatar.url }}" alt="{{ item.new_president_officer.user_profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                            {{ item.new_president_officer.user_profile.get_full_name|slice:":1"|default:item.new_president_officer.user_profile.user.username|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span style="border-bottom: 1px dotted var(--md3-outline);">{{ item.new_president_officer.user_profile.get_full_name }}</span>
+                            </a>
+                            {% else %}
+                            <span class="record-field-value">{{ item.new_president_name|default:"未知" }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.get_final_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% elif current_tab == 'reimbursement' %}
+                        <div class="record-field">
+                            <span class="record-field-label">报销金额</span>
+                            <span class="record-field-value" style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.get_final_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        {% elif current_tab == 'activity_application' %}
+                        <div class="record-field">
+                            <span class="record-field-label">活动日期</span>
+                            <span class="record-field-value">{{ item.activity_date|date:"Y-m-d" }}</span>
+                        </div>
+                        <div class="record-field">
+                            <span class="record-field-label">审核者</span>
+                            {% with reviewer=item.get_final_reviewer %}
+                                {% if reviewer %}
+                                <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                                        {% if reviewer.profile.avatar %}
+                                            <img src="{{ reviewer.profile.avatar.url }}" alt="{{ reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                                {{ reviewer.profile.get_full_name|slice:":1"|default:reviewer.username|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
+                                </a>
+                                {% else %}
+                                <span class="record-field-value">未知</span>
+                                {% endif %}
+                            {% endwith %}
                         </div>
                         <div class="record-field">
                             <span class="record-field-label">提交时间</span>

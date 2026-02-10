@@ -318,8 +318,18 @@
                         </div>
                         {% endif %}
                         <div class="meta-item">
-                            <span class="material-icons">person</span>
-                            <span>上传者: {{ image.uploaded_by.username }}</span>
+                            <a href="{% url 'clubs:user_detail' image.uploaded_by.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 4px;">
+                                <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                    {% if image.uploaded_by.profile.avatar %}
+                                        <img src="{{ image.uploaded_by.profile.avatar.url }}" alt="{{ image.uploaded_by.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;">
+                                            {{ image.uploaded_by.profile.get_full_name|slice:":1"|default:image.uploaded_by.username|slice:":1"|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span>上传者: {{ image.uploaded_by.get_full_name|default:image.uploaded_by.username }}</span>
+                            </a>
                         </div>
                         <div class="meta-item">
                             <span class="material-icons">schedule</span>

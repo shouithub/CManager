@@ -12,6 +12,9 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.core.cache import cache
 import time
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
 
 # 登录限制配置
 MAX_LOGIN_ATTEMPTS = 5
@@ -396,6 +399,7 @@ def user_dashboard(request):
         staff_relations = StaffClubRelation.objects.filter(club=club, is_active=True)
         assigned_staff = [
             {
+                'staff': relation.staff,
                 'name': relation.staff.get_full_name(),
                 'phone': relation.staff.phone or '--',
                 'wechat': relation.staff.wechat or '--',
@@ -573,70 +577,8 @@ def staff_dashboard(request):
 
 @login_required(login_url='clubs:login')
 def change_account_settings(request):
-    """修改用户名和密码"""
-    user = request.user
-    errors = []
-    success_messages = []
-    
-    if request.method == 'POST':
-        action = request.POST.get('action', '')
-        
-        # 修改用户名
-        if action == 'change_username':
-            new_username = request.POST.get('new_username', '').strip()
-            password = request.POST.get('password', '').strip()
-            
-            if not new_username:
-                errors.append('新用户名不能为空')
-            elif len(new_username) < 3:
-                errors.append('用户名至少3个字符')
-            elif User.objects.exclude(id=user.id).filter(username=new_username).exists():
-                errors.append('用户名已被使用')
-            elif not password:
-                errors.append('密码不能为空')
-            else:
-                # 验证密码
-                if not user.check_password(password):
-                    errors.append('密码错误')
-                else:
-                    old_username = user.username
-                    user.username = new_username
-                    user.save()
-                    success_messages.append(f'用户名已从"{old_username}"更改为"{new_username}"')
-        
-        # 修改密码
-        elif action == 'change_password':
-            old_password = request.POST.get('old_password', '').strip()
-            new_password = request.POST.get('new_password', '').strip()
-            confirm_password = request.POST.get('confirm_password', '').strip()
-            
-            if not old_password:
-                errors.append('原密码不能为空')
-            elif not new_password:
-                errors.append('新密码不能为空')
-            elif len(new_password) < 6:
-                errors.append('新密码至少6个字符')
-            elif new_password != confirm_password:
-                errors.append('两次密码不一致')
-            elif old_password == new_password:
-                errors.append('新密码不能与原密码相同')
-            else:
-                # 验证原密码
-                if not user.check_password(old_password):
-                    errors.append('原密码错误')
-                else:
-                    user.set_password(new_password)
-                    user.save()
-                    success_messages.append('密码修改成功！请重新登录')
-                    # 密码修改后需要重新登录
-                    return redirect('clubs:login')
-    
-    context = {
-        'user': user,
-        'errors': errors,
-        'success_messages': success_messages,
-    }
-    return render(request, 'clubs/auth/change_account_settings.html', context)
+    """修改用户名和密码 - 已合并到个人中心"""
+    return redirect('clubs:edit_profile')
 
 
 @login_required(login_url='clubs:login')
@@ -701,77 +643,154 @@ def manage_staff_clubs(request):
 
 @login_required(login_url='clubs:login')
 def edit_profile(request):
-    """用户修改个人信息 - 社长和干事"""
+    """用户修改个人信息 - 整合了信息修改、密码修改和头像上传"""
     user = request.user
     profile = user.profile
     
     if request.method == 'POST':
-        # 获取表单数据
-        real_name = request.POST.get('real_name', '').strip()
-        email = request.POST.get('email', '').strip().lower()  # 邮箱统一转小写以便比较
-        phone = request.POST.get('phone', '').strip()
-        wechat = request.POST.get('wechat', '').strip()
-        student_id = request.POST.get('student_id', '').strip()
-        political_status = request.POST.get('political_status', '')
-        # 修复：checkbox 未勾选时值为 'off'，需要检查是否存在且值为 'on'
-        is_info_public = 'is_info_public' in request.POST
+        action = request.POST.get('action')
         
-        errors = []
-        
-        # 验证
-        if not real_name:
-            errors.append('真实姓名不能为空')
-        # 邮箱是可选的，但如果填写了就要检查是否被其他用户使用
-        if email:
-            # 检查邮箱格式
-            if '@' not in email:
-                errors.append('请输入有效的邮箱地址')
-            # 检查邮箱是否已被其他用户注册（排除当前用户）
-            # 使用 iexact 进行不区分大小写的查询
-            elif User.objects.filter(email__iexact=email).exclude(id=user.id).exists():
-                # 检查当前用户是否已经使用了这个邮箱（这样就允许保持不变）
-                if user.email.lower() != email:
-                    errors.append('邮箱已被其他用户注册')
-        if not phone:
-            errors.append('电话不能为空')
-        if not wechat:
-            errors.append('微信不能为空')
-        if not student_id:
-            errors.append('学号不能为空')
-        
-        # 仅社长和干事需要填写政治面貌
-        if profile.role in ['president', 'staff']:
-            if not political_status:
+        if action == 'update_info':
+            # 获取表单数据
+            real_name = request.POST.get('real_name', '').strip()
+            email = request.POST.get('email', '').strip().lower()
+            phone = request.POST.get('phone', '').strip()
+            wechat = request.POST.get('wechat', '').strip()
+            student_id = request.POST.get('student_id', '').strip()
+            political_status = request.POST.get('political_status', '')
+            is_info_public = 'is_info_public' in request.POST
+            
+            errors = []
+            
+            # 验证
+            if not real_name:
+                errors.append('真实姓名不能为空')
+            if email:
+                if '@' not in email:
+                    errors.append('请输入有效的邮箱地址')
+                elif User.objects.filter(email__iexact=email).exclude(id=user.id).exists():
+                    if user.email.lower() != email:
+                        errors.append('邮箱已被其他用户注册')
+            if not phone:
+                errors.append('电话不能为空')
+            if not wechat:
+                errors.append('微信不能为空')
+            if not student_id:
+                errors.append('学号不能为空')
+            if profile.role in ['president', 'staff', 'admin'] and not political_status:
                 errors.append('政治面貌不能为空')
-        
-        if errors:
-            context = {
-                'user': user,
-                'profile': profile,
-                'errors': errors,
-            }
-            return render(request, 'clubs/user/edit_profile.html', context)
-        
-        # 保存用户信息
-        user.email = email
-        user.save()
-        
-        # 保存个人资料信息
-        profile.real_name = real_name
-        profile.phone = phone
-        profile.wechat = wechat
-        profile.student_id = student_id
-        profile.is_info_public = is_info_public
-        if profile.role in ['president', 'staff'] and political_status:
-            profile.political_status = political_status
-        profile.save()
-        
-        messages.success(request, '个人信息已成功更新')
-        return redirect('clubs:user_dashboard')
+            
+            if errors:
+                for error in errors:
+                    messages.error(request, error)
+            else:
+                user.email = email
+                user.save()
+                profile.real_name = real_name
+                profile.phone = phone
+                profile.wechat = wechat
+                profile.student_id = student_id
+                profile.is_info_public = is_info_public
+                if political_status:
+                    profile.political_status = political_status
+                profile.save()
+                messages.success(request, '个人信息已成功更新')
+                
+        elif action == 'change_username':
+            new_username = request.POST.get('new_username', '').strip()
+            password = request.POST.get('password', '').strip()
+            
+            if not new_username:
+                messages.error(request, '新用户名不能为空')
+            elif len(new_username) < 3:
+                messages.error(request, '用户名至少3个字符')
+            elif User.objects.exclude(id=user.id).filter(username=new_username).exists():
+                messages.error(request, '用户名已被使用')
+            elif not password:
+                messages.error(request, '密码不能为空')
+            else:
+                # 验证密码
+                if not user.check_password(password):
+                    messages.error(request, '密码错误')
+                else:
+                    old_username = user.username
+                    user.username = new_username
+                    user.save()
+                    messages.success(request, f'用户名已从"{old_username}"更改为"{new_username}"')
+                    
+        elif action == 'change_password':
+            old_password = request.POST.get('old_password', '').strip()
+            new_password = request.POST.get('new_password', '').strip()
+            confirm_password = request.POST.get('confirm_password', '').strip()
+            
+            if not user.check_password(old_password):
+                messages.error(request, '原密码错误')
+            elif new_password != confirm_password:
+                messages.error(request, '两次输入的新密码不一致')
+            elif len(new_password) < 6:
+                messages.error(request, '新密码长度至少为6位')
+            else:
+                user.set_password(new_password)
+                user.save()
+                # 保持登录状态
+                login(request, user)
+                messages.success(request, '密码已修改')
+                
+        elif action == 'upload_avatar':
+            import base64
+            avatar_base64 = request.POST.get('avatar_base64')
+            avatar_file = request.FILES.get('avatar')
+            
+            if avatar_base64:
+                try:
+                    # 处理 Base64 数据
+                    format, imgstr = avatar_base64.split(';base64,') 
+                    ext = format.split('/')[-1]
+                    data = ContentFile(base64.b64decode(imgstr), name=f'avatar_{user.id}_{int(time.time())}.{ext}')
+                    
+                    # 保存头像 (Base64已经是裁剪好的)
+                    profile.avatar.save(data.name, data, save=True)
+                    messages.success(request, '头像已更新')
+                except Exception as e:
+                    messages.error(request, f'头像处理失败: {str(e)}')
+            elif avatar_file:
+                try:
+                    img = Image.open(avatar_file)
+                    # 转换为RGB（处理PNG透明背景）
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                        
+                    # 裁剪为正方形
+                    width, height = img.size
+                    new_size = min(width, height)
+                    left = (width - new_size) / 2
+                    top = (height - new_size) / 2
+                    right = (width + new_size) / 2
+                    bottom = (height + new_size) / 2
+                    img = img.crop((left, top, right, bottom))
+                    
+                    # 缩放
+                    img = img.resize((256, 256), Image.Resampling.LANCZOS)
+                    
+                    # 保存
+                    thumb_io = BytesIO()
+                    img.save(thumb_io, format='JPEG', quality=90)
+                    
+                    # 生成文件名
+                    file_name = f'avatar_{user.id}_{int(time.time())}.jpg'
+                    profile.avatar.save(file_name, ContentFile(thumb_io.getvalue()), save=True)
+                    messages.success(request, '头像已更新')
+                except Exception as e:
+                    messages.error(request, f'头像处理失败: {str(e)}')
+            else:
+                messages.error(request, '请选择图片文件')
+                
+        return redirect('clubs:edit_profile')
     
     context = {
         'user': user,
         'profile': profile,
+        'political_status_choices': UserProfile.POLITICAL_STATUS_CHOICES,
     }
     return render(request, 'clubs/user/edit_profile.html', context)
 
@@ -1016,32 +1035,4 @@ def manage_department_staff(request):
     return render(request, 'clubs/staff/manage_department.html', context)
 
 
-@login_required
-def staff_dashboard_home(request):
-    """干事和管理员主页 - 显示部门介绍"""
-    from .models import Department
-    
-    profile = request.user.profile
-    
-    # 只允许干事和管理员访问
-    if profile.role not in ['staff', 'admin']:
-        messages.error(request, '无权访问此页面')
-        return redirect('clubs:index')
-    
-    # 获取所有部门介绍
-    departments = Department.objects.all().order_by('order', 'name')
-    
-    # 获取组织统计
-    total_staff = UserProfile.objects.filter(role='staff', status='approved').count()
-    total_directors = UserProfile.objects.filter(role='staff', staff_level='director').count()
-    total_members = UserProfile.objects.filter(role='staff', staff_level='member').count()
-    
-    context = {
-        'departments': departments,
-        'total_staff': total_staff,
-        'total_directors': total_directors,
-        'total_members': total_members,
-        'can_edit': profile.role == 'admin',
-    }
-    
-    return render(request, 'clubs/staff/home.html', context)
+

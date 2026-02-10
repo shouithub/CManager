@@ -297,8 +297,18 @@
                         </div>
                         {% if department.updated_by %}
                         <div class="meta-item">
-                            <span class="material-icons">person</span>
-                            <span>{{ department.updated_by.get_full_name|default:department.updated_by.username }}</span>
+                            <a href="{% url 'clubs:user_detail' department.updated_by.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 4px;">
+                                <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                    {% if department.updated_by.profile.avatar %}
+                                        <img src="{{ department.updated_by.profile.avatar.url }}" alt="{{ department.updated_by.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;">
+                                            {{ department.updated_by.profile.get_full_name|slice:":1"|default:department.updated_by.username|slice:":1"|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span>{{ department.updated_by.get_full_name|default:department.updated_by.username }}</span>
+                            </a>
                         </div>
                         {% endif %}
                     </div>

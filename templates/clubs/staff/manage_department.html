@@ -335,7 +335,20 @@
                 <tbody>
                     {% for staff in directors %}
                     <tr>
-                        <td>{{ staff.user.username }}</td>
+                        <td>
+                            <a href="{% url 'clubs:user_detail' staff.user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                    {% if staff.avatar %}
+                                        <img src="{{ staff.avatar.url }}" alt="{{ staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                            {{ staff.get_full_name|slice:":1"|default:staff.user.username|slice:":1"|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span>{{ staff.user.username }}</span>
+                            </a>
+                        </td>
                         <td class="staff-name">{{ staff.get_full_name }}</td>
                         <td>{{ staff.student_id }}</td>
                         <td>{{ staff.phone|default:"--" }}</td>
@@ -376,7 +389,20 @@
                 <tbody>
                     {% for staff in members %}
                     <tr>
-                        <td>{{ staff.user.username }}</td>
+                        <td>
+                            <a href="{% url 'clubs:user_detail' staff.user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                    {% if staff.avatar %}
+                                        <img src="{{ staff.avatar.url }}" alt="{{ staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                            {{ staff.get_full_name|slice:":1"|default:staff.user.username|slice:":1"|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span>{{ staff.user.username }}</span>
+                            </a>
+                        </td>
                         <td class="staff-name">{{ staff.get_full_name }}</td>
                         <td>{{ staff.student_id }}</td>
                         <td>{{ staff.phone|default:"--" }}</td>

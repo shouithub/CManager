@@ -432,6 +432,7 @@
                     <th>微信</th>
                     <th>政治面貌</th>
                     <th>角色</th>
+                    <th>部门</th>
                     <th>状态</th>
                     <th>加入时间</th>
                     <th>操作</th>
@@ -440,9 +441,26 @@
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td><strong>{{ user.username }}</strong></td>
+                    <td>
+                        <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                        {{ user.profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <strong>{{ user.username }}</strong>
+                        </a>
+                    </td>
                     <td>{{ user.email|default:"--" }}</td>
-                    <td>{{ user.profile.get_full_name|default:"--" }}</td>
+                    <td>
+                        <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit;">
+                            {{ user.profile.get_full_name|default:"--" }}
+                        </a>
+                    </td>
                     <td>{{ user.profile.phone|default:"--" }}</td>
                     <td>{{ user.profile.wechat|default:"--" }}</td>
                     <td>
@@ -461,6 +479,13 @@
                             <span class="role-badge admin">管理员</span>
                         {% else %}
                             <span class="role-badge unknown">未设定</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
+                            {{ user.profile.department_link.name|default:user.profile.department|default:"--" }}
+                        {% else %}
+                            --
                         {% endif %}
                     </td>
                     <td>
@@ -500,7 +525,7 @@
                                 </a>
                             {% endif %}
 
-                            {% if user.profile.role == 'staff' %}
+                            {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
                                 <a href="{% url 'clubs:change_staff_attributes' user.id %}" class="btn-action detail">
                                     <span class="material-icons">visibility</span>
                                     属性

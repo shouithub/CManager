@@ -447,15 +447,26 @@
                 {% for relation in club.responsible_staff.all %}
                     {% if relation.is_active %}
                     <div style="margin-bottom: 2px; padding-bottom: 2px;">
-                        <div style="font-weight: 600; margin-bottom: 4px;">{{ relation.staff.real_name|default:relation.staff.user.username }}</div>
+                        <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                {% if relation.staff.avatar %}
+                                    <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;">
+                                        {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <span style="font-weight: 600;">{{ relation.staff.get_full_name }}</span>
+                        </a>
                         {% if relation.staff.phone %}
-                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-bottom: 2px;">
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-bottom: 2px; padding-left: 32px;">
                             <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">phone</span>
                             {{ relation.staff.phone }}
                         </div>
                         {% endif %}
                         {% if relation.staff.wechat %}
-                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant);">
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); padding-left: 32px;">
                             <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">chat</span>
                             {{ relation.staff.wechat }}
                         </div>
@@ -478,24 +489,32 @@
         <!-- 换届对比展示 -->
         <div class="transition-compare">
             <div class="transition-person old-president">
-                <div class="avatar">
-                    <span class="material-icons">person</span>
-                </div>
-                <span class="person-label">原社长</span>
-                <span class="person-name">
-                    {% if club.president %}
-                        {% if club.president.profile.real_name %}
-                            {{ club.president.profile.real_name }}
+                <a href="{% if club.president %}{% url 'clubs:user_detail' club.president.id %}{% else %}#{% endif %}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center;">
+                    <div class="avatar" style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container);">
+                        {% if club.president and club.president.profile.avatar %}
+                            <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% elif club.president %}
+                            <span style="font-weight: bold; font-size: 20px;">{{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}</span>
                         {% else %}
-                            {{ club.president.username }}
+                            <span class="material-icons" style="font-size: 24px;">person_off</span>
                         {% endif %}
-                    {% else %}
-                        未设置
-                    {% endif %}
-                </span>
-                <span class="person-username">
-                    {% if club.president %}@{{ club.president.username }}{% endif %}
-                </span>
+                    </div>
+                    <span class="person-label">原社长</span>
+                    <span class="person-name">
+                        {% if club.president %}
+                            {% if club.president.profile.real_name %}
+                                {{ club.president.profile.real_name }}
+                            {% else %}
+                                {{ club.president.username }}
+                            {% endif %}
+                        {% else %}
+                            未设置
+                        {% endif %}
+                    </span>
+                    <span class="person-username">
+                        {% if club.president %}@{{ club.president.username }}{% endif %}
+                    </span>
+                </a>
             </div>
             
             <div class="transition-arrow">
@@ -503,18 +522,24 @@
             </div>
             
             <div class="transition-person new-president">
-                <div class="avatar">
-                    <span class="material-icons">person</span>
-                </div>
-                <span class="person-label">新社长</span>
-                <span class="person-name">
-                    {% if transition.new_president_officer.user_profile.real_name %}
-                        {{ transition.new_president_officer.user_profile.real_name }}
-                    {% else %}
-                        {{ transition.new_president_officer.user_profile.user.username }}
-                    {% endif %}
-                </span>
-                <span class="person-username">@{{ transition.new_president_officer.user_profile.user.username }}</span>
+                <a href="{% url 'clubs:user_detail' transition.new_president_officer.user_profile.user.id %}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center;">
+                    <div class="avatar" style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container);">
+                        {% if transition.new_president_officer.user_profile.avatar %}
+                            <img src="{{ transition.new_president_officer.user_profile.avatar.url }}" alt="{{ transition.new_president_officer.user_profile.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <span style="font-weight: bold; font-size: 20px;">{{ transition.new_president_officer.user_profile.real_name|slice:":1"|default:transition.new_president_officer.user_profile.user.username|slice:":1" }}</span>
+                        {% endif %}
+                    </div>
+                    <span class="person-label">新社长</span>
+                    <span class="person-name">
+                        {% if transition.new_president_officer.user_profile.real_name %}
+                            {{ transition.new_president_officer.user_profile.real_name }}
+                        {% else %}
+                            {{ transition.new_president_officer.user_profile.user.username }}
+                        {% endif %}
+                    </span>
+                    <span class="person-username">@{{ transition.new_president_officer.user_profile.user.username }}</span>
+                </a>
             </div>
         </div>
         
@@ -581,7 +606,21 @@
             <p style="margin-top: var(--md3-spacing-md);"><strong>审核时间：</strong> {{ transition.reviewed_at|date:"Y-m-d H:i" }}</p>
             {% endif %}
             {% if transition.reviewer %}
-            <p style="margin-top: var(--md3-spacing-sm);"><strong>审核人：</strong> {{ transition.reviewer.profile.get_full_name|default:transition.reviewer.username }}</p>
+            <div style="margin-top: var(--md3-spacing-sm); display: flex; align-items: center;">
+                <strong style="margin-right: 8px;">审核人：</strong>
+                <a href="{% url 'clubs:user_detail' transition.reviewer.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                        {% if transition.reviewer.profile.avatar %}
+                            <img src="{{ transition.reviewer.profile.avatar.url }}" alt="{{ transition.reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                {{ transition.reviewer.profile.get_full_name|slice:":1"|default:transition.reviewer.username|slice:":1" }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ transition.reviewer.profile.get_full_name|default:transition.reviewer.username }}</span>
+                </a>
+            </div>
             {% endif %}
             {% if transition.reviewer_comment %}
             <p style="margin-top: var(--md3-spacing-sm);"><strong>审核意见：</strong> {{ transition.reviewer_comment }}</p>

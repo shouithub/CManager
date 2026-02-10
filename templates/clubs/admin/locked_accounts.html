@@ -12,7 +12,20 @@
     <tbody>
         {% for u in locked %}
         <tr>
-            <td>{{ u.username }}</td>
+            <td>
+                <a href="{% url 'clubs:user_detail' u.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                        {% if u.profile.avatar %}
+                            <img src="{{ u.profile.avatar.url }}" alt="{{ u.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                {{ u.profile.get_full_name|slice:":1"|default:u.username|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <span>{{ u.username }}</span>
+                </a>
+            </td>
             <td>{{ u.email }}</td>
             <td>
                 <form method="post" action="{% url 'clubs:unlock_account' u.username %}" style="display:inline">{% csrf_token %}

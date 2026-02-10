@@ -316,7 +316,7 @@
                         <span class="material-icons">schedule</span>
                         开始时间 <span class="required">*</span>
                     </label>
-                    <input type="time" name="start_time" id="start_time" value="{{ selected_start_time }}" min="08:00" max="22:00" required>
+                    <input type="time" name="start_time" id="start_time" value="{{ selected_start_time }}" readonly style="background-color: var(--md3-surface-container-high); cursor: not-allowed;">
                 </div>
                 
                 <div class="form-field">
@@ -324,7 +324,7 @@
                         <span class="material-icons">schedule</span>
                         结束时间 <span class="required">*</span>
                     </label>
-                    <input type="time" name="end_time" id="end_time" value="{{ selected_end_time }}" min="08:00" max="22:00" required>
+                    <input type="time" name="end_time" id="end_time" value="{{ selected_end_time }}" readonly style="background-color: var(--md3-surface-container-high); cursor: not-allowed;">
                 </div>
             </div>
 

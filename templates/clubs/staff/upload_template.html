@@ -1,129 +1,307 @@
 {% extends 'clubs/base.html' %}
 
-{% block title %}上传模板{% endblock %}
+{% block title %}材料模板管理{% endblock %}
 
 {% block content %}
 <style>
-    .upload-form-container {
-        background-color: var(--md3-surface-container-lowest);
-        border: 1px solid var(--md3-outline-variant);
+    .template-list-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding-bottom: 100px;
+    }
+
+    .category-section {
+        background-color: var(--md3-surface-container-low);
         border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-xl);
+        overflow: hidden;
+        border: 1px solid var(--md3-outline-variant);
         box-shadow: var(--md3-elevation-1);
     }
-    
-    .upload-form-container h3 {
+
+    .category-header {
+        background-color: var(--md3-surface-container-high);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+
+    .category-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 500;
         color: var(--md3-on-surface);
-        margin: 0 0 var(--md3-spacing-xl) 0;
-        font-size: 1.25rem;
     }
     
-    .error-message {
+    .category-header .material-icons {
+        color: var(--md3-primary);
+    }
+
+    .material-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .material-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        transition: background-color 0.2s;
+    }
+
+    .material-item:last-child {
+        border-bottom: none;
+    }
+
+    .material-item:hover {
+        background-color: var(--md3-surface-container);
+    }
+
+    .material-info {
+        flex: 1;
+        padding-right: var(--md3-spacing-lg);
+    }
+
+    .material-title {
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+    }
+
+    .material-desc {
+        font-size: 0.85rem;
+        color: var(--md3-on-surface-variant);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .material-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        min-width: 220px;
+        justify-content: flex-end;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.8rem;
+        padding: 6px 12px;
+        border-radius: 16px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: opacity 0.2s;
+    }
+
+    .status-badge.has-file {
+        background-color: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .status-badge.no-file {
         background-color: var(--md3-error-container);
         color: var(--md3-on-error-container);
-        padding: var(--md3-spacing-lg);
-        border-radius: var(--md3-radius-lg);
-        margin-bottom: var(--md3-spacing-lg);
     }
     
-    .form-group {
-        margin-bottom: var(--md3-spacing-xl);
+    .status-badge:hover {
+        opacity: 0.8;
+        text-decoration: none;
+        color: inherit;
     }
-    
-    .form-group label {
-        display: block;
-        color: var(--md3-on-surface);
-        font-weight: 500;
-        margin-bottom: var(--md3-spacing-md);
-        font-size: 0.95rem;
+
+    .file-input-hidden {
+        display: none;
     }
-    
-    .form-group input[type="text"],
-    .form-group select,
-    .form-group textarea,
-    .form-group input[type="file"] {
-        width: 100%;
-        padding: var(--md3-spacing-md);
-        border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-md);
-        background-color: var(--md3-surface-container-low);
-        color: var(--md3-on-surface);
-        font-size: 0.95rem;
-        transition: all 0.2s ease;
-        box-sizing: border-box;
-    }
-    
-    .form-group input[type="text"]:focus,
-    .form-group select:focus,
-    .form-group textarea:focus,
-    .form-group input[type="file"]:focus {
-        outline: none;
-        border-color: var(--md3-primary);
-        box-shadow: inset 0 0 0 1px var(--md3-primary);
-    }
-    
-    .form-group textarea {
-        resize: vertical;
-        min-height: 120px;
-    }
-    
-    .form-group small {
-        color: var(--md3-on-surface-variant);
-        display: block;
-        margin-top: var(--md3-spacing-sm);
+
+    .btn-upload {
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 20px;
         font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        border: 1px solid var(--md3-outline);
+        background-color: transparent;
+        color: var(--md3-primary);
+        min-width: 80px;
+        margin-bottom: 0;
+    }
+
+    .btn-upload:hover {
+        background-color: var(--md3-primary-container);
+        border-color: var(--md3-primary);
+        color: var(--md3-on-primary-container);
     }
     
-    .form-actions {
-        display: flex;
-        gap: var(--md3-spacing-lg);
-        margin-top: var(--md3-spacing-xl);
+    .badge {
+        display: inline-block;
+        padding: 2px 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 4px;
+    }
+    
+    .bg-secondary {
+        background-color: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: var(--md3-spacing-2xl);
+        background-color: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-lg);
+        color: var(--md3-on-surface-variant);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .empty-state .material-icons {
+        font-size: 48px;
+        margin-bottom: var(--md3-spacing-md);
+        opacity: 0.5;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .spin {
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+        .material-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--md3-spacing-md);
+        }
+        
+        .material-actions {
+            margin-left: 0;
+            width: 100%;
+            justify-content: space-between;
+            min-width: 0;
+        }
+        
+        .material-info {
+            padding-right: 0;
+        }
     }
 </style>
 
-<div class="upload-form-container">
-    <h3><span class="material-icons" style="vertical-align: middle;">upload_file</span> 上传材料模板</h3>
-    
-    {% if errors %}
-    {% for error in errors %}
-    <div class="error-message">{{ error }}</div>
-    {% endfor %}
+<div class="page-header">
+    <span class="material-icons">upload_file</span>
+    <div class="page-header-content">
+        <h1>材料模板管理</h1>
+        <p class="subtitle">管理各业务流程所需的文档模板文件</p>
+    </div>
+    <a href="{% url 'clubs:index' %}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); border-radius: var(--md3-radius-full); border: none; cursor: pointer; white-space: nowrap; text-decoration: none;">
+        返回控制台
+    </a>
+</div>
+
+<div class="template-list-container">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        
-        <div class="form-group">
-            <label for="name">模板名称 *</label>
-            <input type="text" id="name" name="name" placeholder="例如: 2024年年审模板" required>
+    {% for category, items in grouped_requirements.items %}
+    <div class="category-section">
+        <div class="category-header">
+            <span class="material-icons">folder_open</span>
+            <h2>{{ category }}</h2>
         </div>
+        <ul class="material-list">
+            {% for req in items %}
+            <li class="material-item">
+                <div class="material-info">
+                    <div class="material-title">
+                        {{ req.name }}
+                        {% if req.is_required %}
+                        <span class="badge bg-secondary">必填</span>
+                        {% endif %}
+                    </div>
+                    {% if req.description %}
+                    <p class="material-desc">{{ req.description }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="material-actions">
+                    {% if req.template_file %}
+                    <a href="{{ req.template_file.url }}" class="status-badge has-file" title="点击下载当前模板" download>
+                        <span class="material-icons" style="font-size: 16px;">description</span>
+                        已有模板
+                    </a>
+                    {% else %}
+                    <span class="status-badge no-file">
+                        <span class="material-icons" style="font-size: 16px;">warning</span>
+                        无模板
+                    </span>
+                    {% endif %}
 
-        <div class="form-group">
-            <label for="template_type">模板类型 *</label>
-            <select id="template_type" name="template_type" required>
-                <option value="">-- 请选择 --</option>
-                {% for value, label in template_types %}
-                <option value="{{ value }}">{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="description">模板描述</label>
-            <textarea id="description" name="description" 
-                      placeholder="请描述模板的用途和要求"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="file">模板文件 (支持各类格式) *</label>
-            <input type="file" id="file" name="file" required>
-            <small>支持: Word、Excel、PDF 等任何格式</small>
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn btn-success">上传模板</button>
-            <a href="{% url 'clubs:index' %}" class="btn btn-primary">返回</a>
-        </div>
-    </form>
+                    <form method="post" enctype="multipart/form-data" class="d-inline" style="margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="requirement_id" value="{{ req.id }}">
+                        <input type="file" name="file" id="file_{{ req.id }}" class="file-input-hidden" onchange="this.form.submit()">
+                        <label for="file_{{ req.id }}" class="btn-upload">
+                            <span class="material-icons">cloud_upload</span>
+                            {{ req.template_file|yesno:"更新,上传" }}
+                        </label>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <span class="material-icons">info</span>
+        <p>暂无启用的材料要求配置。请联系管理员添加材料要求。</p>
+    </div>
+    {% endfor %}
 </div>
+
+<script>
+    // 简单的文件上传确认
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                // 可以添加loading效果
+                const label = this.nextElementSibling;
+                const originalText = label.innerHTML;
+                label.innerHTML = '<span class="material-icons spin">refresh</span> 上传中...';
+                label.style.pointerEvents = 'none';
+                label.style.opacity = '0.7';
+            }
+        });
+    });
+</script>
 {% endblock %}

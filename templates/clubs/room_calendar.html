@@ -931,6 +931,9 @@
             endTime: '{{ booking_data.booking.end_time|time:"H:i" }}',
             club: {% if booking_data.booking.club %}'{{ booking_data.booking.club.name|escapejs }}'{% else %}null{% endif %},
             user: '{{ booking_data.booking.user.profile.get_full_name|escapejs }}',
+            userAvatarUrl: {% if booking_data.booking.user.profile.avatar %}'{{ booking_data.booking.user.profile.avatar.url|escapejs }}'{% else %}null{% endif %},
+            userInitial: '{{ booking_data.booking.user.profile.get_full_name|slice:":1"|default:booking_data.booking.user.username|slice:":1"|upper|escapejs }}',
+            userId: {{ booking_data.booking.user.id }},
             purpose: '{{ booking_data.booking.purpose|default:""|escapejs }}',
             participantCount: {{ booking_data.booking.participant_count }},
             contactPhone: '{{ booking_data.booking.contact_phone|default:""|escapejs }}',
@@ -946,6 +949,7 @@
         if (!booking) return;
 
         document.getElementById('modalTitle').textContent = '预约详情';
+        const userDetailUrl = "{% url 'clubs:user_detail' 0 %}".replace('0', booking.userId);
         
         let html = `
             <div class="modal-detail">
@@ -966,7 +970,15 @@
                 <span class="material-icons">person</span>
                 <div>
                     <div class="detail-label">预约人</div>
-                    <div class="detail-value">${booking.user}</div>
+                    <a href="${userDetailUrl}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                            ${booking.userAvatarUrl ? 
+                                `<img src="${booking.userAvatarUrl}" alt="${booking.user}" style="width: 100%; height: 100%; object-fit: cover;">` :
+                                `<div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${booking.userInitial}</div>`
+                            }
+                        </div>
+                        <div class="detail-value">${booking.user}</div>
+                    </a>
                 </div>
             </div>
         `;

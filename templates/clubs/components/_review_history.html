@@ -65,9 +65,27 @@
                         </div>
                         
                         <div style="font-size: 0.875rem; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-sm); display: flex; align-items: center; gap: 4px;">
-                            <span class="material-icons" style="font-size: 1rem; color: var(--md3-on-surface-variant);">person</span>
-                            审核者：<strong>{% if review.reviewer %}{{ review.reviewer.profile.get_full_name|default:review.reviewer.username }}{% else %}系统管理员{% endif %}</strong>
+    <span class="material-icons" style="font-size: 1rem; color: var(--md3-on-surface-variant);">person</span>
+    <span style="display: flex; align-items: center; gap: 8px;">
+        审核者：
+        {% if review.reviewer %}
+            <a href="{% url 'clubs:user_detail' review.reviewer.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                    {% if review.reviewer.profile.avatar %}
+                        <img src="{{ review.reviewer.profile.avatar.url }}" alt="{{ review.reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                            {{ review.reviewer.profile.get_full_name|slice:":1"|default:review.reviewer.username|slice:":1" }}
                         </div>
+                    {% endif %}
+                </div>
+                <strong style="border-bottom: 1px dotted var(--md3-outline);">{{ review.reviewer.profile.get_full_name|default:review.reviewer.username }}</strong>
+            </a>
+        {% else %}
+            <strong>系统管理员</strong>
+        {% endif %}
+    </span>
+</div>
                         
                         {% if comment_text %}
                         <div style="font-size: 0.9375rem; color: var(--md3-on-surface); {% if review.status == 'rejected' %}background: var(--md3-error-container); color: var(--md3-on-error-container);{% else %}background: var(--md3-surface-container);{% endif %} padding: var(--md3-spacing-md); border-radius: var(--md3-radius-md); line-height: 1.6; margin-top: var(--md3-spacing-sm);">
@@ -112,9 +130,27 @@
                     </div>
                     
                     <div style="font-size: 0.875rem; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-sm); display: flex; align-items: center; gap: 4px;">
-                        <span class="material-icons" style="font-size: 1rem; color: var(--md3-on-surface-variant);">person</span>
-                        审核者：<strong>{% if review.reviewer %}{{ review.reviewer.profile.get_full_name|default:review.reviewer.username }}{% else %}系统管理员{% endif %}</strong>
-                    </div>
+    <span class="material-icons" style="font-size: 1rem; color: var(--md3-on-surface-variant);">person</span>
+    <span style="display: flex; align-items: center; gap: 8px;">
+        审核者：
+        {% if review.reviewer %}
+            <a href="{% url 'clubs:user_detail' review.reviewer.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                    {% if review.reviewer.profile.avatar %}
+                        <img src="{{ review.reviewer.profile.avatar.url }}" alt="{{ review.reviewer.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                            {{ review.reviewer.profile.get_full_name|slice:":1"|default:review.reviewer.username|slice:":1" }}
+                        </div>
+                    {% endif %}
+                </div>
+                <strong style="border-bottom: 1px dotted var(--md3-outline);">{{ review.reviewer.profile.get_full_name|default:review.reviewer.username }}</strong>
+            </a>
+        {% else %}
+            <strong>系统管理员</strong>
+        {% endif %}
+    </span>
+</div>
                     
                     {% if comment_text %}
                     <div style="font-size: 0.9375rem; color: var(--md3-on-surface); {% if review.status == 'rejected' %}background: var(--md3-error-container); color: var(--md3-on-error-container);{% else %}background: var(--md3-surface-container);{% endif %} padding: var(--md3-spacing-md); border-radius: var(--md3-radius-md); line-height: 1.6; margin-top: var(--md3-spacing-sm);">

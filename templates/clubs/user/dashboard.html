@@ -415,10 +415,28 @@
                         {% if club_data.assigned_staff %}
                         <div class="staff-list">
                             {% for staff in club_data.assigned_staff %}
-                            <div class="staff-item">
-                                <span class="staff-name">{{ staff.name|default:'未设置' }}</span><br>
-                                电话: {{ staff.phone }} | 微信: {{ staff.wechat }}<br>
-                                <small>分配时间: {{ staff.assigned_at|date:"Y-m-d" }}</small>
+                            <div class="staff-item" style="margin-bottom: 12px;">
+                                <a href="{% url 'clubs:user_detail' staff.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit; margin-bottom: 4px;">
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; margin-right: 12px; flex-shrink: 0;">
+                                        {% if staff.staff.avatar %}
+                                            <img src="{{ staff.staff.avatar.url }}" alt="{{ staff.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">
+                                                {{ staff.name|slice:":1" }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <span class="staff-name" style="font-weight: 500; font-size: 1rem;">{{ staff.name|default:'未设置' }}</span>
+                                </a>
+                                <div style="padding-left: 44px; font-size: 0.9em; color: var(--md3-on-surface-variant); line-height: 1.5;">
+                                    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                                        <span><i class="material-icons" style="font-size: 14px; vertical-align: middle; margin-right: 4px;">phone</i>{{ staff.phone }}</span>
+                                        <span><i class="material-icons" style="font-size: 14px; vertical-align: middle; margin-right: 4px;">chat</i>{{ staff.wechat }}</span>
+                                    </div>
+                                    <div style="margin-top: 2px;">
+                                        <small>分配时间: {{ staff.assigned_at|date:"Y-m-d" }}</small>
+                                    </div>
+                                </div>
                             </div>
                             {% endfor %}
                         </div>

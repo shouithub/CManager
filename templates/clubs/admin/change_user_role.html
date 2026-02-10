@@ -28,10 +28,22 @@
         <!-- 用户信息卡片 -->
         <div class="user-info-card" style="margin-bottom: 2rem;">
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <div style="font-size: 2rem;"><span class="material-icons" style="font-size: 2rem;">person</span></div>
+                <div style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <div style="width: 100%; height: 100%; background: var(--md3-primary-container, #eaddff); color: var(--md3-on-primary-container, #21005d); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px;">
+                            {{ user.profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
+                </div>
                 <div>
                     <div class="label">用户名</div>
-                    <div style="font-size: 1.3rem; font-weight: bold;">{{ user.username }}</div>
+                    <div style="font-size: 1.3rem; font-weight: bold;">
+                        <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit;">
+                            {{ user.username }}
+                        </a>
+                    </div>
                     <div class="label" style="margin-top: 0.5rem;">邮箱</div>
                     <div style="color: #666;">{{ user.email }}</div>
                 </div>

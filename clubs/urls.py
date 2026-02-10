@@ -26,6 +26,7 @@ urlpatterns = [
     path('logout/', auth_views.user_logout, name='logout'),
     path('change-account-settings/', auth_views.change_account_settings, name='change_account_settings'),
     path('edit-profile/', auth_views.edit_profile, name='edit_profile'),
+    path('user/<int:user_id>/', views.user_detail, name='user_detail'),
     path('delete-account/', auth_views.delete_account, name='delete_account'),
     
     # 用户/社长操作
@@ -51,9 +52,10 @@ urlpatterns = [
     
     # 干事审核
     path('staff/audit-center/<str:tab>/', views.staff_audit_center, name='staff_audit_center'),  # 干事审核中心
-    path('staff/audit-center-mobile/', views.staff_audit_center_mobile, name='staff_audit_center_mobile'),  # 干事审核中心移动端
-    path('api/clubs/list/', views.get_clubs_list, name='get_clubs_list'),  # 获取社团列表API
-    path('staff/home/', auth_views.staff_dashboard_home, name='staff_dashboard_home'),
+    path('staff/audit-center-mobile/', views.staff_audit_center_mobile, name='staff_audit_center_mobile'),  # 获取社团列表API
+    path('api/clubs/list/', views.get_clubs_list, name='get_clubs_list'),
+    path('api/department/<int:department_id>/members/', views.get_department_members, name='get_department_members'),
+    # path('staff/home/', auth_views.staff_dashboard_home, name='staff_dashboard_home'),
     # edit_department_intro has been replaced by manage_departments
     # path('staff/edit-department-intro/<str:department>/', auth_views.edit_department_intro, name='edit_department_intro'),
     
@@ -91,7 +93,8 @@ urlpatterns = [
     path('staff/review-reimbursement/<int:reimbursement_id>/', views.review_reimbursement, name='review_reimbursement'),
     path('staff/application/<int:registration_id>/', views.review_club_registration, name='review_club_registration'),
     path('staff/review-club-registration-submission/<int:registration_id>/', views.review_club_registration_submission, name='review_club_registration_submission'),
-
+    
+    path('club/<int:club_id>/update-description/', views.update_club_description, name='update_club_description'),
     path('staff/direct-edit-club-info/<int:club_id>/', views.direct_edit_club_info, name='direct_edit_club_info'),
     path('staff/toggle-review-enabled/<int:club_id>/', views.toggle_review_enabled, name='toggle_review_enabled'),
     path('staff/toggle-club-registration-enabled/<int:club_id>/', views.toggle_club_registration_enabled, name='toggle_club_registration_enabled'),

@@ -943,7 +943,18 @@
                 <span class="info-label">申请人</span>
                 <span class="info-value">
                     {% if registration.requested_by %}
-                        {{ registration.requested_by.username|default:'未设置' }}
+                    <a href="{% url 'clubs:user_detail' registration.requested_by.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
+                            {% if registration.requested_by.profile.avatar %}
+                                <img src="{{ registration.requested_by.profile.avatar.url }}" alt="{{ registration.requested_by.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                    {{ registration.requested_by.profile.get_full_name|slice:":1"|default:registration.requested_by.username|slice:":1" }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <span style="border-bottom: 1px dotted var(--md3-outline);">{{ registration.requested_by.profile.get_full_name|default:registration.requested_by.username }}</span>
+                    </a>
                     {% else %}
                         未设置
                     {% endif %}
