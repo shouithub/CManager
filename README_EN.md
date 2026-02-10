@@ -1,57 +1,76 @@
-# CManager
+# CManager - Club Management System
 
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
-[![Django](https://img.shields.io/badge/django-3.1%2B-green)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/python-3.13%2B-blue)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/django-5.0%2B-green)](https://www.djangoproject.com/)
 
 [中文](README.md) | [English](README_EN.md)
 
-## 🌿 Branch Information (v1)
+## 📋 Introduction
 
-This project includes a `v1` branch that retains features streamlined from the current version:
-- **Extended Roles**: Supports **Teacher** and **Ordinary User** account types.
-- **Activity Registration**: Allows ordinary users to sign up for activities directly via the platform.
-- **Review Workflow**: Includes approval workflows for teachers.
+**CManager** is a modern club management system developed based on the **Django** framework by the **Student Club Management Center of Shanghai Ocean University**. It aims to provide a comprehensive digital management solution for university clubs, covering core business processes such as club registration, annual review, leadership transition, activity application, reimbursement management, and venue booking.
 
-> **Note**: Due to adjustments in school requirements, these features were removed from the main branch to streamline operations. If you require full activity registration and teacher review capabilities, please checkout the `v1` branch.
+The system adopts the **Material Design 3 (MD3)** design language, providing a beautiful, unified, and responsive user interface that perfectly adapts to both desktop and mobile access.
 
-## 📋 Project Introduction
+## ✨ Core Features
 
-**CManager** is a comprehensive club management system developed by the **SHOU Community Management Service Center**, based on the Django framework. It aims to provide efficient and convenient management services for university clubs. The system covers core functions such as club registration, activity application, venue booking, and user management, helping schools better organize and manage colorful club activities.
+### 👥 User & Permission System
+- **Multi-Role Support**: President, Staff, Admin, Teacher (v1 branch), Regular User (v1 branch).
+- **Fine-Grained Permissions**: RBAC-based permission control with dedicated dashboards for different roles.
+- **Personal Center**: Supports avatar upload (auto-cropping), personal information management, and political status registration.
+- **Privacy Protection**: Users can set contact information visibility; supports "Staff-President" association visibility logic (Presidents can view contact details of Staff responsible for their clubs).
 
-## ✨ Key Features
+### 🏢 Club Lifecycle Management
+- **Club Application**: Full-process application and material submission for new club establishment.
+- **Club Registration**: Semester-based club registration process supporting custom registration periods.
+- **Annual Review**: Annual audit process supporting online submission and rejection/modification of various materials (self-assessment forms, constitutions, financial reports, etc.).
+- **Leadership Transition**: President transition application and review process, automatically updating club person-in-charge information.
+- **Department Management**: Dynamic configuration of department structure and functions within the management center.
 
-- **👥 User Management**: Supports multiple roles (President, Staff, Admin, Teacher, User) with registration, login, and profile management.
-- **🏢 Club Management**: Full lifecycle management including club registration application, review, member management, and annual review.
-- **📅 Activity Management**: Online activity application, approval process, and activity records.
-- **🏟️ Venue Booking**: specialized booking system for Room 222 with automatic conflict detection to ensure orderly venue usage.
-- **📢 Notification System**: Announcement publishing and email notification integration.
-- **📊 Data Export**: Supports exporting data to Excel format for easy archiving and analysis.
-- **🔒 Permission Control**: Secure and reliable access control based on user roles (RBAC).
+### 📅 Activity & Reimbursement
+- **Activity Application**: Online submission of activity plans by clubs with multi-level approval.
+- **Reimbursement Management**: Expense reimbursement application, receipt upload, and approval workflows, supporting amount statistics and history records.
+
+### 🏟️ Venue Booking System
+- **Smart Booking**: Online booking for dedicated activity rooms (e.g., Room 222).
+- **Conflict Detection**: Built-in time slot conflict detection algorithm to prevent booking overlaps.
+- **Fixed Slots**: Supports configuration of fixed opening time slots to standardize venue usage.
+- **Mobile Adaptation**: Optimized mobile calendar view for viewing and booking anytime, anywhere.
+
+### 🔍 Audit Center
+- **Unified Workbench**: A unified workbench for Staff and Admins to centrally process various applications (activities, reimbursements, registrations, annual reviews, etc.).
+- **History Records**: Complete audit history archiving, supporting filtering by type and viewing details.
+- **Audit Feedback**: Supports rejection opinions and modification suggestions for specific materials.
+
+### 📱 Mobile Adaptation
+- **Responsive Design**: Full-site pages adapted for mobile screens.
+- **Bottom Navigation**: Mobile-exclusive bottom navigation bar for easier operation.
+- **Touch Optimization**: Interactive experience optimized for touch screens (e.g., popups, sliding lists).
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Django 3.1+ (Python)
-- **Database**: SQLite (Dev) / PostgreSQL (Prod recommended)
-- **Frontend**: Django Templates + Material Design 3 (MD3) + Bootstrap
-- **Tools**: openpyxl (Excel export), Pillow (Image processing)
+- **Backend**: Django 5.x (Python 3.13+)
+- **Database**: SQLite (Development) / PostgreSQL (Production)
+- **Frontend**: Django Templates + Material Design 3 (MD3) + Bootstrap 5 (Partial components)
+- **Static Resources**: Google Material Icons
+- **Libraries**: Pillow (Image processing), openpyxl (Excel export)
 
-## 🚀 Installation & Setup
+## 🚀 Installation & Run
 
-### Prerequisites
+### Requirements
 
-- Python 3.8+
+- Python 3.13+
 - pip
 
 ### Steps
 
-1.  **Clone the repository**
+1.  **Clone the Repository**
     ```bash
     git clone https://github.com/shouithub/CManager.git
     cd CManager
     ```
 
-2.  **Create virtual environment**
+2.  **Create Virtual Environment**
     ```bash
     python -m venv venv
     # Windows
@@ -60,7 +79,7 @@ This project includes a `v1` branch that retains features streamlined from the c
     source venv/bin/activate
     ```
 
-3.  **Install dependencies**
+3.  **Install Dependencies**
     ```bash
     pip install -r requirements.txt
     ```
@@ -82,46 +101,33 @@ This project includes a `v1` branch that retains features streamlined from the c
 
     Visit [http://127.0.0.1:8000](http://127.0.0.1:8000) to start using the system.
 
-## 📖 Usage Guide
+## 📖 Role Guide
 
-### 👤 User Access
-- Ordinary users can register accounts.
-- Administrators manage user roles and permissions via the admin panel.
+### 👤 President
+- **Dashboard**: View club status, notifications, and announcements.
+- **Business Operations**: Submit activity applications, reimbursement applications, annual review materials, and transition applications.
+- **Venue Booking**: Check available slots and book activity rooms.
+- **Info Management**: Update club introduction and view responsible staff contact info.
 
-### 🏢 Club Operations
-- Club presidents submit registration applications.
-- Admins/Staff review and approve applications to officially establish clubs.
+### 🛡️ Staff
+- **Audit Center**: Approve various applications for responsible clubs.
+- **Club Management**: View and manage responsible club information.
+- **Statistics**: View club activity levels, financial status, etc.
 
-### 📝 Activity Application
-- Clubs submit activity proposals with details.
-- Staff review and approve activities.
+### ⚙️ Admin
+- **System Config**: Manage carousels, department settings, SMTP email services.
+- **User Management**: Create users, assign roles, reset passwords.
+- **Global Control**: Open/close registration periods, annual review channels, etc.
 
-### 🔑 Venue Booking
-- Users apply for Room 222 timeslots.
-- System automatically checks for time conflicts.
+## 🌿 Branch Info (v1)
 
-## 📦 Deployment
+This project includes a `v1` branch that retains features simplified in the current main branch:
+- **Extended Roles**: Supports **Teacher** and **Regular User** account types.
+- **Activity Registration**: Allows regular users to sign up for activities directly through the platform.
+- **Process Review**: Includes approval workflows involving the Teacher role.
 
-### Production (Gunicorn + Nginx)
-
-1.  **Install Gunicorn**
-    ```bash
-    pip install gunicorn
-    ```
-
-2.  **Run Gunicorn**
-    ```bash
-    gunicorn CManager.wsgi:application --bind 0.0.0.0:8000
-    ```
-
-3.  **Configure Nginx** as a reverse proxy.
+> **Note**: The current main branch focuses on internal club management and center audit processes. If you need activity registration features for all students, please checkout the `v1` branch.
 
 ## 📄 License
 
-This project is licensed under the **GPLv2** License. See the [LICENSE](LICENSE) file for details.
-
-## 📞 Contact
-
-**SHOU Community Management Service Center**
-If you have any questions or suggestions, please contact us.
-📧 Email: whtrys@outlook.com
+This project is licensed under the [GPLv2](LICENSE) license.

@@ -340,21 +340,25 @@
                 </span>
             </div>
         </div>
-        <div class="staff-chip">
+        <div class="staff-chip" style="flex-wrap: wrap; height: auto; padding: 12px 16px;">
             <span class="material-icons">assignment_ind</span>
-            <span>
+            <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 负责干事: 
                 {% if submission.club %}
                     {% for relation in submission.club.responsible_staff.all %}
                         {% if relation.is_active %}
-                            {% if relation.staff.real_name %}
-                                {{ relation.staff.real_name }} ({{ relation.staff.user.username }})
-                            {% elif relation.staff.user.username %}
-                                {{ relation.staff.user.username }}
-                            {% else %}
-                                未知用户
-                            {% endif %}
-                            {% if not forloop.last %}, {% endif %}
+                            <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); padding: 2px 8px 2px 2px; border-radius: 16px;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                    {% if relation.staff.avatar %}
+                                        <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">
+                                            {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1"|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span>{{ relation.staff.get_full_name|default:relation.staff.user.username }}</span>
+                            </a>
                         {% endif %}
                     {% empty %}
                         未分配

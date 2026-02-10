@@ -534,7 +534,80 @@
         font-weight: 600;
         color: var(--md3-on-secondary-container);
     }
-    
+
+    /* ===== 社团列表（列表视图） ===== */
+    .club-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
+    }
+
+    .club-list-item {
+        display: flex;
+        align-items: center;
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-md);
+        transition: all var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+        gap: var(--md3-spacing-lg);
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .club-list-item:hover {
+        background: var(--md3-surface-container-high);
+        box-shadow: var(--md3-elevation-1);
+        transform: translateX(4px);
+    }
+
+    .club-list-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        border-radius: var(--md3-radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .club-list-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .club-list-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 4px 0;
+    }
+
+    .club-list-desc {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .club-list-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        flex-shrink: 0;
+    }
+
     .announcements-list {
         padding: var(--md3-spacing-lg);
         display: grid;
@@ -914,6 +987,7 @@
     
     <!-- 统计卡片（干事管理员可见） -->
     {% if is_staff_or_admin %}
+    <!-- 统计卡片（干事管理员可见） -->
     <div class="stats-section">
         <div class="stat-card">
             <div class="stat-icon">
@@ -943,8 +1017,9 @@
             </div>
         </div>
     </div>
-    
-    <!-- 部门介绍（干事管理员） -->
+    {% endif %}
+
+    <!-- 部门介绍（已登录用户） -->
     {% if departments %}
     <div class="departments-section">
         <div class="section-header">
@@ -955,7 +1030,7 @@
         </div>
         <div class="departments-grid">
             {% for dept in departments %}
-            <div class="dept-card">
+            <div class="dept-card" onclick="showDepartmentMembers({{ dept.id }})" style="cursor: pointer;">
                 <div class="dept-header">
                     <div class="dept-icon">
                         <span class="material-icons">{{ dept.icon }}</span>
@@ -976,10 +1051,185 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- 社团列表（非干事管理员可见） -->
+    {% if not is_staff_or_admin and clubs_data %}
+    <div class="departments-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span class="material-icons">groups</span>
+                <span>社团列表</span>
+            </h2>
+        </div>
+        <div class="club-list">
+            {% for item in clubs_data %}
+            <a href="{% url 'clubs:club_detail' item.club.id %}" class="club-list-item">
+                <div class="club-list-icon">
+                    <span class="material-icons">diversity_3</span>
+                </div>
+                <div class="club-list-content">
+                    <h3 class="club-list-name">{{ item.club.name }}</h3>
+                    <p class="club-list-desc">{{ item.club.description|default:"暂无描述"|truncatechars:50 }}</p>
+                </div>
+                {% if item.is_president %}
+                <div class="club-list-badge">
+                    <span class="material-icons" style="font-size: 14px;">badge</span>
+                    我是社长
+                </div>
+                {% endif %}
+                <span class="material-icons" style="color: var(--md3-on-surface-variant);">chevron_right</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
     {% endif %}
-    
+
     {% endif %}
 </div>
+
+<!-- 部门成员弹窗 -->
+<div id="deptMembersModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="modal-card" style="background: var(--md3-surface); padding: 24px; border-radius: 28px; width: 90%; max-width: 500px; box-shadow: var(--md3-elevation-3); max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 id="modalDeptName" style="margin: 0; font-size: 24px; color: var(--md3-on-surface);">部门成员</h3>
+            <button onclick="closeDeptModal()" style="background: none; border: none; cursor: pointer; color: var(--md3-on-surface-variant);">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        
+        <div id="modalContent">
+            <div style="display: flex; justify-content: center; padding: 20px;">
+                <div class="spinner" style="border: 4px solid rgba(0,0,0,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--md3-primary); animation: spin 1s linear infinite;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.member-list { display: flex; flex-direction: column; gap: 12px; }
+.member-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    padding: 8px; 
+    border-radius: 12px; 
+    background: var(--md3-surface-container-low); 
+}
+.member-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    flex: 1;
+    min-width: 0;
+}
+.member-avatar { 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+    background: var(--md3-primary-container); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    color: var(--md3-on-primary-container); 
+    font-weight: bold; 
+    overflow: hidden; 
+    flex-shrink: 0;
+}
+.member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.member-info { flex: 1; min-width: 0; }
+.member-name { font-weight: 500; color: var(--md3-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.member-role { font-size: 0.75rem; color: var(--md3-on-surface-variant); }
+.role-badge { padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; flex-shrink: 0; }
+.role-director { background: var(--md3-primary); color: var(--md3-on-primary); }
+.role-member { background: var(--md3-secondary-container); color: var(--md3-on-secondary-container); }
+</style>
+
+<script>
+function showDepartmentMembers(deptId) {
+    const modal = document.getElementById('deptMembersModal');
+    const content = document.getElementById('modalContent');
+    const title = document.getElementById('modalDeptName');
+    
+    modal.style.display = 'flex';
+    content.innerHTML = '<div style="display: flex; justify-content: center; padding: 20px;"><div class="spinner" style="border: 4px solid rgba(0,0,0,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--md3-primary); animation: spin 1s linear infinite;"></div></div>';
+    
+    fetch(`/clubs/api/department/${deptId}/members/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                content.innerHTML = `<p style="color: var(--md3-error); text-align: center;">${data.error}</p>`;
+                return;
+            }
+            
+            title.textContent = data.name;
+            
+            let html = '<div class="member-list">';
+            
+            // Directors
+            if (data.directors.length > 0) {
+                html += '<h4 style="margin: 16px 0 8px; color: var(--md3-primary);">部长</h4>';
+                data.directors.forEach(d => {
+                    html += `
+                        <div class="member-item">
+                            <a href="/clubs/user/${d.id}/" class="member-link">
+                                <div class="member-avatar">
+                                    ${d.avatar ? `<img src="${d.avatar}" alt="${d.name}">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); font-weight: bold;">${d.initial || (d.name && d.name.length > 0 ? d.name.charAt(0) : '?')}</div>`}
+                                </div>
+                                <div class="member-info">
+                                    <div class="member-name">${d.name}</div>
+                                </div>
+                            </a>
+                            <span class="role-badge role-director">部长</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Members
+            if (data.members.length > 0) {
+                html += '<h4 style="margin: 16px 0 8px; color: var(--md3-secondary);">部员</h4>';
+                data.members.forEach(m => {
+                    html += `
+                        <div class="member-item">
+                            <a href="/clubs/user/${m.id}/" class="member-link">
+                                <div class="member-avatar">
+                                    ${m.avatar ? `<img src="${m.avatar}" alt="${m.name}">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); font-weight: bold;">${m.initial || (m.name && m.name.length > 0 ? m.name.charAt(0) : '?')}</div>`}
+                                </div>
+                                <div class="member-info">
+                                    <div class="member-name">${m.name}</div>
+                                </div>
+                            </a>
+                            <span class="role-badge role-member">部员</span>
+                        </div>
+                    `;
+                });
+            } else if (data.directors.length === 0) {
+                html += '<p style="text-align: center; color: var(--md3-on-surface-variant);">暂无成员</p>';
+            }
+            
+            html += '</div>';
+            content.innerHTML = html;
+        })
+        .catch(err => {
+            console.error(err);
+            content.innerHTML = '<p style="color: var(--md3-error); text-align: center;">加载失败，请稍后重试</p>';
+        });
+}
+
+function closeDeptModal() {
+    document.getElementById('deptMembersModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.getElementById('deptMembersModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeptModal();
+    }
+});
+</script>
 
 <script>
 {% if carousel_images and carousel_images|length > 1 %}

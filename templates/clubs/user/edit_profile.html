@@ -1,14 +1,12 @@
 {% extends 'clubs/base.html' %}
 {% load custom_filters %}
 
-{% block title %}编辑个人信息{% endblock %}
+{% block title %}个人中心{% endblock %}
 
 {% block extra_css %}
 <style>
     /* ===== MD3 完整重构 ===== */
-    
     :root {
-        /* MD3 间距系统 */
         --md3-spacing-xs: 4px;
         --md3-spacing-sm: 8px;
         --md3-spacing-md: 12px;
@@ -54,23 +52,70 @@
         letter-spacing: 0;
     }
     
-    /* ===== 卡片容器 MD3 风格 ===== */
+    /* ===== 选项卡导航 ===== */
+    .tabs {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        padding-bottom: 0;
+    }
+    
+    .tab-btn {
+        background: none;
+        border: none;
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s;
+        border-radius: var(--md3-radius-lg) var(--md3-radius-lg) 0 0;
+    }
+    
+    .tab-btn:hover {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+    }
+    
+    .tab-btn.active {
+        color: var(--md3-primary);
+        background: var(--md3-surface-container-low);
+    }
+    
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--md3-primary);
+        border-radius: 3px 3px 0 0;
+    }
+
+    /* ===== 卡片容器 ===== */
     .card {
         background: var(--md3-surface-container-low);
         border-radius: var(--md3-radius-xl);
         padding: var(--md3-spacing-2xl);
         margin-bottom: var(--md3-spacing-xl);
         box-shadow: var(--md3-elevation-1);
-        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
         border: 1px solid var(--md3-outline-variant);
+        display: none; /* 默认隐藏，通过JS控制显示 */
     }
     
-    .card:hover {
-        box-shadow: var(--md3-elevation-3);
-        background: var(--md3-surface-container);
+    .card.active {
+        display: block;
+        animation: fadeIn 0.3s ease-out;
     }
     
-    /* ===== 卡片标题 ===== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
     .card-header {
         display: flex;
         align-items: center;
@@ -90,339 +135,164 @@
         font-size: 1.25rem;
         font-weight: 500;
         color: var(--md3-on-surface);
-        letter-spacing: 0;
     }
-    
-    /* ===== 信息网格布局 ===== */
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-xl);
-    }
-    
-    /* ===== 表单元素 ===== */
+
+    /* ===== 表单样式 ===== */
     .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-lg);
     }
     
     .form-label {
+        display: block;
+        margin-bottom: var(--md3-spacing-xs);
+        color: var(--md3-on-surface-variant);
         font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-        letter-spacing: 0;
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-xs);
+        font-weight: 500;
     }
     
-    .form-label .material-icons {
-        font-size: 1.125rem;
-        color: var(--md3-primary);
-    }
-    
-    .form-label .required {
-        color: var(--md3-error);
-    }
-    
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"],
-    select,
-    textarea {
-        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
-        background: var(--md3-surface-container);
+    .form-control {
+        width: 100%;
+        padding: var(--md3-spacing-md);
         border: 1px solid var(--md3-outline);
         border-radius: var(--md3-radius-md);
-        font-family: inherit;
-        font-size: 1rem;
+        background: var(--md3-surface);
         color: var(--md3-on-surface);
-        transition: all 0.2s ease;
+        font-size: 1rem;
+        transition: all 0.2s;
+        box-sizing: border-box;
     }
     
-    input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="tel"]:focus,
-    select:focus,
-    textarea:focus {
+    .form-control:focus {
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 2px var(--md3-primary-container);
         outline: none;
-        border-color: var(--md3-primary);
-        box-shadow: 0 0 0 3px var(--md3-primary-container);
-        background: var(--md3-surface-container-highest);
-    }
-    
-    textarea {
-        resize: vertical;
-        min-height: 100px;
-    }
-    
-    /* ===== 分组标题 ===== */
-    .section-title {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-lg);
-        padding-bottom: var(--md3-spacing-md);
-        border-bottom: 1px solid var(--md3-outline-variant);
-    }
-    
-    .section-title .material-icons {
-        font-size: 1.25rem;
-        color: var(--md3-primary);
-    }
-    
-    .section-title h3 {
-        margin: 0;
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-    }
-    
-    /* ===== 复选框 ===== */
-    .checkbox-wrapper {
-        display: flex;
-        align-items: flex-start;
-        gap: var(--md3-spacing-md);
-        padding: var(--md3-spacing-lg);
-        background: var(--md3-surface-container-highest);
-        border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-md);
-        transition: all 0.2s ease;
-    }
-    
-    .checkbox-wrapper:hover {
-        background: var(--md3-surface-container-high);
-        border-color: var(--md3-primary);
-    }
-    
-    .checkbox-input {
-        width: 20px;
-        height: 20px;
-        min-width: 20px;
-        accent-color: var(--md3-primary);
-        cursor: pointer;
-        margin-top: 2px;
-    }
-    
-    .checkbox-label {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-xs);
-        cursor: pointer;
-        flex: 1;
-    }
-    
-    .checkbox-label-text {
-        font-size: 1rem;
-        font-weight: 500;
-        color: var(--md3-on-surface);
-    }
-    
-    .checkbox-hint {
-        font-size: 0.875rem;
-        color: var(--md3-on-surface-variant);
-        line-height: 1.5;
-        margin: 0;
-    }
-    
-    .checkbox-hint .material-icons {
-        font-size: 1rem;
-        vertical-align: middle;
-        margin-right: 4px;
-    }
-    
-    /* ===== 只读字段 ===== */
-    .readonly-field {
-        padding: var(--md3-spacing-lg);
-        background: var(--md3-surface-container-highest);
-        border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-md);
-        color: var(--md3-on-surface);
-        font-size: 1rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-    }
-    
-    /* ===== 状态徽章 ===== */
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--md3-spacing-xs);
-        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
-        border-radius: var(--md3-radius-full);
-        font-size: 0.875rem;
-        font-weight: 600;
-    }
-    
-    .status-badge .material-icons {
-        font-size: 1rem;
-    }
-    
-    .status-badge.pending {
-        background: var(--md3-warning-container);
-        color: var(--md3-on-warning-container);
-    }
-    
-    .status-badge.approved {
-        background: var(--md3-success-container);
-        color: var(--md3-on-success-container);
-    }
-    
-    .status-badge.rejected {
-        background: var(--md3-error-container);
-        color: var(--md3-on-error-container);
-    }
-    
-    /* ===== 消息提示 ===== */
-    .message-box {
-        padding: var(--md3-spacing-lg);
-        border-radius: var(--md3-radius-md);
-        margin-bottom: var(--md3-spacing-lg);
-        display: flex;
-        align-items: flex-start;
-        gap: var(--md3-spacing-md);
-    }
-    
-    .message-box .material-icons {
-        font-size: 1.5rem;
-        min-width: 24px;
-    }
-    
-    .message-box.error {
-        background: var(--md3-error-container);
-        color: var(--md3-on-error-container);
-        border: 1px solid var(--md3-error);
-    }
-    
-    .message-box.success {
-        background: var(--md3-success-container);
-        color: var(--md3-on-success-container);
-        border: 1px solid var(--md3-success);
-    }
-    
-    .message-content {
-        flex: 1;
-    }
-    
-    .message-title {
-        font-weight: 600;
-        margin-bottom: 4px;
-    }
-    
-    /* ===== 按钮 ===== */
-    .action-buttons {
-        display: flex;
-        gap: var(--md3-spacing-md);
-        justify-content: flex-end;
-        margin-top: var(--md3-spacing-2xl);
-        padding-top: var(--md3-spacing-lg);
-        border-top: 1px solid var(--md3-outline-variant);
-    }
-    
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--md3-spacing-sm);
-        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
-        border-radius: var(--md3-radius-full);
-        border: none;
-        font-weight: 600;
-        font-size: 0.875rem;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        box-shadow: var(--md3-elevation-1);
     }
     
     .btn-primary {
         background: var(--md3-primary);
         color: var(--md3-on-primary);
+        border: none;
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-full);
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
     }
     
     .btn-primary:hover {
-        background: var(--md3-primary-dim);
-        box-shadow: var(--md3-elevation-3);
-        transform: translateY(-2px);
-    }
-    
-    .btn-secondary {
-        background: var(--md3-surface-container-high);
-        color: var(--md3-on-surface);
-        border: 1px solid var(--md3-outline);
-    }
-    
-    .btn-secondary:hover {
-        background: var(--md3-surface-container-highest);
         box-shadow: var(--md3-elevation-2);
+        opacity: 0.9;
+    }
+
+    /* ===== 头像上传样式 ===== */
+    .avatar-preview-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface);
+        border-radius: var(--md3-radius-lg);
+        border: 2px dashed var(--md3-outline-variant);
+        margin-bottom: var(--md3-spacing-lg);
     }
     
-    .btn .material-icons {
-        font-size: 1.25rem;
+    .current-avatar {
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: var(--md3-elevation-2);
+        background: var(--md3-surface-container-high);
     }
     
-    /* ===== 提示 ===== */
-    .info-card {
+    .avatar-placeholder {
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
         background: var(--md3-primary-container);
-        border: 1px solid var(--md3-primary);
-        border-radius: var(--md3-radius-md);
-        padding: var(--md3-spacing-lg);
-        margin-top: var(--md3-spacing-xl);
         color: var(--md3-on-primary-container);
-        font-size: 0.875rem;
-        line-height: 1.6;
-    }
-    
-    .info-card strong {
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-xs);
-        margin-bottom: var(--md3-spacing-sm);
-        font-size: 1rem;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: bold;
     }
     
-    .info-card .material-icons {
-        font-size: 1.25rem;
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
     }
     
-    /* ===== 响应式设计 ===== */
+    .file-input-wrapper input[type=file] {
+        font-size: 100px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .upload-btn {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border-radius: var(--md3-radius-lg);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .upload-btn:hover {
+        background: var(--md3-secondary-container-hover, #e8def8);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    /* Cropper Styles */
+    .cropper-container {
+        width: 260px;
+        height: 260px;
+        border: 1px solid var(--md3-outline);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--md3-surface);
+        margin: 0 auto;
+        overflow: hidden;
+        touch-action: none;
+        cursor: move;
+    }
+    
+    .cropper-controls {
+        margin-top: 1rem;
+        width: 260px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* 移动端适配 */
     @media (max-width: 768px) {
-        .profile-container {
-            padding: var(--md3-spacing-lg);
-        }
-        
         .page-header {
+            padding: var(--md3-spacing-lg);
             flex-direction: column;
             text-align: center;
-            padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        }
+        
+        .tabs {
+            overflow-x: auto;
+            white-space: nowrap;
         }
         
         .card {
             padding: var(--md3-spacing-lg);
-        }
-        
-        .form-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .action-buttons {
-            flex-direction: column;
-        }
-        
-        .action-buttons .btn {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-    
-    /* ===== 暗色主题 ===== */
-    @media (prefers-color-scheme: dark) {
-        .card {
-            background: var(--md3-surface-container);
         }
     }
 </style>
@@ -430,290 +300,401 @@
 
 {% block content %}
 <div class="profile-container">
-    <!-- 页面顶部标题 -->
     <div class="page-header">
-        <span class="material-icons">person</span>
-        <h1>编辑个人信息</h1>
-    </div>
-    
-    <!-- 错误消息 -->
-    {% if errors %}
-    <div class="message-box error">
-        <span class="material-icons">error</span>
-        <div class="message-content">
-            <div class="message-title">表单验证失败</div>
-            <ul style="margin: 8px 0 0 0; padding-left: 20px;">
-                {% for error in errors %}
-                <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
+        <span class="material-icons">account_circle</span>
+        <div class="header-content">
+            <h1>个人中心</h1>
         </div>
     </div>
-    {% endif %}
     
-    <!-- 成功消息 -->
-    {% if messages %}
-    {% for message in messages %}
-    {% if message.tags == 'success' %}
-    <div class="message-box success">
-        <span class="material-icons">check_circle</span>
-        <div class="message-content">
-            <div class="message-title">成功</div>
-            <p style="margin: 0;">{{ message }}</p>
-        </div>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('info')">基本信息</button>
+        <button class="tab-btn" onclick="switchTab('avatar')">头像设置</button>
+        <button class="tab-btn" onclick="switchTab('security')">账号安全</button>
     </div>
-    {% endif %}
-    {% endfor %}
-    {% endif %}
-    
-    <!-- 表单卡片 -->
-    <div class="card">
-        <form method="post" id="profile_form">
+
+    <!-- 基本信息卡片 -->
+    <div id="tab-info" class="card active">
+        <div class="card-header">
+            <span class="material-icons">badge</span>
+            <h2>修改个人资料</h2>
+        </div>
+        
+        <form method="post">
             {% csrf_token %}
-            
-            <!-- 基本信息 -->
-            <div class="card-header">
-                <span class="material-icons">person</span>
-                <h2>基本信息</h2>
-            </div>
+            <input type="hidden" name="action" value="update_info">
             
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="real_name" class="form-label">
-                        <span class="material-icons">person</span>
-                        真实姓名
-                        <span class="required">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        id="real_name"
-                        name="real_name"
-                        value="{{ profile.real_name }}"
-                        required
-                    >
+                    <label class="form-label">真实姓名</label>
+                    <input type="text" name="real_name" class="form-control" value="{{ profile.real_name }}" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="student_id" class="form-label">
-                        <span class="material-icons">school</span>
-                        学号
-                        <span class="required">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        id="student_id"
-                        name="student_id"
-                        value="{{ profile.student_id }}"
-                        required
-                    >
-                </div>
-            </div>
-            
-            <!-- 联系方式 -->
-            <div class="section-title" style="margin-top: var(--md3-spacing-xl);">
-                <span class="material-icons">phone</span>
-                <h3>联系方式</h3>
-            </div>
-            
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="email" class="form-label">
-                        <span class="material-icons">email</span>
-                        邮箱 (可选)
-                    </label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value="{{ user.email }}"
-                    >
+                    <label class="form-label">邮箱</label>
+                    <input type="email" name="email" class="form-control" value="{{ user.email }}" placeholder="用于找回密码和接收通知">
                 </div>
                 
                 <div class="form-group">
-                    <label for="phone" class="form-label">
-                        <span class="material-icons">phone</span>
-                        电话
-                        <span class="required">*</span>
-                    </label>
-                    <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        value="{{ profile.phone }}"
-                        required
-                    >
+                    <label class="form-label">手机号码</label>
+                    <input type="tel" name="phone" class="form-control" value="{{ profile.phone }}" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="wechat" class="form-label">
-                        <span class="material-icons">chat</span>
-                        微信
-                        <span class="required">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        id="wechat"
-                        name="wechat"
-                        value="{{ profile.wechat }}"
-                        required
-                    >
+                    <label class="form-label">微信号</label>
+                    <input type="text" name="wechat" class="form-control" value="{{ profile.wechat }}" required>
                 </div>
-            </div>
-            
-            <!-- 信息公开设置 -->
-            <div class="section-title" style="margin-top: var(--md3-spacing-xl);">
-                <span class="material-icons">lock</span>
-                <h3>隐私设置</h3>
-            </div>
-            
-            <div class="checkbox-wrapper">
-                <input
-                    type="checkbox"
-                    id="is_info_public"
-                    name="is_info_public"
-                    class="checkbox-input"
-                    {% if profile.is_info_public %}checked{% endif %}
-                >
-                <label for="is_info_public" class="checkbox-label">
-                    <span class="checkbox-label-text">公开我的个人信息</span>
-                    <p class="checkbox-hint">
-                        <span class="material-icons">info</span>
-                        勾选后，您的电话和邮箱将对所有用户可见
-                    </p>
-                </label>
-            </div>
-            
-            <!-- 政治身份 (仅社长和干事) -->
-            {% if profile.role == 'president' or profile.role == 'staff' %}
-            <div class="section-title" style="margin-top: var(--md3-spacing-xl);">
-                <span class="material-icons">flag</span>
-                <h3>政治身份</h3>
-            </div>
-            
-            <div class="form-grid">
+                
                 <div class="form-group">
-                    <label for="political_status" class="form-label">
-                        <span class="material-icons">flag</span>
-                        政治面貌
-                        <span class="required">*</span>
-                    </label>
-                    <select id="political_status" name="political_status" required>
-                        <option value="">-- 请选择 --</option>
-                        <option value="communist_party_member" {% if profile.political_status == 'communist_party_member' %}selected{% endif %}>中共党员</option>
-                        <option value="communist_party_probationary" {% if profile.political_status == 'communist_party_probationary' %}selected{% endif %}>中共预备党员</option>
-                        <option value="communist_youth_league" {% if profile.political_status == 'communist_youth_league' %}selected{% endif %}>共青团员</option>
-                        <option value="non_party_personage" {% if profile.political_status == 'non_party_personage' %}selected{% endif %}>无党派人士</option>
-                        <option value="progressive" {% if profile.political_status == 'progressive' %}selected{% endif %}>入党积极分子</option>
-                        <option value="non_member" {% if profile.political_status == 'non_member' %}selected{% endif %}>群众</option>
+                    <label class="form-label">学号</label>
+                    <input type="text" name="student_id" class="form-control" value="{{ profile.student_id }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">政治面貌</label>
+                    <select name="political_status" class="form-control" required>
+                        <option value="">请选择</option>
+                        {% for value, label in political_status_choices %}
+                            <option value="{{ value }}" {% if profile.political_status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
-            {% endif %}
             
-            <!-- 账户信息 (只读) -->
-            <div class="section-title" style="margin-top: var(--md3-spacing-xl);">
-                <span class="material-icons">info</span>
-                <h3>账户信息</h3>
+            <div class="form-group" style="margin-top: 20px;">
+                <label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" name="is_info_public" {% if profile.is_info_public %}checked{% endif %} style="width: 20px; height: 20px;">
+                    <span style="color: var(--md3-on-surface);">向其他用户公开我的联系方式</span>
+                </label>
             </div>
             
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">用户名</label>
-                    <div class="readonly-field">
-                        <span class="material-icons" style="color: var(--md3-primary);">account_circle</span>
-                        {{ user.username }}
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">账户角色</label>
-                    <div class="readonly-field">
-                        <span class="material-icons" style="color: var(--md3-primary);">security</span>
-                        {% if profile.role == 'president' %}
-                            社长
-                        {% elif profile.role == 'staff' %}
-                            干事
-                        {% elif profile.role == 'admin' %}
-                            管理员
-                        {% else %}
-                            未设置
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 干事申请状态 -->
-            {% if profile.role == 'staff' %}
-            <div class="form-group">
-                <label class="form-label">申请状态</label>
-                <div class="readonly-field">
-                    {% if profile.status == 'pending' %}
-                        <span class="status-badge pending">
-                            <span class="material-icons">schedule</span>
-                            待审核
-                        </span>
-                    {% elif profile.status == 'approved' %}
-                        <span class="status-badge approved">
-                            <span class="material-icons">check_circle</span>
-                            已批准
-                        </span>
-                    {% elif profile.status == 'rejected' %}
-                        <span class="status-badge rejected">
-                            <span class="material-icons">cancel</span>
-                            已拒绝
-                        </span>
-                    {% else %}
-                        {{ profile.get_status_display }}
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-            
-            <!-- 操作按钮 -->
-            <div class="action-buttons">
-                <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-secondary">
-                    <span class="material-icons">arrow_back</span>
-                    返回
-                </a>
-                <button type="submit" class="btn btn-primary">
+            <div style="margin-top: 32px; text-align: right;">
+                <button type="submit" class="btn-primary">
                     <span class="material-icons">save</span>
-                    保存修改
+                    保存更改
                 </button>
             </div>
         </form>
     </div>
-    
-    <!-- 提示信息 -->
-    <div class="info-card">
-        <strong>
-            <span class="material-icons">info</span>
-            提示
-        </strong>
-        标记<span style="color: var(--md3-error);">*</span> 的字段为必填项。修改信息后点击「保存修改」按钮提交您的更改
+
+    <!-- 头像设置卡片 -->
+    <div id="tab-avatar" class="card">
+        <div class="card-header">
+            <span class="material-icons">face</span>
+            <h2>修改头像</h2>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" id="avatar-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="upload_avatar">
+            <input type="hidden" name="avatar_base64" id="avatar-base64">
+            
+            <div class="avatar-preview-container">
+                <!-- 当前头像展示 -->
+                <div id="current-avatar-view" {% if not profile.avatar %}style="display: none;"{% endif %}>
+                    <img src="{% if profile.avatar %}{{ profile.avatar.url }}{% endif %}" alt="当前头像" class="current-avatar">
+                    <p style="text-align: center; margin-top: 10px; color: var(--md3-on-surface-variant);">当前头像</p>
+                </div>
+
+                <!-- 默认占位符 -->
+                <div id="avatar-placeholder" class="avatar-placeholder" {% if profile.avatar %}style="display: none;"{% endif %}>
+                    {{ profile.real_name|first }}
+                </div>
+                
+                <!-- 裁剪区域 (初始隐藏) -->
+                <div id="cropper-wrapper" style="display: none; width: 100%;">
+                    <div class="cropper-container">
+                        <canvas id="cropper-canvas" width="256" height="256"></canvas>
+                    </div>
+                    <div class="cropper-controls">
+                        <label class="form-label" style="text-align: center;">缩放图片</label>
+                        <input type="range" id="cropper-zoom" min="1" max="3" step="0.01" value="1" class="form-control" style="padding: 0;">
+                    </div>
+                </div>
+                
+                <p style="color: var(--md3-on-surface-variant); margin: 0; text-align: center;">支持 JPG, PNG 格式，建议使用正方形图片</p>
+                
+                <div class="file-input-wrapper">
+                    <div class="upload-btn">
+                        <span class="material-icons">upload_file</span>
+                        选择图片
+                    </div>
+                    <input type="file" name="avatar" accept="image/*" id="avatar-input">
+                </div>
+            </div>
+            
+            <div style="margin-top: 32px; text-align: right;">
+                <button type="submit" class="btn-primary" id="save-avatar-btn">
+                    <span class="material-icons">cloud_upload</span>
+                    上传头像
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 账号安全卡片 -->
+    <div id="tab-security" class="card">
+        <div class="card-header">
+            <span class="material-icons">security</span>
+            <h2>账号安全设置</h2>
+        </div>
+        
+        <!-- 修改用户名 -->
+        <div style="margin-bottom: var(--md3-spacing-2xl);">
+            <h3 style="font-size: 1.1rem; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-lg);">修改用户名</h3>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_username">
+                
+                <div class="form-group">
+                    <label class="form-label">新用户名</label>
+                    <input type="text" name="new_username" class="form-control" value="{{ user.username }}" minlength="3" required>
+                    <small style="color: var(--md3-on-surface-variant);">当前用户名: {{ user.username }}</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">当前密码</label>
+                    <input type="password" name="password" class="form-control" placeholder="验证身份以修改用户名" required>
+                </div>
+                
+                <div style="text-align: right;">
+                    <button type="submit" class="btn-primary">
+                        <span class="material-icons">badge</span>
+                        修改用户名
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div style="border-top: 1px solid var(--md3-outline-variant); margin: var(--md3-spacing-xl) 0;"></div>
+        
+        <!-- 修改密码 -->
+        <div>
+            <h3 style="font-size: 1.1rem; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-lg);">修改密码</h3>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_password">
+                
+                <div class="form-group">
+                    <label class="form-label">当前密码</label>
+                    <input type="password" name="old_password" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">新密码</label>
+                    <input type="password" name="new_password" class="form-control" minlength="6" required>
+                    <small style="color: var(--md3-on-surface-variant);">密码长度至少需6位</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">确认新密码</label>
+                    <input type="password" name="confirm_password" class="form-control" minlength="6" required>
+                </div>
+                
+                <div style="text-align: right;">
+                    <button type="submit" class="btn-primary">
+                        <span class="material-icons">lock_reset</span>
+                        修改密码
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div style="border-top: 1px solid var(--md3-outline-variant); margin: var(--md3-spacing-xl) 0;"></div>
+        
+        <!-- 删除账户 -->
+        <div>
+            <h3 style="font-size: 1.1rem; color: var(--md3-error); margin-bottom: var(--md3-spacing-lg);">危险区域</h3>
+            <p style="color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-md);">删除账户是不可逆的操作。所有相关数据将被永久删除。</p>
+            <div style="text-align: right;">
+                <button type="button" class="btn-primary" style="background: var(--md3-error); color: var(--md3-on-error);" onclick="document.getElementById('delete-account-modal').showModal()">
+                    <span class="material-icons">delete_forever</span>
+                    删除账户
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
+<!-- 删除账户确认模态框 -->
+<dialog id="delete-account-modal" style="padding: 0; border: none; border-radius: 28px; background: var(--md3-surface-container-high); max-width: 400px; width: 90%;">
+    <div style="padding: 24px;">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px; color: var(--md3-error);">
+            <span class="material-icons" style="font-size: 24px;">warning</span>
+            <h3 style="margin: 0; font-size: 24px;">确认删除账户？</h3>
+        </div>
+        <p style="margin-bottom: 24px; color: var(--md3-on-surface-variant);">
+            此操作无法撤销。请输入您的用户名 <strong>{{ user.username }}</strong> 以确认删除。
+        </p>
+        <form action="{% url 'clubs:delete_account' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" name="confirm_username" class="form-control" placeholder="{{ user.username }}" required>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;">
+                <button type="button" class="btn-primary" style="background: transparent; color: var(--md3-primary); box-shadow: none;" onclick="document.getElementById('delete-account-modal').close()">取消</button>
+                <button type="submit" class="btn-primary" style="background: var(--md3-error); color: var(--md3-on-error);">确认删除</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('profile_form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            // 获取表单数据进行验证
-            const realName = document.getElementById('real_name').value.trim();
-            const studentId = document.getElementById('student_id').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const wechat = document.getElementById('wechat').value.trim();
+    function switchTab(tabId) {
+        // 隐藏所有卡片
+        document.querySelectorAll('.card').forEach(card => {
+            card.classList.remove('active');
+        });
+        
+        // 取消所有标签激活状态
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // 激活选中的标签和卡片
+        document.getElementById('tab-' + tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    // 头像裁剪逻辑
+    (function() {
+        var input = document.getElementById('avatar-input');
+        var wrapper = document.getElementById('cropper-wrapper');
+        var canvas = document.getElementById('cropper-canvas');
+        var zoom = document.getElementById('cropper-zoom');
+        var form = document.getElementById('avatar-form');
+        var currentView = document.getElementById('current-avatar-view');
+        var placeholder = document.getElementById('avatar-placeholder');
+        var base64Input = document.getElementById('avatar-base64');
+        
+        if (!input || !wrapper || !canvas || !zoom || !form) {
+            return;
+        }
+        
+        var ctx = canvas.getContext('2d');
+        var img = new Image();
+        var imgReady = false;
+        var dragging = false;
+        var lastX = 0;
+        var lastY = 0;
+        var scale = 1;
+        var minScale = 1;
+        var offsetX = 0;
+        var offsetY = 0;
+        
+        function clampOffsets() {
+            var maxX = 0;
+            var maxY = 0;
+            var minX = canvas.width - img.width * scale;
+            var minY = canvas.height - img.height * scale;
             
-            if (!realName || !studentId || !phone || !wechat) {
-                e.preventDefault();
-                alert('请填写所有必填项');
-                return false;
+            if (img.width * scale < canvas.width) {
+                minX = maxX = (canvas.width - img.width * scale) / 2;
+            }
+            if (img.height * scale < canvas.height) {
+                minY = maxY = (canvas.height - img.height * scale) / 2;
             }
             
-            return true;
+            offsetX = Math.min(maxX, Math.max(minX, offsetX));
+            offsetY = Math.min(maxY, Math.max(minY, offsetY));
+        }
+        
+        function draw() {
+            if (!imgReady) {
+                return;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+        }
+        
+        function fitImage() {
+            minScale = Math.max(canvas.width / img.width, canvas.height / img.height);
+            scale = minScale;
+            offsetX = (canvas.width - img.width * scale) / 2;
+            offsetY = (canvas.height - img.height * scale) / 2;
+            
+            zoom.min = minScale.toFixed(4);
+            zoom.max = (minScale * 3).toFixed(4);
+            zoom.value = scale.toFixed(4);
+            
+            clampOffsets();
+            draw();
+        }
+        
+        function setScale(newScale) {
+            var centerX = canvas.width / 2;
+            var centerY = canvas.height / 2;
+            var imgCenterX = (centerX - offsetX) / scale;
+            var imgCenterY = (centerY - offsetY) / scale;
+            
+            scale = newScale;
+            
+            offsetX = centerX - imgCenterX * scale;
+            offsetY = centerY - imgCenterY * scale;
+            
+            clampOffsets();
+            draw();
+        }
+        
+        input.addEventListener('change', function() {
+            var file = input.files && input.files[0];
+            if (!file) {
+                return;
+            }
+            
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                img.onload = function() {
+                    imgReady = true;
+                    wrapper.style.display = 'block';
+                    if (currentView) currentView.style.display = 'none';
+                    if (placeholder) placeholder.style.display = 'none';
+                    fitImage();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         });
-    }
-});
+        
+        zoom.addEventListener('input', function() {
+            if (!imgReady) return;
+            setScale(parseFloat(zoom.value));
+        });
+        
+        canvas.addEventListener('pointerdown', function(e) {
+            if (!imgReady) return;
+            dragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            canvas.setPointerCapture(e.pointerId);
+            e.preventDefault(); // 防止滚动
+        });
+        
+        canvas.addEventListener('pointermove', function(e) {
+            if (!dragging || !imgReady) return;
+            var dx = e.clientX - lastX;
+            var dy = e.clientY - lastY;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            
+            offsetX += dx;
+            offsetY += dy;
+            
+            clampOffsets();
+            draw();
+        });
+        
+        canvas.addEventListener('pointerup', function(e) {
+            dragging = false;
+        });
+        
+        // 表单提交前将Canvas内容转换为Base64
+        form.addEventListener('submit', function(e) {
+            if (imgReady) {
+                var dataURL = canvas.toDataURL('image/jpeg', 0.9);
+                base64Input.value = dataURL;
+            }
+        });
+    })();
 </script>
-
 {% endblock %}

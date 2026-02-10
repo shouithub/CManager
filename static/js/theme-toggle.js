@@ -82,18 +82,9 @@
             document.documentElement.animate(
                 { clipPath: [start, end] },
                 {
-                    duration: 480,
+                    duration: 1000,
                     easing: 'cubic-bezier(0.2, 0, 0, 1)',
                     pseudoElement: '::view-transition-new(root)'
-                }
-            );
-
-            document.documentElement.animate(
-                { clipPath: [end, start] },
-                {
-                    duration: 480,
-                    easing: 'cubic-bezier(0.2, 0, 0, 1)',
-                    pseudoElement: '::view-transition-old(root)'
                 }
             );
         });

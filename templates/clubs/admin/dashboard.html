@@ -45,12 +45,26 @@
         font-size: 0.875rem;
     }
     
+    .dashboard-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: var(--md3-spacing-xl);
+        align-items: start;
+    }
+
+    .dashboard-main,
+    .dashboard-side {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xl);
+    }
+    
     /* 统计卡片网格 */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         gap: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-2xl);
+        margin-bottom: 0;
     }
     
     .stat-card {
@@ -82,7 +96,7 @@
         background: var(--md3-surface-container);
         border-radius: var(--md3-radius-xl);
         padding: var(--md3-spacing-2xl);
-        margin-bottom: var(--md3-spacing-xl);
+        margin-bottom: 0;
         border: 1px solid var(--md3-outline-variant);
         box-shadow: var(--md3-elevation-1);
     }
@@ -108,6 +122,26 @@
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
         gap: var(--md3-spacing-lg);
         padding: var(--md3-spacing-xs);
+    }
+
+    .actions-grid.compact {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--md3-spacing-md);
+        padding: 0;
+    }
+
+    .actions-grid.compact .action-btn {
+        min-height: 88px;
+        padding: var(--md3-spacing-md);
+        border-radius: var(--md3-radius-lg);
+    }
+
+    .actions-grid.compact .action-btn .material-icons {
+        font-size: 1.5rem;
+    }
+
+    .actions-grid.compact .action-btn span:not(.material-icons) {
+        font-size: 0.8125rem;
     }
     
     .action-btn {
@@ -381,6 +415,10 @@
             /* 增加底部内边距，防止被底栏遮挡 */
             padding-bottom: 120px;
         }
+
+        .dashboard-layout {
+            grid-template-columns: 1fr;
+        }
         
         .page-header {
             flex-direction: column;
@@ -408,6 +446,10 @@
         .actions-grid {
             grid-template-columns: repeat(3, 1fr);
             gap: var(--md3-spacing-sm);
+        }
+
+        .actions-grid.compact {
+            grid-template-columns: repeat(3, 1fr);
         }
 
         .action-btn {
@@ -461,139 +503,148 @@
         </div>
     </div>
     
-    <!-- 统计信息 -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-value">{{ total_users }}</div>
-            <div class="stat-label">系统用户总数</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ total_clubs }}</div>
-            <div class="stat-label">已注册社团数</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ published_announcements }}</div>
-            <div class="stat-label">已发布公告数</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ pending_staff_count }}</div>
-            <div class="stat-label">待审核干事申请</div>
-        </div>
-    </div>
-    
-    <!-- 快速操作 -->
-    <div class="card">
-        <div class="actions-grid">
-            <a href="{% url 'clubs:manage_departments' %}" class="action-btn">
-                <span class="material-icons">category</span>
-                <span>管理部门介绍</span>
-            </a>
-            <a href="{% url 'clubs:manage_carousel' %}" class="action-btn">
-                <span class="material-icons">view_carousel</span>
-                <span>管理轮播图</span>
-            </a>
-            <a href="{% url 'clubs:manage_material_requirements' %}" class="action-btn">
-                <span class="material-icons">description</span>
-                <span>修改材料</span>
-            </a>
-            <a href="{% url 'clubs:admin_room_list' %}" class="action-btn">
-                <span class="material-icons">meeting_room</span>
-                <span>房间管理</span>
-            </a>
-            <a href="{% url 'clubs:manage_smtp_config' %}" class="action-btn">
-                <span class="material-icons">mail</span>
-                <span>邮箱设置</span>
-            </a>
-            <a href="{% url 'clubs:manage_favicon' %}" class="action-btn">
-                <span class="material-icons">image</span>
-                <span>网站图标</span>
-            </a>
-            <a href="{% url 'clubs:index' %}" class="action-btn">
-                <span class="material-icons">home</span>
-                <span>返回首页</span>
-            </a>
-        </div>
-    </div>
-    
-    <!-- 用户角色分布 -->
-    <div class="card">
-        <h3>
-            <span class="material-icons">pie_chart</span>
-            用户角色分布
-        </h3>
-        <div class="role-grid">
-            <div class="role-item president">
-                <span class="role-label">社长</span>
-                <span class="role-value">{{ presidents_count }}</span>
+    <div class="dashboard-layout">
+        <div class="dashboard-main">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{{ total_users }}</div>
+                    <div class="stat-label">系统用户总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ total_clubs }}</div>
+                    <div class="stat-label">已注册社团数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ published_announcements }}</div>
+                    <div class="stat-label">已发布公告数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ pending_registrations }}</div>
+                    <div class="stat-label">待审核社团注册</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ pending_staff_count }}</div>
+                    <div class="stat-label">待审核干事申请</div>
+                </div>
             </div>
-            <div class="role-item staff">
-                <span class="role-label">干事</span>
-                <span class="role-value">{{ staff_count }}</span>
-            </div>
-            <div class="role-item admin">
-                <span class="role-label">管理员</span>
-                <span class="role-value">{{ admins_count }}</span>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 最近发布的公告 -->
-    {% if announcements %}
-    <div class="card">
-        <h3>
-            <span class="material-icons">notifications</span>
-            最近发布的公告
-        </h3>
-        <div class="announcement-list">
-            {% for announcement in announcements %}
-            <div class="announcement-item">
-                <div class="announcement-top">
-                    <div class="announcement-info">
-                        <div class="announcement-title">{{ announcement.title }}</div>
-                        <div class="announcement-meta">
-                            <span>发布于 {{ announcement.created_at|date:"Y-m-d H:i" }}</span>
-                            <span class="status-badge {{ announcement.status }}">
-                                <span class="material-icons">
-                                    {% if announcement.status == 'published' %}check_circle
-                                    {% elif announcement.status == 'draft' %}edit_note
-                                    {% else %}archive{% endif %}
-                                </span>
-                                {% if announcement.status == 'published' %}已发布
-                                {% elif announcement.status == 'draft' %}草稿
-                                {% else %}已归档{% endif %}
-                            </span>
+            
+            {% if announcements %}
+            <div class="card">
+                <h3>
+                    <span class="material-icons">notifications</span>
+                    最近发布的公告
+                </h3>
+                <div class="announcement-list">
+                    {% for announcement in announcements %}
+                    <div class="announcement-item">
+                        <div class="announcement-top">
+                            <div class="announcement-info">
+                                <div class="announcement-title">{{ announcement.title }}</div>
+                                <div class="announcement-meta">
+                                    <span>发布于 {{ announcement.created_at|date:"Y-m-d H:i" }}</span>
+                                    <span class="status-badge {{ announcement.status }}">
+                                        <span class="material-icons">
+                                            {% if announcement.status == 'published' %}check_circle
+                                            {% elif announcement.status == 'draft' %}edit_note
+                                            {% else %}archive{% endif %}
+                                        </span>
+                                        {% if announcement.status == 'published' %}已发布
+                                        {% elif announcement.status == 'draft' %}草稿
+                                        {% else %}已归档{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="announcement-actions">
+                                <a href="{% url 'clubs:edit_announcement' announcement.id %}" class="btn-action btn-edit">
+                                    <span class="material-icons">edit</span>
+                                    编辑
+                                </a>
+                                <form method="post" action="{% url 'clubs:delete_announcement' announcement.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-action btn-delete" onclick="return confirm('确定要删除此公告吗？');">
+                                        <span class="material-icons">delete</span>
+                                        删除
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% if announcement.content %}
+                        <p class="announcement-excerpt">{{ announcement.content|truncatewords:28 }}</p>
+                        {% endif %}
+                        <div class="announcement-footer">
+                            {% if announcement.attachment %}
+                            <a href="{{ announcement.attachment.url }}" class="attachment-link" target="_blank" rel="noopener">
+                                <span class="material-icons">attach_file</span>
+                                {{ announcement.attachment.name|slice:"-24:" }}
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
-                    <div class="announcement-actions">
-                        <a href="{% url 'clubs:edit_announcement' announcement.id %}" class="btn-action btn-edit">
-                            <span class="material-icons">edit</span>
-                            编辑
-                        </a>
-                        <form method="post" action="{% url 'clubs:delete_announcement' announcement.id %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-action btn-delete" onclick="return confirm('确定要删除此公告吗？');">
-                                <span class="material-icons">delete</span>
-                                删除
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                {% if announcement.content %}
-                <p class="announcement-excerpt">{{ announcement.content|truncatewords:28 }}</p>
-                {% endif %}
-                <div class="announcement-footer">
-                    {% if announcement.attachment %}
-                    <a href="{{ announcement.attachment.url }}" class="attachment-link" target="_blank" rel="noopener">
-                        <span class="material-icons">attach_file</span>
-                        {{ announcement.attachment.name|slice:"-24:" }}
-                    </a>
-                    {% endif %}
+                    {% endfor %}
                 </div>
             </div>
-            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="dashboard-side">
+            <div class="card">
+                <h3>
+                    <span class="material-icons">bolt</span>
+                    快速操作
+                </h3>
+                <div class="actions-grid compact">
+                    <a href="{% url 'clubs:manage_departments' %}" class="action-btn">
+                        <span class="material-icons">category</span>
+                        <span>管理部门介绍</span>
+                    </a>
+                    <a href="{% url 'clubs:manage_carousel' %}" class="action-btn">
+                        <span class="material-icons">view_carousel</span>
+                        <span>管理轮播图</span>
+                    </a>
+                    <a href="{% url 'clubs:manage_material_requirements' %}" class="action-btn">
+                        <span class="material-icons">description</span>
+                        <span>修改材料</span>
+                    </a>
+                    <a href="{% url 'clubs:admin_room_list' %}" class="action-btn">
+                        <span class="material-icons">meeting_room</span>
+                        <span>房间管理</span>
+                    </a>
+                    <a href="{% url 'clubs:manage_smtp_config' %}" class="action-btn">
+                        <span class="material-icons">mail</span>
+                        <span>邮箱设置</span>
+                    </a>
+                    <a href="{% url 'clubs:manage_favicon' %}" class="action-btn">
+                        <span class="material-icons">image</span>
+                        <span>网站图标</span>
+                    </a>
+                    <a href="{% url 'clubs:index' %}" class="action-btn">
+                        <span class="material-icons">home</span>
+                        <span>返回首页</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>
+                    <span class="material-icons">pie_chart</span>
+                    用户角色分布
+                </h3>
+                <div class="role-grid">
+                    <div class="role-item president">
+                        <span class="role-label">社长</span>
+                        <span class="role-value">{{ presidents_count }}</span>
+                    </div>
+                    <div class="role-item staff">
+                        <span class="role-label">干事</span>
+                        <span class="role-value">{{ staff_count }}</span>
+                    </div>
+                    <div class="role-item admin">
+                        <span class="role-label">管理员</span>
+                        <span class="role-value">{{ admins_count }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    {% endif %}
 </div>
 
 {% endblock %}

@@ -143,13 +143,14 @@ class SMTPConfigAdmin(admin.ModelAdmin):
 
 @admin.register(CarouselImage)
 class CarouselImageAdmin(admin.ModelAdmin):
-    list_display = ('title', 'uploaded_by', 'uploaded_at', 'is_active')
+    list_display = ('title', 'order', 'uploaded_by', 'uploaded_at', 'is_active')
+    list_editable = ('order', 'is_active')
     list_filter = ('is_active', 'uploaded_at')
     search_fields = ('title', 'description')
     readonly_fields = ('uploaded_at',)
     fieldsets = (
         ('基本信息', {
-            'fields': ('image', 'title', 'description', 'is_active')
+            'fields': ('image', 'title', 'order', 'description', 'link', 'is_active')
         }),
         ('上传信息', {
             'fields': ('uploaded_by', 'uploaded_at'),

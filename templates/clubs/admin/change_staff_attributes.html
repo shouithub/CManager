@@ -1,6 +1,6 @@
 {% extends 'clubs/base.html' %}
 
-{% block title %}修改干事属性{% endblock %}
+{% block title %}修改属性{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -210,7 +210,7 @@
     <div class="card">
         <div class="card-header">
             <span class="material-icons">person_add</span>
-            <h2>修改干事属性</h2>
+            <h2>修改属性</h2>
         </div>
 
         {% if messages %}
@@ -223,14 +223,27 @@
 
         <div class="info-message">
             <span class="material-icons">info</span>
-            <span>为干事分配部门和职级，仅对干事角色有效</span>
+            <span>为用户分配部门和职级</span>
         </div>
 
         <!-- 用户信息 -->
         <div class="user-info">
             <div class="user-info-item">
                 <span class="user-info-label">登录用户名：</span>
-                <span class="user-info-value">{{ user.username }}</span>
+                <span class="user-info-value">
+                    <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                            {% if profile.avatar %}
+                                <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;">
+                                    {{ profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <span>{{ user.username }}</span>
+                    </a>
+                </span>
             </div>
             <div class="user-info-item">
                 <span class="user-info-label">真实姓名：</span>
@@ -265,13 +278,13 @@
                 </label>
                 <select class="form-select" name="department" required>
                     <option value="">-- 选择部门 --</option>
-                    {% for value, display in department_choices %}
-                        <option value="{{ value }}" {% if profile.department_link.id == value %}selected{% endif %}>
-                            {{ display }}
+                    {% for dept in departments %}
+                        <option value="{{ dept.id }}" {% if profile.department_link and profile.department_link.id == dept.id %}selected{% endif %}>
+                            {{ dept.name }}
                         </option>
                     {% endfor %}
                 </select>
-                <span class="form-help">选择干事所属的部门</span>
+                <span class="form-help">选择所属的部门</span>
             </div>
 
             <!-- 职级选择 -->
@@ -287,7 +300,7 @@
                         </option>
                     {% endfor %}
                 </select>
-                <span class="form-help">选择干事在部门中的职级</span>
+                <span class="form-help">选择在部门中的职级</span>
             </div>
 
             <!-- 操作按钮 -->

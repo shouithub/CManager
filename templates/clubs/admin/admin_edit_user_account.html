@@ -300,9 +300,15 @@
 
 {% block admin_main %}
     <div class="account-header">
-        <div class="user-avatar-large">{{ target_user.username|slice:":1"|upper }}</div>
+        <a href="{% url 'clubs:user_detail' target_user.id %}" style="text-decoration: none; color: inherit;">
+            {% if target_user.profile.avatar %}
+                <img src="{{ target_user.profile.avatar.url }}" class="user-avatar-large" style="object-fit: cover; display: block; background: none;">
+            {% else %}
+                <div class="user-avatar-large">{{ target_user.profile.get_full_name|slice:":1"|default:target_user.username|slice:":1"|upper }}</div>
+            {% endif %}
+        </a>
         <div class="account-header-info">
-            <h1>{{ target_user.username }}</h1>
+            <h1><a href="{% url 'clubs:user_detail' target_user.id %}" style="text-decoration: none; color: inherit;">{{ target_user.username }}</a></h1>
             <div class="account-info-row">
                 <span class="account-info-label">全名：</span>
                 <span class="account-info-value">{{ target_user.profile.get_full_name|default:"未设置" }}</span>

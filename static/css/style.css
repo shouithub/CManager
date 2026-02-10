@@ -268,7 +268,6 @@ h1, h2, h3, h4, h5, h6 {
     transition: none !important;
 }
 
-::view-transition-old(root),
 ::view-transition-new(root) {
     animation: none;
     mix-blend-mode: normal;
@@ -412,6 +411,10 @@ a:hover {
     color: var(--md3-on-primary-container);
 }
 
+a.action-card:hover {
+    text-decoration: none;
+}
+
 a:focus-visible {
     outline: 2px solid var(--md3-primary);
 }
@@ -495,6 +498,12 @@ a:focus-visible {
     overflow: hidden;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover,
+.action-btn:hover,
+.btn-action:hover {
+    text-decoration: none;
 }
 
 .btn:disabled {

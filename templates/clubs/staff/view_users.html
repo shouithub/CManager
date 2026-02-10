@@ -80,9 +80,25 @@
                 <tbody>
                     {% for user in users %}
                     <tr>
-                        <td class="text-strong" data-label="用户名">{{ user.username }}</td>
-                        <td data-label="邮箱">{{ user.email|default:'--' }}</td>
-                        <td data-label="全名">{{ user.profile.get_full_name|default:"--" }}</td>
+                        <td data-label="用户名">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                    {% if user.profile.avatar %}
+                                        <img src="{{ user.profile.avatar.url }}" alt="{{ user.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                            {{ user.profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {{ user.username }}
+                            </div>
+                        </td>
+                        <td data-label="真实姓名">
+                            <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit; font-weight: 600;">
+                                {{ user.profile.get_full_name|default:"--" }}
+                            </a>
+                        </td>
                         <td data-label="电话">{{ user.profile.phone|default:"--" }}</td>
                         <td data-label="微信">{{ user.profile.wechat|default:"--" }}</td>
                         <td data-label="政治面貌">

@@ -9,61 +9,106 @@
 {% endblock %}
 
 {% block content %}
-<div class="settings-container">
-    <div class="settings-page-header">
-        {% if is_admin_view %}
-            <h1>🔐 编辑用户账户</h1>
-            <p class="settings-page-subtitle">正在编辑：<strong>{{ target_user.username }}</strong></p>
-        {% else %}
-            <h1>🔐 修改账户设置</h1>
-            <p class="settings-page-subtitle">用户名：<strong>{{ user.username }}</strong></p>
-        {% endif %}
+<div class="container container-md" style="padding-top: 24px; padding-bottom: 60px;">
+    <!-- Page Header -->
+    <div class="page-header">
+        <span class="material-icons">
+            {% if is_admin_view %}manage_accounts{% else %}settings{% endif %}
+        </span>
+        <div class="page-header-content">
+            {% if is_admin_view %}
+                <h1>编辑用户账户</h1>
+                <div class="subtitle" style="display: flex; align-items: center; gap: 8px;">
+                    正在编辑：
+                    <a href="{% url 'clubs:user_detail' target_user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                            {% if target_user.profile.avatar %}
+                                <img src="{{ target_user.profile.avatar.url }}" alt="{{ target_user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">
+                                    {{ target_user.profile.get_full_name|slice:":1"|default:target_user.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <strong>{{ target_user.username }}</strong>
+                    </a>
+                </div>
+            {% else %}
+                <h1>修改账户设置</h1>
+                <div class="subtitle" style="display: flex; align-items: center; gap: 8px;">
+                    用户名：
+                    <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">
+                                    {{ user.profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <strong>{{ user.username }}</strong>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
     </div>
-    
+
+    <!-- Messages -->
     {% if messages %}
-    <div class="messages-container">
-        {% for message in messages %}
-        <div class="message {{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
+        <div style="margin-bottom: 24px;">
+            {% for message in messages %}
+                <div class="msg-{{ message.tags|default:'info' }}" style="margin-bottom: 8px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
     {% endif %}
     
     {% if errors %}
-    <div class="error-list">
-        {% for error in errors %}
-        <div class="notice notice-error">
-            <span class="material-icons">cancel</span> {{ error }}
+        <div style="margin-bottom: 24px;">
+            {% for error in errors %}
+                <div class="msg-error" style="margin-bottom: 8px;">
+                    <span class="material-icons" style="vertical-align: middle; font-size: 1.2em; margin-right: 4px;">error</span>
+                    {{ error }}
+                </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
     {% endif %}
     
     {% if success_messages %}
-    <div class="success-list">
-        {% for msg in success_messages %}
-        <div class="notice notice-success">
-            ✓ {{ msg }}
+        <div style="margin-bottom: 24px;">
+            {% for msg in success_messages %}
+                <div class="msg-success" style="margin-bottom: 8px;">
+                    <span class="material-icons" style="vertical-align: middle; font-size: 1.2em; margin-right: 4px;">check_circle</span>
+                    {{ msg }}
+                </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
     {% endif %}
-    
-    <!-- 修改用户名 -->
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <h3><span class="material-icons">person</span> 修改用户名</h3>
+
+    <!-- 1. 修改用户名 -->
+    <div class="admin-card" style="margin-bottom: 24px;">
+        <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--md3-outline-variant);">
+            <h3 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons" style="color: var(--md3-primary);">person</span>
+                修改用户名
+            </h3>
         </div>
         
-        <form method="post" class="settings-card-body">
+        <form method="post">
             {% csrf_token %}
             <input type="hidden" name="action" value="change_username">
             
-            <div class="form-group">
-                <label for="new_username">新用户名 <span class="required-indicator">*</span></label>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="new_username" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                    新用户名 <span style="color: var(--md3-error);">*</span>
+                </label>
                 <input 
                     type="text" 
                     id="new_username" 
                     name="new_username" 
+                    class="form-input"
                     required
                     minlength="3"
                     maxlength="150"
@@ -75,122 +120,140 @@
             </div>
             
             {% if not is_admin_view %}
-            <div class="form-group">
-                <label for="password_username">密码 <span class="required-indicator">*</span></label>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="password_username" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                    密码 <span style="color: var(--md3-error);">*</span>
+                </label>
                 <input 
                     type="password" 
                     id="password_username" 
                     name="password" 
+                    class="form-input"
                     required
                     placeholder="输入当前密码以验证"
                 >
-                <small class="form-hint">
-                    为了安全起见,修改用户名需要验证密码
-                </small>
+                <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-top: 4px;">
+                    为了安全起见，修改用户名需要验证密码
+                </div>
             </div>
             {% endif %}
             
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    {% if is_admin_view %}
-                        ✓ 确认修改
-                    {% else %}
-                        ✓ 确认修改用户名
-                    {% endif %}
-                </button>
                 {% if is_admin_view %}
-                <a href="{% url 'clubs:manage_users' %}" class="btn btn-outlined">
-                    ❌ 取消
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
+                    取消
                 </a>
                 {% endif %}
+                <button type="submit" class="btn btn-filled">
+                    <span class="material-icons">check</span>
+                    {% if is_admin_view %}确认修改{% else %}确认修改用户名{% endif %}
+                </button>
             </div>
         </form>
     </div>
-    
-    <!-- 修改密码 -->
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <h3>🔑 {% if is_admin_view %}重置密码{% else %}修改密码{% endif %}</h3>
+
+    <!-- 2. 修改密码 -->
+    <div class="admin-card" style="margin-bottom: 24px;">
+        <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--md3-outline-variant);">
+            <h3 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons" style="color: var(--md3-primary);">key</span>
+                {% if is_admin_view %}重置密码{% else %}修改密码{% endif %}
+            </h3>
         </div>
         
-        <form method="post" class="settings-card-body">
+        <form method="post">
             {% csrf_token %}
             <input type="hidden" name="action" value="change_password">
             
             {% if not is_admin_view %}
-            <div class="form-group">
-                <label for="old_password">原密码 <span class="required-indicator">*</span></label>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="old_password" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                    原密码 <span style="color: var(--md3-error);">*</span>
+                </label>
                 <input 
                     type="password" 
                     id="old_password" 
                     name="old_password" 
+                    class="form-input"
                     required
                     placeholder="输入原密码"
                 >
             </div>
             {% endif %}
             
-            <div class="form-group">
-                <label for="new_password">新密码 <span class="required-indicator">*</span></label>
-                <input 
-                    type="password" 
-                    id="new_password" 
-                    name="new_password" 
-                    required
-                    minlength="6"
-                    placeholder="输入新密码（至少6个字符）"
-                >
-            </div>
-            
-            <div class="form-group">
-                <label for="confirm_password">确认新密码 <span class="required-indicator">*</span></label>
-                <input 
-                    type="password" 
-                    id="confirm_password" 
-                    name="confirm_password" 
-                    required
-                    minlength="6"
-                    placeholder="再次输入新密码"
-                >
+            <div class="grid-2">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="new_password" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                        新密码 <span style="color: var(--md3-error);">*</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        id="new_password" 
+                        name="new_password" 
+                        class="form-input"
+                        required
+                        minlength="6"
+                        placeholder="输入新密码（至少6个字符）"
+                    >
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="confirm_password" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                        确认新密码 <span style="color: var(--md3-error);">*</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        class="form-input"
+                        required
+                        minlength="6"
+                        placeholder="再次输入新密码"
+                    >
+                </div>
             </div>
             
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    {% if is_admin_view %}
-                        ✓ 确认重置密码
-                    {% else %}
-                        ✓ 确认修改密码
-                    {% endif %}
-                </button>
                 {% if is_admin_view %}
-                <a href="{% url 'clubs:manage_users' %}" class="btn btn-outlined">
-                    <span class="material-icons">close</span> 取消
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
+                    取消
                 </a>
                 {% endif %}
+                <button type="submit" class="btn btn-filled">
+                    <span class="material-icons">check</span>
+                    {% if is_admin_view %}确认重置密码{% else %}确认修改密码{% endif %}
+                </button>
             </div>
             
-            <div class="settings-notice-warning">
-                <strong><span class="material-icons" style="vertical-align: middle; font-size: 1em;">warning</span> 提示：</strong>{% if is_admin_view %}重置密码后，用户需要使用新密码重新登录{% else %}修改密码后需要重新登录{% endif %}
+            <div style="margin-top: 16px; padding: 12px; background-color: var(--md3-warning-container); color: var(--md3-on-warning-container); border-radius: 8px; font-size: 0.875rem; display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons">warning</span>
+                <span>{% if is_admin_view %}重置密码后，用户需要使用新密码重新登录{% else %}修改密码后需要重新登录{% endif %}</span>
             </div>
         </form>
     </div>
-    
-    <!-- 修改角色 - 仅管理员可见 -->
+
     {% if is_admin_view %}
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <h3>🔧 修改角色</h3>
+    <!-- 3. 修改角色 -->
+    <div class="admin-card" style="margin-bottom: 24px;">
+        <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--md3-outline-variant);">
+            <h3 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons" style="color: var(--md3-primary);">manage_accounts</span>
+                修改角色
+            </h3>
         </div>
         
-        <form method="post" class="settings-card-body">
+        <form method="post">
             {% csrf_token %}
             <input type="hidden" name="action" value="change_role">
             
-            <div class="form-group">
-                <label for="new_role">新角色 <span class="required-indicator">*</span></label>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="new_role" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                    新角色 <span style="color: var(--md3-error);">*</span>
+                </label>
                 <select 
                     id="new_role" 
                     name="new_role" 
+                    class="form-select"
                     required
                 >
                     {% for role_code, role_name in ROLE_CHOICES %}
@@ -202,93 +265,107 @@
             </div>
             
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    ✓ 确认修改角色
-                </button>
-                <a href="{% url 'clubs:manage_users' %}" class="btn btn-outlined">
-                    <span class="material-icons">close</span> 取消
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
+                    取消
                 </a>
+                <button type="submit" class="btn btn-filled">
+                    <span class="material-icons">check</span>
+                    确认修改角色
+                </button>
             </div>
         </form>
     </div>
-    {% endif %}
-    
-    <!-- 修改用户详细信息 - 仅管理员可见 -->
-    {% if is_admin_view %}
-    <div class="settings-card">
-        <div class="settings-card-header">
-            <h3><span class="material-icons" style="vertical-align: middle;">assignment</span> 修改用户详细信息</h3>
+
+    <!-- 4. 修改详细信息 -->
+    <div class="admin-card" style="margin-bottom: 24px;">
+        <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--md3-outline-variant);">
+            <h3 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons" style="color: var(--md3-primary);">assignment_ind</span>
+                修改用户详细信息
+            </h3>
         </div>
         
-        <form method="post" class="settings-card-body">
+        <form method="post">
             {% csrf_token %}
             <input type="hidden" name="action" value="change_user_info">
             
-            <div class="form-group">
-                <label for="real_name">真实姓名 <span class="required-indicator">*</span></label>
-                <input 
-                    type="text" 
-                    id="real_name" 
-                    name="real_name" 
-                    value="{% if target_user.profile %}{{ target_user.profile.real_name }}{% endif %}"
-                    placeholder="输入真实姓名"
-                    required
-                >
+            <div class="grid-2">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="real_name" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                        真实姓名 <span style="color: var(--md3-error);">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="real_name" 
+                        name="real_name" 
+                        class="form-input"
+                        value="{% if target_user.profile %}{{ target_user.profile.real_name }}{% endif %}"
+                        placeholder="输入真实姓名"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="email" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                        邮箱 <span style="color: var(--md3-error);">*</span>
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input"
+                        value="{{ target_user.email }}"
+                        placeholder="输入邮箱"
+                        required
+                    >
+                </div>
             </div>
             
-            <div class="form-group">
-                <label for="email">邮箱 <span class="required-indicator">*</span></label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    value="{{ target_user.email }}"
-                    placeholder="输入邮箱"
-                    required
-                >
-            </div>
-            
-            <div class="settings-form-row">
-                <div class="form-group">
-                    <label for="student_id">学号</label>
+            <div class="grid-2">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="student_id" style="display: block; margin-bottom: 8px; font-weight: 500;">学号</label>
                     <input 
                         type="text" 
                         id="student_id" 
                         name="student_id" 
+                        class="form-input"
                         value="{% if target_user.profile %}{{ target_user.profile.student_id }}{% endif %}"
                         placeholder="输入学号"
                     >
                 </div>
                 
-                <div class="form-group">
-                    <label for="phone">电话</label>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="phone" style="display: block; margin-bottom: 8px; font-weight: 500;">电话</label>
                     <input 
                         type="text" 
                         id="phone" 
                         name="phone" 
+                        class="form-input"
                         value="{% if target_user.profile %}{{ target_user.profile.phone }}{% endif %}"
                         placeholder="输入电话号码"
                     >
                 </div>
             </div>
             
-            <div class="settings-form-row">
-                <div class="form-group">
-                    <label for="wechat">微信</label>
+            <div class="grid-2">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="wechat" style="display: block; margin-bottom: 8px; font-weight: 500;">微信</label>
                     <input 
                         type="text" 
                         id="wechat" 
                         name="wechat" 
+                        class="form-input"
                         value="{% if target_user.profile %}{{ target_user.profile.wechat }}{% endif %}"
                         placeholder="输入微信号"
                     >
                 </div>
                 
-                <div class="form-group">
-                    <label for="political_status">政治面貌</label>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="political_status" style="display: block; margin-bottom: 8px; font-weight: 500;">政治面貌</label>
                     <select 
                         id="political_status" 
                         name="political_status"
+                        class="form-select"
                     >
                         {% for status_code, status_name in POLITICAL_STATUS_CHOICES %}
                             <option value="{{ status_code }}" {% if target_user.profile.political_status == status_code %}selected{% endif %}>
@@ -300,91 +377,42 @@
             </div>
             
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    ✓ 确认修改用户信息
-                </button>
-                <a href="{% url 'clubs:manage_users' %}" class="btn btn-outlined">
-                    <span class="material-icons">close</span> 取消
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
+                    取消
                 </a>
+                <button type="submit" class="btn btn-filled">
+                    <span class="material-icons">check</span>
+                    确认修改详细信息
+                </button>
             </div>
         </form>
     </div>
-    
 
-    {% endif %}
-    
-    <!-- 删除账户 - 仅用户自己可见 -->
-    {% if not is_admin_view %}
-    <div class="settings-card settings-card-danger">
-        <div class="settings-card-header">
-            <h3><span class="material-icons" style="vertical-align: middle;">warning</span> 删除账户</h3>
+    <!-- 5. 危险区域 -->
+    <div class="admin-card" style="margin-bottom: 24px; border: 1px solid var(--md3-error);">
+        <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--md3-error-container);">
+            <h3 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px; color: var(--md3-error);">
+                <span class="material-icons">warning</span>
+                危险区域
+            </h3>
         </div>
         
-        <div class="settings-card-body">
-            <div class="settings-danger-notice">
-                <strong><span class="material-icons" style="vertical-align: middle; font-size: 1em;">warning</span> 危险操作！</strong>
-                <p>删除账户是不可逆转的操作，将导致以下后果：</p>
-                <ul>
-                    {% if user.profile.role == 'admin' %}
-                    <li>您的所有个人信息将被永久删除</li>
-                    <li>您作为管理员的所有权限将被移除</li>
-                    <li>所有相关的操作记录将被清除</li>
-                    {% elif user.profile.role == 'president' %}
-                    <li>您的所有个人信息将被永久删除</li>
-                    <li>您管理的社团将失去负责人</li>
-                    <li>您提交的年审记录将被保留</li>
-                    <li>您的审核权限将被移除</li>
-                    {% elif user.profile.role == 'staff' %}
-                    <li>您的所有个人信息将被永久删除</li>
-                    <li>您在所有社团中的干事身份将被移除</li>
-                    <li>您的所有相关数据将被完整清除</li>
-                    {% else %}
-                    <li>您的所有个人信息将被永久删除</li>
-                    {% endif %}
-                    <li>您将无法恢复此账户的任何数据</li>
-                </ul>
-            </div>
-            
-            <p class="settings-confirm-text">请输入您的用户名 <strong>{{ user.username }}</strong> 确认您要删除此账户：</p>
-            
-            <form method="post" action="{% url 'clubs:delete_account' %}">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label for="confirm_username">确认用户名 <span class="required-indicator">*</span></label>
-                    <input 
-                        type="text" 
-                        id="confirm_username" 
-                        name="confirm_username" 
-                        required
-                        placeholder="输入用户名以确认删除" 
-                    >
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-error">
-                        🗑️ 确认删除账户
-                    </button>
-                    <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-outlined">
-                        <span class="material-icons">close</span> 取消
-                    </a>
-                </div>
-            </form>
+        <div style="margin-bottom: 16px; color: var(--md3-on-surface-variant);">
+            <p>删除用户账户是不可恢复的操作。所有与该用户相关的数据（如社团成员关系、审核记录等）可能会被永久删除或受到影响。</p>
         </div>
+        
+        <form method="post" onsubmit="return confirm('确定要永久删除此用户账户吗？此操作无法撤销！');">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_user">
+            
+            <div class="form-actions" style="justify-content: flex-start;">
+                <button type="submit" class="btn" style="background-color: var(--md3-error); color: var(--md3-on-error); border: none;">
+                    <span class="material-icons">delete_forever</span>
+                    删除用户账户
+                </button>
+            </div>
+        </form>
     </div>
     {% endif %}
-    
-    <!-- 返回按钮 -->
-    <div class="settings-back-container">
-        {% if is_admin_view %}
-            <a href="{% url 'clubs:manage_users' %}" class="btn btn-outlined">
-                ← 返回用户管理
-            </a>
-        {% else %}
-            <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-outlined">
-                ← 返回个人仪表盘
-            </a>
-        {% endif %}
-    </div>
 </div>
 {% endblock %}

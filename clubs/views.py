@@ -350,6 +350,94 @@ def download_file(request):
         return response
 
 
+
+@login_required(login_url='clubs:login')
+def user_detail(request, user_id):
+    """用户详情页 - 显示用户公开信息及关联社团/干事"""
+    target_user = get_object_or_404(User, pk=user_id)
+    from .models import StaffClubRelation, Officer
+    
+    context = {
+        'target_user': target_user,
+        'responsible_clubs': [],
+        'affiliated_clubs': [],
+        'affiliated_clubs_with_staff': [],
+        'responsible_staff_list': [],
+        'is_staff_of_viewing_president': False,
+    }
+    
+    try:
+        profile = target_user.profile
+        
+        # 检查是否为当前查看者(社长)负责的社团的干事
+        if request.user.is_authenticated and hasattr(request.user, 'profile') and request.user.profile.role == 'president':
+            if profile.role == 'staff':
+                # 获取该干事负责的社团
+                staff_club_ids = StaffClubRelation.objects.filter(
+                    staff=profile, 
+                    is_active=True
+                ).values_list('club_id', flat=True)
+                
+                # 获取当前用户(社长)负责的社团
+                president_club_ids = Officer.objects.filter(
+                    user_profile=request.user.profile,
+                    position='president',
+                    is_current=True
+                ).values_list('club_id', flat=True)
+                
+                # 检查是否有交集
+                if set(staff_club_ids) & set(president_club_ids):
+                    context['is_staff_of_viewing_president'] = True
+
+        # 如果是干事或管理员，获取负责的社团
+        if profile.role in ['staff', 'admin']:
+            context['responsible_clubs'] = StaffClubRelation.objects.filter(
+                staff=profile,
+                is_active=True
+            ).select_related('club')
+            
+        # 如果是社长，获取所属社团及对应的负责干事
+        if profile.role == 'president':
+            # 获取当前担任职位的社团
+            officer_positions = Officer.objects.filter(
+                user_profile=profile,
+                is_current=True
+            ).select_related('club')
+            context['affiliated_clubs'] = officer_positions
+            
+            # 获取这些社团对应的负责干事
+            club_ids = officer_positions.values_list('club_id', flat=True)
+            staff_relations = StaffClubRelation.objects.filter(
+                club_id__in=club_ids,
+                is_active=True
+            ).select_related('staff', 'staff__user').distinct()
+            
+            staff_by_club = {}
+            staff_seen_by_club = {}
+            for relation in staff_relations:
+                club_id = relation.club_id
+                staff_by_club.setdefault(club_id, [])
+                staff_seen_by_club.setdefault(club_id, set())
+                if relation.staff_id in staff_seen_by_club[club_id]:
+                    continue
+                staff_by_club[club_id].append(relation.staff)
+                staff_seen_by_club[club_id].add(relation.staff_id)
+
+            context['affiliated_clubs_with_staff'] = [
+                {
+                    'officer': officer,
+                    'club': officer.club,
+                    'staff_list': staff_by_club.get(officer.club_id, []),
+                }
+                for officer in officer_positions
+            ]
+            
+    except UserProfile.DoesNotExist:
+        pass
+        
+    return render(request, 'clubs/user_detail.html', context)
+
+
 def index(request):
     """首页 - 显示部门介绍、社团信息和最新公告"""
     from .models import Department
@@ -368,9 +456,9 @@ def index(request):
         }
         return render(request, 'clubs/index.html', context)
     
-    # 社长不能访问首页，直接跳转到审批中心
-    if _is_president(request.user):
-        return redirect('clubs:approval_center', 'annual_review')
+    # 社长访问首页：跳转到社长工作台
+    # if _is_president(request.user):
+    #    return redirect('clubs:user_dashboard')
     
     # 检查是否为干事或管理员
     staff_admin = is_staff_or_admin(request.user)
@@ -422,7 +510,7 @@ def index(request):
         announcements = Announcement.objects.filter(status='published').order_by('-published_at')[:5]
         
         # 获取轮播图片
-        carousel_images = CarouselImage.objects.filter(is_active=True).order_by('-uploaded_at')
+        carousel_images = CarouselImage.objects.filter(is_active=True).order_by('order', '-uploaded_at')
         
         context = {
             'is_staff_or_admin': staff_admin,
@@ -443,6 +531,12 @@ def index(request):
     # 获取最新的已发布公告
     announcements = Announcement.objects.filter(status='published').order_by('-published_at')[:5]
     
+    # 获取轮播图片
+    carousel_images = CarouselImage.objects.filter(is_active=True).order_by('order', '-uploaded_at')
+    
+    # 获取部门介绍
+    departments = Department.objects.all().order_by('order')
+    
     # 为每个社团添加当前用户是否是社长的信息（作为字典存储）
     clubs_data = []
     for club in clubs:
@@ -461,6 +555,8 @@ def index(request):
         'clubs_data': clubs_data,
         'clubs': clubs,
         'announcements': announcements,
+        'carousel_images': carousel_images,
+        'departments': departments,
         'total_clubs': clubs.count(),
     }
     return render(request, 'clubs/index.html', context)
@@ -4888,6 +4984,20 @@ def change_club_status(request, club_id):
 
 
 @login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(["POST"])
+def update_club_description(request, club_id):
+    club = get_object_or_404(Club, pk=club_id)
+
+    if not (is_staff_or_admin(request.user) or (_is_president(request.user) and club.president_id == request.user.id)):
+        return HttpResponseForbidden("您没有权限执行此操作")
+
+    club.description = request.POST.get('description', '').strip()
+    club.save(update_fields=['description'])
+    messages.success(request, "社团简介已更新")
+    return redirect('clubs:club_detail', club_id=club_id)
+
+
+@login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(["GET", "POST"])
 
 
@@ -6821,6 +6931,17 @@ def submit_room_booking(request):
             messages.error(request, '结束时间必须晚于开始时间')
             return redirect('clubs:submit_room_booking')
 
+        # 验证是否为有效的固定时间段
+        is_valid_slot = TimeSlot.objects.filter(
+            start_time=start_time,
+            end_time=end_time,
+            is_active=True
+        ).exists()
+        
+        if not is_valid_slot:
+            messages.error(request, '请选择有效的固定时间段')
+            return redirect('clubs:room_calendar')
+
         # 确定社团
         club = None
         if club_id:
@@ -7067,4 +7188,41 @@ def manage_favicon(request):
             return redirect('clubs:manage_favicon')
             
     return render(request, 'clubs/admin/manage_favicon.html')
+
+
+@login_required(login_url='clubs:login')
+def get_department_members(request, department_id):
+    """API: 获取部门成员列表"""
+    try:
+        department = Department.objects.get(id=department_id)
+    except Department.DoesNotExist:
+        return JsonResponse({'error': '部门不存在'}, status=404)
+        
+    members = UserProfile.objects.filter(
+        role='staff',
+        department_link=department
+    ).select_related('user').order_by('staff_level', 'user__username')
+    
+    directors_data = []
+    members_data = []
+    
+    for member in members:
+        avatar_url = member.avatar.url if member.avatar else None
+        item = {
+            'id': member.user.id,
+            'name': member.get_full_name(),
+            'avatar': avatar_url,
+            'initial': member.get_full_name()[0].upper() if member.get_full_name() else member.user.username[0].upper(),
+        }
+        if member.staff_level == 'director':
+            directors_data.append(item)
+        else:
+            members_data.append(item)
+            
+    return JsonResponse({
+        'name': department.name,
+        'directors': directors_data,
+        'members': members_data
+    })
+
 

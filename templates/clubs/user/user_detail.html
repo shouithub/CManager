@@ -1,0 +1,368 @@
+{% extends 'clubs/base.html' %}
+{% load custom_filters %}
+
+{% block title %}{{ target_user.profile.real_name }} - 用户详情{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== MD3 完整重构 ===== */
+    :root {
+        --md3-spacing-xs: 4px;
+        --md3-spacing-sm: 8px;
+        --md3-spacing-md: 12px;
+        --md3-spacing-lg: 16px;
+        --md3-spacing-xl: 24px;
+        --md3-spacing-2xl: 32px;
+    }
+    
+    body {
+        background: var(--md3-surface);
+    }
+
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+        box-sizing: border-box;
+    }
+    
+    /* ===== 顶部个人信息卡片 ===== */
+    .profile-header-card {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+        border: 1px solid var(--md3-outline-variant);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+    }
+    
+    .profile-avatar {
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: var(--md3-elevation-2);
+        margin-bottom: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-high);
+        border: 4px solid var(--md3-surface);
+    }
+    
+    .profile-avatar-placeholder {
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: var(--md3-spacing-lg);
+        border: 4px solid var(--md3-surface);
+    }
+    
+    .profile-name {
+        font-size: 1.75rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        margin: 0 0 var(--md3-spacing-xs) 0;
+    }
+    
+    .profile-role-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: var(--md3-spacing-xs) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: var(--md3-spacing-md);
+    }
+    
+    .role-president { background: #e8def8; color: #1d192b; }
+    .role-staff { background: #c2e7ff; color: #001d35; }
+    .role-admin { background: #ffd8e4; color: #31111d; }
+    
+    .profile-dept {
+        color: var(--md3-on-surface-variant);
+        font-size: 1rem;
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    
+    .edit-btn {
+        position: absolute;
+        top: var(--md3-spacing-lg);
+        right: var(--md3-spacing-lg);
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .edit-btn:hover {
+        box-shadow: var(--md3-elevation-2);
+        transform: scale(1.05);
+    }
+
+    /* ===== 信息列表 ===== */
+    .info-section {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        padding: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-xl);
+        box-shadow: var(--md3-elevation-1);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-lg);
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+    
+    .section-title .material-icons {
+        color: var(--md3-primary);
+    }
+    
+    .info-list {
+        display: grid;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: var(--md3-spacing-md);
+        background: var(--md3-surface);
+        border-radius: var(--md3-radius-lg);
+    }
+    
+    .info-icon {
+        color: var(--md3-on-surface-variant);
+        margin-right: var(--md3-spacing-md);
+    }
+    
+    .info-content {
+        flex: 1;
+    }
+    
+    .info-label {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        margin-bottom: 2px;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        color: var(--md3-on-surface);
+    }
+    
+    /* ===== 社团/干事列表 ===== */
+    .club-list {
+        display: grid;
+        gap: var(--md3-spacing-md);
+    }
+    
+    .club-card {
+        background: var(--md3-surface);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline-variant);
+    }
+    
+    .club-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--md3-spacing-sm);
+    }
+    
+    .club-name {
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        font-size: 1.1rem;
+        text-decoration: none;
+    }
+    
+    .club-name:hover {
+        text-decoration: underline;
+        color: var(--md3-primary);
+    }
+    
+    .staff-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-xs);
+        margin-top: var(--md3-spacing-sm);
+    }
+    
+    .staff-tag {
+        font-size: 0.8rem;
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface-variant);
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        text-decoration: none;
+    }
+    
+    .staff-tag:hover {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+    
+    .staff-tag img {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+    }
+
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: var(--md3-spacing-lg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- 头部信息 -->
+    <div class="profile-header-card">
+        {% if is_me %}
+        <a href="{% url 'clubs:edit_profile' %}" class="edit-btn" title="编辑资料">
+            <span class="material-icons">edit</span>
+        </a>
+        {% endif %}
+        
+        {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="{{ profile.real_name }}" class="profile-avatar">
+        {% else %}
+            <div class="profile-avatar-placeholder">
+                {{ profile.real_name|first }}
+            </div>
+        {% endif %}
+        
+        <h1 class="profile-name">{{ profile.real_name }}</h1>
+        
+        <div class="profile-role-badge role-{{ profile.role }}">
+            {% if profile.role == 'president' %}社长
+            {% elif profile.role == 'staff' %}干事
+            {% elif profile.role == 'admin' %}管理员
+            {% else %}用户{% endif %}
+        </div>
+        
+        {% if profile.department_link %}
+        <div class="profile-dept">
+            {{ profile.department_link.name }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 联系方式 -->
+    {% if is_me or profile.is_info_public or user.is_staff or user.is_superuser %}
+    <div class="info-section">
+        <h2 class="section-title">
+            <span class="material-icons">contact_phone</span>
+            联系方式
+        </h2>
+        <div class="info-list">
+            <div class="info-item">
+                <span class="material-icons info-icon">email</span>
+                <div class="info-content">
+                    <div class="info-label">邮箱</div>
+                    <div class="info-value">{{ target_user.email|default:"未填写" }}</div>
+                </div>
+            </div>
+            <div class="info-item">
+                <span class="material-icons info-icon">phone</span>
+                <div class="info-content">
+                    <div class="info-label">手机号码</div>
+                    <div class="info-value">{{ profile.phone|default:"未填写" }}</div>
+                </div>
+            </div>
+            <div class="info-item">
+                <span class="material-icons info-icon">chat</span>
+                <div class="info-content">
+                    <div class="info-label">微信号</div>
+                    <div class="info-value">{{ profile.wechat|default:"未填写" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 负责社团/所属社团 -->
+    {% if profile.role == 'president' and clubs_data %}
+    <div class="info-section">
+        <h2 class="section-title">
+            <span class="material-icons">groups</span>
+            负责社团
+        </h2>
+        <div class="club-list">
+            {% for item in clubs_data %}
+            <div class="club-card">
+                <div class="club-header">
+                    <a href="{% url 'clubs:club_detail' item.club.id %}" class="club-name">{{ item.club.name }}</a>
+                </div>
+                <div class="staff-tags">
+                    <span style="font-size: 0.8rem; color: var(--md3-on-surface-variant);">负责干事：</span>
+                    {% for staff in item.staff_list %}
+                    <a href="{% url 'clubs:user_detail' staff.user.id %}" class="staff-tag">
+                        {% if staff.avatar %}
+                            <img src="{{ staff.avatar.url }}" alt="">
+                        {% else %}
+                            <span class="material-icons" style="font-size: 14px;">account_circle</span>
+                        {% endif %}
+                        {{ staff.real_name }}
+                    </a>
+                    {% empty %}
+                    <span style="font-size: 0.8rem; color: var(--md3-on-surface-variant);">暂无分配</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if profile.role == 'staff' or profile.role == 'admin' %}
+    {% if managed_relations %}
+    <div class="info-section">
+        <h2 class="section-title">
+            <span class="material-icons">admin_panel_settings</span>
+            管理社团
+        </h2>
+        <div class="club-list">
+            {% for relation in managed_relations %}
+            <div class="club-card">
+                <div class="club-header">
+                    <a href="{% url 'clubs:club_detail' relation.club.id %}" class="club-name">{{ relation.club.name }}</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

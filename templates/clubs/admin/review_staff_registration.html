@@ -24,14 +24,28 @@
         <div style="padding: 2rem;">
             <!-- 申请人基本信息卡片 -->
             <div class="info-card" style="margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; margin-bottom: 1.5rem; gap: 1rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 1rem;">
+                    <div style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                        {% if profile.avatar %}
+                            <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div style="width: 100%; height: 100%; background: var(--md3-primary-container, #e8def8); color: var(--md3-on-primary-container, #1d192b); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px;">
+                                {{ profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.5rem; color: #333;">{{ profile.get_full_name|default:user.username }}</h2>
+                        <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: var(--md3-primary, #6750a4); font-size: 0.9rem; font-weight: 500;">
+                            查看完整档案 <span class="material-icons" style="font-size: 14px; vertical-align: middle;">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
                     <div class="info-item">
                         <div class="label">用户名</div>
                         <div class="value">{{ user.username }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">姓名</div>
-                        <div class="value">{{ profile.get_full_name }}</div>
                     </div>
                     <div class="info-item">
                         <div class="label">学号</div>

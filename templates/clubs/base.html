@@ -66,57 +66,60 @@
             {% if user.is_authenticated %}
                 <!-- 通用导航 -->
                 <div class="sidebar-menu-section">
-                    <div class="sidebar-menu-title">主要功能</div>
-                    {% if user.profile.role != 'president' %}
+                    <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
+                        <span>主要功能</span>
+                        <span class="material-icons expand-icon">expand_more</span>
+                    </div>
+                    <div class="sidebar-menu-items">
                         <a href="{% url 'clubs:index' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">home</span></span>
                             <span>首页</span>
                         </a>
-                    {% endif %}
-                    <a href="{% url 'clubs:public_activities' %}" class="sidebar-menu-item">
-                        <span class="icon"><span class="material-icons">event</span></span>
-                        <span>活动</span>
-                    </a>
-                    
-                    {% if user.profile.role == 'admin' %}
-                        <a href="{% url 'clubs:admin_dashboard' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">settings</span></span>
-                            <span>管理后台</span>
+                        <a href="{% url 'clubs:public_activities' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">event</span></span>
+                            <span>活动</span>
                         </a>
-                        <a href="{% url 'clubs:manage_users' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">group</span></span>
-                            <span>用户管理</span>
-                        </a>
-                        <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">business_center</span></span>
-                            <span>社团管理</span>
-                        </a>
-                    {% elif user.profile.role == 'staff' %}
-                        <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">business_center</span></span>
-                            <span>社团管理</span>
-                        </a>
-                        {% if user.profile.staff_level == 'director' and user.profile.department %}
-                        <a href="{% url 'clubs:manage_department_staff' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">supervisor_account</span></span>
-                            <span>部门管理</span>
-                        </a>
+                        
+                        {% if user.profile.role == 'admin' %}
+                            <a href="{% url 'clubs:admin_dashboard' %}" class="sidebar-menu-item">
+                                <span class="icon"><span class="material-icons">settings</span></span>
+                                <span>管理后台</span>
+                            </a>
+                            <a href="{% url 'clubs:manage_users' %}" class="sidebar-menu-item">
+                                <span class="icon"><span class="material-icons">group</span></span>
+                                <span>用户管理</span>
+                            </a>
+                            <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
+                                <span class="icon"><span class="material-icons">business_center</span></span>
+                                <span>社团管理</span>
+                            </a>
+                        {% elif user.profile.role == 'staff' %}
+                            <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
+                                <span class="icon"><span class="material-icons">business_center</span></span>
+                                <span>社团管理</span>
+                            </a>
+                            {% if user.profile.staff_level == 'director' and user.profile.department %}
+                            <a href="{% url 'clubs:manage_department_staff' %}" class="sidebar-menu-item">
+                                <span class="icon"><span class="material-icons">supervisor_account</span></span>
+                                <span>部门管理</span>
+                            </a>
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
-                    
-                    {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
-                        <a href="{% url 'clubs:admin_booking_management' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">calendar_month</span></span>
-                            <span>预约概览</span>
-                        </a>
-                    {% endif %}
+                        
+                        {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
+                            <a href="{% url 'clubs:admin_booking_management' %}" class="sidebar-menu-item">
+                                <span class="icon"><span class="material-icons">calendar_month</span></span>
+                                <span>预约概览</span>
+                            </a>
+                        {% endif %}
 
-                    {% if user.profile.role == 'president' %}
-                        <a href="{% url 'clubs:user_dashboard' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">folder</span></span>
-                            <span>我的社团</span>
-                        </a>
-                    {% endif %}
+                        {% if user.profile.role == 'president' %}
+                            <a href="{% url 'clubs:user_dashboard' %}" class="sidebar-menu-item">
+                                <span class="icon"><span class="material-icons">folder</span></span>
+                                <span>我的社团</span>
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
                 
                 {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
@@ -255,7 +258,13 @@
         <div class="sidebar-footer">
             <div class="sidebar-user" onclick="toggleUserDropdown()">
                 <div class="sidebar-user-avatar">
-                    <span class="material-icons">person</span>
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                        <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; border-radius: 50%;">
+                            {{ user.profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name">{{ user.username }}</div>
@@ -273,13 +282,13 @@
             </div>
             
             <div class="sidebar-user-dropdown" id="userDropdown">
-                <a href="{% url 'clubs:change_account_settings' %}">
-                    <span><span class="material-icons" style="vertical-align: middle;">lock</span></span>
-                    <span>修改账户设置</span>
+                <a href="{% url 'clubs:user_detail' user.id %}">
+                    <span><span class="material-icons" style="vertical-align: middle;">account_circle</span></span>
+                    <span>查看个人主页</span>
                 </a>
                 <a href="{% url 'clubs:edit_profile' %}">
-                    <span><span class="material-icons" style="vertical-align: middle;">person</span></span>
-                    <span>修改个人信息</span>
+                    <span><span class="material-icons" style="vertical-align: middle;">manage_accounts</span></span>
+                    <span>管理个人信息</span>
                 </a>
                 <a href="{% url 'clubs:logout' %}" class="logout">
                     <span><span class="material-icons" style="vertical-align: middle;">lock_open</span></span>
@@ -308,6 +317,7 @@
                     if (sectionName === '房间管理' && shouldCollapse === null) shouldCollapse = 'false';
                     if (sectionName === '审批中心' && shouldCollapse === null) shouldCollapse = 'false';
                     if (sectionName === '审核中心' && shouldCollapse === null) shouldCollapse = 'false';
+                    if (sectionName === '主要功能' && shouldCollapse === null) shouldCollapse = 'false';
                     
                     if (shouldCollapse === 'true') {
                         title.classList.add('collapsed');
@@ -360,12 +370,10 @@
     {% if user.is_authenticated %}
     <nav class="bottom-nav">
         <div class="bottom-nav-items">
-            {% if user.profile.role != 'president' %}
-                <a href="{% url 'clubs:index' %}" class="bottom-nav-item">
-                    <span class="icon"><span class="material-icons">home</span></span>
-                    <span>首页</span>
-                </a>
-            {% endif %}
+            <a href="{% url 'clubs:index' %}" class="bottom-nav-item">
+                <span class="icon"><span class="material-icons">home</span></span>
+                <span>首页</span>
+            </a>
             
             {% if user.profile.role == 'admin' %}
                 <a href="{% url 'clubs:admin_dashboard' %}" class="bottom-nav-item">

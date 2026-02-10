@@ -297,7 +297,18 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>现任社长</label>
-                    <input type="text" value="{% if user.profile.real_name %}{{ user.profile.real_name }}{% else %}{{ user.username }}{% endif %}" disabled>
+                    <div style="padding: var(--md3-spacing-md); border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-md); background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                    {{ user.profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <span>{% if user.profile.real_name %}{{ user.profile.real_name }}{% else %}{{ user.username }}{% endif %}</span>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>所属社团</label>

@@ -1,0 +1,403 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}用户详情 - {{ target_user.profile.get_full_name|default:target_user.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .page-header-content h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+    }
+    
+    .page-header-content .subtitle {
+        margin: 4px 0 0;
+        font-size: 14px;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .profile-card {
+        background: var(--md3-surface-container-low);
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: var(--md3-elevation-1);
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 32px;
+    }
+
+    .profile-sidebar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding-right: 32px;
+        border-right: 1px solid var(--md3-outline-variant);
+    }
+
+    .profile-avatar-large {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        margin-bottom: 16px;
+        object-fit: cover;
+        box-shadow: var(--md3-elevation-2);
+        background: var(--md3-surface-container-high);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 64px;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .profile-name {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin-bottom: 8px;
+    }
+
+    .profile-role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 16px;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 24px;
+    }
+
+    .role-admin { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+    .role-staff { background: var(--md3-primary-container); color: var(--md3-on-primary-container); }
+    .role-president { background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); }
+
+    .contact-info {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        text-align: left;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--md3-on-surface-variant);
+        font-size: 14px;
+    }
+
+    .contact-item .material-icons {
+        font-size: 20px;
+        color: var(--md3-primary);
+    }
+
+    .profile-content {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+
+    .info-section h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        margin: 0 0 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-section h3 .material-icons {
+        color: var(--md3-primary);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 16px;
+    }
+
+    .info-card {
+        background: var(--md3-surface);
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .info-card-title {
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        margin-bottom: 4px;
+    }
+
+    .info-card-subtitle {
+        font-size: 13px;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .empty-state {
+        color: var(--md3-on-surface-variant);
+        font-style: italic;
+        padding: 16px;
+        background: var(--md3-surface-container-high);
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .page-header-content {
+            width: 100%;
+        }
+
+        .page-header > div:last-child {
+            margin-left: 0 !important;
+            width: 100%;
+            display: flex;
+        }
+
+        .page-header > div:last-child .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .profile-card {
+            grid-template-columns: 1fr;
+            gap: 24px;
+            padding: 16px;
+        }
+        
+        .profile-sidebar {
+            padding-right: 0;
+            border-right: none;
+            border-bottom: 1px solid var(--md3-outline-variant);
+            padding-bottom: 24px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <div class="page-header-icon">
+            <span class="material-icons">person</span>
+        </div>
+        <div class="page-header-content">
+            <h1>用户详情</h1>
+            <p class="subtitle">查看用户个人信息及相关联社团</p>
+        </div>
+        {% if request.user == target_user or request.user.profile.role == 'admin' %}
+        <div style="margin-left: auto;">
+            {% if request.user == target_user %}
+                <a href="{% url 'clubs:change_account_settings' %}" class="btn btn-tonal">
+                    <span class="material-icons">edit</span>
+                    编辑资料
+                </a>
+            {% elif request.user.profile.role == 'admin' %}
+                <a href="{% url 'clubs:admin_edit_user_account' target_user.id %}" class="btn btn-tonal">
+                    <span class="material-icons">manage_accounts</span>
+                    管理账户
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="profile-card">
+        <!-- 左侧个人信息 -->
+        <div class="profile-sidebar">
+            {% if target_user.profile.avatar %}
+                <img src="{{ target_user.profile.avatar.url }}" alt="{{ target_user.username }}" class="profile-avatar-large">
+            {% else %}
+                <div class="profile-avatar-large">
+                    {{ target_user.profile.get_full_name|slice:":1"|default:target_user.username|slice:":1"|upper }}
+                </div>
+            {% endif %}
+            
+            <div class="profile-name">{{ target_user.profile.get_full_name|default:target_user.username }}</div>
+            
+            <div class="profile-role-badge role-{{ target_user.profile.role }}">
+                <span class="material-icons">
+                    {% if target_user.profile.role == 'admin' %}admin_panel_settings
+                    {% elif target_user.profile.role == 'staff' %}assignment_ind
+                    {% else %}school{% endif %}
+                </span>
+                {% if target_user.profile.role == 'admin' %}管理员
+                {% elif target_user.profile.role == 'staff' %}社团干事
+                {% else %}社团社长{% endif %}
+            </div>
+
+            <div class="contact-info">
+                {% if target_user.profile.department %}
+                <div class="contact-item">
+                    <span class="material-icons">apartment</span>
+                    <div>
+                        <div style="font-size: 12px; color: var(--md3-outline);">所属部门</div>
+                        {{ target_user.profile.department }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="contact-item">
+                    <span class="material-icons">email</span>
+                    <div>
+                        <div style="font-size: 12px; color: var(--md3-outline);">电子邮箱</div>
+                        {% if target_user.profile.is_info_public or request.user.profile.role == 'admin' or request.user.profile.role == 'staff' or is_staff_of_viewing_president %}
+                            {{ target_user.email|default:"未公开" }}
+                        {% else %}
+                            <span style="color: var(--md3-on-surface-variant); opacity: 0.7;">已隐藏</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <span class="material-icons">phone</span>
+                    <div>
+                        <div style="font-size: 12px; color: var(--md3-outline);">联系电话</div>
+                        {% if target_user.profile.is_info_public or request.user.profile.role == 'admin' or request.user.profile.role == 'staff' or is_staff_of_viewing_president %}
+                            {{ target_user.profile.phone|default:"未公开" }}
+                        {% else %}
+                            <span style="color: var(--md3-on-surface-variant); opacity: 0.7;">已隐藏</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <span class="material-icons">chat</span>
+                    <div>
+                        <div style="font-size: 12px; color: var(--md3-outline);">微信号</div>
+                        {% if target_user.profile.is_info_public or request.user.profile.role == 'admin' or request.user.profile.role == 'staff' or is_staff_of_viewing_president %}
+                            {{ target_user.profile.wechat|default:"未公开" }}
+                        {% else %}
+                            <span style="color: var(--md3-on-surface-variant); opacity: 0.7;">已隐藏</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧关联信息 -->
+        <div class="profile-content">
+            <!-- 干事负责的社团 -->
+            {% if target_user.profile.role == 'staff' or target_user.profile.role == 'admin' %}
+            <div class="info-section">
+                <h3>
+                    <span class="material-icons">supervised_user_circle</span>
+                    负责管理的社团
+                </h3>
+                {% if responsible_clubs %}
+                    <div class="info-grid">
+                        {% for relation in responsible_clubs %}
+                        <a href="{% url 'clubs:club_detail' relation.club.id %}" style="text-decoration: none;">
+                            <div class="info-card">
+                                <div class="info-card-title">{{ relation.club.name }}</div>
+                                <div class="info-card-subtitle">ID: {{ relation.club.id }}</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">暂未分配负责的社团</div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- 社长所属的社团 -->
+            {% if target_user.profile.role == 'president' %}
+            <div class="info-section">
+                <h3>
+                    <span class="material-icons">groups</span>
+                    所属社团 (社长/负责人)
+                </h3>
+                {% if affiliated_clubs_with_staff %}
+                    <div class="info-grid">
+                        {% for item in affiliated_clubs_with_staff %}
+                            <div class="info-card">
+                                <a href="{% url 'clubs:club_detail' item.club.id %}" style="text-decoration: none; color: inherit;">
+                                    <div class="info-card-title">{{ item.club.name }}</div>
+                                    <div class="info-card-subtitle">
+                                        职位: {{ item.officer.get_position_display }}
+                                        {% if not item.officer.is_current %}(已卸任){% endif %}
+                                    </div>
+                                </a>
+
+                                <div style="margin-top: 12px;">
+                                    <div style="font-size: 12px; color: var(--md3-on-surface-variant); margin-bottom: 8px;">负责干事</div>
+                                    {% if item.staff_list %}
+                                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                            {% for staff in item.staff_list %}
+                                                <a href="{% url 'clubs:user_detail' staff.user.id %}" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: var(--md3-surface-container-high); border: 1px solid var(--md3-outline-variant);">
+                                                    <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                                        {% if staff.avatar %}
+                                                            <img src="{{ staff.avatar.url }}" alt="{{ staff.get_full_name|default:staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                        {% else %}
+                                                            <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;">
+                                                                {{ staff.get_full_name|slice:":1"|default:staff.user.username|slice:":1"|upper }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <span style="font-size: 13px;">{{ staff.get_full_name|default:staff.user.username }}</span>
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="empty-state" style="padding: 10px; text-align: left;">暂未分配负责干事</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% elif affiliated_clubs %}
+                    <div class="info-grid">
+                        {% for officer in affiliated_clubs %}
+                        <a href="{% url 'clubs:club_detail' officer.club.id %}" style="text-decoration: none;">
+                            <div class="info-card">
+                                <div class="info-card-title">{{ officer.club.name }}</div>
+                                <div class="info-card-subtitle">
+                                    职位: {{ officer.get_position_display }}
+                                    {% if not officer.is_current %}(已卸任){% endif %}
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">暂无所属社团记录</div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

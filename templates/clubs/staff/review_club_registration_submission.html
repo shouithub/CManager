@@ -898,16 +898,27 @@
             <div class="info-value">
                 {% for relation in registration.club.responsible_staff.all %}
                     {% if relation.is_active %}
-                    <div style="margin-bottom: 2px; padding-bottom: 2px;">
-                        <div style="font-weight: 600; margin-bottom: 4px;">{{ relation.staff.real_name|default:relation.staff.user.username }}</div>
+                    <div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--md3-outline-variant); last-child: border-bottom: none;">
+                        <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                {% if relation.staff.avatar %}
+                                    <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;">
+                                        {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div style="font-weight: 600;">{{ relation.staff.real_name|default:relation.staff.user.username }}</div>
+                        </a>
                         {% if relation.staff.phone %}
-                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-bottom: 2px;">
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-bottom: 2px; padding-left: 32px;">
                             <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">phone</span>
                             {{ relation.staff.phone }}
                         </div>
                         {% endif %}
                         {% if relation.staff.wechat %}
-                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant);">
+                        <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); padding-left: 32px;">
                             <span class="material-icons" style="font-size: 0.875rem; vertical-align: middle;">chat</span>
                             {{ relation.staff.wechat }}
                         </div>
@@ -944,10 +955,26 @@
             </div>
             <div class="detail-item">
                 <span class="detail-label">
-                    <span class="material-icons">mail</span>
-                    社长邮箱
+                    <span class="material-icons">person</span>
+                    申请社长
                 </span>
-                <span class="detail-value">{{ registration.requested_by.email|default:"未设置" }}</span>
+                <div class="detail-value">
+                    <a href="{% url 'clubs:user_detail' registration.requested_by.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                            {% if registration.requested_by.profile.avatar %}
+                                <img src="{{ registration.requested_by.profile.avatar.url }}" alt="{{ registration.requested_by.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;">
+                                    {{ registration.requested_by.profile.get_full_name|slice:":1"|default:registration.requested_by.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                             <div>{{ registration.requested_by.profile.get_full_name|default:registration.requested_by.username }}</div>
+                             <div style="font-size: 0.8rem; color: var(--md3-on-surface-variant);">{{ registration.requested_by.email|default:"未设置" }}</div>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

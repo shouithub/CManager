@@ -69,6 +69,9 @@ class UserProfile(models.Model):
     # 信息披露设置
     is_info_public = models.BooleanField(default=False, verbose_name='是否公开个人信息')
     
+    # 头像
+    avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True, verbose_name='头像')
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     
@@ -220,7 +223,15 @@ class ReviewSubmission(models.Model):
         unique_together = ('club', 'submission_year')
     
     def __str__(self):
-        return f"{self.club.name} - {self.submission_year}年审"
+        return f"{self.club.name} - 注册申请"
+
+    def get_final_reviewer(self):
+        """获取最终审核通过的审核人"""
+        if self.status == 'approved':
+            last_approved_review = self.reviews.filter(status='approved').last()
+            if last_approved_review:
+                return last_approved_review.reviewer
+        return None
 
 
 
@@ -254,6 +265,12 @@ class Reimbursement(models.Model):
     
     def __str__(self):
         return f"{self.club.name} - {self.submission_date} - ¥{self.reimbursement_amount}"
+
+    def get_final_reviewer(self):
+        """获取最终审核通过的审核人"""
+        if self.status == 'approved':
+            return self.reviewer
+        return None
 
 
 class ReimbursementHistory(models.Model):
@@ -467,6 +484,14 @@ class ClubRegistrationRequest(models.Model):
     def __str__(self):
         return f"{self.club_name} - {self.get_status_display()}"
 
+    def get_final_reviewer(self):
+        """获取最终审核通过的审核人"""
+        if self.status == 'approved':
+            last_approved_review = self.reviews.filter(status='approved').last()
+            if last_approved_review:
+                return last_approved_review.reviewer
+        return None
+
 
 class ClubApplicationReview(models.Model):
     """社团申请审核记录模型"""
@@ -616,6 +641,17 @@ class ClubRegistration(models.Model):
         verbose_name = '社团注册'
         verbose_name_plural = '社团注册'
 
+    def __str__(self):
+        return f"{self.club.name} - 注册申请"
+
+    def get_final_reviewer(self):
+        """获取最终审核通过的审核人"""
+        if self.status == 'approved':
+            last_approved_review = self.reviews.filter(status='approved').last()
+            if last_approved_review:
+                return last_approved_review.reviewer
+        return None
+
 
 class ClubRegistrationReview(models.Model):
     """社团注册审核记录模型"""
@@ -654,7 +690,8 @@ class ClubRegistrationReview(models.Model):
         unique_together = ['registration', 'reviewer', 'submission_attempt']  # 防止同一干事多次审核同一注册
     
     def __str__(self):
-        return f"{self.registration.club.name} - 注册申请 - {self.get_status_display()}"
+        reviewer_name = self.reviewer.profile.real_name if hasattr(self.reviewer, 'profile') else self.reviewer.username
+        return f"{reviewer_name} 审核 {self.registration} - {self.get_status_display()}"
 
 
 class PresidentTransition(models.Model):
@@ -698,6 +735,12 @@ class PresidentTransition(models.Model):
     def __str__(self):
         new_pres_name = self.new_president_officer.user_profile.real_name if self.new_president_officer and self.new_president_officer.user_profile else '未知'
         return f"{self.club.name} - 换届申请 ({self.old_president.username} -> {new_pres_name})"
+
+    def get_final_reviewer(self):
+        """获取最终审核通过的审核人"""
+        if self.status == 'approved':
+            return self.reviewer
+        return None
 
 
 class ActivityApplication(models.Model):
@@ -765,6 +808,12 @@ class ActivityApplication(models.Model):
     
     def __str__(self):
         return f"{self.club.name} - {self.activity_name} ({self.activity_date})"
+
+    def get_final_reviewer(self):
+        """获取最终审核通过的审核人"""
+        if self.status == 'approved':
+            return self.staff_reviewer
+        return None
     
     def update_status(self):
         """根据审核结果更新状态"""
@@ -877,6 +926,8 @@ class CarouselImage(models.Model):
     image = models.ImageField(upload_to='carousel/', verbose_name='轮播图片')
     title = models.CharField(max_length=200, blank=True, verbose_name='标题')
     description = models.TextField(blank=True, verbose_name='描述')
+    link = models.URLField(blank=True, verbose_name='跳转链接', help_text='点击轮播图跳转的地址')
+    order = models.IntegerField(default=0, verbose_name='排序', help_text='数字越小越靠前')
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='上传者')
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
     is_active = models.BooleanField(default=True, verbose_name='是否激活')
@@ -884,7 +935,7 @@ class CarouselImage(models.Model):
     class Meta:
         verbose_name = '轮播图片'
         verbose_name_plural = '轮播图片'
-        ordering = ['-uploaded_at']
+        ordering = ['order', '-uploaded_at']
     
     def __str__(self):
         return self.title or f"轮播图片 {self.id}"

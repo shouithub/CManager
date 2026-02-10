@@ -24,7 +24,20 @@
                 
                 <div style="margin-bottom: 15px;">
                     <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">发布者</div>
-                    <div style="color: #333;">{{ announcement.created_by.profile.get_full_name|default:announcement.created_by.username }}</div>
+                    <div style="color: #333;">
+                        <a href="{% url 'clubs:user_detail' announcement.created_by.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 4px;">
+                            <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                {% if announcement.created_by.profile.avatar %}
+                                    <img src="{{ announcement.created_by.profile.avatar.url }}" alt="{{ announcement.created_by.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;">
+                                        {{ announcement.created_by.profile.get_full_name|slice:":1"|default:announcement.created_by.username|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <span>{{ announcement.created_by.profile.get_full_name|default:announcement.created_by.username }}</span>
+                        </a>
+                    </div>
                 </div>
                 
                 <div style="margin-bottom: 15px;">
