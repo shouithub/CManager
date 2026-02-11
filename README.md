@@ -84,17 +84,44 @@
     pip install -r requirements.txt
     ```
 
-4.  **数据库迁移**
+4.  **创建 .env 文件**
+    在项目根目录下创建 `.env` 文件，填入以下配置：
+    ```ini
+    # 核心安全配置
+    SECRET_KEY=your-long-random-secret-key
+    DEBUG=True
+    ALLOWED_HOSTS=localhost,127.0.0.1
+    CSRF_TRUSTED_ORIGINS=http://127.0.0.1,http://localhost
+
+    # 邮件服务配置 (可选)
+    ADMIN_CONTACT_EMAIL=admin@example.com
+    EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+    EMAIL_HOST=smtp.example.com
+    EMAIL_PORT=587
+    EMAIL_HOST_USER=no-reply@example.com
+    EMAIL_HOST_PASSWORD=your-email-password
+    EMAIL_USE_TLS=True
+    DEFAULT_FROM_EMAIL=no-reply@example.com
+
+    # 生产环境安全增强 (建议生产环境开启)
+    SECURE_BROWSER_XSS_FILTER=True
+    SECURE_CONTENT_TYPE_NOSNIFF=True
+    SESSION_COOKIE_SECURE=False
+    CSRF_COOKIE_SECURE=False
+    X_FRAME_OPTIONS=DENY
+    ```
+
+5.  **数据库迁移**
     ```bash
     python manage.py migrate
     ```
 
-5.  **创建超级用户**
+6.  **创建超级用户**
     ```bash
     python manage.py createsuperuser
     ```
 
-6.  **运行开发服务器**
+7.  **运行开发服务器**
     ```bash
     python manage.py runserver
     ```

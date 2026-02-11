@@ -10,6 +10,11 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      DEBUG: "False"
+      SECRET_KEY: "ci-secret-key"
+      ALLOWED_HOSTS: "localhost,127.0.0.1"
+      CSRF_TRUSTED_ORIGINS: "http://127.0.0.1,http://localhost"
     strategy:
       max-parallel: 4
       matrix:
@@ -31,20 +36,9 @@ jobs:
     - name: Run Migrations
       run: |
         python manage.py migrate
-    - name: Verify Runserver
+    - name: Deploy Checks
       run: |
-        python manage.py runserver &
-        PID=$!
-        echo "Waiting for server to start..."
-        for i in {1..10}; do
-          sleep 3
-          if curl -I http://127.0.0.1:8000/; then
-            echo "Server responded successfully."
-            kill $PID
-            exit 0
-          fi
-          echo "Retrying..."
-        done
-        echo "Server failed to respond."
-        kill $PID
-        exit 1
+        python manage.py check --deploy
+    - name: Collect Static
+      run: |
+        python manage.py collectstatic --noinput
