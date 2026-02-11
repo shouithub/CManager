@@ -84,17 +84,44 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
     pip install -r requirements.txt
     ```
 
-4.  **Database Migration**
+4.  **Create .env File**
+    Create a `.env` file in the project root with the following configuration:
+    ```ini
+    # Core Security Settings
+    SECRET_KEY=your-long-random-secret-key
+    DEBUG=True
+    ALLOWED_HOSTS=localhost,127.0.0.1
+    CSRF_TRUSTED_ORIGINS=http://127.0.0.1,http://localhost
+
+    # Email Service Settings (Optional)
+    ADMIN_CONTACT_EMAIL=admin@example.com
+    EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+    EMAIL_HOST=smtp.example.com
+    EMAIL_PORT=587
+    EMAIL_HOST_USER=no-reply@example.com
+    EMAIL_HOST_PASSWORD=your-email-password
+    EMAIL_USE_TLS=True
+    DEFAULT_FROM_EMAIL=no-reply@example.com
+
+    # Production Security Enhancements (Recommended for Prod)
+    SECURE_BROWSER_XSS_FILTER=True
+    SECURE_CONTENT_TYPE_NOSNIFF=True
+    SESSION_COOKIE_SECURE=False
+    CSRF_COOKIE_SECURE=False
+    X_FRAME_OPTIONS=DENY
+    ```
+
+5.  **Database Migration**
     ```bash
     python manage.py migrate
     ```
 
-5.  **Create Superuser**
+6.  **Create Superuser**
     ```bash
     python manage.py createsuperuser
     ```
 
-6.  **Run Development Server**
+7.  **Run Development Server**
     ```bash
     python manage.py runserver
     ```
