@@ -223,6 +223,162 @@
             justify-content: center;
         }
     }
+    
+    .material-desc-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 4px;
+    }
+    
+    .material-desc {
+        margin: 0;
+        flex: 1;
+        font-size: 0.85rem;
+        color: var(--md3-on-surface-variant);
+        line-height: 1.4;
+    }
+    
+    .btn-icon-small {
+        padding: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--md3-primary);
+        opacity: 0.6;
+        transition: opacity 0.2s;
+        display: flex;
+        align-items: center;
+    }
+    
+    .btn-icon-small:hover {
+        opacity: 1;
+    }
+    
+    .btn-icon-small .material-icons {
+        font-size: 16px;
+    }
+    
+    /* Custom Modal Styles (copied from material_requirements_list.html) */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-3);
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow: auto;
+        border: none;
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        background-color: transparent;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--md3-on-surface-variant);
+        padding: var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-close:hover {
+        background: var(--md3-surface-container-highest);
+    }
+
+    .modal-body {
+        padding: var(--md3-spacing-xl);
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-xl);
+        border-top: 1px solid var(--md3-outline-variant);
+        background-color: transparent;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--md3-outline);
+        border-radius: 4px;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        box-sizing: border-box;
+    }
+    
+    .form-control:focus {
+        border-color: var(--md3-primary);
+        outline: none;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background-color: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .btn-primary:hover {
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .btn-secondary {
+        background-color: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        border: 1px solid var(--md3-outline);
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--md3-surface-container-highest);
+    }
 </style>
 
 <div class="page-header">
@@ -237,15 +393,7 @@
 </div>
 
 <div class="template-list-container">
-    {% if messages %}
-    <div class="messages mb-4">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+
 
     {% for category, items in grouped_requirements.items %}
     <div class="category-section">
@@ -263,9 +411,14 @@
                         <span class="badge bg-secondary">必填</span>
                         {% endif %}
                     </div>
-                    {% if req.description %}
-                    <p class="material-desc">{{ req.description }}</p>
-                    {% endif %}
+                    <div class="material-desc-container">
+                        <p class="material-desc" id="desc-text-{{ req.id }}">
+                            {% if req.description %}{{ req.description }}{% else %}<span class="text-muted">暂无描述</span>{% endif %}
+                        </p>
+                        <button type="button" class="btn-icon-small" onclick="openEditDescModal('{{ req.id }}', '{{ req.name|escapejs }}')" title="修改描述">
+                            <span class="material-icons">edit</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="material-actions">
@@ -303,7 +456,62 @@
     {% endfor %}
 </div>
 
+<!-- Edit Description Modal -->
+<div class="modal-overlay" id="editDescModal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>修改描述 - <span id="modalReqName"></span></h2>
+            <button type="button" class="modal-close" onclick="closeEditDescModal()">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <form method="post" id="editDescForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <input type="hidden" name="requirement_id" id="modalReqId">
+                <input type="hidden" name="action_type" value="update_description">
+                <div class="mb-3">
+                    <label for="modalDescInput" style="display: block; margin-bottom: 8px; font-weight: 500;">描述内容</label>
+                    <textarea class="form-control" name="description" id="modalDescInput" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEditDescModal()">取消</button>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+    function openEditDescModal(id, name) {
+        document.getElementById('modalReqId').value = id;
+        document.getElementById('modalReqName').textContent = name;
+        
+        // Get current description text, handling the "No description" placeholder
+        const descEl = document.getElementById('desc-text-' + id);
+        let currentDesc = descEl.innerText.trim();
+        if (currentDesc === '暂无描述') {
+            currentDesc = '';
+        }
+        document.getElementById('modalDescInput').value = currentDesc;
+        
+        const modal = document.getElementById('editDescModal');
+        modal.style.display = 'flex';
+    }
+
+    function closeEditDescModal() {
+        const modal = document.getElementById('editDescModal');
+        modal.style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('editDescModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEditDescModal();
+        }
+    });
+
     // 简单的文件上传确认
     document.querySelectorAll('input[type="file"]').forEach(input => {
         input.addEventListener('change', function() {

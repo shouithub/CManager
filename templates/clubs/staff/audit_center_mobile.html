@@ -777,7 +777,7 @@ function openHistoryModal(type, title) {
     modalBody.innerHTML = '<div class="empty-state"><p>加载中...</p></div>';
     
     // Fetch data
-    fetch(`/clubs/api/staff/review-history/${type}/`)
+    fetch(`/api/staff/review-history/${type}/`)
         .then(response => response.json())
         .then(data => {
             if (data.items && data.items.length > 0) {
@@ -802,7 +802,7 @@ function openHistoryModal(type, title) {
                     }
                     
                     html += `
-                        <div class="history-item" onclick="window.location.href='/clubs/staff/review-detail/${item.type}/${item.id}/'" style="cursor: pointer;">
+                        <div class="history-item" onclick="window.location.href='/staff/review-detail/${item.type}/${item.id}/'" style="cursor: pointer;">
                             <div class="history-info">
                                 <h4>${item.title}</h4>
                                 <div class="history-meta">
@@ -864,22 +864,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 let url = '';
                 switch(itemType) {
                     case 'annual_review':
-                        url = `/clubs/staff/review-submission/${itemId}/`;
+                        url = `/staff/review-submission/${itemId}/`;
                         break;
                     case 'registration':
-                        url = `/clubs/staff/review-club-registration-submission/${itemId}/`;
+                        url = `/staff/review-club-registration-submission/${itemId}/`;
                         break;
                     case 'application':
-                        url = `/clubs/staff/application/${itemId}/`;
+                        url = `/staff/application/${itemId}/`;
                         break;
                     case 'reimbursement':
-                        url = `/clubs/staff/review-reimbursement/${itemId}/`;
+                        url = `/staff/review-reimbursement/${itemId}/`;
                         break;
                     case 'activity_application':
-                        url = `/clubs/staff/review-activity-application/${itemId}/`;
+                        url = `/staff/review-activity-application/${itemId}/`;
                         break;
                     case 'president_transition':
-                        url = `/clubs/staff/review-president-transition/${itemId}/`;
+                        url = `/staff/review-president-transition/${itemId}/`;
                         break;
                 }
                 if (url) {

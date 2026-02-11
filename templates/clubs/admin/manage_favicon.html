@@ -11,93 +11,118 @@
     </div>
 </div>
 
-<div class="main-content">
-    <div class="detail-card">
-        <div class="card-header">
-            <h2>当前图标</h2>
+<div class="main-content" style="max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-lg);">
+    <div class="grid-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: var(--md3-spacing-xl);">
+        
+        <!-- Current Icon Card -->
+        <div class="card card-outlined">
+            <div class="card-header">
+                <h3>当前图标</h3>
+            </div>
+            <div class="card-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px;">
+                {% if site_favicon_preview_url %}
+                    <img src="{{ site_favicon_preview_url }}" alt="Current Favicon" style="width: 64px; height: 64px; object-fit: contain; border-radius: var(--md3-radius-sm); box-shadow: var(--md3-elevation-1);">
+                    <p style="margin-top: var(--md3-spacing-lg); color: var(--md3-on-surface-variant); text-align: center;">
+                        当前使用的网站图标<br>
+                        <span style="font-size: 0.875rem; opacity: 0.7;">(将在浏览器标签页显示)</span>
+                    </p>
+                {% else %}
+                    <div style="width: 80px; height: 80px; border: 2px dashed var(--md3-outline-variant); border-radius: var(--md3-radius-md); display: flex; align-items: center; justify-content: center; background-color: var(--md3-surface-container-highest);">
+                        <span class="material-icons" style="color: var(--md3-outline); font-size: 32px;">image_not_supported</span>
+                    </div>
+                    <p style="margin-top: var(--md3-spacing-lg); color: var(--md3-on-surface-variant);">未设置自定义图标</p>
+                {% endif %}
+            </div>
         </div>
-        <div class="card-body" style="text-align: center; padding: 2rem;">
-            {% if site_favicon_preview_url %}
-                <img src="{{ site_favicon_preview_url }}" alt="Current Favicon" style="width: 64px; height: 64px; border: 1px solid #ddd; padding: 4px; border-radius: 4px;">
-                <p style="margin-top: 1rem; color: var(--md-sys-color-on-surface-variant);">当前使用的网站图标</p>
-            {% else %}
-                <div style="width: 64px; height: 64px; border: 1px dashed #ddd; border-radius: 4px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
-                    <span class="material-icons" style="color: #ccc;">image_not_supported</span>
-                </div>
-                <p style="margin-top: 1rem; color: var(--md-sys-color-on-surface-variant);">未设置自定义图标</p>
-            {% endif %}
-        </div>
-    </div>
 
-    <div class="detail-card">
-        <div class="card-header">
-            <h2>更新图标</h2>
-        </div>
-        <div class="card-body">
-            <form method="post" enctype="multipart/form-data" class="info-grid" id="favicon-form">
-                {% csrf_token %}
-                
-                <div class="info-item full-width">
-                    <label class="info-label">选择新图标</label>
-                    <div class="info-value">
-                        <input type="file" name="favicon" accept=".ico,.png,.jpg,.jpeg" required class="form-control" id="favicon-input">
-                        <div class="help-text" style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--md-sys-color-outline);">
-                            支持格式: .ico, .png, .jpg (建议使用 .ico 格式，尺寸 32x32 或 64x64)
+        <!-- Update Icon Card -->
+        <div class="card card-filled">
+            <div class="card-header">
+                <h3>更新图标</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="favicon-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="favicon-input">选择新图标</label>
+                        <input type="file" name="favicon" accept=".ico,.png,.jpg,.jpeg" required id="favicon-input" class="form-control" style="background-color: var(--md3-surface);">
+                        <div class="helper-text" style="margin-top: var(--md3-spacing-xs); font-size: 0.875rem; color: var(--md3-on-surface-variant);">
+                            <span class="material-icons" style="font-size: 14px; vertical-align: middle;">info</span>
+                            支持格式: .ico, .png, .jpg (建议使用 .ico)
                         </div>
                     </div>
-                </div>
-                <div class="info-item full-width" id="cropper-wrapper" style="display: none;">
-                    <label class="info-label">裁剪预览</label>
-                    <div class="info-value">
+
+                    <div class="form-group" id="cropper-wrapper" style="display: none;">
+                        <label>裁剪预览</label>
                         <div class="cropper-container">
                             <canvas id="cropper-canvas" width="256" height="256"></canvas>
                         </div>
-                        <div class="cropper-controls">
-                            <input type="range" id="cropper-zoom" min="1" max="3" step="0.01" value="1" class="form-control">
+                        <div class="cropper-controls" style="margin-top: var(--md3-spacing-md);">
+                            <div style="display: flex; align-items: center; gap: var(--md3-spacing-sm);">
+                                <span class="material-icons" style="font-size: 18px; color: var(--md3-on-surface-variant);">zoom_in</span>
+                                <input type="range" id="cropper-zoom" min="1" max="3" step="0.01" value="1" style="flex: 1;">
+                            </div>
+                            <div style="text-align: center; margin-top: 4px; font-size: 0.75rem; color: var(--md3-on-surface-variant);">拖动图片调整位置</div>
                         </div>
                     </div>
-                </div>
 
-                <div class="actions-grid full-width" style="margin-top: 1rem;">
-                    <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">upload</span>
-                        上传更新
-                    </button>
-                    <a href="{% url 'clubs:index' %}" class="btn btn-outline">
-                        <span class="material-icons">arrow_back</span>
-                        返回首页
-                    </a>
-                </div>
-            </form>
+                    <div class="form-actions" style="margin-top: var(--md3-spacing-xl); display: flex; gap: var(--md3-spacing-md); justify-content: flex-end;">
+                        <a href="{% url 'clubs:index' %}" class="btn btn-text">
+                            返回首页
+                        </a>
+                        <button type="submit" class="btn btn-filled">
+                            <span class="material-icons">upload</span>
+                            上传更新
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-    .form-control {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid var(--md-sys-color-outline);
-        border-radius: 4px;
-        background-color: var(--md-sys-color-surface);
-        color: var(--md-sys-color-on-surface);
-    }
     .cropper-container {
-        width: 260px;
+        width: 100%;
+        max-width: 260px;
         height: 260px;
-        border: 1px solid var(--md-sys-color-outline);
-        border-radius: 8px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--md-sys-color-surface);
-        margin-top: 0.75rem;
+        background: var(--md3-surface-container-low);
+        margin: var(--md3-spacing-sm) auto;
+        overflow: hidden;
     }
-    .cropper-controls {
-        margin-top: 0.75rem;
-        width: 260px;
+    
+    /* Range Slider Styling */
+    input[type=range] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+    }
+    
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: var(--md3-primary);
+        cursor: pointer;
+        margin-top: -6px;
+    }
+    
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+        background: var(--md3-secondary-container);
+        border-radius: 2px;
     }
 </style>
+
 <script>
     (function() {
         var input = document.getElementById('favicon-input');

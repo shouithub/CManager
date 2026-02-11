@@ -189,6 +189,23 @@
         .bookings-grid {
             grid-template-columns: 1fr;
         }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--md3-spacing-md);
+            padding: var(--md3-spacing-lg);
+        }
+
+        .page-header .action-btn {
+            width: 100% !important;
+            justify-content: center;
+            margin-top: var(--md3-spacing-sm);
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
     }
 </style>
 {% endblock %}

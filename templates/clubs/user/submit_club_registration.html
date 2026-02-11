@@ -310,24 +310,6 @@
     </div>
     {% endif %}
 
-    <!-- 模板下载 -->
-    {% if registration_templates %}
-    <div class="template-list">
-        <h3><span class="material-icons">download</span> 可用模板</h3>
-        <ul>
-            {% for template in registration_templates %}
-                <li>
-                    <a href="{{ template.file.url }}" download>
-                        <span class="material-icons">file_download</span>
-                        {{ template.name }}
-                    </a>
-                    {% if template.description %}<span style="color: var(--md3-on-surface-variant); margin-left: 8px;">{{ template.description }}</span>{% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-
     <!-- 表单 -->
     <form method="post" enctype="multipart/form-data" class="form-card">
         {% csrf_token %}
@@ -342,7 +324,11 @@
             {% for req in requirements %}
             <div class="form-row">
                 <div class="form-group">
-                    {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon="folder" %}
+                    {% if req.template_file %}
+                        {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon="folder" template_url=req.template_file.url %}
+                    {% else %}
+                        {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon="folder" %}
+                    {% endif %}
                 </div>
             </div>
             {% empty %}

@@ -822,6 +822,26 @@
             grid-template-columns: 1fr;
         }
     }
+
+    /* Dark mode overrides for carousel buttons */
+    html[data-theme="dark"] .carousel-btn {
+        background: rgba(0, 0, 0, 0.8);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    html[data-theme="dark"] .carousel-btn:hover {
+        background: black;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+    }
+    
+    html[data-theme="dark"] .carousel-btn .material-icons {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Dark mode override for hero section background */
+    html[data-theme="dark"] .hero-section {
+        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-tertiary-container) 100%);
+    }
 </style>
 {% endblock %}
 
@@ -1156,7 +1176,7 @@ function showDepartmentMembers(deptId) {
     modal.style.display = 'flex';
     content.innerHTML = '<div style="display: flex; justify-content: center; padding: 20px;"><div class="spinner" style="border: 4px solid rgba(0,0,0,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--md3-primary); animation: spin 1s linear infinite;"></div></div>';
     
-    fetch(`/clubs/api/department/${deptId}/members/`)
+    fetch(`/api/department/${deptId}/members/`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -1174,7 +1194,7 @@ function showDepartmentMembers(deptId) {
                 data.directors.forEach(d => {
                     html += `
                         <div class="member-item">
-                            <a href="/clubs/user/${d.id}/" class="member-link">
+                            <a href="/user/${d.id}/" class="member-link">
                                 <div class="member-avatar">
                                     ${d.avatar ? `<img src="${d.avatar}" alt="${d.name}">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); font-weight: bold;">${d.initial || (d.name && d.name.length > 0 ? d.name.charAt(0) : '?')}</div>`}
                                 </div>
@@ -1194,7 +1214,7 @@ function showDepartmentMembers(deptId) {
                 data.members.forEach(m => {
                     html += `
                         <div class="member-item">
-                            <a href="/clubs/user/${m.id}/" class="member-link">
+                            <a href="/user/${m.id}/" class="member-link">
                                 <div class="member-avatar">
                                     ${m.avatar ? `<img src="${m.avatar}" alt="${m.name}">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); font-weight: bold;">${m.initial || (m.name && m.name.length > 0 ? m.name.charAt(0) : '?')}</div>`}
                                 </div>

@@ -76,7 +76,7 @@
     
     .department-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: var(--md3-spacing-xl);
         margin-bottom: var(--md3-spacing-2xl);
     }
@@ -233,6 +233,11 @@
     @media (max-width: 768px) {
         .dashboard-container {
             padding: var(--md3-spacing-lg);
+            padding-bottom: calc(var(--md3-spacing-lg) + 100px);
+        }
+        
+        .department-grid {
+            grid-template-columns: 1fr;
         }
         
         .page-header {

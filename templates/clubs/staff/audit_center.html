@@ -456,7 +456,7 @@ let currentExportTab = '';
 let clubsList = [];
 
 // 加载社团列表
-fetch('/clubs/api/clubs/list/')
+fetch('/api/clubs/list/')
     .then(response => response.json())
     .then(data => {
         clubsList = data.clubs || [];
@@ -586,7 +586,7 @@ function submitExport() {
         }
     }
     
-    const url = `/clubs/staff/audit-center/${currentExportTab}/export/?${params.toString()}`;
+    const url = `/staff/audit-center/${currentExportTab}/export/?${params.toString()}`;
     window.location.href = url;
     closeExportDialog();
 }

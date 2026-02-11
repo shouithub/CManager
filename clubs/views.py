@@ -18,6 +18,7 @@ from django.conf import settings
 from django.http import HttpResponse, FileResponse, HttpResponseForbidden, JsonResponse
 from django.db.models import Q
 import os
+import re
 import urllib.parse
 import os
 import tempfile
@@ -875,18 +876,7 @@ def edit_rejected_review(request, club_id):
         
         is_resubmission = True
         
-        # 获取可用模板
-        financial_templates = Template.objects.filter(template_type='review_financial', is_active=True)
-        activity_templates = Template.objects.filter(template_type='review_activity', is_active=True)
-        member_list_templates = Template.objects.filter(template_type='review_member_list', is_active=True)
-        self_assessment_templates = Template.objects.filter(template_type='review_self_assessment', is_active=True)
-        club_constitution_templates = Template.objects.filter(template_type='review_club_constitution', is_active=True)
-        leader_report_templates = Template.objects.filter(template_type='review_leader_report', is_active=True)
-        annual_activity_templates = Template.objects.filter(template_type='review_annual_activity', is_active=True)
-        advisor_report_templates = Template.objects.filter(template_type='review_advisor_report', is_active=True)
-        member_composition_templates = Template.objects.filter(template_type='review_member_composition', is_active=True)
-        media_account_templates = Template.objects.filter(template_type='review_media_account', is_active=True)
-        
+
         # 收集被拒绝的材料列表
         rejected_materials = []
         review_comments = []
@@ -908,16 +898,7 @@ def edit_rejected_review(request, club_id):
         
         context = {
             'club': club,
-            'financial_templates': financial_templates,
-            'activity_templates': activity_templates,
-            'member_list_templates': member_list_templates,
-            'self_assessment_templates': self_assessment_templates,
-            'club_constitution_templates': club_constitution_templates,
-            'leader_report_templates': leader_report_templates,
-            'annual_activity_templates': annual_activity_templates,
-            'advisor_report_templates': advisor_report_templates,
-            'member_composition_templates': member_composition_templates,
-            'media_account_templates': media_account_templates,
+
             'is_resubmission': is_resubmission,
             'rejected_submission': submission,
             'rejected_materials': rejected_materials,
@@ -1505,18 +1486,6 @@ def submit_review(request, club_id):
         messages.error(request, '您没有权限提交此社团的年审材料')
         return redirect('clubs:user_dashboard')
     
-    # 获取可用模板
-    financial_templates = Template.objects.filter(template_type='review_financial', is_active=True)
-    activity_templates = Template.objects.filter(template_type='review_activity', is_active=True)
-    member_list_templates = Template.objects.filter(template_type='review_member_list', is_active=True)
-    self_assessment_templates = Template.objects.filter(template_type='review_self_assessment', is_active=True)
-    club_constitution_templates = Template.objects.filter(template_type='review_club_constitution', is_active=True)
-    leader_report_templates = Template.objects.filter(template_type='review_leader_report', is_active=True)
-    annual_activity_templates = Template.objects.filter(template_type='review_annual_activity', is_active=True)
-    advisor_report_templates = Template.objects.filter(template_type='review_advisor_report', is_active=True)
-    member_composition_templates = Template.objects.filter(template_type='review_member_composition', is_active=True)
-    media_account_templates = Template.objects.filter(template_type='review_media_account', is_active=True)
-    
     # 获取动态材料要求
     requirements = MaterialRequirement.objects.filter(
         request_type='annual_review', 
@@ -1628,16 +1597,6 @@ def submit_review(request, club_id):
             context = {
                 'club': club,
                 'errors': errors,
-                'financial_templates': financial_templates,
-                'activity_templates': activity_templates,
-                'member_list_templates': member_list_templates,
-                'self_assessment_templates': self_assessment_templates,
-                'club_constitution_templates': club_constitution_templates,
-                'leader_report_templates': leader_report_templates,
-                'annual_activity_templates': annual_activity_templates,
-                'advisor_report_templates': advisor_report_templates,
-                'member_composition_templates': member_composition_templates,
-                'media_account_templates': media_account_templates,
                 'is_resubmission': is_resubmission,
                 'rejected_submission': rejected_submission,
                 'requirements': requirements,
@@ -1696,16 +1655,6 @@ def submit_review(request, club_id):
             # 出错时返回页面
             context = {
                 'club': club,
-                'financial_templates': financial_templates,
-                'activity_templates': activity_templates,
-                'member_list_templates': member_list_templates,
-                'self_assessment_templates': self_assessment_templates,
-                'club_constitution_templates': club_constitution_templates,
-                'leader_report_templates': leader_report_templates,
-                'annual_activity_templates': annual_activity_templates,
-                'advisor_report_templates': advisor_report_templates,
-                'member_composition_templates': member_composition_templates,
-                'media_account_templates': media_account_templates,
                 'is_resubmission': is_resubmission,
                 'rejected_submission': rejected_submission,
                 'requirements': requirements,
@@ -1716,17 +1665,7 @@ def submit_review(request, club_id):
     # GET请求时渲染页面
     context = {
         'club': club,
-        'financial_templates': financial_templates,
         'rejected_materials': rejected_materials,
-        'activity_templates': activity_templates,
-        'member_list_templates': member_list_templates,
-        'self_assessment_templates': self_assessment_templates,
-        'club_constitution_templates': club_constitution_templates,
-        'leader_report_templates': leader_report_templates,
-        'annual_activity_templates': annual_activity_templates,
-        'advisor_report_templates': advisor_report_templates,
-        'member_composition_templates': member_composition_templates,
-        'media_account_templates': media_account_templates,
         'is_resubmission': is_resubmission,
         'rejected_submission': rejected_submission,
         'current_year': timezone.now().year,
@@ -2536,20 +2475,31 @@ def upload_template(request):
     
     if request.method == 'POST':
         requirement_id = request.POST.get('requirement_id')
-        file = request.FILES.get('file')
+        action_type = request.POST.get('action_type')
         
-        if not requirement_id or not file:
+        if not requirement_id:
              messages.error(request, '参数缺失')
         else:
             try:
                 req = MaterialRequirement.objects.get(pk=requirement_id)
-                req.template_file = file
-                req.save()
-                messages.success(request, f'"{req.name}" 模板更新成功！')
+                
+                if action_type == 'update_description':
+                    description = request.POST.get('description', '')
+                    req.description = description
+                    req.save()
+                    messages.success(request, f'"{req.name}" 描述更新成功！')
+                elif request.FILES.get('file'):
+                    file = request.FILES.get('file')
+                    req.template_file = file
+                    req.save()
+                    messages.success(request, f'"{req.name}" 模板更新成功！')
+                else:
+                    messages.warning(request, '未检测到有效操作')
+                    
             except MaterialRequirement.DoesNotExist:
                 messages.error(request, '未找到指定的材料要求配置')
             except Exception as e:
-                messages.error(request, f'上传失败: {str(e)}')
+                messages.error(request, f'操作失败: {str(e)}')
         
         return redirect('clubs:upload_template')
     
@@ -6533,14 +6483,10 @@ def add_material_requirement(request):
                 template_file=template_file
             )
             messages.success(request, '添加成功')
-            return redirect('clubs:manage_material_requirements')
         except Exception as e:
             messages.error(request, f'添加失败: {str(e)}')
             
-    context = {
-        'request_type_choices': MaterialRequirement.REQUEST_TYPE_CHOICES,
-    }
-    return render(request, 'clubs/admin/material_requirement_form.html', context)
+    return redirect('clubs:manage_material_requirements')
 
 
 @login_required
@@ -6554,7 +6500,9 @@ def edit_material_requirement(request, req_id):
     
     if request.method == 'POST':
         try:
-            req.request_type = request.POST.get('request_type')
+            if request.POST.get('request_type'):
+                req.request_type = request.POST.get('request_type')
+                
             req.name = request.POST.get('name')
             req.icon = request.POST.get('icon', 'cloud_upload')
             req.description = request.POST.get('description', '')
@@ -6572,15 +6520,10 @@ def edit_material_requirement(request, req_id):
             req.save()
             
             messages.success(request, '修改成功')
-            return redirect('clubs:manage_material_requirements')
         except Exception as e:
             messages.error(request, f'修改失败: {str(e)}')
             
-    context = {
-        'requirement': req,
-        'request_type_choices': MaterialRequirement.REQUEST_TYPE_CHOICES,
-    }
-    return render(request, 'clubs/admin/material_requirement_form.html', context)
+    return redirect('clubs:manage_material_requirements')
 
 
 @login_required
@@ -6915,6 +6858,11 @@ def submit_room_booking(request):
         
         if not all([room_id, date_str, start_time_str, end_time_str, purpose, contact_phone, participant_count]):
             messages.error(request, '请填写所有必填项')
+            return redirect('clubs:submit_room_booking')
+
+        # 验证手机号格式
+        if not re.match(r'^1[3-9]\d{9}$', contact_phone):
+            messages.error(request, '请输入有效的11位手机号码')
             return redirect('clubs:submit_room_booking')
 
         room = get_object_or_404(Room, pk=room_id)

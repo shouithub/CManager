@@ -10,8 +10,25 @@ def material_name(field_name):
     动态从模型定义中获取字段名称，避免硬编码
     """
     try:
-        from clubs.models import SubmissionReview, ClubApplicationReview, ClubRegistrationReview
+        from clubs.models import SubmissionReview, ClubApplicationReview, ClubRegistrationReview, MaterialRequirement
         
+        # 1. 优先尝试从 MaterialRequirement 获取 (支持 req_ID 和 legacy_name)
+        key_str = str(field_name)
+        if key_str.startswith('req_'):
+            try:
+                req_id = int(key_str.split('_')[1])
+                req = MaterialRequirement.objects.filter(id=req_id).first()
+                if req:
+                    return req.name
+            except (ValueError, IndexError):
+                pass
+        
+        # 尝试 legacy_name 查找
+        req = MaterialRequirement.objects.filter(legacy_field_name=key_str).first()
+        if req:
+            return req.name
+        
+        # 2. 回退到模型定义的 choices
         # 收集所有审核模型中的材料选项
         choices = []
         choices.extend(SubmissionReview.REJECTED_MATERIALS_CHOICES)
@@ -23,7 +40,7 @@ def material_name(field_name):
         
         # 返回对应名称，如果未找到则返回原始字段名
         return material_names.get(field_name, field_name)
-    except (ImportError, AttributeError):
+    except (ImportError, AttributeError, Exception):
         # 如果导入失败或模型没有该属性，返回原始字段名
         return field_name
 
@@ -62,3 +79,31 @@ def get_file_name_with_ext(file_field):
 def concat_str(value, arg):
     """字符串拼接"""
     return str(value) + str(arg)
+
+
+@register.filter
+def get_material_requirement(key):
+    """
+    根据键值（req_ID 或 legacy_field_name）获取 MaterialRequirement 对象
+    """
+    try:
+        from clubs.models import MaterialRequirement
+        key_str = str(key)
+        
+        # 1. 尝试通过 req_ID 获取
+        if key_str.startswith('req_'):
+            try:
+                req_id = int(key_str.split('_')[1])
+                return MaterialRequirement.objects.filter(id=req_id).first()
+            except (ValueError, IndexError):
+                pass
+                
+        # 2. 尝试通过 legacy_field_name 获取
+        req = MaterialRequirement.objects.filter(legacy_field_name=key_str).first()
+        if req:
+            return req
+            
+        # 3. 如果没找到，返回 None
+        return None
+    except Exception:
+        return None
