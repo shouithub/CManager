@@ -375,7 +375,11 @@
             {% for req in requirements %}
             <div class="form-row">
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon=req.icon|default:"cloud_upload" %}
+                    {% if req.template_file %}
+                        {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon=req.icon|default:"cloud_upload" template_url=req.template_file.url %}
+                    {% else %}
+                        {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon=req.icon|default:"cloud_upload" %}
+                    {% endif %}
                 </div>
             </div>
             {% empty %}

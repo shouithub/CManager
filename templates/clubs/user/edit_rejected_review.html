@@ -720,8 +720,15 @@
         <div class="rejected-materials-grid">
             {% for material in rejected_materials %}
             <div class="rejected-material-card">
-                <span class="material-icons">description</span>
-                <p class="material-name">{{ material|material_name }}</p>
+                {% with req=material|get_material_requirement %}
+                    {% if req %}
+                        <span class="material-icons" style="font-size: 2rem; color: var(--md3-error);">{{ req.icon|default:"description" }}</span>
+                        <p class="material-name">{{ req.name }}</p>
+                    {% else %}
+                        <span class="material-icons">description</span>
+                        <p class="material-name">{{ material|material_name }}</p>
+                    {% endif %}
+                {% endwith %}
             </div>
             {% endfor %}
         </div>
@@ -753,195 +760,50 @@
         </div>
         {% endif %}
         
-        {% if review_type == 'review' %}
-        <!-- 年审模板下载区域 -->
-        {% if financial_templates or activity_templates or member_list_templates or self_assessment_templates or club_constitution_templates or leader_report_templates or annual_activity_templates or advisor_report_templates or member_composition_templates or media_account_templates %}
-        <div class="template-section">
-            <div class="template-header">
-                <span class="material-icons">folder_zip</span>
-                <h3>可用模板下载</h3>
-            </div>
-            <div class="template-grid">
-                {% for template in financial_templates %}
-                <a href="{{ template.file.url }}" download class="template-link">
-                    <span class="material-icons">download</span>
-                    {{ template.name }}
-                </a>
-                {% endfor %}
-                {% for template in activity_templates %}
-                <a href="{{ template.file.url }}" download class="template-link">
-                    <span class="material-icons">download</span>
-                    {{ template.name }}
-                </a>
-                {% endfor %}
-                {% for template in member_list_templates %}
-                <a href="{{ template.file.url }}" download class="template-link">
-                    <span class="material-icons">download</span>
-                    {{ template.name }}
-                </a>
-                {% endfor %}
-                {% for template in self_assessment_templates %}
-                <a href="{{ template.file.url }}" download class="template-link">
-                    <span class="material-icons">download</span>
-                    {{ template.name }}
-                </a>
-                {% endfor %}
-                {% for template in club_constitution_templates %}
-                <a href="{{ template.file.url }}" download class="template-link">
-                    <span class="material-icons">download</span>
-                    {{ template.name }}
-                </a>
-                {% endfor %}
-                {% for template in leader_report_templates %}
-                <a href="{{ template.file.url }}" download class="template-link">
-                    <span class="material-icons">download</span>
-                    {{ template.name }}
-                </a>
-                {% endfor %}
-                {% for template in annual_activity_templates %}
-                <a href="{{ template.file.url }}" download class="template-link">
-                    <span class="material-icons">download</span>
-                    {{ template.name }}
-                </a>
-                {% endfor %}
-                {% for template in advisor_report_templates %}
-                <a href="{{ template.file.url }}" download class="template-link">
-                    <span class="material-icons">download</span>
-                    {{ template.name }}
-                </a>
-                {% endfor %}
-                {% for template in member_composition_templates %}
-                <a href="{{ template.file.url }}" download class="template-link">
-                    <span class="material-icons">download</span>
-                    {{ template.name }}
-                </a>
-                {% endfor %}
-                {% for template in media_account_templates %}
-                <a href="{{ template.file.url }}" download class="template-link">
-                    <span class="material-icons">download</span>
-                    {{ template.name }}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        {% endif %}
+
         
         <form method="post" action="{% url 'clubs:edit_rejected_review' club_id_param %}?request_id={{ request.GET.request_id }}&type={{ request.GET.type }}" enctype="multipart/form-data">
             {% csrf_token %}
             
             {% if review_type == 'club_registration' %}
             
-            {% if 'registration_form' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="registration_form" label="社团注册申请表" is_required=True allowed_extensions=".doc,.docx" icon="description" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'basic_info_form' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="basic_info_form" label="学生社团基础信息表" is_required=True allowed_extensions=".doc,.docx" icon="assignment" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'membership_fee_form' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="membership_fee_form" label="会费表或免收会费说明表" is_required=True allowed_extensions=".doc,.docx" icon="payments" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'leader_change_application' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="leader_change_application" label="社团主要负责人变动申请表" is_required=True allowed_extensions=".doc,.docx" icon="person" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'meeting_minutes' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="meeting_minutes" label="社团大会会议记录" is_required=True allowed_extensions=".doc,.docx" icon="notes" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'name_change_application' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="name_change_application" label="社团名称变更申请" is_required=True allowed_extensions=".doc,.docx" icon="edit" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'advisor_change_application' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="advisor_change_application" label="社团指导老师变动申请表" is_required=True allowed_extensions=".doc,.docx" icon="school" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'business_advisor_change_application' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="business_advisor_change_application" label="社团业务指导单位变动申请" is_required=True allowed_extensions=".doc,.docx" icon="domain" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'new_media_application' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="new_media_application" label="新媒体平台建立申请表" is_required=True allowed_extensions=".doc,.docx" icon="language" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
+            {% for material in rejected_materials %}
+                {% with req=material|get_material_requirement %}
+                    {% if req %}
+                    <div class="form-group">
+                        {% if req.template_file %}
+                            {% include 'clubs/components/_file_upload.html' with field_name=material label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description template_url=req.template_file.url %}
+                        {% else %}
+                            {% include 'clubs/components/_file_upload.html' with field_name=material label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description %}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
             
             {% endif %}
             
             {% if review_type == 'review' %}
             
-            <!-- 年审材料上传表单 -->
-            {% if 'self_assessment_form' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="self_assessment_form" label="社团自查表" is_required=True allowed_extensions=".doc,.docx" icon="description" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'club_constitution' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="club_constitution" label="社团章程" is_required=True allowed_extensions=".doc,.docx" icon="gavel" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'leader_learning_work_report' in rejected_materials or not rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="leader_learning_work_report" label="负责人学习及工作情况报告" is_required=True allowed_extensions=".doc,.docx" icon="school" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'annual_activity_list' in rejected_materials or not rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="annual_activity_list" label="社团年度活动清单" is_required=True allowed_extensions=".doc,.docx" icon="event_note" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'advisor_performance_report' in rejected_materials or not rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="advisor_performance_report" label="指导教师履职情况报告" is_required=True allowed_extensions=".doc,.docx" icon="supervisor_account" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'financial_report' in rejected_materials or not rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="financial_report" label="年度财务情况报告" is_required=True allowed_extensions=".doc,.docx" icon="account_balance" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'member_composition_list' in rejected_materials or not rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="member_composition_list" label="社团成员构成表" is_required=True allowed_extensions=".doc,.docx" icon="groups" description="支持 DOC、DOCX 格式的 Word 文档" %}
-            </div>
-            {% endif %}
-            
-            {% if 'new_media_account_report' in rejected_materials %}
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="new_media_account_report" label="新媒体账号报告（如适用）" is_required=False allowed_extensions=".doc,.docx" icon="campaign" description="支持 DOC、DOCX 格式的 Word 文档，非必填" %}
-            </div>
-            {% endif %}
-            
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="other_materials" label="其他材料（如适用）" is_required=False allowed_extensions=".doc,.docx" icon="attach_file" description="支持 DOC、DOCX 格式的 Word 文档，非必填" %}
-            </div>
+            <!-- 年审材料上传表单 (动态生成) -->
+            {% for material in rejected_materials %}
+                {% with req=material|get_material_requirement %}
+                    {% if req %}
+                    <div class="form-group">
+                        {% if req.template_file %}
+                            {% include 'clubs/components/_file_upload.html' with field_name=material label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description template_url=req.template_file.url %}
+                        {% else %}
+                            {% include 'clubs/components/_file_upload.html' with field_name=material label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description %}
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <!-- Fallback for materials not in MaterialRequirement (Legacy support) -->
+                    <div class="form-group">
+                        {% include 'clubs/components/_file_upload.html' with field_name=material label=material|material_name is_required=True allowed_extensions=".doc,.docx,.pdf" icon="cloud_upload" description="请上传文件" %}
+                    </div>
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
             
             {% endif %}
             

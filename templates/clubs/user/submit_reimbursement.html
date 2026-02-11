@@ -337,29 +337,15 @@
     {% endfor %}
     {% endif %}
 
-    <!-- 模板下载提示 -->
-    {% if templates %}
+    <!-- 提交说明 -->
     <div class="info-card info">
         <h5>
-            <span class="material-icons">description</span>
-            可用模板
+            <span class="material-icons">info</span>
+            提交说明
         </h5>
-        <p>请下载并使用以下模板填写报销材料：</p>
-        <div class="template-grid">
-            {% for template in templates %}
-            <div class="template-item">
-                <a href="{{ template.file.url }}" download>
-                    <span class="material-icons" style="vertical-align: middle; margin-right: 4px;">download</span>
-                    {{ template.name }}
-                </a>
-                {% if template.description %}
-                <p>{{ template.description }}</p>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
+        <p>请填写报销详情并上传相关凭证。所有标记为 <strong style="color: var(--md3-error);">*</strong> 的字段为必填项。</p>
+        <p><strong>重要提醒：</strong>请确保上传的凭证清晰可见，支持图片(.jpg, .png)或PDF格式。</p>
     </div>
-    {% endif %}
 
     <!-- 表单卡片 -->
     <div class="form-card">
@@ -368,7 +354,7 @@
             报销信息填写
         </h3>
 
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" class="submit-form">
             {% csrf_token %}
 
             <div class="form-grid">
@@ -400,7 +386,11 @@
 
                 {% for req in requirements %}
                 <div class="form-group full-width">
-                    {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon=req.icon|default:"folder" %}
+                    {% if req.template_file %}
+                        {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon=req.icon|default:"folder" template_url=req.template_file.url %}
+                    {% else %}
+                        {% include 'clubs/components/_file_upload.html' with field_name="material_"|concat_str:req.id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions description=req.description icon=req.icon|default:"folder" %}
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>

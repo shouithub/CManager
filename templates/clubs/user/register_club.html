@@ -385,33 +385,6 @@
         <h1>申请新社团</h1>
     </div>
 
-    <!-- 模板下载提示 -->
-    {% if registration_templates %}
-    <div class="template-card">
-        <h4>
-            <span class="material-icons">description</span>
-            可用模板下载
-        </h4>
-        <div class="template-list">
-            <h5>
-                <span class="material-icons">school</span>
-                社团创建所需表格
-            </h5>
-            <ul>
-            {% for template in registration_templates %}
-                <li>
-                    <a href="{{ template.file.url }}" download>
-                        <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">download</span>
-                        {{ template.name }}
-                    </a>
-                    {% if template.description %} - {{ template.description }}{% endif %}
-                </li>
-            {% endfor %}
-            </ul>
-        </div>
-    </div>
-    {% endif %}
-
     <!-- 消息显示 -->
     {% if messages %}
     {% for message in messages %}
@@ -534,6 +507,15 @@
                     {% endif %}
                     {% if req.description %}
                     <span class="field-help">{{ req.description }}</span>
+                    {% endif %}
+                    
+                    {% if req.template_file %}
+                    <div class="template-download-info" style="display: flex; align-items: center; gap: var(--md3-spacing-xs); margin-top: var(--md3-spacing-sm);">
+                        <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-primary);">download</span>
+                        <a href="{{ req.template_file.url }}" download class="template-link" style="color: var(--md3-primary); text-decoration: none; font-size: 0.875rem; font-weight: 500;">
+                            下载模板
+                        </a>
+                    </div>
                     {% endif %}
                 </div>
                 {% empty %}

@@ -465,17 +465,17 @@ def staff_dashboard(request):
     
     # 为所有待审核项添加review_url属性
     for item in pending_submissions:
-        item.review_url = f'/clubs/staff/review-submission/{item.id}/'
+        item.review_url = f'/staff/review-submission/{item.id}/'
     for item in pending_club_registrations:
-        item.review_url = f'/clubs/staff/application/{item.id}/'
+        item.review_url = f'/staff/application/{item.id}/'
     for item in pending_registrations:
-        item.review_url = f'/clubs/staff/review-club-registration-submission/{item.id}/'
+        item.review_url = f'/staff/review-club-registration-submission/{item.id}/'
     for item in pending_reimbursements:
-        item.review_url = f'/clubs/staff/review-reimbursement/{item.id}/'
+        item.review_url = f'/staff/review-reimbursement/{item.id}/'
     for item in pending_activity_applications:
-        item.review_url = f'/clubs/staff/review-activity-application/{item.id}/'
+        item.review_url = f'/staff/review-activity-application/{item.id}/'
     for item in pending_president_transitions:
-        item.review_url = f'/clubs/staff/review-president-transition/{item.id}/'
+        item.review_url = f'/staff/review-president-transition/{item.id}/'
     
     # 计算待审核数量
     pending_counts = {

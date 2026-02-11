@@ -18,12 +18,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.shortcuts import redirect
 
 urlpatterns = [
-    path('', lambda request: redirect('clubs:index')),  # 根路径重定向到clubs应用的index页面
+    path('', include('clubs.urls', namespace='clubs')),
     path('admin/', admin.site.urls),
-    path('clubs/', include('clubs.urls', namespace='clubs')),
 ]
 
 # 在生产环境中，静态文件应该由Web服务器提供，但为了解决当前问题，我们添加这个配置

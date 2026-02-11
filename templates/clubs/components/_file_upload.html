@@ -64,6 +64,15 @@
     <p class="field-description">{{ description }}</p>
     {% endif %}
 
+    {% if template_url %}
+    <div class="template-download-info" style="display: flex; align-items: center; gap: var(--md3-spacing-xs); margin-top: var(--md3-spacing-xs);">
+        <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-primary);">download</span>
+        <a href="{{ template_url }}" download class="template-link" style="color: var(--md3-primary); text-decoration: none; font-size: 0.875rem; font-weight: 500;">
+            下载模板{% if template_name %}: {{ template_name }}{% endif %}
+        </a>
+    </div>
+    {% endif %}
+
     {% if existing_file %}
     <div class="existing-file-info">
         <span class="material-icons">check_circle</span>

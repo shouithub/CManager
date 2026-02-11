@@ -1071,7 +1071,7 @@ function openDeleteModal(clubId, clubName) {
     currentDeleteClubName = clubName;
     document.getElementById('deleteClubNameDisplay').textContent = clubName;
     // 使用 replace 替换 url 中的 placeholder ID
-    // 注意：这里我们假设 url pattern 是 '/clubs/staff/delete-club/0/' 这样的格式
+    // 注意：这里我们假设 url pattern 是 '/staff/delete-club/0/' 这样的格式
     // 为了更健壮，我们先生成一个带 dummy ID 的 url，然后替换它
     let urlTemplate = "{% url 'clubs:delete_club' 12345 %}"; 
     document.getElementById('deleteForm').action = urlTemplate.replace('12345', clubId);

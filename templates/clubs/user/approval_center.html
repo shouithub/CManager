@@ -408,7 +408,7 @@ window.addEventListener('resize', checkLayout);
             {% if active_items %}
             <div class="records-list">
                 {% for item in active_items %}
-                <div class="record-card" onclick="window.location.href='/clubs/approval-center-detail/{{ current_tab }}/{{ item.id }}/';">
+                <div class="record-card" onclick="window.location.href='/approval-center-detail/{{ current_tab }}/{{ item.id }}/';">
                     <div class="record-card-header">
                         {% if current_tab == 'annual_review' %}
                         <span class="club-name">{{ item.club.name }}</span>
@@ -714,7 +714,7 @@ window.addEventListener('resize', checkLayout);
             {% if completed_items %}
             <div class="records-list">
                 {% for item in completed_items|slice:":3" %}
-                <div class="record-card" onclick="window.location.href='/clubs/approval-center-detail/{{ current_tab }}/{{ item.id }}/';">
+                <div class="record-card" onclick="window.location.href='/approval-center-detail/{{ current_tab }}/{{ item.id }}/';">
                     <div class="record-card-header">
                         {% if current_tab == 'annual_review' %}
                         <span class="club-name">{{ item.club.name }}</span>
@@ -986,7 +986,7 @@ window.addEventListener('resize', checkLayout);
         <div class="modal-body">
             <div class="records-list">
                 {% for item in completed_items %}
-                <div class="record-card" onclick="window.location.href='/clubs/approval-center-detail/{{ current_tab }}/{{ item.id }}/';">
+                <div class="record-card" onclick="window.location.href='/approval-center-detail/{{ current_tab }}/{{ item.id }}/';">
                     <div class="record-card-header">
                         {% if current_tab == 'annual_review' %}
                         <span class="club-name">{{ item.club.name }}</span>
