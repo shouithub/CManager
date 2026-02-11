@@ -198,13 +198,6 @@ def populate_requirements(apps, schema_editor):
             'order': 60,
         },
         {
-            'request_type': 'info_change',
-            'name': '支持文件',
-            'is_required': False,
-            'legacy_field_name': 'supporting_document',
-            'order': 10,
-        },
-        {
             'request_type': 'president_transition',
             'name': '社团主要负责人变动申请表',
             'is_required': True,

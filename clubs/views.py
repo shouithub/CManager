@@ -2529,44 +2529,43 @@ def get_templates_by_type(template_type):
     return Template.objects.filter(template_type=template_type, is_active=True).order_by('-created_at')
 
 def upload_template(request):
-    """上传模板 - 干事和管理员可用"""
+    """上传/更新材料要求的模板文件 - 干事和管理员可用"""
     if not is_staff_or_admin(request.user):
         messages.error(request, '仅干事和管理员可以上传模板')
         return redirect('clubs:index')
     
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        template_type = request.POST.get('template_type', '')
-        description = request.POST.get('description', '').strip()
+        requirement_id = request.POST.get('requirement_id')
         file = request.FILES.get('file')
         
-        errors = []
-        if not name:
-            errors.append('模板名称不能为空')
-        if not template_type:
-            errors.append('模板类型不能为空')
-        if not file:
-            errors.append('模板文件不能为空')
+        if not requirement_id or not file:
+             messages.error(request, '参数缺失')
+        else:
+            try:
+                req = MaterialRequirement.objects.get(pk=requirement_id)
+                req.template_file = file
+                req.save()
+                messages.success(request, f'"{req.name}" 模板更新成功！')
+            except MaterialRequirement.DoesNotExist:
+                messages.error(request, '未找到指定的材料要求配置')
+            except Exception as e:
+                messages.error(request, f'上传失败: {str(e)}')
         
-        if errors:
-            return render(request, 'clubs/staff/upload_template.html', {
-                'errors': errors,
-                'template_types': Template.TEMPLATE_TYPES,
-            })
-        
-        Template.objects.create(
-            name=name,
-            template_type=template_type,
-            description=description,
-            file=file,
-            uploaded_by=request.user,
-            is_active=True
-        )
-        messages.success(request, '模板上传成功！')
-        return redirect('clubs:staff_dashboard')
+        return redirect('clubs:upload_template')
+    
+    # 获取所有活跃的材料要求
+    requirements = MaterialRequirement.objects.filter(is_active=True).order_by('request_type', 'order')
+    
+    # 按类型分组
+    grouped_requirements = {}
+    for req in requirements:
+        req_type_display = req.get_request_type_display()
+        if req_type_display not in grouped_requirements:
+            grouped_requirements[req_type_display] = []
+        grouped_requirements[req_type_display].append(req)
     
     context = {
-        'template_types': Template.TEMPLATE_TYPES,
+        'grouped_requirements': grouped_requirements,
     }
     return render(request, 'clubs/staff/upload_template.html', context)
 
@@ -2783,7 +2782,7 @@ def review_request(request, club_id):
         'submission': 'annual_review',
         'registration': 'application',
         'club_registration_submission': 'registration',
-        'leader_change': 'info_change',
+        'leader_change': 'president_transition',
         'reimbursement': 'reimbursement',
         'staff_registration': 'staff_dashboard'  # 使用旧的重定向地址
     }
@@ -2821,7 +2820,6 @@ def review_request(request, club_id):
         'club_registration_submission': 'club_registration',
         'reimbursement': 'reimbursement',
         'leader_change': 'president_transition',
-        'club_info_change': 'info_change',
         'staff_registration': 'staff_registration'
     }
     

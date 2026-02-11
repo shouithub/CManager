@@ -7,7 +7,7 @@
     .template-list-container {
         max-width: 1000px;
         margin: 0 auto;
-        padding-bottom: 100px;
+        padding-bottom: 120px;
     }
 
     .category-section {
@@ -201,12 +201,26 @@
         .material-actions {
             margin-left: 0;
             width: 100%;
-            justify-content: space-between;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: var(--md3-spacing-sm);
             min-width: 0;
         }
         
         .material-info {
             padding-right: 0;
+        }
+
+        /* Fix page-header on mobile */
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--md3-spacing-md);
+        }
+        
+        .page-header .btn {
+            width: 100%;
+            justify-content: center;
         }
     }
 </style>
