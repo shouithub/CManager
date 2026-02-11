@@ -770,7 +770,7 @@ class ActivityApplication(models.Model):
     activity_time_end = models.TimeField(verbose_name='活动结束时间')
     activity_location = models.CharField(max_length=200, verbose_name='活动地点')
     expected_participants = models.IntegerField(verbose_name='预计参与人数')
-    budget = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='活动预算', default=0.00)
+    budget = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='活动预算', default=0)
     
     # 活动申请表文件
     application_form = models.FileField(
@@ -1105,7 +1105,6 @@ class MaterialRequirement(models.Model):
         ('annual_review', '社团年审'),
         ('club_registration', '社团注册'),
         ('club_application', '社团申请'),
-        ('info_change', '信息变更'),
         ('president_transition', '社长换届'),
         ('reimbursement', '报销申请'),
         ('activity_application', '活动申请'),
