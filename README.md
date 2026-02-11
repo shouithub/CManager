@@ -84,8 +84,19 @@
     pip install -r requirements.txt
     ```
 
-4.  **创建 .env 文件**
-    在项目根目录下创建 `.env` 文件，填入以下配置：
+4.  **配置环境变量**
+    本项目提供了 `.env.example` 示例文件。请将其复制为 `.env` 并填入你的配置：
+    ```bash
+    # Linux / macOS
+    cp .env.example .env
+    
+    # Windows
+    copy .env.example .env
+    ```
+    
+    请务必修改 `.env` 文件中的 `SECRET_KEY` 为一个随机的安全字符串。
+    
+    示例 `.env` 配置：
     ```ini
     # 核心安全配置
     SECRET_KEY=your-long-random-secret-key

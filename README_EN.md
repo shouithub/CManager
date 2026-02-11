@@ -84,8 +84,19 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
     pip install -r requirements.txt
     ```
 
-4.  **Create .env File**
-    Create a `.env` file in the project root with the following configuration:
+4.  **Configure Environment Variables**
+    This project provides a `.env.example` file. Copy it to `.env` and fill in your configuration:
+    ```bash
+    # Linux / macOS
+    cp .env.example .env
+    
+    # Windows
+    copy .env.example .env
+    ```
+    
+    Make sure to update the `SECRET_KEY` in `.env` with a secure random string.
+
+    Example `.env` configuration:
     ```ini
     # Core Security Settings
     SECRET_KEY=your-long-random-secret-key
