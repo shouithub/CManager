@@ -113,10 +113,22 @@ WSGI_APPLICATION = 'CManager.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.getenv('DB_NAME', BASE_DIR / 'db.sqlite3'),
     }
 }
+
+if os.getenv('DB_USER'):
+    DATABASES['default']['USER'] = os.getenv('DB_USER')
+
+if os.getenv('DB_PASSWORD'):
+    DATABASES['default']['PASSWORD'] = os.getenv('DB_PASSWORD')
+
+if os.getenv('DB_HOST'):
+    DATABASES['default']['HOST'] = os.getenv('DB_HOST')
+
+if os.getenv('DB_PORT'):
+    DATABASES['default']['PORT'] = os.getenv('DB_PORT')
 
 
 # Password validation

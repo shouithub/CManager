@@ -53,7 +53,7 @@ jobs:
         
         # Copy project files
         # We need rsync to exclude patterns efficiently
-        rsync -av --progress ./ release_build/ --exclude .git --exclude .github --exclude __pycache__ --exclude *.pyc --exclude release_build --exclude .venv --exclude venv --exclude .env
+        rsync -av --progress ./ release_build/ --exclude .git --exclude .github --exclude __pycache__ --exclude *.pyc --exclude release_build --exclude .venv --exclude venv --exclude .env --exclude db.sqlite3 --exclude "**/README.md" --exclude "**/README_EN.md"
         
         # Create zip archive
         # Use github.sha for unique naming on non-tag builds, or just branch name
