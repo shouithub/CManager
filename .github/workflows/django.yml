@@ -46,29 +46,48 @@ jobs:
       run: |
         python manage.py collectstatic --noinput
 
+    - name: Create Release Package
+      run: |
+        # Create a temporary directory for the release
+        mkdir release_build
+        
+        # Copy project files
+        # We need rsync to exclude patterns efficiently
+        rsync -av --progress ./ release_build/ --exclude .git --exclude .github --exclude __pycache__ --exclude *.pyc --exclude release_build --exclude .venv --exclude venv --exclude .env
+        
+        # Create zip archive
+        # Use github.sha for unique naming on non-tag builds, or just branch name
+        if [[ "${{ github.ref_type }}" == "tag" ]]; then
+          FILENAME="CManager-${{ github.ref_name }}.zip"
+        else
+          FILENAME="CManager-${{ github.ref_name }}-${{ github.sha }}.zip"
+        fi
+        
+        cd release_build
+        zip -r ../$FILENAME .
+        cd ..
+        
+        echo "RELEASE_FILENAME=$FILENAME" >> $GITHUB_ENV
+        
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-package
+        path: ${{ env.RELEASE_FILENAME }}
+
   release:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Create Release Package
-      run: |
-        # Create a temporary directory for the release
-        mkdir release_build
-        
-        # Copy project files (excluding git, venv, etc)
-        rsync -av --progress ./ release_build/ --exclude .git --exclude .github --exclude __pycache__ --exclude *.pyc --exclude release_build
-        
-        # Create zip archive
-        cd release_build
-        zip -r ../CManager-${{ github.ref_name }}.zip .
-        cd ..
-        
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: release-package
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: CManager-${{ github.ref_name }}.zip
+        files: CManager-*.zip
         generate_release_notes: true
