@@ -97,7 +97,7 @@ jobs:
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        name: Nightly Build
-        tag_name: nightly
+        name: Nightly Build ${{ github.run_number }}
+        tag_name: nightly-${{ github.run_number }}
         prerelease: true
         files: CManager-*.zip
