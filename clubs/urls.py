@@ -10,6 +10,7 @@ app_name = 'clubs'
 urlpatterns = [
     # API endpoints
     path('api/staff/review-history/<str:review_type>/', api_views.api_staff_review_history, name='api_staff_review_history'),
+    path('api/notification-counts/', views.notification_counts, name='notification_counts'),
 
     # 公共页面
     path('', views.index, name='index'),

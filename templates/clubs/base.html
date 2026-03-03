@@ -26,8 +26,8 @@
             document.documentElement.setAttribute('data-theme', theme);
         })();
     </script>
-    <link rel="preload" href="https://fonts.font.im/icon?family=Material+Icons" as="style">
-    <link href="https://fonts.font.im/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preload" href="https://google-fonts.mirrors.sjtug.sjtu.edu.cn/icon?family=Material+Icons" as="style">
+    <link href="https://google-fonts.mirrors.sjtug.sjtu.edu.cn/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20251207">
     <style>
         /* 防止移动设备自动缩放 */
@@ -501,6 +501,134 @@
                 const currentPath = window.location.pathname;
                 const menuItems = document.querySelectorAll('.sidebar-menu-item, .bottom-nav-item');
                 menuItems.forEach(item => { try { if (item.getAttribute('href') === currentPath) item.classList.add('active'); } catch (e) {} });
+
+                {% if user.is_authenticated %}
+                (function initRealtimeBadges() {
+                    const role = '{{ user.profile.role|default:"" }}';
+                    if (!['staff', 'admin', 'president'].includes(role)) {
+                        return;
+                    }
+
+                    const endpoint = '{% url "clubs:notification_counts" %}';
+                    const pollIntervalMs = 20000;
+                    const maxBackoffMs = 120000;
+                    let failureCount = 0;
+                    let timerId = null;
+
+                    function scheduleNext(delay) {
+                        if (timerId) {
+                            window.clearTimeout(timerId);
+                        }
+                        timerId = window.setTimeout(pollAndUpdate, delay);
+                    }
+
+                    function upsertSidebarBadge(href, count) {
+                        const links = document.querySelectorAll(`.sidebar-menu-item[href="${href}"]`);
+                        links.forEach((link) => {
+                            let badge = link.querySelector('.badge-count');
+                            if (count > 0) {
+                                if (!badge) {
+                                    badge = document.createElement('span');
+                                    badge.className = 'badge-count';
+                                    link.appendChild(badge);
+                                }
+                                badge.textContent = String(count);
+                            } else if (badge) {
+                                badge.remove();
+                            }
+                        });
+                    }
+
+                    function upsertBottomBadge(href, count) {
+                        const links = document.querySelectorAll(`.bottom-nav-item[href="${href}"]`);
+                        links.forEach((link) => {
+                            const icon = link.querySelector('.icon');
+                            if (!icon) {
+                                return;
+                            }
+                            let badge = icon.querySelector('.nav-badge');
+                            if (count > 0) {
+                                if (!badge) {
+                                    badge = document.createElement('span');
+                                    badge.className = 'nav-badge';
+                                    icon.appendChild(badge);
+                                }
+                                badge.textContent = String(count);
+                            } else if (badge) {
+                                badge.remove();
+                            }
+                        });
+                    }
+
+                    function applyCounts(data) {
+                        if (!data || typeof data !== 'object') {
+                            return;
+                        }
+
+                        if (role === 'staff' || role === 'admin') {
+                            const audit = data.audit_counts || {};
+                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "annual-review" %}', audit.annual_review || 0);
+                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "registration" %}', audit.registration || 0);
+                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "application" %}', audit.application || 0);
+                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "reimbursement" %}', audit.reimbursement || 0);
+                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "activity-application" %}', audit.activity_application || 0);
+                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "president-transition" %}', audit.president_transition || 0);
+                            upsertBottomBadge('{% url "clubs:staff_audit_center_mobile" %}', data.audit_total || 0);
+                        }
+
+                        if (role === 'president') {
+                            const approval = data.approval_counts || {};
+                            upsertSidebarBadge('{% url "clubs:approval_center" "annual_review" %}', approval.annual_review || 0);
+                            upsertSidebarBadge('{% url "clubs:approval_center" "registration" %}', approval.registration || 0);
+                            upsertSidebarBadge('{% url "clubs:approval_center" "application" %}', approval.application || 0);
+                            upsertSidebarBadge('{% url "clubs:approval_center" "reimbursement" %}', approval.reimbursement || 0);
+                            upsertSidebarBadge('{% url "clubs:approval_center" "activity_application" %}', approval.activity || 0);
+                            upsertSidebarBadge('{% url "clubs:approval_center" "president_transition" %}', approval.transition || 0);
+                            upsertBottomBadge('{% url "clubs:approval_center_mobile" %}', approval.total || 0);
+                        }
+                    }
+
+                    async function pollAndUpdate() {
+                        if (document.hidden) {
+                            scheduleNext(pollIntervalMs);
+                            return;
+                        }
+
+                        const controller = new AbortController();
+                        const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+
+                        try {
+                            const response = await fetch(endpoint, {
+                                method: 'GET',
+                                credentials: 'same-origin',
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                                signal: controller.signal,
+                            });
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}`);
+                            }
+                            const data = await response.json();
+                            applyCounts(data);
+                            failureCount = 0;
+                            scheduleNext(pollIntervalMs);
+                        } catch (error) {
+                            failureCount += 1;
+                            const backoff = Math.min(maxBackoffMs, pollIntervalMs * Math.pow(2, Math.min(failureCount, 3)));
+                            scheduleNext(backoff);
+                        } finally {
+                            window.clearTimeout(timeoutId);
+                        }
+                    }
+
+                    document.addEventListener('visibilitychange', function() {
+                        if (!document.hidden) {
+                            scheduleNext(800);
+                        }
+                    });
+
+                    pollAndUpdate();
+                })();
+                {% endif %}
             });
         })();
     </script>

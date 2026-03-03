@@ -17,6 +17,7 @@ from datetime import datetime
 from django.conf import settings
 from django.http import HttpResponse, FileResponse, HttpResponseForbidden, JsonResponse
 from django.db.models import Q
+from django.core.cache import cache
 import os
 import re
 import urllib.parse
@@ -26,6 +27,7 @@ from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement,
 from django.contrib.contenttypes.models import ContentType
 import shutil
 from PIL import Image
+from .context_processors import audit_center_counts as get_audit_center_counts
 
 
 def rename_uploaded_file(file, club_name, request_type, material_type):
@@ -125,6 +127,52 @@ def _validate_file_allowed(file, field_name, allowed_extensions, allowed_mimetyp
         return f"{field_name} 的文件类型不被允许（允许的后缀：{', '.join(allowed_extensions)}）"
     # 可选的 mime 类型检查（如果需要）
     return None
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['GET'])
+def notification_counts(request):
+    """轻量通知计数接口：用于侧边栏/底栏角标实时刷新。"""
+    role = ''
+    try:
+        role = request.user.profile.role
+    except Exception:
+        pass
+
+    cache_key = f'notification_counts:{request.user.id}:{role}'
+    cached_payload = cache.get(cache_key)
+    if cached_payload is not None:
+        return JsonResponse(cached_payload)
+
+    counts_context = get_audit_center_counts(request)
+    audit_counts = counts_context.get('audit_center_counts', {})
+    approval_counts = counts_context.get('unread_approval_counts', {})
+
+    payload = {
+        'role': role,
+        'audit_counts': {
+            'annual_review': int(audit_counts.get('annual_review', 0)),
+            'registration': int(audit_counts.get('registration', 0)),
+            'application': int(audit_counts.get('application', 0)),
+            'reimbursement': int(audit_counts.get('reimbursement', 0)),
+            'activity_application': int(audit_counts.get('activity_application', 0)),
+            'president_transition': int(audit_counts.get('president_transition', 0)),
+        },
+        'approval_counts': {
+            'annual_review': int(approval_counts.get('annual_review', 0)),
+            'registration': int(approval_counts.get('registration', 0)),
+            'application': int(approval_counts.get('application', 0)),
+            'reimbursement': int(approval_counts.get('reimbursement', 0)),
+            'activity': int(approval_counts.get('activity', 0)),
+            'transition': int(approval_counts.get('transition', 0)),
+            'total': int(approval_counts.get('total', 0)),
+        },
+    }
+
+    payload['audit_total'] = sum(payload['audit_counts'].values())
+
+    cache.set(cache_key, payload, timeout=10)
+    return JsonResponse(payload)
 
 
 def get_dynamic_materials_list(target_obj, db_req_type):
@@ -4233,6 +4281,19 @@ def admin_edit_user_account(request, user_id):
                     )
                 
                 success_messages.append(f'已成功更新用户 {target_user.username} 的详细信息')
+
+        # 删除用户
+        elif action == 'delete_user':
+            if target_user.is_superuser:
+                errors.append('不能删除超级管理员账户')
+            else:
+                username = target_user.username
+                try:
+                    target_user.delete()
+                    messages.success(request, f'已删除用户账户：{username}')
+                    return redirect('clubs:manage_users')
+                except Exception as e:
+                    errors.append(f'删除失败：{str(e)}')
         
 
     # 获取用户角色信息
@@ -4320,11 +4381,11 @@ def change_staff_attributes(request, user_id):
     
     target_user = get_object_or_404(User, pk=user_id)
     
-    # 检查目标用户是否为干事
+    # 检查目标用户是否为干事或管理员
     try:
         profile = target_user.profile
-        if profile.role != 'staff':
-            messages.error(request, '该用户不是干事，无法修改干事属性')
+        if profile.role not in ('staff', 'admin'):
+            messages.error(request, '仅干事或管理员支持修改部门/职级属性')
             return redirect('clubs:manage_users')
     except UserProfile.DoesNotExist:
         messages.error(request, '用户角色信息不存在')
@@ -4335,26 +4396,30 @@ def change_staff_attributes(request, user_id):
         staff_level = request.POST.get('staff_level', '').strip()
         
         # 验证部门和职级
-        valid_departments = dict(UserProfile.DEPARTMENT_CHOICES).keys()
         valid_levels = dict(UserProfile.STAFF_LEVEL_CHOICES).keys()
-        
-        if department and department not in valid_departments:
-            messages.error(request, '部门选择无效')
-            return redirect('clubs:manage_users')
+
+        selected_department = None
+        if department:
+            try:
+                selected_department = Department.objects.get(id=int(department))
+            except (ValueError, Department.DoesNotExist):
+                messages.error(request, '部门选择无效')
+                return redirect('clubs:manage_users')
         
         if staff_level and staff_level not in valid_levels:
             messages.error(request, '职级选择无效')
             return redirect('clubs:manage_users')
         
         try:
-            old_department = profile.get_department_display() if profile.department else '未设定'
+            old_department = profile.department_link.name if profile.department_link else (profile.department or '未设定')
             old_level = profile.get_staff_level_display() if profile.staff_level else '未设定'
             
-            profile.department = department if department else None
+            profile.department_link = selected_department
+            profile.department = selected_department.name if selected_department else None
             profile.staff_level = staff_level if staff_level else profile.staff_level
             profile.save()
             
-            new_department = profile.get_department_display() if profile.department else '未设定'
+            new_department = profile.department_link.name if profile.department_link else (profile.department or '未设定')
             new_level = profile.get_staff_level_display()
             
             messages.success(request, f'已修改 {target_user.username} 的干事属性：部门「{old_department}」→「{new_department}」，职级「{old_level}」→「{new_level}」')
@@ -4366,7 +4431,7 @@ def change_staff_attributes(request, user_id):
     context = {
         'user': target_user,
         'profile': profile,
-        'department_choices': UserProfile.DEPARTMENT_CHOICES,
+        'departments': Department.objects.all().order_by('order', 'name'),
         'staff_level_choices': UserProfile.STAFF_LEVEL_CHOICES,
     }
     return render(request, 'clubs/admin/change_staff_attributes.html', context)
@@ -5751,13 +5816,13 @@ def review_activity_application(request, activity_id):
     activity = get_object_or_404(ActivityApplication, pk=activity_id)
     
     if request.method == 'POST':
-        action = request.POST.get('action', '')
-        comment = request.POST.get('comment', '').strip()
-        
-        if action == 'approve':
+        decision = request.POST.get('review_status', '').strip().lower()
+        review_comment = request.POST.get('review_comment', '').strip()
+
+        if decision == 'approved':
             activity.staff_approved = True
             activity.staff_reviewer = request.user
-            activity.staff_comment = comment
+            activity.staff_comment = review_comment
             activity.staff_reviewed_at = timezone.now()
             activity.update_status()
             
@@ -5771,14 +5836,14 @@ def review_activity_application(request, activity_id):
                 reviewed_at=activity.staff_reviewed_at,
                 reviewer=request.user,
                 status='approved',
-                reviewer_comment=comment
+                reviewer_comment=review_comment
             )
             
             messages.success(request, '活动申请已批准')
-        elif action == 'reject':
+        elif decision == 'rejected':
             activity.staff_approved = False
             activity.staff_reviewer = request.user
-            activity.staff_comment = comment
+            activity.staff_comment = review_comment
             activity.staff_reviewed_at = timezone.now()
             activity.update_status()
             
@@ -5792,7 +5857,7 @@ def review_activity_application(request, activity_id):
                 reviewed_at=activity.staff_reviewed_at,
                 reviewer=request.user,
                 status='rejected',
-                reviewer_comment=comment
+                reviewer_comment=review_comment
             )
             
             messages.success(request, '活动申请已拒绝')
@@ -5804,6 +5869,8 @@ def review_activity_application(request, activity_id):
     context = {
         'activity': activity,
         'club': activity.club,
+        'materials': get_dynamic_materials_list(activity, 'activity_application'),
+        'existing_reviews': ActivityApplicationHistory.objects.filter(activity_application=activity).order_by('-attempt_number'),
     }
     return render(request, 'clubs/staff/review_activity_application.html', context)
 

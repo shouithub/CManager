@@ -898,7 +898,7 @@
             <div class="info-value">
                 {% for relation in registration.club.responsible_staff.all %}
                     {% if relation.is_active %}
-                    <div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--md3-outline-variant); last-child: border-bottom: none;">
+                    <div style="margin-bottom: 8px; padding-bottom: 8px; {% if not forloop.last %}border-bottom: 1px solid var(--md3-outline-variant);{% endif %}">
                         <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                             <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                                 {% if relation.staff.avatar %}

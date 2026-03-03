@@ -16,21 +16,48 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def _load_env_file(env_path: Path):
+    if not env_path.exists():
+        return
+
+    for line in env_path.read_text(encoding='utf-8').splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#') or '=' not in stripped:
+            continue
+        key, value = stripped.split('=', 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
 def _load_env():
-    env_path = BASE_DIR / '.env'
-    if env_path.exists():
-        for line in env_path.read_text(encoding='utf-8').splitlines():
-            stripped = line.strip()
-            if not stripped or stripped.startswith('#') or '=' not in stripped:
-                continue
-            key, value = stripped.split('=', 1)
-            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+    django_env = os.environ.get('DJANGO_ENV', 'dev').strip().lower()
+    env_path = BASE_DIR / f'.env.{django_env}'
+    fallback_env_path = BASE_DIR / '.env'
+
+    _load_env_file(env_path)
+    _load_env_file(fallback_env_path)
+
 
 def _env_list(name, default):
     value = os.environ.get(name)
     if value is None:
         return default
     return [item.strip() for item in value.split(',') if item.strip()]
+
+
+def _env_bool(name, default=False):
+    return os.environ.get(name, str(default)).lower() in ('1', 'true', 'yes', 'on')
+
+
+def _env_int(name, default):
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
 
 _load_env()
 
@@ -41,7 +68,7 @@ _load_env()
 SECRET_KEY = os.environ.get('SECRET_KEY', 'unsafe-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1', 'true', 'yes', 'on')
+DEBUG = _env_bool('DEBUG', False)
 
 ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', ['localhost', '127.0.0.1'])
 
@@ -49,18 +76,16 @@ ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', ['localhost', '127.0.0.1'])
 CSRF_TRUSTED_ORIGINS = _env_list('CSRF_TRUSTED_ORIGINS', ['http://127.0.0.1', 'http://localhost'])
 
 # 生产环境安全设置
-SECURE_BROWSER_XSS_FILTER = os.getenv('SECURE_BROWSER_XSS_FILTER', 'True').lower() == 'true'
-SECURE_CONTENT_TYPE_NOSNIFF = os.getenv('SECURE_CONTENT_TYPE_NOSNIFF', 'True').lower() == 'true'
-SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
-CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'
+SECURE_BROWSER_XSS_FILTER = _env_bool('SECURE_BROWSER_XSS_FILTER', True)
+SECURE_CONTENT_TYPE_NOSNIFF = _env_bool('SECURE_CONTENT_TYPE_NOSNIFF', True)
+SESSION_COOKIE_SECURE = _env_bool('SESSION_COOKIE_SECURE', False)
+CSRF_COOKIE_SECURE = _env_bool('CSRF_COOKIE_SECURE', False)
 X_FRAME_OPTIONS = os.getenv('X_FRAME_OPTIONS', 'DENY')
 
 # 静态文件配置
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
-
-
 
 
 # Application definition
@@ -77,8 +102,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.http.ConditionalGetMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -90,8 +117,7 @@ ROOT_URLCONF = 'CManager.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -105,6 +131,18 @@ TEMPLATES = [
     },
 ]
 
+if not DEBUG:
+    TEMPLATES[0]['APP_DIRS'] = False
+    TEMPLATES[0]['OPTIONS']['loaders'] = [
+        (
+            'django.template.loaders.cached.Loader',
+            [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ],
+        )
+    ]
+
 WSGI_APPLICATION = 'CManager.wsgi.application'
 
 
@@ -115,8 +153,22 @@ DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
         'NAME': os.getenv('DB_NAME', BASE_DIR / 'db.sqlite3'),
+        'CONN_MAX_AGE': _env_int('DB_CONN_MAX_AGE', 60),
     }
 }
+
+if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+    DATABASES['default']['CONN_MAX_AGE'] = _env_int('SQLITE_CONN_MAX_AGE', _env_int('DB_CONN_MAX_AGE', 60))
+    DATABASES['default']['OPTIONS'] = {
+        'timeout': _env_int('SQLITE_TIMEOUT', 30),
+        'init_command': (
+            f"PRAGMA journal_mode=WAL; "
+            f"PRAGMA synchronous={os.getenv('SQLITE_SYNCHRONOUS', 'NORMAL')}; "
+            f"PRAGMA temp_store=MEMORY; "
+            f"PRAGMA cache_size={_env_int('SQLITE_CACHE_SIZE', -20000)}; "
+            f"PRAGMA mmap_size={_env_int('SQLITE_MMAP_SIZE', 134217728)};"
+        ),
+    }
 
 if os.getenv('DB_USER'):
     DATABASES['default']['USER'] = os.getenv('DB_USER')
@@ -129,6 +181,39 @@ if os.getenv('DB_HOST'):
 
 if os.getenv('DB_PORT'):
     DATABASES['default']['PORT'] = os.getenv('DB_PORT')
+
+
+# Cache（高并发下优先减少重复查询/渲染开销）
+CACHE_BACKEND = os.getenv('CACHE_BACKEND', 'locmem').strip().lower()
+
+if CACHE_BACKEND == 'filebased':
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+            'LOCATION': str(BASE_DIR / '.cache' / 'django'),
+            'TIMEOUT': _env_int('CACHE_TIMEOUT', 300),
+            'KEY_PREFIX': os.getenv('CACHE_KEY_PREFIX', 'cmanager'),
+        }
+    }
+elif CACHE_BACKEND == 'dummy':
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': os.getenv('CACHE_LOCATION', 'cmanager-default-cache'),
+            'TIMEOUT': _env_int('CACHE_TIMEOUT', 300),
+            'KEY_PREFIX': os.getenv('CACHE_KEY_PREFIX', 'cmanager'),
+        }
+    }
+
+if _env_bool('SESSION_USE_CACHED_DB', True):
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+    SESSION_CACHE_ALIAS = 'default'
 
 
 # Password validation
@@ -189,5 +274,5 @@ EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.example.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'no-reply@example.com')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_USE_TLS = _env_bool('EMAIL_USE_TLS', True)
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@example.com')

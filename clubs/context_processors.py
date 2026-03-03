@@ -1,6 +1,7 @@
 """上下文处理器，用于在所有模板中提供全局变量"""
 import os
 from django.conf import settings
+from django.core.cache import cache
 from .models import (
     ReviewSubmission, 
     ClubRegistration, 
@@ -37,26 +38,28 @@ def site_settings(request):
 
 def audit_center_counts(request):
     """为审核中心菜单项提供待审核申请的数目"""
-    if not request.user.is_authenticated:
-        return {
-            'audit_center_counts': {
-                'annual_review': 0,
-                'registration': 0,
-                'application': 0,
-                'reimbursement': 0,
-                'activity_application': 0,
-                'president_transition': 0,
-            },
-            'unread_approval_counts': {
-                'annual_review': 0,
-                'registration': 0,
-                'application': 0,
-                'reimbursement': 0,
-                'activity': 0,
-                'transition': 0,
-                'total': 0
-            }
+    empty_result = {
+        'audit_center_counts': {
+            'annual_review': 0,
+            'registration': 0,
+            'application': 0,
+            'reimbursement': 0,
+            'activity_application': 0,
+            'president_transition': 0,
+        },
+        'unread_approval_counts': {
+            'annual_review': 0,
+            'registration': 0,
+            'application': 0,
+            'reimbursement': 0,
+            'activity': 0,
+            'transition': 0,
+            'total': 0
         }
+    }
+
+    if not request.user.is_authenticated:
+        return empty_result
     
     # 检查用户是否为干事或管理员
     try:
@@ -66,6 +69,11 @@ def audit_center_counts(request):
     except:
         is_staff_or_admin = False
         is_president = False
+
+    cache_key = f"audit_center_counts:{request.user.id}:{user_role if 'user_role' in locals() else 'unknown'}:{int(request.user.is_superuser)}"
+    cached_result = cache.get(cache_key)
+    if cached_result is not None:
+        return cached_result
     
     # 计算干事端审核中心数量
     if is_staff_or_admin or request.user.is_superuser:
@@ -150,11 +158,14 @@ def audit_center_counts(request):
             'transition': 0,
             'total': 0
         }
-    
-    return {
+
+    result = {
         'audit_center_counts': audit_counts,
         'unread_approval_counts': approval_counts
     }
+
+    cache.set(cache_key, result, timeout=10)
+    return result
 
 
 def unread_approvals(request):
