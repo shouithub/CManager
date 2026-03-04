@@ -1,0 +1,611 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}初始化向导{% endblock %}
+
+{% block extra_css %}
+<style>
+    .oobe-wrap { max-width: 1120px; margin: 24px auto; padding: 0 16px 120px; }
+    .oobe-hero {
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-2xl);
+        background: linear-gradient(145deg, var(--md3-surface-container-low), var(--md3-surface-container));
+        box-shadow: var(--md3-elevation-2);
+        padding: 20px;
+        display: grid;
+        gap: 14px;
+    }
+    .oobe-title { margin: 0; font-size: 1.75rem; }
+    .oobe-subtitle { margin: 8px 0 0 0; color: var(--md3-on-surface-variant); }
+    .oobe-pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .oobe-pill { font-size: 12px; font-weight: 700; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--md3-outline-variant); background: var(--md3-surface-container-high); color: var(--md3-on-surface-variant); }
+
+    .oobe-progress { margin-top: 14px; display: grid; gap: 8px; }
+    .oobe-progress-track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .oobe-dot {
+        height: 8px;
+        border-radius: 999px;
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        transition: all .25s ease;
+    }
+    .oobe-dot.active,
+    .oobe-dot.done { background: var(--md3-primary); border-color: var(--md3-primary); }
+    .oobe-progress-label { font-size: 13px; color: var(--md3-on-surface-variant); }
+
+    .oobe-alert { margin-top: 14px; border-radius: var(--md3-radius-lg); border: 1px solid var(--md3-error); background: var(--md3-error-container); color: var(--md3-on-error-container); padding: 14px 16px; }
+    .oobe-alert ul { margin: 0; padding-left: 18px; }
+
+    .oobe-form { margin-top: 14px; }
+    .oobe-stage {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-2xl);
+        box-shadow: var(--md3-elevation-2);
+        padding: 20px;
+        animation: oobeIn .25s ease;
+    }
+    @keyframes oobeIn {
+        from { opacity: 0; transform: translateY(8px) scale(0.995); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .oobe-stage-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .oobe-stage-title { margin: 0; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 8px; }
+    .oobe-stage-desc { margin: 0; color: var(--md3-on-surface-variant); font-size: 0.88rem; }
+
+    .oobe-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .oobe-field { display: grid; gap: 6px; }
+    .oobe-field label { font-size: 0.87rem; color: var(--md3-on-surface-variant); font-weight: 600; }
+    .oobe-field input,
+    .oobe-field select { width: 100%; box-sizing: border-box; border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-md); background: var(--md3-surface-container-highest); color: var(--md3-on-surface); padding: 11px 12px; font-size: 0.92rem; }
+    .oobe-field input:focus,
+    .oobe-field select:focus { outline: none; border-color: var(--md3-primary); box-shadow: 0 0 0 3px var(--md3-primary-container); }
+    .oobe-hint { color: var(--md3-on-surface-variant); font-size: 0.8rem; }
+    .oobe-file { border: 1px dashed var(--md3-outline); border-radius: var(--md3-radius-md); padding: 10px 12px; background: var(--md3-surface-container-highest); }
+    .oobe-crop-wrap { margin-top: 10px; display: none; }
+    .oobe-crop-canvas { width: 100%; max-width: 320px; height: auto; border-radius: var(--md3-radius-md); border: 1px solid var(--md3-outline-variant); background: var(--md3-surface-container-highest); }
+
+    .oobe-action-row { margin-top: 16px; display: flex; justify-content: flex-end; gap: 10px; }
+    .oobe-btn { border: 1px solid transparent; border-radius: 999px; padding: 10px 16px; font-weight: 700; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }
+    .oobe-btn.primary { background: var(--md3-primary); color: var(--md3-on-primary); box-shadow: var(--md3-elevation-2); }
+    .oobe-btn.tonal { background: var(--md3-secondary-container); color: var(--md3-on-secondary-container); }
+    .oobe-btn.outlined { background: var(--md3-surface); color: var(--md3-on-surface); border-color: var(--md3-outline-variant); }
+
+    .oobe-mail-test-result { margin-top: 10px; font-size: 0.86rem; padding: 10px 12px; border-radius: var(--md3-radius-md); display: none; }
+    .oobe-mail-test-result.ok { display: block; background: var(--md3-success-container); color: var(--md3-on-success-container); }
+    .oobe-mail-test-result.err { display: block; background: var(--md3-error-container); color: var(--md3-on-error-container); }
+
+    .oobe-summary { display: grid; gap: 8px; margin-top: 10px; }
+    .oobe-summary-item { border: 1px solid var(--md3-outline-variant); background: var(--md3-surface-container-high); border-radius: var(--md3-radius-md); padding: 10px 12px; font-size: 0.88rem; }
+    .oobe-summary-key { color: var(--md3-on-surface-variant); margin-right: 6px; }
+
+    @media (max-width: 860px) {
+        .oobe-grid-2 { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="oobe-wrap">
+    <div class="oobe-hero">
+        <div>
+            <h1 class="oobe-title">首次启动初始化向导</h1>
+            <p class="oobe-subtitle">按步骤完成管理员、数据库、缓存、品牌与邮箱配置。每一步确认后会自动进入下一步。</p>
+        </div>
+        <div class="oobe-pill-row">
+            <span class="oobe-pill">管理员</span>
+            <span class="oobe-pill">数据库</span>
+            <span class="oobe-pill">缓存</span>
+            <span class="oobe-pill">Logo</span>
+            <span class="oobe-pill">邮箱 + 测试</span>
+        </div>
+        <div class="oobe-progress">
+            <div class="oobe-progress-track" id="oobeProgressTrack">
+                <span class="oobe-dot" data-step-dot="0"></span>
+                <span class="oobe-dot" data-step-dot="1"></span>
+                <span class="oobe-dot" data-step-dot="2"></span>
+                <span class="oobe-dot" data-step-dot="3"></span>
+                <span class="oobe-dot" data-step-dot="4"></span>
+            </div>
+            <div class="oobe-progress-label" id="oobeProgressLabel">第 1 / 5 步</div>
+        </div>
+    </div>
+
+    {% if errors %}
+    <div class="oobe-alert">
+        <ul>
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="oobe-form">
+        {% csrf_token %}
+        <div id="retainedInputs" style="display:none;"></div>
+        <div id="wizardHost"></div>
+    </form>
+</div>
+
+<template id="step-admin">
+    <section class="oobe-stage" data-step-section="0">
+        <div class="oobe-stage-head">
+            <h3 class="oobe-stage-title"><span class="material-icons">admin_panel_settings</span> 第一步：管理员账户</h3>
+            <p class="oobe-stage-desc">创建首个管理员账号</p>
+        </div>
+        <div class="oobe-grid-2">
+            <div class="oobe-field"><label>管理员用户名</label><input type="text" name="admin_username" value="{{ form_data.admin_username }}" required></div>
+            <div class="oobe-field"><label>管理员邮箱（推荐）</label><input type="email" name="admin_email" value="{{ form_data.admin_email }}" placeholder="admin@example.com"></div>
+            <div class="oobe-field"><label>管理员密码</label><input type="password" name="admin_password" required></div>
+            <div class="oobe-field"><label>确认密码</label><input type="password" name="admin_password_confirm" required></div>
+        </div>
+        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="1"><span class="material-icons">arrow_forward</span>继续</button></div>
+    </section>
+</template>
+
+<template id="step-db">
+    <section class="oobe-stage" data-step-section="1">
+        <div class="oobe-stage-head">
+            <h3 class="oobe-stage-title"><span class="material-icons">storage</span> 第二步：数据库</h3>
+            <p class="oobe-stage-desc">开发建议 SQLite；生产建议 PostgreSQL/MySQL</p>
+        </div>
+        <div class="oobe-field" style="margin-bottom: 10px;">
+            <label>数据库类型</label>
+            <select name="db_type" id="db_type" required>
+                {% for value, label in db_choices %}
+                <option value="{{ value }}" {% if form_data.db_type == value %}selected{% elif not form_data.db_type and value == 'sqlite' %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="oobe-grid-2" id="db_advanced">
+            <div class="oobe-field"><label>DB_NAME</label><input type="text" name="db_name" value="{{ form_data.db_name }}" placeholder="sqlite 可留空，默认 db.sqlite3"></div>
+            <div class="oobe-field"><label>DB_USER</label><input type="text" name="db_user" value="{{ form_data.db_user }}"></div>
+            <div class="oobe-field"><label>DB_PASSWORD</label><input type="password" name="db_password" value="{{ form_data.db_password }}"></div>
+            <div class="oobe-field"><label>DB_HOST</label><input type="text" name="db_host" value="{{ form_data.db_host }}" placeholder="127.0.0.1"></div>
+            <div class="oobe-field"><label>DB_PORT</label><input type="text" name="db_port" value="{{ form_data.db_port }}" placeholder="5432 / 3306"></div>
+        </div>
+        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="2"><span class="material-icons">arrow_forward</span>继续</button></div>
+    </section>
+</template>
+
+<template id="step-cache">
+    <section class="oobe-stage" data-step-section="2">
+        <div class="oobe-stage-head">
+            <h3 class="oobe-stage-title"><span class="material-icons">bolt</span> 第三步：缓存</h3>
+            <p class="oobe-stage-desc">选择是否启用 Redis</p>
+        </div>
+        <div class="oobe-grid-2">
+            <div class="oobe-field">
+                <label>是否启用 Redis</label>
+                <select name="use_redis" id="use_redis">
+                    <option value="no" {% if form_data.use_redis != 'yes' %}selected{% endif %}>否（文件缓存）</option>
+                    <option value="yes" {% if form_data.use_redis == 'yes' %}selected{% endif %}>是（Redis缓存）</option>
+                </select>
+            </div>
+            <div class="oobe-field" id="redis_url_group"><label>REDIS_URL</label><input type="text" name="redis_url" value="{{ form_data.redis_url }}" placeholder="redis://127.0.0.1:6379/1"></div>
+        </div>
+        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="3"><span class="material-icons">arrow_forward</span>继续</button></div>
+    </section>
+</template>
+
+<template id="step-logo">
+    <section class="oobe-stage" data-step-section="3">
+        <div class="oobe-stage-head">
+            <h3 class="oobe-stage-title"><span class="material-icons">branding_watermark</span> 第四步：网站Logo</h3>
+            <p class="oobe-stage-desc">可选上传，系统自动生成 favicon</p>
+        </div>
+        <div class="oobe-field">
+            <label>上传 Logo（可跳过）</label>
+            <div class="oobe-file">
+                <input type="file" id="site_logo" name="site_logo" accept=".ico,.png,.jpg,.jpeg,.webp">
+                <div id="logoFileName" class="oobe-hint">未选择文件</div>
+            </div>
+            <div class="oobe-crop-wrap" id="logoCropWrap">
+                <canvas id="logoCropCanvas" class="oobe-crop-canvas" width="256" height="256"></canvas>
+                <div class="oobe-field" style="margin-top:8px; max-width:320px;">
+                    <label>缩放</label>
+                    <input type="range" id="logoCropZoom" min="1" max="3" step="0.01" value="1">
+                </div>
+            </div>
+            <div class="oobe-hint">支持 .ico/.png/.jpg/.jpeg/.webp，建议正方形图片。</div>
+        </div>
+        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="4"><span class="material-icons">arrow_forward</span>继续</button></div>
+    </section>
+</template>
+
+<template id="step-email">
+    <section class="oobe-stage" data-step-section="4">
+        <div class="oobe-stage-head">
+            <h3 class="oobe-stage-title"><span class="material-icons">mail</span> 第五步：邮箱配置</h3>
+            <p class="oobe-stage-desc">支持测试邮件，确认可用后完成初始化</p>
+        </div>
+        <div class="oobe-grid-2" style="margin-bottom: 10px;">
+            <div class="oobe-field">
+                <label>是否启用SMTP邮箱</label>
+                <select name="enable_email" id="enable_email">
+                    <option value="no" {% if form_data.enable_email != 'yes' %}selected{% endif %}>否（仅控制台）</option>
+                    <option value="yes" {% if form_data.enable_email == 'yes' %}selected{% endif %}>是（启用真实发信）</option>
+                </select>
+            </div>
+            <div class="oobe-field">
+                <label>邮箱服务商</label>
+                <select name="email_provider" id="email_provider">
+                    {% for value, label in smtp_provider_choices %}
+                    <option value="{{ value }}" {% if form_data.email_provider == value %}selected{% elif not form_data.email_provider and value == 'qq' %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div id="smtp_detail" class="oobe-grid-2">
+            <div class="oobe-field"><label>SMTP服务器地址</label><input type="text" name="smtp_host" id="smtp_host" value="{{ form_data.smtp_host }}" placeholder="smtp.qq.com"></div>
+            <div class="oobe-field"><label>SMTP端口</label><input type="number" name="smtp_port" id="smtp_port" value="{{ form_data.smtp_port }}" placeholder="587"></div>
+            <div class="oobe-field"><label>发送邮箱</label><input type="email" name="sender_email" id="sender_email" value="{{ form_data.sender_email }}" placeholder="no-reply@example.com"></div>
+            <div class="oobe-field"><label>邮箱密码/授权码</label><input type="password" name="sender_password" id="sender_password" value="{{ form_data.sender_password }}"></div>
+            <div class="oobe-field"><label>TLS加密</label><select name="smtp_use_tls" id="smtp_use_tls"><option value="yes" {% if form_data.smtp_use_tls != 'no' %}selected{% endif %}>是</option><option value="no" {% if form_data.smtp_use_tls == 'no' %}selected{% endif %}>否</option></select></div>
+            <div class="oobe-field"><label>测试收件邮箱</label><input type="email" id="test_to_email" placeholder="your-email@example.com"></div>
+        </div>
+
+        <div class="oobe-mail-test-result" id="mailTestResult"></div>
+
+        <div class="oobe-summary">
+            <div class="oobe-summary-item"><span class="oobe-summary-key">提示：</span>点击“发送测试邮件”可先验证 SMTP；保存后请在终端执行 <code>python manage.py migrate</code>。</div>
+            <div class="oobe-summary-item"><span class="oobe-summary-key">保存目标：</span>配置将写入 .env.local，Logo 将保存到 media/site。</div>
+        </div>
+
+        <div class="oobe-action-row">
+            <button class="oobe-btn tonal" type="button" id="btnTestMail"><span class="material-icons">outgoing_mail</span>发送测试邮件</button>
+            <button class="oobe-btn primary" type="submit"><span class="material-icons">rocket_launch</span>保存配置</button>
+        </div>
+    </section>
+</template>
+
+<script>
+(function() {
+    const form = document.querySelector('.oobe-form');
+    const host = document.getElementById('wizardHost');
+    const retained = document.getElementById('retainedInputs');
+    const progressLabel = document.getElementById('oobeProgressLabel');
+    const dots = Array.from(document.querySelectorAll('[data-step-dot]'));
+
+    const stepTemplateIds = ['step-admin', 'step-db', 'step-cache', 'step-logo', 'step-email'];
+    const smtpDefaults = {
+        qq: { host: 'smtp.qq.com', port: 587 },
+        '163': { host: 'smtp.163.com', port: 994 },
+        outlook: { host: 'smtp-mail.outlook.com', port: 587 },
+        gmail: { host: 'smtp.gmail.com', port: 587 },
+        custom: { host: '', port: 587 }
+    };
+
+    let currentStep = 0;
+
+    function updateProgress() {
+        progressLabel.textContent = `第 ${currentStep + 1} / ${stepTemplateIds.length} 步`;
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentStep);
+            dot.classList.toggle('done', index < currentStep);
+        });
+    }
+
+    function removeRetainedByName(name) {
+        retained.querySelectorAll(`[name="${name}"]`).forEach(node => node.remove());
+    }
+
+    function retainCurrentStepInputs(section) {
+        const controls = section.querySelectorAll('input[name], select[name], textarea[name]');
+        controls.forEach((control) => {
+            const name = control.name;
+            if (!name) return;
+            removeRetainedByName(name);
+
+            if (control.type === 'file') {
+                if (control.files && control.files.length > 0) {
+                    control.style.display = 'none';
+                    retained.appendChild(control);
+                }
+                return;
+            }
+
+            if ((control.type === 'checkbox' || control.type === 'radio') && !control.checked) {
+                return;
+            }
+
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = name;
+            hidden.value = control.value;
+            retained.appendChild(hidden);
+        });
+    }
+
+    function validateStep(section) {
+        const requiredControls = Array.from(section.querySelectorAll('[required]'));
+        for (const control of requiredControls) {
+            if (control.closest('[style*="display: none"]')) continue;
+            if (control.type === 'file') {
+                if (!(control.files && control.files.length > 0)) {
+                    control.reportValidity();
+                    return false;
+                }
+            } else if (!control.value || !String(control.value).trim()) {
+                control.reportValidity();
+                return false;
+            }
+        }
+
+        if (section.dataset.stepSection === '0') {
+            const pwd = section.querySelector('input[name="admin_password"]');
+            const confirm = section.querySelector('input[name="admin_password_confirm"]');
+            if (pwd && confirm && pwd.value !== confirm.value) {
+                confirm.setCustomValidity('两次密码不一致');
+                confirm.reportValidity();
+                setTimeout(() => confirm.setCustomValidity(''), 50);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function bindStepInteractions(section) {
+        const step = Number(section.dataset.stepSection || '0');
+
+        if (step === 1) {
+            const dbType = section.querySelector('#db_type');
+            const dbAdvanced = section.querySelector('#db_advanced');
+            const syncDb = () => { dbAdvanced.style.display = dbType.value === 'sqlite' ? 'none' : 'grid'; };
+            dbType.addEventListener('change', syncDb);
+            syncDb();
+        }
+
+        if (step === 2) {
+            const useRedis = section.querySelector('#use_redis');
+            const redisGroup = section.querySelector('#redis_url_group');
+            const syncRedis = () => { redisGroup.style.display = useRedis.value === 'yes' ? 'grid' : 'none'; };
+            useRedis.addEventListener('change', syncRedis);
+            syncRedis();
+        }
+
+        if (step === 3) {
+            const logoInput = section.querySelector('#site_logo');
+            const fileName = section.querySelector('#logoFileName');
+            const cropWrap = section.querySelector('#logoCropWrap');
+            const canvas = section.querySelector('#logoCropCanvas');
+            const zoom = section.querySelector('#logoCropZoom');
+            const ctx = canvas.getContext('2d');
+
+            const img = new Image();
+            let imgReady = false;
+            let dragging = false;
+            let lastX = 0;
+            let lastY = 0;
+            let scale = 1;
+            let minScale = 1;
+            let offsetX = 0;
+            let offsetY = 0;
+
+            function clampOffsets() {
+                let maxX = 0;
+                let maxY = 0;
+                let minX = canvas.width - img.width * scale;
+                let minY = canvas.height - img.height * scale;
+                if (img.width * scale < canvas.width) {
+                    minX = maxX = (canvas.width - img.width * scale) / 2;
+                }
+                if (img.height * scale < canvas.height) {
+                    minY = maxY = (canvas.height - img.height * scale) / 2;
+                }
+                offsetX = Math.min(maxX, Math.max(minX, offsetX));
+                offsetY = Math.min(maxY, Math.max(minY, offsetY));
+            }
+
+            function drawCrop() {
+                if (!imgReady) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+            }
+
+            function fitImage() {
+                minScale = Math.max(canvas.width / img.width, canvas.height / img.height);
+                scale = minScale;
+                offsetX = (canvas.width - img.width * scale) / 2;
+                offsetY = (canvas.height - img.height * scale) / 2;
+                zoom.min = minScale.toFixed(4);
+                zoom.max = (minScale * 3).toFixed(4);
+                zoom.value = scale.toFixed(4);
+                clampOffsets();
+                drawCrop();
+            }
+
+            function setScale(newScale) {
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const imgCenterX = (centerX - offsetX) / scale;
+                const imgCenterY = (centerY - offsetY) / scale;
+                scale = newScale;
+                offsetX = centerX - imgCenterX * scale;
+                offsetY = centerY - imgCenterY * scale;
+                clampOffsets();
+                drawCrop();
+            }
+
+            logoInput.addEventListener('change', () => {
+                const file = logoInput.files && logoInput.files[0] ? logoInput.files[0] : null;
+                fileName.textContent = file ? file.name : '未选择文件';
+                if (!file) {
+                    cropWrap.style.display = 'none';
+                    imgReady = false;
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    img.onload = () => {
+                        imgReady = true;
+                        cropWrap.style.display = 'block';
+                        fitImage();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            zoom.addEventListener('input', () => {
+                if (!imgReady) return;
+                setScale(parseFloat(zoom.value));
+            });
+
+            canvas.addEventListener('pointerdown', (e) => {
+                if (!imgReady) return;
+                dragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+                canvas.setPointerCapture(e.pointerId);
+            });
+            canvas.addEventListener('pointermove', (e) => {
+                if (!dragging || !imgReady) return;
+                const dx = e.clientX - lastX;
+                const dy = e.clientY - lastY;
+                lastX = e.clientX;
+                lastY = e.clientY;
+                offsetX += dx;
+                offsetY += dy;
+                clampOffsets();
+                drawCrop();
+            });
+            canvas.addEventListener('pointerup', (e) => {
+                dragging = false;
+                canvas.releasePointerCapture(e.pointerId);
+            });
+            canvas.addEventListener('pointerleave', () => {
+                dragging = false;
+            });
+
+            const nextBtn = section.querySelector('[data-next-step]');
+            nextBtn.dataset.customNext = '1';
+            nextBtn.addEventListener('click', async (e) => {
+                if (!(logoInput.files && logoInput.files[0]) || !imgReady) return;
+                e.preventDefault();
+
+                const croppedBlob = await new Promise((resolve) => {
+                    canvas.toBlob((blob) => resolve(blob), 'image/png');
+                });
+                if (croppedBlob) {
+                    const dt = new DataTransfer();
+                    const croppedFile = new File([croppedBlob], 'site_logo.png', { type: 'image/png' });
+                    dt.items.add(croppedFile);
+                    logoInput.files = dt.files;
+                    fileName.textContent = 'site_logo.png（已裁剪）';
+                }
+
+                if (!validateStep(section)) return;
+                retainCurrentStepInputs(section);
+                section.remove();
+                currentStep = Number(nextBtn.getAttribute('data-next-step'));
+                renderStep(currentStep);
+            });
+        }
+
+        if (step === 4) {
+            const enableEmail = section.querySelector('#enable_email');
+            const provider = section.querySelector('#email_provider');
+            const smtpDetail = section.querySelector('#smtp_detail');
+            const smtpHost = section.querySelector('#smtp_host');
+            const smtpPort = section.querySelector('#smtp_port');
+            const result = section.querySelector('#mailTestResult');
+            const testBtn = section.querySelector('#btnTestMail');
+
+            const syncEmail = () => { smtpDetail.style.display = enableEmail.value === 'yes' ? 'grid' : 'none'; };
+            const fillProviderDefaults = () => {
+                const d = smtpDefaults[provider.value];
+                if (!d) return;
+                if (!smtpHost.value.trim()) smtpHost.value = d.host;
+                if (!smtpPort.value.trim()) smtpPort.value = d.port;
+            };
+
+            enableEmail.addEventListener('change', syncEmail);
+            provider.addEventListener('change', () => {
+                smtpHost.value = '';
+                smtpPort.value = '';
+                fillProviderDefaults();
+            });
+
+            testBtn.addEventListener('click', async () => {
+                const testToEmail = section.querySelector('#test_to_email').value.trim();
+                if (!testToEmail) {
+                    result.className = 'oobe-mail-test-result err';
+                    result.textContent = '请先填写测试收件邮箱';
+                    return;
+                }
+                if (enableEmail.value !== 'yes') {
+                    result.className = 'oobe-mail-test-result err';
+                    result.textContent = '请先启用SMTP邮箱';
+                    return;
+                }
+
+                const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                const payload = new FormData();
+                payload.append('csrfmiddlewaretoken', csrfToken);
+                payload.append('sender_email', section.querySelector('#sender_email').value || '');
+                payload.append('sender_password', section.querySelector('#sender_password').value || '');
+                payload.append('smtp_host', smtpHost.value || '');
+                payload.append('smtp_port', smtpPort.value || '');
+                payload.append('smtp_use_tls', section.querySelector('#smtp_use_tls').value || 'yes');
+                payload.append('test_to_email', testToEmail);
+
+                testBtn.disabled = true;
+                result.className = 'oobe-mail-test-result';
+                result.style.display = 'block';
+                result.textContent = '正在发送测试邮件...';
+
+                try {
+                    const resp = await fetch('{% url "clubs:oobe_test_email" %}', {
+                        method: 'POST',
+                        body: payload,
+                        credentials: 'same-origin'
+                    });
+                    const data = await resp.json();
+                    if (resp.ok && data.ok) {
+                        result.className = 'oobe-mail-test-result ok';
+                        result.textContent = data.message || '测试邮件发送成功';
+                    } else {
+                        result.className = 'oobe-mail-test-result err';
+                        result.textContent = data.message || '测试邮件发送失败';
+                    }
+                } catch (err) {
+                    result.className = 'oobe-mail-test-result err';
+                    result.textContent = '网络异常，测试邮件发送失败';
+                } finally {
+                    testBtn.disabled = false;
+                }
+            });
+
+            syncEmail();
+            fillProviderDefaults();
+        }
+
+        section.querySelectorAll('[data-next-step]').forEach((btn) => {
+            if (btn.dataset.customNext === '1') return;
+            btn.addEventListener('click', () => {
+                if (!validateStep(section)) return;
+                retainCurrentStepInputs(section);
+                section.remove();
+                currentStep = Number(btn.getAttribute('data-next-step'));
+                renderStep(currentStep);
+            });
+        });
+    }
+
+    function renderStep(stepIndex) {
+        const tpl = document.getElementById(stepTemplateIds[stepIndex]);
+        if (!tpl) return;
+        host.innerHTML = '';
+        const node = tpl.content.cloneNode(true);
+        host.appendChild(node);
+        const section = host.querySelector('[data-step-section]');
+        bindStepInteractions(section);
+        updateProgress();
+    }
+
+    renderStep(0);
+})();
+</script>
+{% endblock %}

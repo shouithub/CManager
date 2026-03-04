@@ -85,18 +85,18 @@
     ```
 
 4.  **配置环境变量**
-    本项目提供了 `.env.example` 示例文件。请将其复制为 `.env` 并填入你的配置：
+    本项目提供了 `.env.example` 示例文件。请将其复制为 `.env.local` 并填入你的配置：
     ```bash
     # Linux / macOS
-    cp .env.example .env
+    cp .env.example .env.local
     
     # Windows
-    copy .env.example .env
+    copy .env.example .env.local
     ```
     
-    请务必修改 `.env` 文件中的 `SECRET_KEY` 为一个随机的安全字符串。
+    请务必修改 `.env.local` 文件中的 `SECRET_KEY` 为一个随机的安全字符串。
     
-    示例 `.env` 配置：
+    示例 `.env.local` 配置：
     ```ini
     # 核心安全配置
     SECRET_KEY=your-long-random-secret-key
@@ -127,10 +127,9 @@
     python manage.py migrate
     ```
 
-6.  **创建超级用户**
-    ```bash
-    python manage.py createsuperuser
-    ```
+6.  **首次启动初始化（推荐）**
+    首次访问系统会进入 OOBE 初始化页面，用于创建管理员账户并写入本地配置（不会提交到 Git）。
+    如需命令行方式，也可自行创建管理员用户并赋予 `admin` 角色。
 
 7.  **运行开发服务器**
     ```bash
@@ -169,3 +168,13 @@
 ## 📄 开源协议
 
 本项目采用 [GPLv2](LICENSE) 开源协议。
+
+## 🔐 公开仓库防泄露建议
+
+- 仅提交 `.env.example`，不要提交 `.env.local`。
+- 不要提交真实数据库与导出文件（如 `all_users.csv`、`all_clubs.csv`、`*.zip`）。
+- 提交前建议执行：
+    ```bash
+    git status
+    ```
+    确认没有用户数据、媒体文件、数据库文件被跟踪。

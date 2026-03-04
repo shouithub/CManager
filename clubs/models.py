@@ -68,6 +68,9 @@ class UserProfile(models.Model):
     
     # 信息披露设置
     is_info_public = models.BooleanField(default=False, verbose_name='是否公开个人信息')
+
+    # 首次登录强制改密
+    must_change_password = models.BooleanField(default=False, verbose_name='是否需要修改密码')
     
     # 头像
     avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True, verbose_name='头像')

@@ -54,6 +54,11 @@
     .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border-color: var(--md3-outline-variant); }
     .btn-success { background: var(--md3-tertiary); color: var(--md3-on-tertiary); }
 
+    .bulk-modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1100; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
+    .bulk-modal-card { width: 100%; max-width: 560px; background: var(--md3-surface); border: 1px solid var(--md3-outline-variant); border-radius: 24px; box-shadow: var(--md3-elevation-3); padding: 24px; }
+    .bulk-modal-actions { display: grid; gap: 12px; margin-top: 14px; }
+    .bulk-modal-file { width: 100%; font-size: 0.875rem; color: var(--md3-on-surface-variant); }
+
     /* 预警样式 */
     .copy-toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); padding: 12px 24px; border-radius: 999px; box-shadow: var(--md3-elevation-3); display: none; font-weight: 600; max-width: calc(100% - 40px); box-sizing: border-box; }
     .copy-toast.show { display: block; }
@@ -142,6 +147,12 @@
         <div class="page-header-content">
             <h1>社团管理</h1>
             <p class="subtitle">管理社团功能、模板和用户信息</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+            <button type="button" class="btn btn-primary" onclick="openBulkOpsModal()">
+                <span class="material-icons">tune</span>
+                批量操作
+            </button>
         </div>
     </div>
 
@@ -1041,6 +1052,35 @@
     </div>
 </div>
 
+<div id="bulkOpsModal" class="bulk-modal-overlay">
+    <div class="bulk-modal-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <h3 style="margin:0; font-size:1.2rem;">批量操作</h3>
+            <button type="button" class="btn btn-secondary" onclick="closeBulkOpsModal()">关闭</button>
+        </div>
+        <p style="margin:8px 0 0 0; color: var(--md3-on-surface-variant);">下载模板、批量导入用户，或导出全部用户与社团数据。</p>
+        <div class="bulk-modal-actions">
+            <a href="{% url 'clubs:download_user_import_template' %}" class="btn btn-secondary" style="justify-content:center;">
+                <span class="material-icons">download</span>
+                下载导入模板
+            </a>
+            <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn btn-secondary" style="justify-content:center;">
+                <span class="material-icons">file_download</span>
+                导出全部用户+社团
+            </a>
+            <form method="post" action="{% url 'clubs:import_users_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <input type="file" name="csv_file" accept=".csv,text/csv" required class="bulk-modal-file">
+                <button type="submit" class="btn btn-primary" style="justify-content:center;">
+                    <span class="material-icons">upload_file</span>
+                    批量导入CSV
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- 删除确认弹窗 -->
 <div id="deleteModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
     <div class="modal-card" style="background: var(--md3-surface); padding: 24px; border-radius: 28px; width: 90%; max-width: 400px; box-shadow: var(--md3-elevation-3);">
@@ -1085,6 +1125,14 @@ function closeDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
 }
 
+function openBulkOpsModal() {
+    document.getElementById('bulkOpsModal').style.display = 'flex';
+}
+
+function closeBulkOpsModal() {
+    document.getElementById('bulkOpsModal').style.display = 'none';
+}
+
 function checkDeleteInput() {
     const input = document.getElementById('confirmNameInput').value;
     const btn = document.getElementById('confirmDeleteBtn');
@@ -1100,6 +1148,10 @@ function checkDeleteInput() {
 // Close on click outside
 document.getElementById('deleteModal').addEventListener('click', function(e) {
     if (e.target === this) closeDeleteModal();
+});
+
+document.getElementById('bulkOpsModal').addEventListener('click', function(e) {
+    if (e.target === this) closeBulkOpsModal();
 });
 
 function showToast() {
