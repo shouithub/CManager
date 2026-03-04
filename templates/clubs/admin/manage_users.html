@@ -60,6 +60,43 @@
     .stats-badge .material-icons {
         font-size: 1.25rem;
     }
+
+    .bulk-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1100;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-sizing: border-box;
+    }
+
+    .bulk-modal-card {
+        width: 100%;
+        max-width: 560px;
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-2xl);
+        box-shadow: var(--md3-elevation-3);
+        padding: var(--md3-spacing-xl);
+    }
+
+    .bulk-modal-actions {
+        display: grid;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-lg);
+    }
+
+    .bulk-modal-file {
+        width: 100%;
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+    }
     
     /* 搜索卡片 */
     .search-card {
@@ -382,6 +419,10 @@
             <p class="subtitle">管理所有用户账户和权限</p>
         </div>
         <div style="display: flex; align-items: center; gap: var(--md3-spacing-md);">
+            <button type="button" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;" onclick="openBulkOpsModal()">
+                <span class="material-icons">tune</span>
+                批量操作
+            </button>
             <a href="{% url 'clubs:create_user' %}" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;">
                 <span class="material-icons">person_add</span>
                 创建用户
@@ -561,5 +602,50 @@
     </div>
     {% endif %}
 </div>
+
+<div id="bulkOpsModal" class="bulk-modal-overlay">
+    <div class="bulk-modal-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <h3 style="margin:0; font-size:1.2rem;">批量操作</h3>
+            <button type="button" class="btn-action detail" onclick="closeBulkOpsModal()">关闭</button>
+        </div>
+        <p style="margin:8px 0 0 0; color: var(--md3-on-surface-variant);">下载模板、批量导入用户，或导出全部用户与社团数据。</p>
+        <div class="bulk-modal-actions">
+            <a href="{% url 'clubs:download_user_import_template' %}" class="btn-action detail" style="justify-content:center;">
+                <span class="material-icons">download</span>
+                下载导入模板
+            </a>
+            <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn-action detail" style="justify-content:center;">
+                <span class="material-icons">file_download</span>
+                导出全部用户+社团
+            </a>
+            <form method="post" action="{% url 'clubs:import_users_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <input type="file" name="csv_file" accept=".csv,text/csv" required class="bulk-modal-file">
+                <button type="submit" class="btn-action detail" style="justify-content:center;">
+                    <span class="material-icons">upload_file</span>
+                    批量导入CSV
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openBulkOpsModal() {
+    document.getElementById('bulkOpsModal').style.display = 'flex';
+}
+
+function closeBulkOpsModal() {
+    document.getElementById('bulkOpsModal').style.display = 'none';
+}
+
+document.getElementById('bulkOpsModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeBulkOpsModal();
+    }
+});
+</script>
 
 {% endblock %}

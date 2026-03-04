@@ -26,7 +26,7 @@ wheels/
 # Django
 *.log
 local_settings.py
-db.sqlite3*
+db.sqlite3
 /media/
 /staticfiles/
 
@@ -48,6 +48,14 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.*.example
+
+# Local generated exports / temporary data
+all_users.csv
+all_clubs.csv
+all_users_and_clubs_export.zip
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
 
 uwsgi.ini
 uwsgi.pid

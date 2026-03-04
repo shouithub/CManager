@@ -1,0 +1,16 @@
+{
+  "admin": {
+    "username": "whtrys",
+    "password": "20061218a",
+    "email": "whtrys@outlook.com"
+  },
+  "email": {
+    "enable_email": false,
+    "provider": "qq",
+    "smtp_host": "smtp.qq.com",
+    "smtp_port": 0,
+    "sender_email": "",
+    "sender_password": "",
+    "smtp_use_tls": true
+  }
+}

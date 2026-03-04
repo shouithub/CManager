@@ -30,12 +30,9 @@ def _load_env_file(env_path: Path):
 
 
 def _load_env():
-    django_env = os.environ.get('DJANGO_ENV', 'dev').strip().lower()
-    env_path = BASE_DIR / f'.env.{django_env}'
-    fallback_env_path = BASE_DIR / '.env'
+    local_env_path = BASE_DIR / '.env.local'
 
-    _load_env_file(env_path)
-    _load_env_file(fallback_env_path)
+    _load_env_file(local_env_path)
 
 
 def _env_list(name, default):
@@ -102,6 +99,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'CManager.middleware.InitialSetupMiddleware',
     'django.middleware.gzip.GZipMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -149,10 +147,15 @@ WSGI_APPLICATION = 'CManager.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+default_db_engine = os.getenv('DB_ENGINE', 'django.db.backends.dummy')
+default_db_name = os.getenv('DB_NAME', '')
+if default_db_engine == 'django.db.backends.sqlite3' and not default_db_name:
+    default_db_name = str(BASE_DIR / 'db.sqlite3')
+
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.getenv('DB_NAME', BASE_DIR / 'db.sqlite3'),
+        'ENGINE': default_db_engine,
+        'NAME': default_db_name,
         'CONN_MAX_AGE': _env_int('DB_CONN_MAX_AGE', 60),
     }
 }
@@ -201,6 +204,18 @@ elif CACHE_BACKEND == 'dummy':
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         }
     }
+elif CACHE_BACKEND == 'redis':
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+            'KEY_PREFIX': os.getenv('CACHE_KEY_PREFIX', 'cmanager'),
+            'TIMEOUT': _env_int('CACHE_TIMEOUT', 300),
+        }
+    }
 else:
     CACHES = {
         'default': {
@@ -211,7 +226,9 @@ else:
         }
     }
 
-if _env_bool('SESSION_USE_CACHED_DB', True):
+if DATABASES['default']['ENGINE'] == 'django.db.backends.dummy':
+    SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+elif _env_bool('SESSION_USE_CACHED_DB', True):
     SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
     SESSION_CACHE_ALIAS = 'default'
 

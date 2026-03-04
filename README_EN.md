@@ -85,18 +85,18 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
     ```
 
 4.  **Configure Environment Variables**
-    This project provides a `.env.example` file. Copy it to `.env` and fill in your configuration:
+    This project provides a `.env.example` file. Copy it to `.env.local` and fill in your configuration:
     ```bash
     # Linux / macOS
-    cp .env.example .env
+    cp .env.example .env.local
     
     # Windows
-    copy .env.example .env
+    copy .env.example .env.local
     ```
     
-    Make sure to update the `SECRET_KEY` in `.env` with a secure random string.
+    Make sure to update the `SECRET_KEY` in `.env.local` with a secure random string.
 
-    Example `.env` configuration:
+    Example `.env.local` configuration:
     ```ini
     # Core Security Settings
     SECRET_KEY=your-long-random-secret-key
@@ -127,10 +127,9 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
     python manage.py migrate
     ```
 
-6.  **Create Superuser**
-    ```bash
-    python manage.py createsuperuser
-    ```
+6.  **First-Run Setup (Recommended)**
+    On first visit, the app enters OOBE setup to create an admin account and write local settings safely (not committed to Git).
+    If needed, you can still create users manually from CLI.
 
 7.  **Run Development Server**
     ```bash
@@ -169,3 +168,13 @@ This project includes a `v1` branch that retains features simplified in the curr
 ## 📄 License
 
 This project is licensed under the [GPLv2](LICENSE) license.
+
+## 🔐 Safe Open-Source Publishing Checklist
+
+- Commit `.env.example`; never commit `.env.local`.
+- Do not commit real databases, exports, or media files.
+- Before pushing, run:
+    ```bash
+    git status
+    ```
+    and confirm no private or test data files are tracked.

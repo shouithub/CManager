@@ -4,10 +4,85 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def send_email_with_config(config, to_email, subject, text_body, html_body=None, success_message='邮件发送成功'):
+    """使用指定SMTP配置发送邮件。"""
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = config.sender_email
+        msg['To'] = to_email
+
+        msg.attach(MIMEText(text_body, 'plain', 'utf-8'))
+        if html_body:
+            msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
+        if config.smtp_port in [465, 994]:
+            server = smtplib.SMTP_SSL(config.smtp_host, config.smtp_port, timeout=15)
+            server.ehlo()
+        elif config.use_tls:
+            server = smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=15)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+        else:
+            server = smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=15)
+            server.ehlo()
+
+        server.login(config.sender_email, config.sender_password)
+        server.sendmail(config.sender_email, [to_email], msg.as_string())
+        server.quit()
+
+        logger.info('邮件已发送到 %s', to_email)
+        return True, success_message
+    except smtplib.SMTPAuthenticationError:
+        logger.error('SMTP认证失败')
+        return False, 'SMTP认证失败，请检查邮箱配置'
+    except smtplib.SMTPException as exc:
+        logger.error('SMTP错误: %s', str(exc))
+        return False, f'SMTP错误: {str(exc)}'
+    except Exception as exc:
+        logger.error('邮件发送错误: %s', str(exc))
+        return False, f'邮件发送失败: {str(exc)}'
+
+
+def send_test_email_with_config(config, to_email):
+    """发送SMTP测试邮件。"""
+    text = f'''您好！
+
+这是一封来自 CManager 系统的测试邮件。
+
+如果您收到了这封邮件，说明 SMTP 配置成功！
+
+配置信息：
+- 服务商：{config.get_provider_display() if hasattr(config, 'get_provider_display') else getattr(config, 'provider', '')}
+- SMTP服务器：{config.smtp_host}:{config.smtp_port}
+- 发送邮箱：{config.sender_email}
+- TLS加密：{'已启用' if config.use_tls else '未启用'}
+
+此邮件为系统自动发送，请勿回复。'''
+
+    html = f'''<p>您好！</p>
+<p>这是一封来自 <strong>CManager</strong> 系统的测试邮件。</p>
+<p>如果您收到了这封邮件，说明 SMTP 配置成功。</p>
+<hr>
+<p>服务商：{config.get_provider_display() if hasattr(config, 'get_provider_display') else getattr(config, 'provider', '')}</p>
+<p>SMTP服务器：{config.smtp_host}:{config.smtp_port}</p>
+<p>发送邮箱：{config.sender_email}</p>
+<p>TLS加密：{'已启用' if config.use_tls else '未启用'}</p>'''
+
+    return send_email_with_config(
+        config=config,
+        to_email=to_email,
+        subject='CManager SMTP配置测试邮件',
+        text_body=text,
+        html_body=html,
+        success_message=f'测试邮件已成功发送到 {to_email}'
+    )
 
 
 def send_verification_email(to_email, code, username):
@@ -29,15 +104,8 @@ def send_verification_email(to_email, code, username):
         logger.error('没有激活的SMTP配置')
         return False, '邮箱服务未配置，请联系管理员'
     
-    try:
-        # 创建邮件
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = 'CManager - 邮箱验证码'
-        msg['From'] = config.sender_email
-        msg['To'] = to_email
-        
-        # 纯文本内容
-        text = f"""
+    # 纯文本内容
+    text = f"""
 亲爱的 {username}，
 
 感谢注册CManager系统。
@@ -50,9 +118,9 @@ def send_verification_email(to_email, code, username):
 
 CManager系统
 """
-        
-        # HTML内容
-        html = f"""
+
+    # HTML内容
+    html = f"""
         <html>
             <body>
                 <p>亲爱的 {username}，</p>
@@ -65,32 +133,12 @@ CManager系统
             </body>
         </html>
         """
-        
-        part1 = MIMEText(text, 'plain')
-        part2 = MIMEText(html, 'html')
-        msg.attach(part1)
-        msg.attach(part2)
-        
-        # 连接SMTP服务器并发送邮件
-        if config.use_tls:
-            server = smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=10)
-            server.starttls()
-        else:
-            server = smtplib.SMTP_SSL(config.smtp_host, config.smtp_port, timeout=10)
-        
-        server.login(config.sender_email, config.sender_password)
-        server.sendmail(config.sender_email, to_email, msg.as_string())
-        server.quit()
-        
-        logger.info(f'验证码邮件已发送到 {to_email}')
-        return True, '验证码已发送到邮箱，请查收'
-    
-    except smtplib.SMTPAuthenticationError:
-        logger.error('SMTP认证失败')
-        return False, 'SMTP认证失败，请检查邮箱配置'
-    except smtplib.SMTPException as e:
-        logger.error(f'SMTP错误: {str(e)}')
-        return False, f'邮箱服务错误: {str(e)}'
-    except Exception as e:
-        logger.error(f'邮件发送错误: {str(e)}')
-        return False, f'邮件发送失败: {str(e)}'
+
+    return send_email_with_config(
+        config=config,
+        to_email=to_email,
+        subject='CManager - 邮箱验证码',
+        text_body=text,
+        html_body=html,
+        success_message='验证码已发送到邮箱，请查收'
+    )

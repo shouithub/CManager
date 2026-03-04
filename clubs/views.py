@@ -23,11 +23,14 @@ import re
 import urllib.parse
 import os
 import tempfile
+import csv
+import io
 from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, ClubRegistrationRequest, ClubApplicationReview, ClubRegistration, Template, Announcement, StaffClubRelation, SubmissionReview, ClubRegistrationReview, RegistrationPeriod, PresidentTransition, ActivityApplication, SMTPConfig, CarouselImage, ActivityApplicationHistory, MaterialRequirement, SubmittedFile, Department, Room, RoomBooking, TimeSlot
 from django.contrib.contenttypes.models import ContentType
 import shutil
 from PIL import Image
 from .context_processors import audit_center_counts as get_audit_center_counts
+from .site_assets import process_site_logo
 
 
 def rename_uploaded_file(file, club_name, request_type, material_type):
@@ -191,32 +194,6 @@ def get_dynamic_materials_list(target_obj, db_req_type):
     except:
         return []
         
-    # 旧字段映射表 - 用于兼容旧数据
-    legacy_field_map = {
-        'club_registration': {
-            '社团注册申请表': 'registration_form',
-            '学生社团基础信息表': 'basic_info_form',
-            '会费表或免收会费说明书': 'membership_fee_form',
-            '社团主要负责人变动申请': 'leader_change_application',
-            '社团大会会议记录': 'meeting_minutes',
-            '社团名称变更申请表': 'name_change_application',
-            '社团指导老师变动申请表': 'advisor_change_application',
-            '社团业务指导单位变动申请表': 'business_advisor_change_application',
-            '新媒体平台建立申请表': 'new_media_application'
-        },
-        'annual_review': {
-            '自查表': 'self_assessment_form',
-            '社团章程': 'club_constitution',
-            '负责人学习及工作情况报告': 'leader_learning_work_report',
-            '社团年度活动清单': 'annual_activity_list',
-            '指导教师履职情况报告': 'advisor_performance_report',
-            '年度财务情况报告': 'financial_report',
-            '社团成员构成表': 'member_composition_list',
-            '新媒体账号报告（如适用）': 'new_media_account_report',
-            '其他材料（如适用）': 'other_materials'
-        }
-    }
-
     for req in requirements:
         # 1. 尝试查找 SubmittedFile (新逻辑)
         submitted_file = SubmittedFile.objects.filter(
@@ -230,12 +207,10 @@ def get_dynamic_materials_list(target_obj, db_req_type):
             file_obj = submitted_file.file
         
         # 2. 如果没有找到，尝试从对象字段获取 (旧逻辑兼容)
-        if not file_obj and db_req_type in legacy_field_map:
-            field_name = legacy_field_map[db_req_type].get(req.name)
-            if field_name and hasattr(target_obj, field_name):
-                file_field = getattr(target_obj, field_name)
-                if file_field:
-                    file_obj = file_field
+        if not file_obj and req.legacy_field_name and hasattr(target_obj, req.legacy_field_name):
+            file_field = getattr(target_obj, req.legacy_field_name)
+            if file_field:
+                file_obj = file_field
         
         if file_obj:
             # 确定标识符：使用req_id前缀
@@ -1012,508 +987,150 @@ def edit_rejected_review(request, club_id):
         }
     
     if request.method == 'POST':
-        # 根据请求类型处理不同的提交逻辑
-        if request_type == 'club_application':
-            # 获取上传的文件
-            establishment_application = request.FILES.get('establishment_application')
-            constitution_draft = request.FILES.get('constitution_draft')
-            three_year_plan = request.FILES.get('three_year_plan')
-            leaders_resumes = request.FILES.get('leaders_resumes')
-            one_month_activity_plan = request.FILES.get('one_month_activity_plan')
-            advisor_certificates = request.FILES.get('advisor_certificates')
-            
-            # 验证
-            errors = []
-            
-            # 只验证被拒绝的材料是否重新上传
-            if 'establishment_application' in rejected_materials and not establishment_application:
-                errors.append('请上传社团成立申请书')
-            if 'constitution_draft' in rejected_materials and not constitution_draft:
-                errors.append('请上传社团章程草案')
-            if 'three_year_plan' in rejected_materials and not three_year_plan:
-                errors.append('请上传社团三年发展规划')
-            if 'leaders_resumes' in rejected_materials and not leaders_resumes:
-                errors.append('请上传社团拟任负责人和指导老师的详细简历和身份证复印件')
-            if 'one_month_activity_plan' in rejected_materials and not one_month_activity_plan:
-                errors.append('请上传社团组建一个月后的活动计划')
-            if 'advisor_certificates' in rejected_materials and not advisor_certificates:
-                errors.append('请上传社团老师的相关专业证书')
-            
-            # 验证文件类型
-            if establishment_application:
-                allowed_extensions = ['.docx']
-                file_ext = os.path.splitext(establishment_application.name)[1].lower()
-                if file_ext not in allowed_extensions:
-                    errors.append('社团成立申请书请上传Word文档(.docx)')
-            
-            if constitution_draft:
-                allowed_extensions = ['.docx']
-                file_ext = os.path.splitext(constitution_draft.name)[1].lower()
-                if file_ext not in allowed_extensions:
-                    errors.append('社团章程草案请上传Word文档(.docx)')
-            
-            if three_year_plan:
-                allowed_extensions = ['.docx']
-                file_ext = os.path.splitext(three_year_plan.name)[1].lower()
-                if file_ext not in allowed_extensions:
-                    errors.append('社团三年发展规划请上传Word文档(.docx)')
-            
-            if leaders_resumes:
-                allowed_extensions = ['.zip', '.rar', '.docx']
-                file_ext = os.path.splitext(leaders_resumes.name)[1].lower()
-                if file_ext not in allowed_extensions:
-                    errors.append('社团拟任负责人和指导老师的详细简历和身份证复印件请上传压缩包(.zip, .rar)或Word文档(.docx)')
-            
-            if one_month_activity_plan:
-                allowed_extensions = ['.docx']
-                file_ext = os.path.splitext(one_month_activity_plan.name)[1].lower()
-                if file_ext not in allowed_extensions:
-                    errors.append('社团组建一个月后的活动计划请上传Word文档(.docx)')
-            
-            if advisor_certificates:
-                allowed_extensions = ['.zip', '.rar', '.jpg', '.png']
-                file_ext = os.path.splitext(advisor_certificates.name)[1].lower()
-                if file_ext not in allowed_extensions:
-                    errors.append('社团老师的相关专业证书请上传压缩包(.zip, .rar)或图片文件(.jpg, .png)')
-            
-            if errors:
-                context['errors'] = errors
-                return render(request, 'clubs/user/edit_rejected_review.html', context)
-            
-            # 重命名上传的文件
-            club_name = application.club_name
-            if establishment_application:
-                establishment_application = rename_uploaded_file(establishment_application, club_name, '社团申请', '成立申请书')
-            if constitution_draft:
-                constitution_draft = rename_uploaded_file(constitution_draft, club_name, '社团申请', '章程草案')
-            if three_year_plan:
-                three_year_plan = rename_uploaded_file(three_year_plan, club_name, '社团申请', '三年规划')
-            if leaders_resumes:
-                leaders_resumes = rename_uploaded_file(leaders_resumes, club_name, '社团申请', '负责人简历')
-            if one_month_activity_plan:
-                one_month_activity_plan = rename_uploaded_file(one_month_activity_plan, club_name, '社团申请', '一个月活动计划')
-            if advisor_certificates:
-                advisor_certificates = rename_uploaded_file(advisor_certificates, club_name, '社团申请', '指导老师聘书')
-            
-            # 更新现有的社团申请记录而不是创建新的
-            # 只更新被拒绝的材料
-            if 'establishment_application' in rejected_materials and establishment_application:
-                application.establishment_application = establishment_application
-            if 'constitution_draft' in rejected_materials and constitution_draft:
-                application.constitution_draft = constitution_draft
-            if 'three_year_plan' in rejected_materials and three_year_plan:
-                application.three_year_plan = three_year_plan
-            if 'leaders_resumes' in rejected_materials and leaders_resumes:
-                application.leaders_resumes = leaders_resumes
-            if 'one_month_activity_plan' in rejected_materials and one_month_activity_plan:
-                application.one_month_activity_plan = one_month_activity_plan
-            if 'advisor_certificates' in rejected_materials and advisor_certificates:
-                application.advisor_certificates = advisor_certificates
-            
-            # 如果没有明确的被拒绝材料列表，则更新所有上传的文件
-            if not rejected_materials:
-                if establishment_application:
-                    application.establishment_application = establishment_application
-                if constitution_draft:
-                    application.constitution_draft = constitution_draft
-                if three_year_plan:
-                    application.three_year_plan = three_year_plan
-                if leaders_resumes:
-                    application.leaders_resumes = leaders_resumes
-                if one_month_activity_plan:
-                    application.one_month_activity_plan = one_month_activity_plan
-                if advisor_certificates:
-                    application.advisor_certificates = advisor_certificates
-            
-            # 重置状态和审核信息，增加提交次数
-            application.status = 'pending'
-            application.submitted_at = timezone.now()
-            application.reviewed_at = None
-            application.reviewer_comment = ''
-            application.reviewer = None
-            application.resubmission_attempt += 1
-            application.save()
-            
-            messages.success(request, f'社团申请已重新提交（第{application.resubmission_attempt}次），等待干事审核！')
-            return redirect('clubs:approval_center', tab='application')
-            
-        elif request_type == 'club_registration':
-            # 获取被拒绝的材料列表
-            rejected_materials = []
-            review = registration.reviews.filter(status='rejected').last()
-            if review:
-                rejected_materials = review.rejected_materials
-            
-            registration_form = request.FILES.get('registration_form', None)
-            basic_info_form = request.FILES.get('basic_info_form', None)
-            fee_form = request.FILES.get('fee_form', None)
-            leader_change_form = request.FILES.get('leader_change_form', None)
-            meeting_minutes = request.FILES.get('meeting_minutes', None)
-            name_change_form = request.FILES.get('name_change_form', None)
-            advisor_change_form = request.FILES.get('advisor_change_form', None)
-            business_unit_change_form = request.FILES.get('business_unit_change_form', None)
-            new_media_form = request.FILES.get('new_media_form', None)
-            
-            # 验证必填文件
-            errors = []
-            # 无论状态如何，只要求重新上传被拒绝的材料
-            if 'registration_form' in rejected_materials and not registration_form:
-                errors.append('请上传社团注册申请表')
-            if 'basic_info_form' in rejected_materials and not basic_info_form:
-                errors.append('请上传学生社团基础信息表')
-            if 'fee_form' in rejected_materials and not fee_form:
-                errors.append('请上传会费表或免收会费说明书')
-            
-            # 验证文件类型
-            allowed_extensions = ['.zip', '.rar', '.docx']
-            
-            # 使用通用文件验证
-            for f, label in [
-                (registration_form, '社团注册申请表'),
-                (basic_info_form, '学生社团基础信息表'),
-                (fee_form, '会费表或免收会费说明书'),
-                (leader_change_form, '社团主要负责人变动申请表'),
-                (meeting_minutes, '社团大会会议记录'),
-                (name_change_form, '社团名称变更申请表'),
-                (advisor_change_form, '社团指导老师变动申请表'),
-                (business_unit_change_form, '社团业务指导单位变动申请表'),
-                (new_media_form, '新媒体平台建立申请表')
-            ]:
-                err = _validate_file_allowed(f, label, allowed_extensions)
-                if err:
-                    errors.append(err)
-            
-            if errors:
-                context['errors'] = errors
-                return render(request, 'clubs/user/edit_rejected_review.html', context)
-            
-            if errors:
-                context['errors'] = errors
-                return render(request, 'clubs/user/edit_rejected_review.html', context)
-            
-            # 更新现有的社团注册申请记录而不是创建新的
-            # 更新被拒绝的材料
-            if 'registration_form' in rejected_materials and registration_form:
-                registration.registration_form = registration_form
-            
-            if 'basic_info_form' in rejected_materials and basic_info_form:
-                registration.basic_info_form = basic_info_form
-            
-            if 'fee_form' in rejected_materials and fee_form:
-                registration.membership_fee_form = fee_form
-            
-            # 只在上传了新文件时才更新可选文件
-            if 'leader_change_form' in rejected_materials and leader_change_form:
-                registration.leader_change_application = leader_change_form
-            
-            if 'meeting_minutes' in rejected_materials and meeting_minutes:
-                registration.meeting_minutes = meeting_minutes
-            
-            if 'name_change_form' in rejected_materials and name_change_form:
-                registration.name_change_application = name_change_form
-            
-            if 'advisor_change_form' in rejected_materials and advisor_change_form:
-                registration.advisor_change_application = advisor_change_form
-            
-            if 'business_unit_change_form' in rejected_materials and business_unit_change_form:
-                registration.business_advisor_change_application = business_unit_change_form
-            
-            if 'new_media_form' in rejected_materials and new_media_form:
-                registration.new_media_application = new_media_form
-            
-            # 如果没有明确的被拒绝材料列表，则更新所有上传的文件
-            if not rejected_materials:
-                if registration_form:
-                    registration.registration_form = registration_form
-                if basic_info_form:
-                    registration.basic_info_form = basic_info_form
-                if fee_form:
-                    registration.membership_fee_form = fee_form
-                if leader_change_form:
-                    registration.leader_change_application = leader_change_form
-                if meeting_minutes:
-                    registration.meeting_minutes = meeting_minutes
-                if name_change_form:
-                    registration.name_change_application = name_change_form
-                if advisor_change_form:
-                    registration.advisor_change_application = advisor_change_form
-                if business_unit_change_form:
-                    registration.business_advisor_change_application = business_unit_change_form
-                if new_media_form:
-                    registration.new_media_application = new_media_form
-            
-            # 重置状态和审核信息，增加提交次数
-            registration.status = 'pending'
-            registration.submitted_at = timezone.now()
-            registration.reviewed_at = None
-            registration.reviewer_comment = ''
-            registration.resubmission_attempt += 1
-            registration.save()
-            
-            messages.success(request, f'社团注册申请已重新提交（第{registration.resubmission_attempt}次），等待审核')
-            return redirect('clubs:approval_center', tab='registration')
-            
-        elif request_type == 'review':
+        request_type_to_req_type = {
+            'club_application': 'club_application',
+            'club_registration': 'club_registration',
+            'review': 'annual_review',
+            'reimbursement': 'reimbursement',
+            'activity_application': 'activity_application',
+            'president_transition': 'president_transition',
+        }
 
-            
-            # 获取新的材料字段
-            self_assessment_form = request.FILES.get('self_assessment_form')
-            club_constitution = request.FILES.get('club_constitution')
-            leader_learning_work_report = request.FILES.get('leader_learning_work_report')
-            annual_activity_list = request.FILES.get('annual_activity_list')
-            advisor_performance_report = request.FILES.get('advisor_performance_report')
-            financial_report = request.FILES.get('financial_report')
-            member_composition_list = request.FILES.get('member_composition_list')
-            new_media_account_report = request.FILES.get('new_media_account_report')
-            other_materials = request.FILES.get('other_materials')
-            
-            # 验证
+        if request_type in request_type_to_req_type:
+            req_type = request_type_to_req_type[request_type]
+            requirements = MaterialRequirement.objects.filter(request_type=req_type, is_active=True).order_by('order')
+
+            target_obj = None
+            if request_type == 'club_application':
+                target_obj = application
+            elif request_type == 'club_registration':
+                target_obj = registration
+            elif request_type == 'review':
+                target_obj = submission
+            elif request_type == 'reimbursement':
+                target_obj = reimbursement
+            elif request_type == 'activity_application':
+                target_obj = activity
+            elif request_type == 'president_transition':
+                target_obj = transition
+
+            rejected_tokens = set(rejected_materials) if 'rejected_materials' in locals() and rejected_materials else set()
+            uploaded_by_req = {}
             errors = []
-            
-            # 确定需要验证的必填字段
-            required_files = []
-            # 重新提交时，只需要验证被拒绝或部分拒绝的材料
-            rejected_materials = []
-            # 获取所有审核记录中的被拒绝材料
-            reviews = SubmissionReview.objects.filter(submission=context['rejected_submission'], status__in=['rejected', 'partially_rejected'])
-            for review in reviews:
-                if review.rejected_materials:
-                    rejected_materials.extend(review.rejected_materials)
-            
-            # 去重
-            rejected_materials = list(set(rejected_materials))
-            
-            # 构建需要重新提交的材料列表
-            material_fields_map = {
-                'self_assessment_form': ('自查表', self_assessment_form),
-                'club_constitution': ('社团章程', club_constitution),
-                'leader_learning_work_report': ('负责人学习及工作情况表', leader_learning_work_report),
-                'annual_activity_list': ('社团年度活动清单', annual_activity_list),
-                'advisor_performance_report': ('指导教师履职情况表', advisor_performance_report),
-                'financial_report': ('年度财务情况表', financial_report),
-                'member_composition_list': ('社团成员构成表', member_composition_list)
-                # 移除 new_media_account_report，即使被拒绝也不作为必填字段
+
+            def _matches_req(token, req):
+                if token == f'req_{req.id}':
+                    return True
+                if req.legacy_field_name and token == req.legacy_field_name:
+                    return True
+                return False
+
+            def _extract_file_for_req(req):
+                candidates = [f'req_{req.id}', f'material_{req.id}']
+                if req.legacy_field_name:
+                    candidates.append(req.legacy_field_name)
+                for name in candidates:
+                    file_obj = request.FILES.get(name)
+                    if file_obj:
+                        return file_obj
+                return None
+
+            for req in requirements:
+                file_obj = _extract_file_for_req(req)
+                uploaded_by_req[req.id] = file_obj
+
+                req_is_rejected = any(_matches_req(token, req) for token in rejected_tokens)
+                should_require_upload = req.is_required and (not rejected_tokens or req_is_rejected)
+
+                if should_require_upload and not file_obj:
+                    errors.append(f'{req.name}不能为空')
+                    continue
+
+                if file_obj:
+                    allowed_exts = [ext.strip().lower() for ext in req.allowed_extensions.split(',') if ext.strip()]
+                    ext = os.path.splitext(file_obj.name)[1].lower()
+                    if allowed_exts and ext not in allowed_exts:
+                        errors.append(f'{req.name}必须是以下格式: {req.allowed_extensions}')
+                    if file_obj.size > req.max_size_mb * 1024 * 1024:
+                        errors.append(f'{req.name}文件大小不能超过{req.max_size_mb}MB')
+
+            if request_type == 'reimbursement':
+                submission_date = request.POST.get('submission_date', '')
+                reimbursement_amount = request.POST.get('reimbursement_amount', '')
+                description = request.POST.get('description', '').strip()
+                if not submission_date:
+                    errors.append('报销日期不能为空')
+                if not reimbursement_amount:
+                    errors.append('报销金额不能为空')
+                if not description:
+                    errors.append('报销说明不能为空')
+
+            if errors:
+                context['errors'] = errors
+                return render(request, 'clubs/user/edit_rejected_review.html', context)
+
+            if request_type == 'reimbursement':
+                target_obj.submission_date = request.POST.get('submission_date', target_obj.submission_date)
+                target_obj.reimbursement_amount = request.POST.get('reimbursement_amount', target_obj.reimbursement_amount)
+                target_obj.description = request.POST.get('description', target_obj.description)
+
+            content_type = ContentType.objects.get_for_model(target_obj)
+            club_name_for_file = club.name if 'club' in locals() else getattr(target_obj, 'club_name', '申请')
+
+            for req in requirements:
+                file_obj = uploaded_by_req.get(req.id)
+                if not file_obj:
+                    continue
+
+                file_obj = rename_uploaded_file(file_obj, club_name_for_file, '申请', req.name)
+
+                if req.legacy_field_name and hasattr(target_obj, req.legacy_field_name):
+                    setattr(target_obj, req.legacy_field_name, file_obj)
+
+                SubmittedFile.objects.update_or_create(
+                    content_type=content_type,
+                    object_id=target_obj.id,
+                    requirement=req,
+                    defaults={'file': file_obj}
+                )
+
+            if hasattr(target_obj, 'status'):
+                target_obj.status = 'pending'
+            if hasattr(target_obj, 'reviewed_at'):
+                target_obj.reviewed_at = None
+            if hasattr(target_obj, 'reviewer_comment'):
+                target_obj.reviewer_comment = ''
+            if hasattr(target_obj, 'reviewer'):
+                target_obj.reviewer = None
+            if hasattr(target_obj, 'review_count'):
+                target_obj.review_count = 0
+            if hasattr(target_obj, 'resubmission_attempt'):
+                target_obj.resubmission_attempt = (target_obj.resubmission_attempt or 0) + 1
+
+            target_obj.save()
+
+            if request_type == 'review':
+                SubmissionReview.objects.filter(submission=target_obj).delete()
+
+            redirect_tab_map = {
+                'club_application': ('clubs:approval_center', {'tab': 'application'}),
+                'club_registration': ('clubs:approval_center', {'tab': 'registration'}),
+                'review': ('clubs:approval_center', {'tab': 'annual_review'}),
+                'reimbursement': ('clubs:approval_center', {'tab': 'reimbursement'}),
+                'activity_application': ('clubs:approval_center', {'tab': 'activity_application'}),
+                'president_transition': ('clubs:approval_center', {'tab': 'president_transition'}),
             }
-            
-            # 检查被拒绝的材料是否已重新提交
-            for field_name in rejected_materials:
-                if field_name in material_fields_map:
-                    field_display_name, file = material_fields_map[field_name]
-                    required_files.append((file, field_display_name))
-            
-            # 如果没有被拒绝的材料记录，默认需要重新提交所有材料
-            if not rejected_materials:
-                # 将所有材料都设为必填
-                required_files = [
-                    (self_assessment_form, '自查表'),
-                    (club_constitution, '社团章程'),
-                    (leader_learning_work_report, '负责人学习及工作情况表'),
-                    (annual_activity_list, '社团年度活动清单'),
-                    (advisor_performance_report, '指导教师履职情况表'),
-                    (financial_report, '年度财务情况表'),
-                    (member_composition_list, '社团成员构成表')
-                    # 移除 new_media_account_report 作为必填字段
-                ]
-            
-            # 验证必填字段和文件类型
-            for file, field_name in required_files:
-                if not file:
-                    errors.append(f'{field_name}不能为空')
-                else:
-                    err = _validate_word_file(file, field_name)
-                    if err:
-                        errors.append(err)
-            
-            # 验证可选字段的文件类型（如果提供了文件）
-            if other_materials:
-                err = _validate_word_file(other_materials, '其他材料')
-                if err:
-                    errors.append(err)
-            
-            if errors:
-                context['errors'] = errors
-                return render(request, 'clubs/user/edit_rejected_review.html', context)
-            
-            # 更新现有被拒绝的提交记录
-            submission = context['rejected_submission']
-            # 更新被拒绝的材料
-            if self_assessment_form:
-                submission.self_assessment_form = self_assessment_form
-            if club_constitution:
-                submission.club_constitution = club_constitution
-            if leader_learning_work_report:
-                submission.leader_learning_work_report = leader_learning_work_report
-            if annual_activity_list:
-                submission.annual_activity_list = annual_activity_list
-            if advisor_performance_report:
-                submission.advisor_performance_report = advisor_performance_report
-            if financial_report:
-                submission.financial_report = financial_report
-            if member_composition_list:
-                submission.member_composition_list = member_composition_list
-            if new_media_account_report:
-                submission.new_media_account_report = new_media_account_report
-            if other_materials:
-                submission.other_materials = other_materials
-            
-            # 重置状态和审核信息，增加提交次数
-            submission.status = 'pending'
-            submission.review_count = 0
-            submission.reviewed_at = None
-            submission.resubmission_attempt += 1
-            submission.save()
-            
-            # 删除原有的审核记录
-            SubmissionReview.objects.filter(submission=submission).delete()
-            
-            messages.success(request, f'{submission.submission_year}年审材料重新提交成功（第{submission.resubmission_attempt}次），等待审核！')
-            return redirect('clubs:user_dashboard')
-        
-        elif request_type == 'reimbursement':
-            # 获取上传的文件
-            submission_date = request.POST.get('submission_date', '')
-            reimbursement_amount = request.POST.get('reimbursement_amount', '')
-            description = request.POST.get('description', '').strip()
-            receipt_file = request.FILES.get('receipt_file')
-            
-            errors = []
-            if not submission_date:
-                errors.append('报销日期不能为空')
-            if not reimbursement_amount:
-                errors.append('报销金额不能为空')
-            if not description:
-                errors.append('报销说明不能为空')
-            if not receipt_file:
-                errors.append('报销凭证必须上传')
-            else:
-                # 验证文件类型是否为Word格式
-                valid_extensions = ['.doc', '.docx']
-                ext = receipt_file.name.lower().split('.')[-1]
-                if f'.{ext}' not in valid_extensions:
-                    errors.append('报销凭证必须是Word格式文件(.doc或.docx)')
-            
-            if errors:
-                context['errors'] = errors
-                return render(request, 'clubs/user/edit_rejected_review.html', context)
-            
-            # 更新现有的报销记录
-            reimbursement = context['reimbursement']
-            reimbursement.submission_date = submission_date
-            reimbursement.reimbursement_amount = reimbursement_amount
-            reimbursement.description = description
-            if receipt_file:
-                # 重命名报销凭证文件
-                receipt_file = rename_uploaded_file(receipt_file, club.name, '报销', '凭证')
-                reimbursement.receipt_file = receipt_file
-            
-            # 重置状态和审核信息，增加提交次数
-            reimbursement.status = 'pending'
-            reimbursement.reviewed_at = None
-            reimbursement.reviewer = None
-            reimbursement.reviewer_comment = ''
-            reimbursement.resubmission_attempt += 1
-            reimbursement.save()
-            
-            messages.success(request, f'报销申请已重新提交（第{reimbursement.resubmission_attempt}次），等待审核')
-            return redirect('clubs:approval_center', tab='reimbursement')
-        
-        elif request_type == 'activity_application':
-            # 获取表单数据
-            activity_name = request.POST.get('activity_name', '').strip()
-            activity_type = request.POST.get('activity_type', 'other')
-            activity_description = request.POST.get('activity_description', '').strip()
-            activity_date = request.POST.get('activity_date', '')
-            activity_location = request.POST.get('activity_location', '').strip()
-            application_form = request.FILES.get('application_form')
-            contact_person = request.POST.get('contact_person', '').strip()
-            contact_phone = request.POST.get('contact_phone', '').strip()
-            
-            errors = []
-            if not activity_name:
-                errors.append('活动名称不能为空')
-            if not activity_description:
-                errors.append('活动描述不能为空')
-            if not activity_date:
-                errors.append('活动日期不能为空')
-            if not activity_location:
-                errors.append('活动地点不能为空')
-            if not application_form:
-                errors.append('活动申请表必须上传')
-            
-            if errors:
-                context['errors'] = errors
-                return render(request, 'clubs/user/edit_rejected_review.html', context)
-            
-            # 更新现有的活动申请记录
-            activity = context['activity']
-            activity.activity_name = activity_name
-            activity.activity_type = activity_type
-            activity.activity_description = activity_description
-            activity.activity_date = activity_date
-            activity.activity_location = activity_location
-            if contact_person:
-                activity.contact_person = contact_person
-            if contact_phone:
-                activity.contact_phone = contact_phone
-            if application_form:
-                # 重命名活动申请表文件
-                application_form = rename_uploaded_file(application_form, club.name, '活动', '申请表')
-                activity.application_form = application_form
-            
-            # 重置状态和审核信息，增加提交次数
-            activity.status = 'pending'
-            activity.reviewed_at = None
-            activity.reviewer = None
-            activity.reviewer_comment = ''
-            activity.resubmission_attempt += 1
-            activity.save()
-            
-            messages.success(request, f'活动申请已重新提交（第{activity.resubmission_attempt}次），等待审核')
-            return redirect('clubs:approval_center', tab='activity_application')
-        
-        elif request_type == 'president_transition':
-            # 获取表单数据
-            new_president_officer_id = request.POST.get('new_president_officer')
-            reason = request.POST.get('reason', '').strip()
-            transition_plan = request.FILES.get('transition_plan')
-            
-            errors = []
-            if not new_president_officer_id:
-                errors.append('请选择新社长')
-            if not reason:
-                errors.append('换届原因不能为空')
-            if not transition_plan:
-                errors.append('换届计划书必须上传')
-            
-            if errors:
-                context['errors'] = errors
-                return render(request, 'clubs/user/edit_rejected_review.html', context)
-            
-            try:
-                new_president_officer = Officer.objects.get(pk=new_president_officer_id, club=club, is_current=True)
-            except Officer.DoesNotExist:
-                messages.error(request, '选择的新社长不是当前社团的有效干部')
-                return redirect('clubs:user_dashboard')
-            
-            # 更新现有的换届申请记录
-            transition = context['transition']
-            transition.new_president_officer = new_president_officer
-            transition.reason = reason
-            if transition_plan:
-                # 重命名换届计划书文件
-                transition_plan = rename_uploaded_file(transition_plan, club.name, '换届', '计划书')
-                transition.transition_plan = transition_plan
-            
-            # 重置状态和审核信息，增加提交次数
-            transition.status = 'pending'
-            transition.reviewed_at = None
-            transition.reviewer = None
-            transition.reviewer_comment = ''
-            transition.resubmission_attempt += 1
-            transition.save()
-            
-            messages.success(request, f'换届申请已重新提交（第{transition.resubmission_attempt}次），等待审核')
-            return redirect('clubs:user_dashboard')
+            msg_map = {
+                'club_application': '社团申请已重新提交，等待审核',
+                'club_registration': '社团注册申请已重新提交，等待审核',
+                'review': '年审材料已重新提交，等待审核',
+                'reimbursement': '报销申请已重新提交，等待审核',
+                'activity_application': '活动申请已重新提交，等待审核',
+                'president_transition': '换届申请已重新提交，等待审核',
+            }
+            messages.success(request, msg_map.get(request_type, '申请已重新提交'))
+            route_name, params = redirect_tab_map[request_type]
+            return redirect(route_name, **params)
     
     # GET请求时渲染页面
     return render(request, 'clubs/user/edit_rejected_review.html', context)
@@ -3972,6 +3589,222 @@ def edit_announcement(request, announcement_id):
 
 
 @login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['GET'])
+def download_user_import_template(request):
+    """下载用户批量导入CSV模板（仅管理员/干事）。"""
+    if not is_staff_or_admin(request.user):
+        messages.error(request, '仅干事和管理员可以下载导入模板')
+        return redirect('clubs:index')
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename="user_import_template.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['用户名', '真实姓名', '邮箱', '电话', '微信', '学号', '角色', '密码', '部门', '政治面貌'])
+    writer.writerow(['demo_president', '示例社长', 'demo@example.com', '13800138000', 'demo_wechat', '20260001', 'president', '123456', '', 'non_member'])
+    writer.writerow(['demo_staff', '示例干事', 'staff@example.com', '13900139000', 'staff_wechat', '20260002', 'staff', '123456', '组织部', 'non_member'])
+
+    return response
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['GET'])
+def export_all_users_and_clubs_csv(request):
+    """导出全部用户与全部社团数据（ZIP内含两个CSV）。"""
+    if not is_staff_or_admin(request.user):
+        messages.error(request, '仅干事和管理员可以导出数据')
+        return redirect('clubs:index')
+
+    users_buffer = io.StringIO()
+    users_writer = csv.writer(users_buffer)
+    users_writer.writerow([
+        '用户名', '真实姓名', '邮箱', '电话', '微信', '学号', '角色', '状态', '部门', '政治面貌', '加入时间'
+    ])
+
+    users_qs = User.objects.select_related('profile').all().order_by('id')
+    for user in users_qs:
+        profile = getattr(user, 'profile', None)
+        users_writer.writerow([
+            user.username,
+            profile.get_full_name() if profile else user.first_name,
+            user.email,
+            profile.phone if profile else '',
+            profile.wechat if profile else '',
+            profile.student_id if profile else '',
+            profile.role if profile else '',
+            profile.status if profile else '',
+            profile.department if profile else '',
+            profile.political_status if profile else '',
+            timezone.localtime(user.date_joined).strftime('%Y-%m-%d %H:%M:%S') if user.date_joined else '',
+        ])
+
+    clubs_buffer = io.StringIO()
+    clubs_writer = csv.writer(clubs_buffer)
+    clubs_writer.writerow([
+        '社团ID', '社团名称', '状态', '成员数', '社长用户名', '社长姓名', '成立日期', '创建时间'
+    ])
+
+    clubs_qs = Club.objects.select_related('president__profile').all().order_by('id')
+    for club in clubs_qs:
+        president = club.president
+        president_name = ''
+        if president and hasattr(president, 'profile'):
+            president_name = president.profile.get_full_name()
+        clubs_writer.writerow([
+            club.id,
+            club.name,
+            club.status,
+            club.members_count,
+            president.username if president else '',
+            president_name,
+            club.founded_date.strftime('%Y-%m-%d') if club.founded_date else '',
+            timezone.localtime(club.created_at).strftime('%Y-%m-%d %H:%M:%S') if club.created_at else '',
+        ])
+
+    import zipfile
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        zip_file.writestr('all_users.csv', users_buffer.getvalue().encode('utf-8-sig'))
+        zip_file.writestr('all_clubs.csv', clubs_buffer.getvalue().encode('utf-8-sig'))
+
+    zip_buffer.seek(0)
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="all_users_and_clubs_export.zip"'
+    return response
+
+
+def _csv_value(row, aliases):
+    for key in aliases:
+        value = row.get(key)
+        if value is not None and str(value).strip() != '':
+            return str(value).strip()
+    return ''
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['POST'])
+def import_users_csv(request):
+    """批量导入用户（仅CSV，管理员/干事可用）。"""
+    if not is_staff_or_admin(request.user):
+        messages.error(request, '仅干事和管理员可以批量导入用户')
+        return redirect('clubs:index')
+
+    next_url = request.POST.get('next', '').strip() or request.META.get('HTTP_REFERER') or reverse('clubs:manage_users')
+    uploaded = request.FILES.get('csv_file')
+    if not uploaded:
+        messages.error(request, '请选择CSV文件后再导入')
+        return redirect(next_url)
+
+    if not uploaded.name.lower().endswith('.csv'):
+        messages.error(request, '仅支持CSV文件导入')
+        return redirect(next_url)
+
+    raw_bytes = uploaded.read()
+    text = None
+    for encoding in ('utf-8-sig', 'utf-8', 'gbk'):
+        try:
+            text = raw_bytes.decode(encoding)
+            break
+        except Exception:
+            continue
+
+    if text is None:
+        messages.error(request, 'CSV文件编码无法识别，请使用UTF-8编码')
+        return redirect(next_url)
+
+    reader = csv.DictReader(io.StringIO(text))
+    if not reader.fieldnames:
+        messages.error(request, 'CSV表头无效')
+        return redirect(next_url)
+
+    created_users = 0
+    updated_users = 0
+    skipped = 0
+    errors = []
+
+    for idx, row in enumerate(reader, start=2):
+        username = _csv_value(row, ['用户名', 'username'])
+        real_name = _csv_value(row, ['真实姓名', 'real_name'])
+        email = _csv_value(row, ['邮箱', 'email'])
+        phone = _csv_value(row, ['电话', 'phone'])
+        wechat = _csv_value(row, ['微信', 'wechat'])
+        student_id = _csv_value(row, ['学号', 'student_id'])
+        role = _csv_value(row, ['角色', 'role']).lower() or 'president'
+        password = _csv_value(row, ['密码', 'password']) or '123456'
+        department_name = _csv_value(row, ['部门', 'department'])
+        political_status = _csv_value(row, ['政治面貌', 'political_status']) or 'non_member'
+
+        if not username or not real_name:
+            skipped += 1
+            errors.append(f'第{idx}行缺少必填项（用户名/真实姓名）')
+            continue
+
+        if role not in ['president', 'staff', 'admin']:
+            skipped += 1
+            errors.append(f'第{idx}行角色无效：{role}')
+            continue
+
+        if student_id and UserProfile.objects.exclude(user__username=username).filter(student_id=student_id).exists():
+            skipped += 1
+            errors.append(f'第{idx}行学号重复：{student_id}')
+            continue
+
+        department_obj = None
+        if department_name:
+            department_obj = Department.objects.filter(name=department_name).first()
+
+        user, user_created = User.objects.get_or_create(username=username)
+        if user_created:
+            created_users += 1
+        else:
+            updated_users += 1
+
+        user.first_name = real_name
+        if email:
+            user.email = email
+        user.set_password(password)
+        user.save()
+
+        status = 'pending' if role == 'staff' else 'approved'
+        profile, profile_created = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                'role': role,
+                'status': status,
+                'real_name': real_name,
+                'student_id': student_id,
+                'phone': phone,
+                'wechat': wechat,
+                'political_status': political_status,
+                'department': department_name if department_name else None,
+                'department_link': department_obj,
+                'must_change_password': password == '123456',
+            },
+        )
+
+        if not profile_created:
+            profile.role = role
+            profile.status = status
+            profile.real_name = real_name
+            profile.phone = phone
+            profile.wechat = wechat
+            profile.political_status = political_status
+            profile.department = department_name if department_name else None
+            profile.department_link = department_obj
+            if student_id:
+                profile.student_id = student_id
+            profile.must_change_password = password == '123456'
+            profile.save()
+
+    messages.success(request, f'导入完成：新建{created_users}，更新{updated_users}，跳过{skipped}')
+    if errors:
+        messages.warning(request, '部分数据有问题：' + '；'.join(errors[:5]))
+
+    return redirect(next_url)
+
+
+@login_required(login_url=settings.LOGIN_URL)
 def manage_users(request):
     """用户管理 - 仅管理员可用"""
     if not _is_admin(request.user):
@@ -4572,77 +4405,14 @@ def manage_smtp_config(request):
                 return redirect('clubs:manage_smtp_config')
             
             config = get_object_or_404(SMTPConfig, pk=config_id)
-            
-            import smtplib
-            from email.mime.text import MIMEText
-            from email.mime.multipart import MIMEMultipart
-            
-            try:
-                # 创建邮件
-                msg = MIMEMultipart()
-                msg['From'] = config.sender_email
-                msg['To'] = test_email
-                msg['Subject'] = 'CManager SMTP配置测试邮件'
-                
-                body = f'''
-您好！
 
-这是一封来自 CManager 系统的测试邮件。
+            from .email_utils import send_test_email_with_config
 
-如果您收到了这封邮件，说明 SMTP 配置成功！
-
-配置信息：
-- 服务商：{config.get_provider_display()}
-- SMTP服务器：{config.smtp_host}:{config.smtp_port}
-- 发送邮箱：{config.sender_email}
-- TLS加密：{'已启用' if config.use_tls else '未启用'}
-
-此邮件为系统自动发送，请勿回复。
-                '''
-                msg.attach(MIMEText(body, 'plain', 'utf-8'))
-                
-                # 连接SMTP服务器并发送
-                # 端口465/994通常使用SSL，端口587使用STARTTLS，端口25通常无加密
-                if config.smtp_port in [465, 994]:
-                    # SSL连接（端口465/994）
-                    server = smtplib.SMTP_SSL(config.smtp_host, config.smtp_port, timeout=30)
-                    server.ehlo()
-                elif config.use_tls:
-                    # STARTTLS（端口587等）
-                    server = smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=30)
-                    server.ehlo()
-                    server.starttls()
-                    server.ehlo()
-                else:
-                    # 无加密（端口25等）- 某些服务器需要特殊处理
-                    import socket
-                    # 先测试端口连通性
-                    sock = socket.create_connection((config.smtp_host, config.smtp_port), timeout=30)
-                    sock.close()
-                    # 使用较长超时并设置调试
-                    server = smtplib.SMTP(timeout=30)
-                    server.connect(config.smtp_host, config.smtp_port)
-                    server.ehlo()
-                
-                server.login(config.sender_email, config.sender_password)
-                server.sendmail(config.sender_email, [test_email], msg.as_string())
-                server.quit()
-                
-                messages.success(request, f'测试邮件已成功发送到 {test_email}')
-            except smtplib.SMTPAuthenticationError as e:
-                messages.error(request, f'SMTP认证失败：邮箱或密码/授权码错误 ({e.smtp_code}: {e.smtp_error})')
-            except smtplib.SMTPConnectError as e:
-                messages.error(request, f'SMTP连接失败：无法连接到服务器 ({str(e)})')
-            except smtplib.SMTPServerDisconnected as e:
-                messages.error(request, f'SMTP服务器断开连接：{str(e)}。建议尝试SSL端口(465/994)')
-            except smtplib.SMTPException as e:
-                messages.error(request, f'SMTP错误：{str(e)}')
-            except socket.timeout:
-                messages.error(request, 'SMTP连接超时：请检查服务器地址和端口')
-            except ConnectionRefusedError:
-                messages.error(request, 'SMTP连接被拒绝：请检查端口是否正确')
-            except Exception as e:
-                messages.error(request, f'发送失败：{type(e).__name__}: {str(e)}')
+            success, msg = send_test_email_with_config(config, test_email)
+            if success:
+                messages.success(request, msg)
+            else:
+                messages.error(request, msg)
             
             return redirect('clubs:manage_smtp_config')
     
@@ -7170,34 +6940,11 @@ def manage_favicon(request):
     if request.method == 'POST':
         if 'favicon' in request.FILES:
             upload = request.FILES['favicon']
-            ext = os.path.splitext(upload.name)[1].lower()
-            if ext not in ['.ico', '.png', '.jpg', '.jpeg']:
-                messages.error(request, '仅支持 .ico, .png, .jpg 格式')
-                return redirect('clubs:manage_favicon')
-            site_dir = os.path.join(settings.MEDIA_ROOT, 'site')
-            os.makedirs(site_dir, exist_ok=True)
-            file_path = os.path.join(site_dir, 'favicon.ico')
-            if os.path.exists(file_path):
-                try:
-                    os.remove(file_path)
-                except Exception as e:
-                    messages.error(request, f'删除旧图标失败: {str(e)}')
-            try:
-                img = Image.open(upload)
-                if img.mode not in ('RGB', 'RGBA'):
-                    img = img.convert('RGBA')
-                w, h = img.size
-                side = min(w, h)
-                left = (w - side) // 2
-                top = (h - side) // 2
-                img = img.crop((left, top, left + side, top + side))
-                preview_path = os.path.join(site_dir, 'favicon.png')
-                preview_img = img.resize((128, 128), Image.LANCZOS)
-                preview_img.save(preview_path, format='PNG')
-                img.save(file_path, format='ICO', sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
-                messages.success(request, '网站图标已更新')
-            except Exception as e:
-                messages.error(request, f'保存图标失败: {str(e)}')
+            ok, logo_message = process_site_logo(upload, allow_webp=False)
+            if ok:
+                messages.success(request, logo_message)
+            else:
+                messages.error(request, logo_message)
             return redirect('clubs:manage_favicon')
             
     return render(request, 'clubs/admin/manage_favicon.html')

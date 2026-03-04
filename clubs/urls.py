@@ -1,6 +1,7 @@
 # type: ignore
 from django.urls import path, re_path
 from . import views
+from . import oobe_views
 from . import auth_views
 from . import api_views
 from . import export_views
@@ -8,6 +9,8 @@ from . import export_views
 app_name = 'clubs'
 
 urlpatterns = [
+    path('oobe/', oobe_views.oobe_setup, name='oobe_setup'),
+    path('oobe/test-email/', oobe_views.oobe_test_email, name='oobe_test_email'),
     # API endpoints
     path('api/staff/review-history/<str:review_type>/', api_views.api_staff_review_history, name='api_staff_review_history'),
     path('api/notification-counts/', views.notification_counts, name='notification_counts'),
@@ -160,6 +163,9 @@ urlpatterns = [
     path('admin-panel/delete-announcement/<int:announcement_id>/', views.delete_announcement, name='delete_announcement'),
     path('admin-panel/edit-announcement/<int:announcement_id>/', views.edit_announcement, name='edit_announcement'),
     path('admin-panel/manage-users/', views.manage_users, name='manage_users'),
+    path('admin-panel/manage-users/import-csv/', views.import_users_csv, name='import_users_csv'),
+    path('admin-panel/manage-users/import-template/', views.download_user_import_template, name='download_user_import_template'),
+    path('data/export-all-users-clubs/', views.export_all_users_and_clubs_csv, name='export_all_users_and_clubs_csv'),
     path('admin-panel/create-user/', views.create_user, name='create_user'),
     path('admin-panel/edit-user-account/<int:user_id>/', views.admin_edit_user_account, name='admin_edit_user_account'),
     path('admin-panel/change-user-role/<int:user_id>/', views.change_user_role, name='change_user_role'),

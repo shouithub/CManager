@@ -189,6 +189,11 @@ def user_login(request):
                 login(request, user)
                 messages.success(request, f'欢迎回来，{username}！')
 
+                # 首次登录/重置后强制改密
+                if getattr(user.profile, 'must_change_password', False):
+                    messages.warning(request, '为了账户安全，请先修改密码后再继续使用系统。')
+                    return redirect('clubs:edit_profile')
+
                 # 根据角色跳转
                 if user.profile.role == 'admin':
                     return redirect('clubs:admin_dashboard')
@@ -732,6 +737,9 @@ def edit_profile(request):
             else:
                 user.set_password(new_password)
                 user.save()
+                if getattr(profile, 'must_change_password', False):
+                    profile.must_change_password = False
+                    profile.save(update_fields=['must_change_password'])
                 # 保持登录状态
                 login(request, user)
                 messages.success(request, '密码已修改')

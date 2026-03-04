@@ -479,6 +479,7 @@ class Migration(migrations.Migration):
                 ('wechat', models.CharField(blank=True, max_length=100, verbose_name='微信')),
                 ('political_status', models.CharField(choices=[('communist_party_member', '中共党员'), ('communist_party_probationary', '中共预备党员'), ('communist_youth_league', '共青团员'), ('revolutionary_committee', '民革党员'), ('china_democratic_league', '民盟盟员'), ('democratic_national_construction', '民建会员'), ('china_peasants_workers_democratic', '农工党党员'), ('china_council_for_promoting', '致公党党员'), ('jiusanshe', '九三学社社员'), ('taiwan_democratic_self_government', '台盟盟员'), ('non_party_personage', '无党派人士'), ('progressive', '入党积极分子'), ('non_member', '群众')], default='non_member', max_length=40, verbose_name='政治面貌')),
                 ('is_info_public', models.BooleanField(default=False, verbose_name='是否公开个人信息')),
+                ('must_change_password', models.BooleanField(default=False, verbose_name='是否需要修改密码')),
                 ('avatar', models.ImageField(blank=True, null=True, upload_to='avatars/%Y/%m/', verbose_name='头像')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='创建时间')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='更新时间')),
