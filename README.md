@@ -168,13 +168,3 @@
 ## 📄 开源协议
 
 本项目采用 [GPLv2](LICENSE) 开源协议。
-
-## 🔐 公开仓库防泄露建议
-
-- 仅提交 `.env.example`，不要提交 `.env.local`。
-- 不要提交真实数据库与导出文件（如 `all_users.csv`、`all_clubs.csv`、`*.zip`）。
-- 提交前建议执行：
-    ```bash
-    git status
-    ```
-    确认没有用户数据、媒体文件、数据库文件被跟踪。

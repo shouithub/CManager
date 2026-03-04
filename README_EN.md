@@ -168,13 +168,3 @@ This project includes a `v1` branch that retains features simplified in the curr
 ## 📄 License
 
 This project is licensed under the [GPLv2](LICENSE) license.
-
-## 🔐 Safe Open-Source Publishing Checklist
-
-- Commit `.env.example`; never commit `.env.local`.
-- Do not commit real databases, exports, or media files.
-- Before pushing, run:
-    ```bash
-    git status
-    ```
-    and confirm no private or test data files are tracked.

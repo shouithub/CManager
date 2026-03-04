@@ -48,6 +48,7 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.*.example
+.cache/
 
 # Local generated exports / temporary data
 all_users.csv

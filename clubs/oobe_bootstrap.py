@@ -57,8 +57,18 @@ def apply_pending_oobe_setup() -> bool:
         username = (admin.get('username') or '').strip()
         password = admin.get('password') or ''
         email = (admin.get('email') or '').strip()
+        real_name = (admin.get('real_name') or '').strip()
+        student_id = (admin.get('student_id') or '').strip()
+        phone = (admin.get('phone') or '').strip()
+        wechat = (admin.get('wechat') or '').strip()
+        political_status = (admin.get('political_status') or 'non_member').strip()
+        is_info_public = bool(admin.get('is_info_public', False))
         if not username or not password:
             return False
+
+        valid_political_status = {value for value, _label in UserProfile.POLITICAL_STATUS_CHOICES}
+        if political_status not in valid_political_status:
+            political_status = 'non_member'
 
         user, created = User.objects.get_or_create(
             username=username,
@@ -82,11 +92,12 @@ def apply_pending_oobe_setup() -> bool:
         profile_defaults = {
             'role': 'admin',
             'status': 'approved',
-            'real_name': username,
-            'student_id': f'ADMIN_{username}',
-            'phone': '',
-            'wechat': '',
-            'political_status': 'non_member',
+            'real_name': real_name or username,
+            'student_id': student_id or f'ADMIN_{username}',
+            'phone': phone,
+            'wechat': wechat,
+            'political_status': political_status,
+            'is_info_public': is_info_public,
             'must_change_password': False,
         }
         profile, profile_created = UserProfile.objects.get_or_create(
