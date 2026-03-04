@@ -66,7 +66,7 @@ def review_xxx(request, id):
     context = {
         'obj': obj,
         'materials': materials,
-        'zip_url': reverse('clubs:zip_xxx_docs', args=[obj.id]) if materials else None,
+        'zip_url': f"{reverse('clubs:zip_download')}?type=review&id={obj.id}" if materials else None,
     }
     return render(request, 'xxx.html', context)
 ```

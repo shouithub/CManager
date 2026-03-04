@@ -992,8 +992,12 @@
     </div>
     
     <!-- ===== 上传材料卡片 ===== -->
-    {% url 'clubs:zip_club_registration_docs' registration.id as zip_download_url %}
+    {% url 'clubs:zip_download' as zip_download_base %}
+    {% with reg_id=registration.id|stringformat:"s" %}
+    {% with zip_download_url=zip_download_base|add:'?type=club_registration&id='|add:reg_id %}
     {% include 'clubs/components/_materials_display.html' with materials=materials title="上传的材料" show_zip=True zip_url=zip_download_url %}
+    {% endwith %}
+    {% endwith %}
     
     <!-- ===== 审核历史 ===== -->
     {% include 'clubs/components/_review_history.html' with reviews=all_reviews approved_count=approved_count rejected_count=rejected_count title="审核历史" current_attempt=registration.resubmission_attempt %}

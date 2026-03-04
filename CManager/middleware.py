@@ -30,10 +30,10 @@ class InitialSetupMiddleware:
             return self.get_response(request)
 
         try:
-            from clubs.oobe_bootstrap import apply_pending_oobe_setup
+            from clubs.oobe_bootstrap import bootstrap_oobe_if_needed
             from clubs.models import UserProfile
 
-            apply_pending_oobe_setup()
+            bootstrap_oobe_if_needed()
             has_admin = UserProfile.objects.filter(role='admin').exists()
         except (OperationalError, ProgrammingError):
             has_admin = False

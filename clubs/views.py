@@ -2802,6 +2802,11 @@ def review_request(request, club_id):
         # 注意：这里club_id实际上是user_id，因为我们统一了路由参数名
         user = get_object_or_404(User, pk=club_id)
         obj = user.profile
+
+        if obj.status != 'pending':
+            messages.info(request, '该干事账号不是待审核状态，无需重复审核')
+            return redirect('clubs:manage_users')
+
         template_name = 'clubs/admin/review_staff_registration.html'  # 使用干事审核模板
         title = f"审核 {obj.user.username} 的干事注册申请"
         
@@ -3685,9 +3690,9 @@ def _csv_value(row, aliases):
 @login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['POST'])
 def import_users_csv(request):
-    """批量导入用户（仅CSV，管理员/干事可用）。"""
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以批量导入用户')
+    """批量导入用户（仅CSV，仅管理员可用）。"""
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以批量导入用户')
         return redirect('clubs:index')
 
     next_url = request.POST.get('next', '').strip() or request.META.get('HTTP_REFERER') or reverse('clubs:manage_users')
@@ -3766,7 +3771,8 @@ def import_users_csv(request):
         user.set_password(password)
         user.save()
 
-        status = 'pending' if role == 'staff' else 'approved'
+        # 批量导入用户默认直接生效，不走干事注册审核流程
+        status = 'approved'
         profile, profile_created = UserProfile.objects.get_or_create(
             user=user,
             defaults={
@@ -3798,6 +3804,144 @@ def import_users_csv(request):
             profile.save()
 
     messages.success(request, f'导入完成：新建{created_users}，更新{updated_users}，跳过{skipped}')
+    if errors:
+        messages.warning(request, '部分数据有问题：' + '；'.join(errors[:5]))
+
+    return redirect(next_url)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['GET'])
+def download_club_import_template(request):
+    """下载社团批量导入CSV模板（仅干事/管理员）。"""
+    if not is_staff_or_admin(request.user):
+        messages.error(request, '仅干事和管理员可以下载社团导入模板')
+        return redirect('clubs:index')
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename="club_import_template.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['社团名称', '社团简介', '成立日期', '状态', '成员数', '社长用户名'])
+    writer.writerow(['示例社团A', '示例社团简介', '2024-09-01', 'active', '36', 'demo_president'])
+    writer.writerow(['示例社团B', '可为空', '', 'inactive', '0', ''])
+    return response
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['POST'])
+def import_clubs_csv(request):
+    """批量导入社团（仅CSV，干事/管理员可用）。"""
+    if not is_staff_or_admin(request.user):
+        messages.error(request, '仅干事和管理员可以批量导入社团')
+        return redirect('clubs:index')
+
+    next_url = request.POST.get('next', '').strip() or request.META.get('HTTP_REFERER') or reverse('clubs:staff_management')
+    uploaded = request.FILES.get('csv_file')
+    if not uploaded:
+        messages.error(request, '请选择CSV文件后再导入')
+        return redirect(next_url)
+
+    if not uploaded.name.lower().endswith('.csv'):
+        messages.error(request, '仅支持CSV文件导入')
+        return redirect(next_url)
+
+    raw_bytes = uploaded.read()
+    text = None
+    for encoding in ('utf-8-sig', 'utf-8', 'gbk'):
+        try:
+            text = raw_bytes.decode(encoding)
+            break
+        except Exception:
+            continue
+
+    if text is None:
+        messages.error(request, 'CSV文件编码无法识别，请使用UTF-8编码')
+        return redirect(next_url)
+
+    reader = csv.DictReader(io.StringIO(text))
+    if not reader.fieldnames:
+        messages.error(request, 'CSV表头无效')
+        return redirect(next_url)
+
+    created_clubs = 0
+    updated_clubs = 0
+    skipped = 0
+    errors = []
+
+    valid_status = {'active', 'inactive', 'suspended'}
+
+    for idx, row in enumerate(reader, start=2):
+        name = _csv_value(row, ['社团名称', 'name'])
+        description = _csv_value(row, ['社团简介', 'description'])
+        founded_date_raw = _csv_value(row, ['成立日期', 'founded_date'])
+        status = (_csv_value(row, ['状态', 'status']).lower() or 'active')
+        members_raw = _csv_value(row, ['成员数', 'members_count'])
+        president_username = _csv_value(row, ['社长用户名', 'president_username'])
+
+        if not name:
+            skipped += 1
+            errors.append(f'第{idx}行缺少必填项（社团名称）')
+            continue
+
+        if status not in valid_status:
+            skipped += 1
+            errors.append(f'第{idx}行状态无效：{status}')
+            continue
+
+        founded_date = None
+        if founded_date_raw:
+            try:
+                founded_date = datetime.strptime(founded_date_raw, '%Y-%m-%d').date()
+            except ValueError:
+                skipped += 1
+                errors.append(f'第{idx}行成立日期格式错误，应为YYYY-MM-DD')
+                continue
+        else:
+            founded_date = timezone.now().date()
+
+        members_count = 0
+        if members_raw:
+            try:
+                members_count = int(members_raw)
+                if members_count < 0:
+                    raise ValueError('negative')
+            except Exception:
+                skipped += 1
+                errors.append(f'第{idx}行成员数无效：{members_raw}')
+                continue
+
+        president = None
+        if president_username:
+            president = User.objects.filter(username=president_username).first()
+            if president is None:
+                skipped += 1
+                errors.append(f'第{idx}行社长用户名不存在：{president_username}')
+                continue
+
+        club, created = Club.objects.get_or_create(
+            name=name,
+            defaults={
+                'description': description,
+                'founded_date': founded_date,
+                'status': status,
+                'members_count': members_count,
+                'president': president,
+            },
+        )
+
+        if created:
+            created_clubs += 1
+        else:
+            updated_clubs += 1
+            club.description = description
+            club.founded_date = founded_date
+            club.status = status
+            club.members_count = members_count
+            club.president = president
+            club.save()
+
+    messages.success(request, f'社团导入完成：新建{created_clubs}，更新{updated_clubs}，跳过{skipped}')
     if errors:
         messages.warning(request, '部分数据有问题：' + '；'.join(errors[:5]))
 
@@ -4490,6 +4634,40 @@ def zip_materials(request, obj, materials, zip_filename, check_permission_func):
     finally:
         # 注意：这里我们不能直接删除temp_dir，因为FileResponse还在使用它
         pass
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['GET'])
+def zip_download(request):
+    """统一材料打包下载入口：/zip-download/?type=<type>&id=<id>"""
+    zip_type = (request.GET.get('type') or '').strip().lower().replace('-', '_')
+    object_id_raw = (request.GET.get('id') or '').strip()
+
+    if not zip_type or not object_id_raw:
+        messages.error(request, '缺少下载参数，请提供 type 与 id')
+        return redirect(request.META.get('HTTP_REFERER', 'clubs:index'))
+
+    try:
+        object_id = int(object_id_raw)
+    except ValueError:
+        messages.error(request, '下载参数 id 必须为整数')
+        return redirect(request.META.get('HTTP_REFERER', 'clubs:index'))
+
+    dispatch = {
+        'review': lambda req, oid: zip_review_docs(req, oid),
+        'club_registration': lambda req, oid: zip_club_registration_docs(req, oid),
+        'registration_request': lambda req, oid: zip_registration_request_docs(req, oid),
+        'reimbursement': lambda req, oid: zip_reimbursement_docs(req, oid),
+        'president_transition': lambda req, oid: zip_president_transition_docs(req, oid),
+        'activity_application': lambda req, oid: zip_activity_application_docs(req, oid),
+    }
+
+    handler = dispatch.get(zip_type)
+    if not handler:
+        messages.error(request, '不支持的下载类型')
+        return redirect(request.META.get('HTTP_REFERER', 'clubs:index'))
+
+    return handler(request, object_id)
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -5707,7 +5885,7 @@ def review_president_transition(request, transition_id):
         'club': transition.club,
         'transition_materials': transition_materials,
         'materials': transition_materials,
-        'zip_url': reverse('clubs:zip_president_transition_docs', args=[transition.id]) if transition_materials else None,
+        'zip_url': f"{reverse('clubs:zip_download')}?type=president_transition&id={transition.id}" if transition_materials else None,
     }
     return render(request, 'clubs/staff/review_president_transition.html', context)
 

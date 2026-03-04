@@ -225,7 +225,7 @@ def oobe_setup(request):
 
         messages.success(
             request,
-            'OOBE 配置已保存。请重启服务后执行 `python manage.py migrate`，系统会自动完成管理员与邮箱配置初始化。'
+            'OOBE 配置已保存。请重启服务，系统会自动执行数据库迁移并完成管理员与邮箱配置初始化。'
         )
         return redirect('clubs:oobe_setup')
 
