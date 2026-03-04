@@ -1,367 +1,298 @@
 {% extends 'clubs/base.html' %}
 
-{% block title %}审核干事申请 - CManager{% endblock %}
+{% block title %}审核干事申请{% endblock %}
+
+{% block extra_css %}
+<style>
+    .review-wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 110px);
+        display: grid;
+        gap: var(--md3-spacing-xl);
+    }
+
+    .hero {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-xl);
+        background: linear-gradient(135deg, var(--md3-primary-container), var(--md3-secondary-container));
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .hero .material-icons { font-size: 2rem; color: var(--md3-primary); }
+    .hero h1 { margin: 0; font-size: 1.5rem; color: var(--md3-on-surface); }
+
+    .card {
+        background: var(--md3-surface-container-low);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+        overflow: hidden;
+    }
+
+    .card-head {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .card-head h2 { margin: 0; font-size: 1.1rem; color: var(--md3-on-surface); }
+    .card-head .material-icons { color: var(--md3-primary); }
+
+    .card-body { padding: var(--md3-spacing-xl); }
+
+    .user-main {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        padding-bottom: var(--md3-spacing-lg);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .user-main h3 {
+        margin: 0;
+        color: var(--md3-on-surface);
+    }
+
+    .user-main a {
+        color: var(--md3-primary);
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--md3-spacing-md);
+    }
+
+    .info-item {
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-md);
+    }
+
+    .label {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        margin-bottom: 4px;
+    }
+
+    .value {
+        font-size: 0.95rem;
+        color: var(--md3-on-surface);
+        word-break: break-word;
+    }
+
+    .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status.pending { background: var(--md3-warning-container); color: var(--md3-on-warning-container); }
+    .status.approved { background: var(--md3-success-container); color: var(--md3-on-success-container); }
+    .status.rejected { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+
+    .hint {
+        margin-top: var(--md3-spacing-lg);
+        padding: var(--md3-spacing-md);
+        border-left: 3px solid var(--md3-primary);
+        background: var(--md3-surface-container-high);
+        border-radius: var(--md3-radius-sm);
+        color: var(--md3-on-surface-variant);
+    }
+
+    .decision-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .decision-btn {
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-highest);
+        color: var(--md3-on-surface);
+        padding: var(--md3-spacing-lg);
+        text-align: left;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .decision-btn:hover { box-shadow: var(--md3-elevation-2); transform: translateY(-1px); }
+    .decision-btn.approve { border-color: var(--md3-success); }
+    .decision-btn.reject { border-color: var(--md3-error); }
+
+    .decision-title { font-weight: 700; margin-bottom: 6px; }
+    .decision-desc { font-size: 0.88rem; color: var(--md3-on-surface-variant); }
+
+    .form-label { display: block; margin-bottom: 8px; color: var(--md3-on-surface); font-weight: 600; }
+    .textarea {
+        width: 100%;
+        min-height: 120px;
+        background: var(--md3-surface-container-highest);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        padding: 12px;
+        box-sizing: border-box;
+        color: var(--md3-on-surface);
+        resize: vertical;
+    }
+
+    .actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-lg);
+    }
+
+    .btn {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: var(--md3-radius-full);
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .btn-primary { background: var(--md3-primary); color: var(--md3-on-primary); }
+    .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-on-surface); border-color: var(--md3-outline); }
+
+    @media (max-width: 768px) {
+        .review-wrap { padding: var(--md3-spacing-lg); }
+        .decision-grid { grid-template-columns: 1fr; }
+        .actions { flex-direction: column; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="review-container">
-    <div class="page-header">
-        <h1>📋 审核干事申请</h1>
-    </div>
-    
-    {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="message {{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    
-    <div class="card" style="margin-bottom: 2rem;">
-        <div class="card-header">
-            <h3>👤 申请人信息</h3>
+<div class="review-wrap">
+    <section class="hero">
+        <span class="material-icons">assignment_ind</span>
+        <h1>审核干事注册申请</h1>
+    </section>
+
+    <section class="card">
+        <div class="card-head">
+            <span class="material-icons">person</span>
+            <h2>申请人信息</h2>
         </div>
-        
-        <div style="padding: 2rem;">
-            <!-- 申请人基本信息卡片 -->
-            <div class="info-card" style="margin-bottom: 2rem;">
-                <div style="display: flex; align-items: center; margin-bottom: 1.5rem; gap: 1rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 1rem;">
-                    <div style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                        {% if profile.avatar %}
-                            <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                            <div style="width: 100%; height: 100%; background: var(--md3-primary-container, #e8def8); color: var(--md3-on-primary-container, #1d192b); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px;">
-                                {{ profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
-                            </div>
+        <div class="card-body">
+            <div class="user-main">
+                <div class="avatar">
+                    {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="{{ user.username }}">
+                    {% else %}
+                        {{ profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <h3>{{ profile.get_full_name|default:user.username }}</h3>
+                    <a href="{% url 'clubs:user_detail' user.id %}">查看完整档案</a>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="info-item"><div class="label">用户名</div><div class="value">{{ user.username }}</div></div>
+                <div class="info-item"><div class="label">学号</div><div class="value">{{ profile.student_id|default:"未填写" }}</div></div>
+                <div class="info-item"><div class="label">邮箱</div><div class="value">{{ user.email|default:"未填写" }}</div></div>
+                <div class="info-item"><div class="label">电话</div><div class="value">{{ profile.phone|default:"未填写" }}</div></div>
+                <div class="info-item"><div class="label">微信</div><div class="value">{{ profile.wechat|default:"未填写" }}</div></div>
+                <div class="info-item"><div class="label">政治面貌</div><div class="value">{{ profile.get_political_status_display|default:"未填写" }}</div></div>
+                <div class="info-item"><div class="label">申请时间</div><div class="value">{{ user.date_joined|date:"Y-m-d H:i" }}</div></div>
+                <div class="info-item">
+                    <div class="label">状态</div>
+                    <div class="value">
+                        {% if profile.status == 'pending' %}
+                            <span class="status pending"><span class="material-icons" style="font-size:14px;">schedule</span>待审核</span>
+                        {% elif profile.status == 'approved' %}
+                            <span class="status approved"><span class="material-icons" style="font-size:14px;">check_circle</span>已批准</span>
+                        {% elif profile.status == 'rejected' %}
+                            <span class="status rejected"><span class="material-icons" style="font-size:14px;">cancel</span>已拒绝</span>
                         {% endif %}
                     </div>
-                    <div>
-                        <h2 style="margin: 0; font-size: 1.5rem; color: #333;">{{ profile.get_full_name|default:user.username }}</h2>
-                        <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: var(--md3-primary, #6750a4); font-size: 0.9rem; font-weight: 500;">
-                            查看完整档案 <span class="material-icons" style="font-size: 14px; vertical-align: middle;">arrow_forward</span>
-                        </a>
-                    </div>
+                </div>
+            </div>
+
+            <div class="hint">请仅对“自行注册申请成为干事”的账号执行审核。批量导入的用户不会进入此审核流程。</div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-head">
+            <span class="material-icons">fact_check</span>
+            <h2>审核决定</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="decision-grid">
+                    <button type="submit" name="review_status" value="approved" class="decision-btn approve">
+                        <div class="decision-title">批准申请</div>
+                        <div class="decision-desc">该用户将成为干事并可立即登录使用干事功能。</div>
+                    </button>
+                    <button type="submit" name="review_status" value="rejected" class="decision-btn reject">
+                        <div class="decision-title">拒绝申请</div>
+                        <div class="decision-desc">该用户申请被驳回，可后续重新发起注册申请。</div>
+                    </button>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                    <div class="info-item">
-                        <div class="label">用户名</div>
-                        <div class="value">{{ user.username }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">学号</div>
-                        <div class="value">{{ profile.student_id }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">邮箱</div>
-                        <div class="value">{{ user.email|default:"未填写" }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">电话</div>
-                        <div class="value">{{ profile.phone|default:"未填写" }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">微信</div>
-                        <div class="value">{{ profile.wechat|default:"未填写" }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">政治面貌</div>
-                        <div class="value">{{ profile.get_political_status_display|default:"未填写" }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">申请角色</div>
-                        <div class="value">
-                            <span class="role-badge staff">干事 (Staff)</span>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">申请时间</div>
-                        <div class="value">{{ user.date_joined|date:"Y-m-d H:i" }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">申请状态</div>
-                        <div class="value">
-                            {% if profile.status == 'pending' %}
-                                <span class="status-badge pending">待审核</span>
-                            {% elif profile.status == 'approved' %}
-                                <span class="status-badge approved">已批准</span>
-                            {% elif profile.status == 'rejected' %}
-                                <span class="status-badge rejected">已拒绝</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 角色说明 -->
-            <div class="role-description-card" style="background-color: #f0f8ff; border-left: 4px solid #0066cc; padding: 1.5rem; border-radius: 4px; margin-bottom: 2rem;">
-                <h4 style="margin-top: 0; color: #0066cc;">🔨 干事角色权限说明</h4>
-                <ul style="margin: 0; padding-left: 1.5rem; color: #333;">
-                    <li>审核社团注册申请</li>
-                    <li>审核年审材料提交</li>
-                    <li>审核报销申请</li>
-                    <li>审核社长变更申请</li>
-                    <li>查看和下载模板文件</li>
-                    <li>上传新的审核模板</li>
-                    <li>导出社团名单</li>
-                    <li>统一管理年审功能开关</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 审核表单 -->
-    <div class="card">
-        <div class="card-header">
-            <h3>✅ 审核决定</h3>
-        </div>
-        
-        <form method="post" style="padding: 2rem;">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label>请选择审核结果 <span class="required">*</span></label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-                    <button type="submit" name="decision" value="approved" class="review-decision-btn approve">
-                        <div>
-                            <strong style="color: #28a745;">✓ 批准申请</strong>
-                            <div style="font-size: 0.85rem; color: #666; margin-top: 3px;">该用户将获得干事权限并可立即开始工作</div>
-                        </div>
-                    </button>
-                    
-                    <button type="submit" name="decision" value="rejected" class="review-decision-btn reject">
-                        <div>
-                            <strong style="color: #dc3545;">✗ 拒绝申请</strong>
-                            <div style="font-size: 0.85rem; color: #666; margin-top: 3px;">该用户的申请将被驳回并可重新申请</div>
-                        </div>
+                <label for="review_comment" class="form-label">审核备注（可选）</label>
+                <textarea id="review_comment" name="review_comment" class="textarea" placeholder="输入审核意见或说明..."></textarea>
+
+                <div class="actions">
+                    <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
+                        <span class="material-icons">arrow_back</span>
+                        返回用户管理
+                    </a>
+                    <button type="submit" name="review_status" value="approved" class="btn btn-primary">
+                        <span class="material-icons">check</span>
+                        快速批准
                     </button>
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="review_comment">审核备注（可选）</label>
-                <textarea 
-                    id="review_comment" 
-                    name="review_comment" 
-                    rows="4"
-                    placeholder="输入审核意见或拒绝理由..."
-                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box; font-family: inherit;"
-                ></textarea>
-                <small style="color: #999; display: block; margin-top: 5px;">
-                    如拒绝申请，建议填写拒绝理由，申请人将看到此备注
-                </small>
-            </div>
-            
-            <!-- 提示信息 -->
-            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 12px; border-radius: 4px; margin: 15px 0;">
-                <strong>⚠️ 重要提示：</strong>请仔细审核申请人信息，确保填写完整准确。此操作将直接影响该用户的权限配置。
-            </div>
-            
-            <!-- 操作按钮 -->
-            <div style="display: flex; gap: 10px; margin-top: 2rem;">
-                <button type="submit" class="btn btn-success" style="flex: 1; padding: 12px; background-color: #5cb85c; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                    ✓ 提交审核结果
-                </button>
-                <a href="{% url 'clubs:manage_users' %}" style="flex: 1; padding: 12px; background-color: #6c757d; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;">
-                    ← 返回管理
-                </a>
-            </div>
-        </form>
-    </div>
+            </form>
+        </div>
+    </section>
 </div>
-
-<style>
-.required {
-    color: #d9534f;
-}
-
-.info-card {
-    background: #f9f9f9;
-    padding: 1rem;
-    border-radius: 4px;
-    border-left: 4px solid #ddd;
-}
-
-.info-item {
-    padding: 0.5rem;
-}
-
-.info-item .label {
-    font-size: 0.85rem;
-    color: #999;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-bottom: 3px;
-}
-
-.info-item .value {
-    font-size: 1rem;
-    color: #333;
-    font-weight: 500;
-}
-
-.role-badge {
-    display: inline-block;
-    padding: 0.35rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.role-badge.staff {
-    background: #e8f5e9;
-    color: #009933;
-}
-
-.status-badge {
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    display: inline-block;
-}
-
-.status-badge.pending {
-    background-color: #ffc107;
-    color: #212529;
-}
-
-.status-badge.approved {
-    background-color: #28a745;
-    color: white;
-}
-
-.status-badge.rejected {
-    background-color: #dc3545;
-    color: white;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #333;
-}
-
-.btn {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s ease;
-}
-
-.btn-success {
-    background: #5cb85c;
-    color: white;
-}
-
-.btn-success:hover {
-    background: #4cae4c;
-}
-
-.card {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.card-header {
-    padding: 15px 20px;
-    background: #f5f5f5;
-    border-bottom: 1px solid #ddd;
-    border-radius: 8px 8px 0 0;
-}
-
-.card-header h3 {
-    margin: 0;
-    font-size: 18px;
-    color: #333;
-}
-
-.page-header {
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin-bottom: 10px;
-    color: #333;
-    font-size: 28px;
-}
-
-/* 审核决定按钮样式 */
-.review-decision-btn {
-    flex: 1;
-    position: relative;
-    cursor: pointer;
-    padding: 1.5rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    background: white;
-    transition: all 0.3s ease;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100px;
-}
-
-.review-decision-btn:hover {
-    border-color: #999;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-}
-
-.review-decision-btn.approve {
-    color: #28a745;
-    border-color: #28a745;
-}
-
-.review-decision-btn.approve:hover {
-    background-color: #d4edda;
-    border-color: #28a745;
-}
-
-.review-decision-btn.reject {
-    color: #dc3545;
-    border-color: #dc3545;
-}
-
-.review-decision-btn.reject:hover {
-    background-color: #f8d7da;
-    border-color: #dc3545;
-}
-
-@media (max-width: 768px) {
-    .container {
-        padding: 10px !important;
-    }
-    
-    .info-card {
-        grid-template-columns: 1fr !important;
-    }
-    
-    .role-description-card ul {
-        margin-left: 1rem;
-    }
-    
-    .btn {
-        display: block;
-        width: 100%;
-        margin-bottom: 10px;
-    }
-}
-</style>
-</style>
 {% endblock %}

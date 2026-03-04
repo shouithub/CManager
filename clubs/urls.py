@@ -76,18 +76,8 @@ urlpatterns = [
     # path('staff/review-history/<str:review_type>/', views.staff_review_history, name='staff_review_history'),
     path('staff/review-detail/<str:item_type>/<int:item_id>/', views.staff_review_detail, name='staff_review_detail'),
 
-
-    path('zip-review-docs/<int:submission_id>/', views.zip_review_docs, name='zip_review_docs'),
-
-    # 按类型明确的压缩下载路由
-    path('zip-club-registration-docs/<int:registration_id>/', views.zip_club_registration_docs, name='zip_club_registration_docs'),
-    path('zip-registration-request-docs/<int:request_id>/', views.zip_registration_request_docs, name='zip_registration_request_docs'),
-
-    path('zip-reimbursement-docs/<int:reimbursement_id>/', views.zip_reimbursement_docs, name='zip_reimbursement_docs'),
-
-    path('zip-president-transition-docs/<int:transition_id>/', views.zip_president_transition_docs, name='zip_president_transition_docs'),
-    
-    path('zip-activity-application-docs/<int:application_id>/', views.zip_activity_application_docs, name='zip_activity_application_docs'),
+    # 统一压缩下载路由：/zip-download/?type=<type>&id=<id>
+    path('zip-download/', views.zip_download, name='zip_download'),
 
     # 统一审核路由
     path('staff/review/<int:club_id>/', views.review_request, name='review'),
@@ -165,6 +155,8 @@ urlpatterns = [
     path('admin-panel/manage-users/', views.manage_users, name='manage_users'),
     path('admin-panel/manage-users/import-csv/', views.import_users_csv, name='import_users_csv'),
     path('admin-panel/manage-users/import-template/', views.download_user_import_template, name='download_user_import_template'),
+    path('staff/management/import-clubs-csv/', views.import_clubs_csv, name='import_clubs_csv'),
+    path('staff/management/import-clubs-template/', views.download_club_import_template, name='download_club_import_template'),
     path('data/export-all-users-clubs/', views.export_all_users_and_clubs_csv, name='export_all_users_and_clubs_csv'),
     path('admin-panel/create-user/', views.create_user, name='create_user'),
     path('admin-panel/edit-user-account/<int:user_id>/', views.admin_edit_user_account, name='admin_edit_user_account'),

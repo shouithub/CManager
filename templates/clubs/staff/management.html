@@ -150,7 +150,6 @@
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
             <button type="button" class="btn btn-primary" onclick="openBulkOpsModal()">
-                <span class="material-icons">tune</span>
                 批量操作
             </button>
         </div>
@@ -1058,23 +1057,23 @@
             <h3 style="margin:0; font-size:1.2rem;">批量操作</h3>
             <button type="button" class="btn btn-secondary" onclick="closeBulkOpsModal()">关闭</button>
         </div>
-        <p style="margin:8px 0 0 0; color: var(--md3-on-surface-variant);">下载模板、批量导入用户，或导出全部用户与社团数据。</p>
+        <p style="margin:8px 0 0 0; color: var(--md3-on-surface-variant);">下载社团模板、批量导入社团，或导出全部用户与社团数据。</p>
         <div class="bulk-modal-actions">
-            <a href="{% url 'clubs:download_user_import_template' %}" class="btn btn-secondary" style="justify-content:center;">
+            <a href="{% url 'clubs:download_club_import_template' %}" class="btn btn-secondary" style="justify-content:center;">
                 <span class="material-icons">download</span>
-                下载导入模板
+                下载社团导入模板
             </a>
             <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn btn-secondary" style="justify-content:center;">
                 <span class="material-icons">file_download</span>
                 导出全部用户+社团
             </a>
-            <form method="post" action="{% url 'clubs:import_users_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
+            <form method="post" action="{% url 'clubs:import_clubs_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <input type="file" name="csv_file" accept=".csv,text/csv" required class="bulk-modal-file">
                 <button type="submit" class="btn btn-primary" style="justify-content:center;">
                     <span class="material-icons">upload_file</span>
-                    批量导入CSV
+                    批量导入社团CSV
                 </button>
             </form>
         </div>

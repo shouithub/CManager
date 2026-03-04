@@ -1,15 +1,24 @@
 import json
+import logging
 from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.db.utils import OperationalError, ProgrammingError
 
 from .models import SMTPConfig, UserProfile
 
 
+logger = logging.getLogger(__name__)
+
+
 def _pending_file_path() -> Path:
     return Path(settings.BASE_DIR) / '.oobe_pending.json'
+
+
+def has_pending_oobe_setup() -> bool:
+    return _pending_file_path().exists()
 
 
 def write_pending_oobe_setup(payload: dict):
@@ -108,3 +117,38 @@ def apply_pending_oobe_setup() -> bool:
         return False
     except Exception:
         return False
+
+
+def ensure_database_migrated() -> bool:
+    """确保数据库迁移已应用（幂等）。"""
+    if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.dummy':
+        logger.warning('OOBE bootstrap skipped migrate: database engine is dummy')
+        return False
+
+    try:
+        logger.info('OOBE bootstrap: starting automatic migrate')
+        call_command('migrate', interactive=False, verbosity=0)
+        logger.info('OOBE bootstrap: automatic migrate completed')
+        return True
+    except Exception as exc:
+        logger.exception('OOBE bootstrap: automatic migrate failed: %s', exc)
+        return False
+
+
+def bootstrap_oobe_if_needed() -> bool:
+    """如果存在待初始化配置，则自动迁移并应用 OOBE 数据。"""
+    if not has_pending_oobe_setup():
+        logger.debug('OOBE bootstrap: no pending setup file found')
+        return True
+
+    logger.info('OOBE bootstrap: pending setup detected, starting bootstrap flow')
+    if not ensure_database_migrated():
+        logger.error('OOBE bootstrap: bootstrap aborted because migrate failed')
+        return False
+
+    applied = apply_pending_oobe_setup()
+    if applied:
+        logger.info('OOBE bootstrap: pending setup applied successfully')
+    else:
+        logger.error('OOBE bootstrap: failed to apply pending setup')
+    return applied
