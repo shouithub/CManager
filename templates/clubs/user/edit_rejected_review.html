@@ -204,44 +204,6 @@
         white-space: pre-wrap;
     }
     
-    /* ===== 被拒材料网格 ===== */
-    .rejected-materials-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: var(--md3-spacing-lg);
-    }
-    
-    .rejected-material-card {
-        background: var(--md3-error-container);
-        border: 1px solid var(--md3-error);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-lg);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-        text-align: center;
-        transition: all 0.3s cubic-bezier(0.2, 0.0, 0.1, 1);
-        box-shadow: var(--md3-elevation-1);
-    }
-    
-    .rejected-material-card:hover {
-        box-shadow: var(--md3-elevation-3);
-        transform: translateY(-4px);
-    }
-    
-    .rejected-material-card .material-icons {
-        font-size: 2.5rem;
-        color: var(--md3-error);
-    }
-    
-    .rejected-material-card .material-name {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--md3-on-error-container);
-        margin: 0;
-    }
-
     /* ===== 模板下载区域 ===== */
     .template-section {
         margin-bottom: var(--md3-spacing-xl);
@@ -346,18 +308,6 @@
         border-color: var(--md3-primary);
         box-shadow: 0 0 0 3px var(--md3-primary-container);
         background: var(--md3-surface-container-highest);
-    }
-
-    .form-input[type="file"] {
-        padding: var(--md3-spacing-lg);
-        border: 2px dashed var(--md3-outline);
-        cursor: pointer;
-        background: var(--md3-surface-container-highest);
-    }
-
-    .form-input[type="file"]:hover {
-        border-color: var(--md3-primary);
-        background: var(--md3-surface-container-high);
     }
 
     .form-hint {
@@ -514,23 +464,6 @@
             font-size: 0.875rem;
         }
 
-        .rejected-materials-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: var(--md3-spacing-md);
-        }
-
-        .rejected-material-card {
-            padding: var(--md3-spacing-md);
-        }
-
-        .rejected-material-card .material-icons {
-            font-size: 2rem;
-        }
-
-        .rejected-material-card .material-name {
-            font-size: 0.75rem;
-        }
-
         .template-section {
             padding: var(--md3-spacing-lg);
         }
@@ -575,9 +508,6 @@
             grid-template-columns: 1fr;
         }
 
-        .rejected-materials-grid {
-            grid-template-columns: 1fr;
-        }
     }
 </style>
 {% endblock %}
@@ -593,10 +523,14 @@
             <p class="subtitle">{{ club.name }} · 社团年审申请</p>
             {% elif review_type == 'club_registration' %}
             <p class="subtitle">{{ club.name }} · 社团注册申请</p>
-            {% elif review_type == 'application' %}
+            {% elif review_type == 'club_application' or review_type == 'application' %}
             <p class="subtitle">新社团申请</p>
             {% elif review_type == 'reimbursement' %}
             <p class="subtitle">报销申请</p>
+            {% elif review_type == 'activity_application' %}
+            <p class="subtitle">{{ club.name }} · 活动申请</p>
+            {% elif review_type == 'president_transition' %}
+            <p class="subtitle">{{ club.name }} · 社长换届申请</p>
             {% endif %}
         </div>
         <a href="{% if review_type == 'review' %}{% url 'clubs:approval_center' 'annual_review' %}{% elif review_type == 'club_application' or review_type == 'application' %}{% url 'clubs:approval_center' 'application' %}{% elif review_type == 'club_registration' %}{% url 'clubs:approval_center' 'registration' %}{% elif review_type == 'reimbursement' %}{% url 'clubs:approval_center' 'reimbursement' %}{% elif review_type == 'activity_application' %}{% url 'clubs:approval_center' 'activity_application' %}{% elif review_type == 'president_transition' %}{% url 'clubs:approval_center' 'president_transition' %}{% elif club %}{% url 'clubs:club_detail' club.id %}{% else %}{% url 'clubs:user_dashboard' %}{% endif %}" class="back-btn">
@@ -709,30 +643,24 @@
         {% endif %}
     </div>
     {% endif %}
-    
-    <!-- 被拒绝材料卡片 -->
-    {% if rejected_materials %}
+
+    {% if rejected_reasons %}
     <div class="card">
         <div class="card-header">
-            <span class="material-icons">error_outline</span>
-            <h2>需重新提交的材料</h2>
+            <span class="material-icons">feedback</span>
+            <h2>审核拒绝理由</h2>
         </div>
-        <div class="rejected-materials-grid">
-            {% for material in rejected_materials %}
-            <div class="rejected-material-card">
-                {% with req=material|get_material_requirement %}
-                    {% if req %}
-                        <span class="material-icons" style="font-size: 2rem; color: var(--md3-error);">{{ req.icon|default:"description" }}</span>
-                        <p class="material-name">{{ req.name }}</p>
-                    {% else %}
-                        <span class="material-icons">description</span>
-                        <p class="material-name">{{ material|material_name }}</p>
-                    {% endif %}
-                {% endwith %}
-            </div>
+        <div class="comment-section" style="margin-top:0; padding-top:0; border-top:none;">
+            {% for reason in rejected_reasons %}
+            <div class="comment-content" style="margin-bottom: var(--md3-spacing-md);">{{ reason }}</div>
             {% endfor %}
         </div>
     </div>
+    {% endif %}
+    
+    <!-- 被拒绝材料卡片 -->
+    {% if rejected_material_items %}
+        {% include 'clubs/components/_materials_display.html' with materials=rejected_material_items title="需重新提交的材料" show_zip=False %}
     {% endif %}
     
     <!-- 上传表单卡片 -->
@@ -765,46 +693,40 @@
         <form method="post" action="{% url 'clubs:edit_rejected_review' club_id_param %}?request_id={{ request.GET.request_id }}&type={{ request.GET.type }}" enctype="multipart/form-data">
             {% csrf_token %}
             
-            {% if review_type == 'club_registration' %}
-            
+            {% if rejected_materials %}
             {% for material in rejected_materials %}
                 {% with req=material|get_material_requirement %}
                     {% if req %}
                     <div class="form-group">
+                        {% with field_name="req_"|concat_str:req.id field_id="upload_req_"|concat_str:req.id %}
                         {% if req.template_file %}
-                            {% include 'clubs/components/_file_upload.html' with field_name=material label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description template_url=req.template_file.url %}
+                            {% include 'clubs/components/_file_upload.html' with field_name=field_name field_id=field_id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description max_size_mb=req.max_size_mb template_url=req.template_file.url template_name=req.template_file.name %}
                         {% else %}
-                            {% include 'clubs/components/_file_upload.html' with field_name=material label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description %}
+                            {% include 'clubs/components/_file_upload.html' with field_name=field_name field_id=field_id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description max_size_mb=req.max_size_mb %}
                         {% endif %}
-                    </div>
-                    {% endif %}
-                {% endwith %}
-            {% endfor %}
-            
-            {% endif %}
-            
-            {% if review_type == 'review' %}
-            
-            <!-- 年审材料上传表单 (动态生成) -->
-            {% for material in rejected_materials %}
-                {% with req=material|get_material_requirement %}
-                    {% if req %}
-                    <div class="form-group">
-                        {% if req.template_file %}
-                            {% include 'clubs/components/_file_upload.html' with field_name=material label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description template_url=req.template_file.url %}
-                        {% else %}
-                            {% include 'clubs/components/_file_upload.html' with field_name=material label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description %}
-                        {% endif %}
+                        {% endwith %}
                     </div>
                     {% else %}
-                    <!-- Fallback for materials not in MaterialRequirement (Legacy support) -->
                     <div class="form-group">
-                        {% include 'clubs/components/_file_upload.html' with field_name=material label=material|material_name is_required=True allowed_extensions=".doc,.docx,.pdf" icon="cloud_upload" description="请上传文件" %}
+                        {% with field_id="upload_legacy_"|concat_str:forloop.counter %}
+                        {% include 'clubs/components/_file_upload.html' with field_name=material field_id=field_id label=material|material_name is_required=True allowed_extensions=".doc,.docx,.pdf,.jpg,.png,.zip" icon="cloud_upload" description="请上传修改后的文件" %}
+                        {% endwith %}
                     </div>
                     {% endif %}
                 {% endwith %}
             {% endfor %}
-            
+            {% elif requirements %}
+            {% for req in requirements %}
+            <div class="form-group">
+                {% with field_name="req_"|concat_str:req.id field_id="upload_req_"|concat_str:req.id %}
+                    {% if req.template_file %}
+                        {% include 'clubs/components/_file_upload.html' with field_name=field_name field_id=field_id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description max_size_mb=req.max_size_mb template_url=req.template_file.url template_name=req.template_file.name %}
+                    {% else %}
+                        {% include 'clubs/components/_file_upload.html' with field_name=field_name field_id=field_id label=req.name is_required=req.is_required allowed_extensions=req.allowed_extensions icon=req.icon|default:"cloud_upload" description=req.description max_size_mb=req.max_size_mb %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+            {% endfor %}
             {% endif %}
             
             {% if review_type == 'reimbursement' %}
@@ -837,10 +759,6 @@
                 </label>
                 <textarea name="description" class="form-input" required rows="5" placeholder="详细说明报销用途和事由">{% if reimbursement %}{{ reimbursement.description }}{% endif %}</textarea>
                 <div class="form-hint">请详细描述报销的用途和事由</div>
-            </div>
-            
-            <div class="form-group">
-                {% include 'clubs/components/_file_upload.html' with field_name="receipt_file" label="报销凭证" is_required=True allowed_extensions=".doc,.docx" icon="receipt" description="支持 DOC、DOCX 格式的 Word 文档" %}
             </div>
             
             {% endif %}

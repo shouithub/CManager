@@ -97,6 +97,45 @@
         font-size: 0.875rem;
         color: var(--md3-on-surface-variant);
     }
+
+    .import-progress {
+        display: none;
+        margin-top: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md);
+        background: var(--md3-surface-container-high);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+    }
+
+    .import-progress-text {
+        font-size: 0.875rem;
+        color: var(--md3-on-surface);
+        margin-bottom: var(--md3-spacing-sm);
+    }
+
+    .import-progress-track {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--md3-surface-container-highest);
+        overflow: hidden;
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .import-progress-bar {
+        width: 0;
+        height: 100%;
+        background: var(--md3-primary);
+        transition: width 0.2s ease;
+    }
+
+    .import-result {
+        display: none;
+        margin-top: var(--md3-spacing-sm);
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+        line-height: 1.5;
+    }
     
     /* 搜索卡片 */
     .search-card {
@@ -618,14 +657,21 @@
                 <span class="material-icons">file_download</span>
                 导出全部用户+社团
             </a>
-            <form method="post" action="{% url 'clubs:import_users_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
+            <form id="bulkImportForm" method="post" action="{% url 'clubs:import_users_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <input type="file" name="csv_file" accept=".csv,text/csv" required class="bulk-modal-file">
-                <button type="submit" class="btn-action detail" style="justify-content:center;">
+                <button id="bulkImportSubmitBtn" type="submit" class="btn-action detail" style="justify-content:center;">
                     <span class="material-icons">upload_file</span>
                     批量导入CSV
                 </button>
+                <div id="importProgress" class="import-progress">
+                    <div id="importProgressText" class="import-progress-text">准备导入...</div>
+                    <div class="import-progress-track">
+                        <div id="importProgressBar" class="import-progress-bar"></div>
+                    </div>
+                </div>
+                <div id="importResult" class="import-result"></div>
             </form>
         </div>
     </div>
@@ -644,6 +690,91 @@ document.getElementById('bulkOpsModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeBulkOpsModal();
     }
+});
+
+const bulkImportForm = document.getElementById('bulkImportForm');
+const bulkImportSubmitBtn = document.getElementById('bulkImportSubmitBtn');
+const importProgress = document.getElementById('importProgress');
+const importProgressText = document.getElementById('importProgressText');
+const importProgressBar = document.getElementById('importProgressBar');
+const importResult = document.getElementById('importResult');
+
+function setImportProgress(percent, text) {
+    importProgress.style.display = 'block';
+    importProgressBar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+    importProgressText.textContent = text;
+}
+
+bulkImportForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const fileInput = bulkImportForm.querySelector('input[name="csv_file"]');
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        importResult.style.display = 'block';
+        importResult.textContent = '请先选择CSV文件。';
+        return;
+    }
+
+    importResult.style.display = 'none';
+    importResult.textContent = '';
+    bulkImportSubmitBtn.disabled = true;
+    setImportProgress(5, '开始上传文件...');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', bulkImportForm.action, true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+    xhr.upload.addEventListener('progress', function(event) {
+        if (event.lengthComputable) {
+            const uploadPercent = Math.round((event.loaded / event.total) * 70);
+            setImportProgress(uploadPercent, `上传中... ${Math.round((event.loaded / event.total) * 100)}%`);
+        } else {
+            setImportProgress(50, '上传中...');
+        }
+    });
+
+    xhr.addEventListener('loadstart', function() {
+        setImportProgress(10, '准备上传...');
+    });
+
+    xhr.addEventListener('load', function() {
+        let resp = null;
+        try {
+            resp = JSON.parse(xhr.responseText || '{}');
+        } catch (err) {
+            resp = null;
+        }
+
+        if (xhr.status >= 200 && xhr.status < 300 && resp && resp.success) {
+            setImportProgress(100, '导入完成');
+            importResult.style.display = 'block';
+            let msg = resp.message || '导入成功';
+            if (resp.errors && resp.errors.length) {
+                msg += `（部分行有问题：${resp.errors.join('；')}）`;
+            }
+            importResult.textContent = msg;
+            setTimeout(function() {
+                window.location.reload();
+            }, 900);
+            return;
+        }
+
+        setImportProgress(100, '导入失败');
+        importResult.style.display = 'block';
+        importResult.textContent = (resp && resp.message) ? resp.message : '导入失败，请稍后重试。';
+        bulkImportSubmitBtn.disabled = false;
+    });
+
+    xhr.addEventListener('error', function() {
+        setImportProgress(100, '网络异常');
+        importResult.style.display = 'block';
+        importResult.textContent = '网络异常，导入失败，请重试。';
+        bulkImportSubmitBtn.disabled = false;
+    });
+
+    const formData = new FormData(bulkImportForm);
+    xhr.send(formData);
+    setImportProgress(80, '文件已上传，服务器处理中...');
 });
 </script>
 

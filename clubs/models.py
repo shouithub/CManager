@@ -110,7 +110,6 @@ class Club(models.Model):
     founded_date = models.DateField(verbose_name='成立日期')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='状态')
     members_count = models.IntegerField(default=0, verbose_name='成员数')
-    president = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='clubs_as_president', verbose_name='社长账户')
     review_enabled = models.BooleanField(default=False, verbose_name='是否开启年审')
     registration_enabled = models.BooleanField(default=False, verbose_name='是否开启注册')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
@@ -123,6 +122,25 @@ class Club(models.Model):
     
     def __str__(self):
         return self.name
+
+    @property
+    def president(self):
+        """返回当前社长 User 对象（从 Officer 表查询）。
+        若已通过 prefetch_related(..., to_attr='_president_list') 预取，则直接使用缓存。
+        """
+        if hasattr(self, '_president_list'):
+            officer = self._president_list[0] if self._president_list else None
+            return officer.user_profile.user if officer and officer.user_profile else None
+        officer = self.officers.filter(
+            position='president', is_current=True
+        ).select_related('user_profile__user').first()
+        return officer.user_profile.user if officer and officer.user_profile else None
+
+    @property
+    def president_id(self):
+        """返回当前社长 User 的 id（从 Officer 表查询）。"""
+        user = self.president
+        return user.id if user else None
 
 
 class Officer(models.Model):
@@ -813,9 +831,9 @@ class ActivityApplication(models.Model):
         return f"{self.club.name} - {self.activity_name} ({self.activity_date})"
 
     def get_final_reviewer(self):
-        """获取最终审核通过的审核人"""
-        if self.status == 'approved':
-            return self.staff_reviewer
+        """获取当前结果对应的审核人（通过或拒绝）。"""
+        if self.status in ['approved', 'rejected']:
+            return self.staff_reviewer or self.reviewer
         return None
     
     def update_status(self):

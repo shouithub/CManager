@@ -13,6 +13,15 @@ from .models import (
 )
 
 
+def _get_president_club_ids(user):
+    """获取社长可访问社团ID（通过 Officer 表查询）。"""
+    return list(Officer.objects.filter(
+        user_profile__user=user,
+        position='president',
+        is_current=True
+    ).values_list('club_id', flat=True))
+
+
 def site_settings(request):
     """全局站点设置，如favicon"""
     base_media_url = f"/{settings.MEDIA_URL.lstrip('/')}"
@@ -98,11 +107,7 @@ def audit_center_counts(request):
     # 计算社长端审批中心数量
     if is_president:
         try:
-            president_clubs = Officer.objects.filter(
-                user_profile=request.user.profile, 
-                position='president', 
-                is_current=True
-            ).values_list('club', flat=True)
+            president_clubs = _get_president_club_ids(request.user)
             
             annual_review_count = ReviewSubmission.objects.filter(
                 club__in=president_clubs, 

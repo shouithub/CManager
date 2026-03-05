@@ -162,118 +162,83 @@
             <div class="alert-header">
                 <span class="material-icons">warning</span> 社团成员数量预警 ({{ clubs_with_low_members_count }})
             </div>
-            <div class="alert-list">
-                {% for club in clubs_with_low_members|slice:":3" %}
-                <div class="alert-item">
-                    <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
-                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                        <span style="color: var(--md3-on-surface-variant);">社长:</span>
-                        {% if club.president %}
-                        <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
-                            <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                {% if club.president.profile.avatar %}
-                                    <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                {% else %}
-                                    <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
-                                        {{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <span style="border-bottom: 1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
-                        </a>
-                        {% else %}
-                        <span style="color: var(--md3-on-surface-variant);">未设置</span>
-                        {% endif %}
-                    </div>
-                    <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
-                        <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">负责干事:</span>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            {% if club.responsible_staff.all %}
-                                {% for relation in club.responsible_staff.all %}
-                                <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
-                                    <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                        {% if relation.staff.avatar %}
-                                            <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                        {% else %}
-                                            <div style="width: 100%; height: 100%; background-color: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
-                                                {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
-                                </a>
-                                {% endfor %}
-                            {% else %}
-                                <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
 
-                {% if clubs_with_low_members|length > 3 %}
-                <div class="collapsible-section">
-                    <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
-                        <span class="material-icons">expand_more</span>
-                        {% with remaining=clubs_with_low_members|length|add:"-3" %}
-                        更多 (+{{ remaining }})
-                        {% endwith %}
+            <div class="alert-list">
+                {% if clubs_with_low_members_my.count > 0 %}
+                    {% for club in clubs_with_low_members_my|slice:":3" %}
+                    <div class="alert-item">
+                        <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
                     </div>
-                    <div class="alert-list collapsible-content hidden">
-                        {% for club in clubs_with_low_members|slice:"3:" %}
-                        <div class="alert-item">
-                            <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                <span style="color: var(--md3-on-surface-variant);">社长:</span>
-                                {% if club.president %}
-                                <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
-                                    <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                        {% if club.president.profile.avatar %}
-                                            <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                        {% else %}
-                                            <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
-                                                {{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <span style="border-bottom: 1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
-                                </a>
-                                {% else %}
-                                <span style="color: var(--md3-on-surface-variant);">未设置</span>
-                                {% endif %}
-                            </div>
-                            <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
-                                <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">负责干事:</span>
-                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    {% if club.responsible_staff.all %}
-                                        {% for relation in club.responsible_staff.all %}
-                                        <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
-                                            <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                                {% if relation.staff.avatar %}
-                                                    <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                                {% else %}
-                                                    <div style="width: 100%; height: 100%; background-color: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
-                                                    {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-                                            <span style="border-bottom: 1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
-                                        </a>
-                                        {% endfor %}
-                                    {% else %}
-                                        <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
-                                    {% endif %}
-                                </div>
-                            </div>
+                    {% endfor %}
+
+                    {% if clubs_with_low_members_my.count > 3 %}
+                    <div class="collapsible-section">
+                        <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                            <span class="material-icons">expand_more</span>
+                            {% with remaining=clubs_with_low_members_my.count|add:"-3" %}
+                            更多 (+{{ remaining }})
+                            {% endwith %}
                         </div>
-                        {% endfor %}
+                        <div class="alert-list collapsible-content hidden">
+                            {% for club in clubs_with_low_members_my|slice:"3:" %}
+                            <div class="alert-item">
+                                <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert-item" style="opacity: 0.7; font-style: italic;">暂无你负责的成员不足社团</div>
                 {% endif %}
             </div>
-            <button onclick="copyLowMemberClubs()" class="alert-btn">
-                <span class="material-icons" style="font-size:18px;">content_copy</span> 复制名单
-            </button>
+
+            {% if clubs_with_low_members_other.count > 0 %}
+            <div class="collapsible-section">
+                <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                    <span class="material-icons">expand_more</span>
+                    其他干事负责的社团 ({{ clubs_with_low_members_other.count }})
+                </div>
+                <div class="alert-list collapsible-content hidden">
+                    {% for club in clubs_with_low_members_other|slice:":3" %}
+                    <div class="alert-item">
+                        <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
+                    </div>
+                    {% endfor %}
+
+                    {% if clubs_with_low_members_other.count > 3 %}
+                    <div class="collapsible-section">
+                        <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
+                            <span class="material-icons">expand_more</span>
+                            {% with remaining=clubs_with_low_members_other.count|add:"-3" %}
+                            更多 (+{{ remaining }})
+                            {% endwith %}
+                        </div>
+                        <div class="alert-list collapsible-content hidden">
+                            {% for club in clubs_with_low_members_other|slice:"3:" %}
+                            <div class="alert-item">
+                                <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="alert-buttons">
+                {% if clubs_with_low_members_my.count > 0 %}
+                <button onclick="copyLowMemberClubsMy()" class="btn-copy-my">
+                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
+                </button>
+                {% endif %}
+                {% if clubs_with_low_members_other.count > 0 %}
+                <button onclick="copyLowMemberClubsAll()" class="btn-copy-all">
+                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
+                </button>
+                {% endif %}
+            </div>
         </div>
         {% endif %}
 
@@ -1203,7 +1168,24 @@ function copyUnsubmittedClubsAll() {
     navigator.clipboard.writeText(text).then(showToast).catch(err => console.error('复制失败:', err));
 }
 
-function copyLowMemberClubs() {
+function copyLowMemberClubsMy() {
+    let text = '成员数量不足的社团名单 - 我负责的\n==========================\n';
+    {% for club in clubs_with_low_members_my %}
+    text += '{{ club.name }} - 成员数: {{ club.members_count }} 人 (社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %})';
+    {% if club.responsible_staff.all %}
+    text += ' - 负责干事: ';
+    {% for relation in club.responsible_staff.all %}
+    text += '{{ relation.staff.get_full_name }}{% if not forloop.last %}, {% endif %}';
+    {% endfor %}
+    {% else %}
+    text += ' - 暂未分配负责干事';
+    {% endif %}
+    text += '\n';
+    {% endfor %}
+    navigator.clipboard.writeText(text).then(showToast).catch(err => console.error('复制失败:', err));
+}
+
+function copyLowMemberClubsAll() {
     let text = '成员数量不足的社团名单\n==========================\n';
     {% for club in clubs_with_low_members %}
     text += '{{ club.name }} - 成员数: {{ club.members_count }} 人 (社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %})';
@@ -1221,6 +1203,10 @@ function copyLowMemberClubs() {
     navigator.clipboard.writeText(text).then(showToast).catch(err => console.error('复制失败:', err));
 }
 
+function copyLowMemberClubs() {
+    copyLowMemberClubsAll();
+}
+
 // 保留旧函数以保持兼容性
 function copyUnsubmittedClubs() {
     copyUnsubmittedClubsAll();
@@ -1230,7 +1216,7 @@ function copyUnsubmittedClubs() {
 function copyUnsubmittedRegistrationClubsMy() {
     let text = '未提交注册的社团名单（第{{ active_registration_period.period_number }}次注册周期） - 我负责的\n==========================\n';
     {% for club in clubs_enabled_registration_not_submitted_my %}
-    text += '{{ club.name }} - 社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" %}{% else %}未设置{% endif %}';
+    text += '{{ club.name }} - 社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}';
     {% if club.responsible_staff.all %}
     text += ' - 负责干事: ';
     {% for relation in club.responsible_staff.all %}
@@ -1248,7 +1234,7 @@ function copyUnsubmittedRegistrationClubsMy() {
 function copyUnsubmittedRegistrationClubsAll() {
     let text = '未提交注册的社团名单（第{{ active_registration_period.period_number }}次注册周期）\n==========================\n';
     {% for club in clubs_enabled_registration_not_submitted %}
-    text += '{{ club.name }} - 社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" %}{% else %}未设置{% endif %}';
+    text += '{{ club.name }} - 社长: {% if club.president %}{{ club.president.profile.get_full_name|default:"未设置" }}{% else %}未设置{% endif %}';
     {% if club.responsible_staff.all %}
     text += ' - 负责干事: ';
     {% for relation in club.responsible_staff.all %}

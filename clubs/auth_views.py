@@ -5,10 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib import messages
-from .models import UserProfile, Club, ReviewSubmission, Reimbursement, ClubRegistrationRequest, RegistrationPeriod, ClubRegistration, StaffClubRelation
+from .models import UserProfile, Club, ReviewSubmission, Reimbursement, ClubRegistrationRequest, RegistrationPeriod, ClubRegistration, StaffClubRelation, Officer
 from datetime import datetime
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.core.paginator import Paginator
 from django.core.cache import cache
 import time
@@ -277,12 +277,12 @@ def delete_account(request):
             
             elif user.profile.role == 'president':
                 # 社长账户删除逻辑
-                # 1. 先将管理的社团的社长设置为空，保留社长提交的年审记录
-                from clubs.models import Club
-                clubs = Club.objects.filter(president=user)
-                for club in clubs:
-                    club.president = None
-                    club.save()
+                # 1. 将该社长的 Officer 记录标记为离任，保留年审记录
+                Officer.objects.filter(
+                    user_profile=user.profile,
+                    position='president',
+                    is_current=True
+                ).update(is_current=False, end_date=timezone.now().date())
                 # 2. 删除用户账户
                 user.delete()
                 messages.success(request, f'社长账户 {username} 已成功删除！您的年审记录已被保留。')
@@ -337,7 +337,11 @@ def user_dashboard(request):
         return redirect('clubs:login')
 
     # 获取该社长的社团
-    clubs = user.clubs_as_president.all()
+    clubs = Club.objects.filter(
+        officers__user_profile__user=user,
+        officers__position='president',
+        officers__is_current=True
+    )
     
     # 获取用户作为社长的社团列表（用于统计待审批数量）
     president_clubs = Officer.objects.filter(
@@ -818,7 +822,7 @@ def staff_management(request):
         messages.error(request, '用户角色未配置')
         return redirect('clubs:login')
     
-    from .models import Club, RegistrationPeriod, ReviewSubmission, ClubRegistration, StaffClubRelation
+    from .models import Club, RegistrationPeriod, ReviewSubmission, ClubRegistration, StaffClubRelation, Officer
     from datetime import datetime
     
     # 计算全局年审功能状态
@@ -832,13 +836,23 @@ def staff_management(request):
 
     # 搜索 & 列表（分页）
     q = request.GET.get('q', '').strip()
-    clubs_qs = Club.objects.all().order_by('name')
+    clubs_qs = Club.objects.prefetch_related(
+        Prefetch(
+            'officers',
+            queryset=Officer.objects.filter(position='president', is_current=True).select_related('user_profile__user'),
+            to_attr='_president_list',
+        )
+    ).all().order_by('name')
     if q:
+        pres_club_ids = Officer.objects.filter(
+            Q(user_profile__user__username__icontains=q) | Q(user_profile__real_name__icontains=q),
+            position='president',
+            is_current=True,
+        ).values_list('club_id', flat=True)
         clubs_qs = clubs_qs.filter(
             Q(name__icontains=q) |
             Q(description__icontains=q) |
-            Q(president__username__icontains=q) |
-            Q(president__profile__real_name__icontains=q)
+            Q(id__in=pres_club_ids)
         )
 
     paginator = Paginator(clubs_qs, 20)  # 每页20个
@@ -854,6 +868,8 @@ def staff_management(request):
     
     # 获取成员数少20人的社团（排除停止状态的社团）
     clubs_with_low_members = Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count').prefetch_related('responsible_staff', 'responsible_staff__staff')
+    clubs_with_low_members_my = clubs_with_low_members.filter(id__in=staff_club_ids)
+    clubs_with_low_members_other = clubs_with_low_members.exclude(id__in=staff_club_ids)
     
     # 获取当前年份
     current_year = datetime.now().year
@@ -899,6 +915,8 @@ def staff_management(request):
         # 预警数据
         'clubs_with_low_members': clubs_with_low_members,
         'clubs_with_low_members_count': clubs_with_low_members.count(),
+        'clubs_with_low_members_my': clubs_with_low_members_my,
+        'clubs_with_low_members_other': clubs_with_low_members_other,
         'clubs_enabled_review_not_submitted': clubs_enabled_review_not_submitted,
         'clubs_enabled_review_not_submitted_my': clubs_enabled_review_not_submitted_my,
         'clubs_enabled_review_not_submitted_other': clubs_enabled_review_not_submitted_other,
