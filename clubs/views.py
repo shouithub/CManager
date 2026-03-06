@@ -3975,7 +3975,7 @@ def _csv_value(row, aliases):
 @login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['POST'])
 def import_users_csv(request):
-    """批量导入用户（仅CSV，仅管理员可用）。"""
+    """批量导入用户（仅CSV，仅管理员可用）。使用事务确保原子性，避免部分导入失败。"""
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     def _json_error(msg, status=400):
@@ -4028,80 +4028,175 @@ def import_users_csv(request):
     skipped = 0
     errors = []
 
-    for idx, row in enumerate(reader, start=2):
-        username = _csv_value(row, ['用户名', 'username'])
-        real_name = _csv_value(row, ['真实姓名', 'real_name'])
-        email = _csv_value(row, ['邮箱', 'email'])
-        phone = _csv_value(row, ['电话', 'phone'])
-        wechat = _csv_value(row, ['微信', 'wechat'])
-        student_id = _csv_value(row, ['学号', 'student_id'])
-        role = _csv_value(row, ['角色', 'role']).lower() or 'president'
-        password = _csv_value(row, ['密码', 'password']) or '123456'
-        department_name = _csv_value(row, ['部门', 'department'])
-        political_status = _csv_value(row, ['政治面貌', 'political_status']) or 'non_member'
+    # 使用事务处理，确保导入失败时完全回滚，避免部分导入导致数据不一致
+    try:
+        from django.db import transaction
+        with transaction.atomic():
+            # 预处理：检查所有行的有效性和重复性，构建待创建/更新对象列表
+            rows_to_process = []
+            existing_student_ids = {}  # {student_id: username}
+            
+            # 加载数据库中已有的学号
+            for profile in UserProfile.objects.filter(student_id__isnull=False).values('user__username', 'student_id'):
+                if profile['student_id']:
+                    existing_student_ids[profile['student_id']] = profile['user__username']
 
-        if not username or not real_name:
-            skipped += 1
-            errors.append(f'第{idx}行缺少必填项（用户名/真实姓名）')
-            continue
+            # 跟踪本次导入中的学号，防止CSV内部重复
+            import_student_ids = {}  # {student_id: row_idx}
 
-        if role not in ['president', 'staff', 'admin']:
-            skipped += 1
-            errors.append(f'第{idx}行角色无效：{role}')
-            continue
+            for idx, row in enumerate(reader, start=2):
+                username = _csv_value(row, ['用户名', 'username'])
+                real_name = _csv_value(row, ['真实姓名', 'real_name'])
+                email = _csv_value(row, ['邮箱', 'email'])
+                phone = _csv_value(row, ['电话', 'phone'])
+                wechat = _csv_value(row, ['微信', 'wechat'])
+                student_id = _csv_value(row, ['学号', 'student_id'])
+                role = _csv_value(row, ['角色', 'role']).lower() or 'president'
+                password = _csv_value(row, ['密码', 'password']) or '123456'
+                department_name = _csv_value(row, ['部门', 'department'])
+                political_status = _csv_value(row, ['政治面貌', 'political_status']) or 'non_member'
 
-        if student_id and UserProfile.objects.exclude(user__username=username).filter(student_id=student_id).exists():
-            skipped += 1
-            errors.append(f'第{idx}行学号重复：{student_id}')
-            continue
+                if not username or not real_name:
+                    skipped += 1
+                    errors.append(f'第{idx}行缺少必填项（用户名/真实姓名）')
+                    continue
 
-        department_obj = None
-        if department_name:
-            department_obj = Department.objects.filter(name=department_name).first()
+                if role not in ['president', 'staff', 'admin']:
+                    skipped += 1
+                    errors.append(f'第{idx}行角色无效：{role}')
+                    continue
 
-        user, user_created = User.objects.get_or_create(username=username)
-        if user_created:
-            created_users += 1
-        else:
-            updated_users += 1
+                # 检查学号是否已存在于数据库（且不是同一个用户）
+                if student_id:
+                    if student_id in existing_student_ids and existing_student_ids[student_id] != username:
+                        skipped += 1
+                        errors.append(f'第{idx}行学号重复：{student_id}')
+                        continue
+                    
+                    # 检查本次导入中是否有重复学号
+                    if student_id in import_student_ids:
+                        skipped += 1
+                        errors.append(f'第{idx}行学号与第{import_student_ids[student_id]}行重复')
+                        continue
+                    
+                    import_student_ids[student_id] = idx
 
-        user.first_name = real_name
-        if email:
-            user.email = email
-        user.set_password(password)
-        user.save()
+                department_obj = None
+                if department_name:
+                    department_obj = Department.objects.filter(name=department_name).first()
 
-        # 批量导入用户默认直接生效，不走干事注册审核流程
-        status = 'approved'
-        profile, profile_created = UserProfile.objects.get_or_create(
-            user=user,
-            defaults={
-                'role': role,
-                'status': status,
-                'real_name': real_name,
-                'student_id': student_id,
-                'phone': phone,
-                'wechat': wechat,
-                'political_status': political_status,
-                'department': department_name if department_name else None,
-                'department_link': department_obj,
-                'must_change_password': password == '123456',
-            },
-        )
+                rows_to_process.append({
+                    'idx': idx,
+                    'username': username,
+                    'real_name': real_name,
+                    'email': email,
+                    'phone': phone,
+                    'wechat': wechat,
+                    'student_id': student_id,
+                    'role': role,
+                    'password': password,
+                    'department_name': department_name,
+                    'department_obj': department_obj,
+                    'political_status': political_status,
+                })
 
-        if not profile_created:
-            profile.role = role
-            profile.status = status
-            profile.real_name = real_name
-            profile.phone = phone
-            profile.wechat = wechat
-            profile.political_status = political_status
-            profile.department = department_name if department_name else None
-            profile.department_link = department_obj
-            if student_id:
-                profile.student_id = student_id
-            profile.must_change_password = password == '123456'
-            profile.save()
+            # 批量处理：查询所有现有用户
+            existing_usernames = set(User.objects.filter(username__in=[r['username'] for r in rows_to_process]).values_list('username', flat=True))
+
+            users_to_create = []
+            users_to_update = []
+            profiles_to_create = []
+            profiles_to_update = []
+
+            for row_data in rows_to_process:
+                username = row_data['username']
+                exists = username in existing_usernames
+
+                if exists:
+                    updated_users += 1
+                    user = User.objects.get(username=username)
+                    user.first_name = row_data['real_name']
+                    if row_data['email']:
+                        user.email = row_data['email']
+                    user.set_password(row_data['password'])
+                    users_to_update.append(user)
+                else:
+                    created_users += 1
+                    user = User(
+                        username=username,
+                        first_name=row_data['real_name'],
+                        email=row_data['email'] or ''
+                    )
+                    user.set_password(row_data['password'])
+                    users_to_create.append(user)
+
+            # 批量创建新用户
+            if users_to_create:
+                User.objects.bulk_create(users_to_create, ignore_conflicts=False)
+
+            # 批量更新现有用户
+            if users_to_update:
+                User.objects.bulk_update(users_to_update, ['first_name', 'email', 'password'], batch_size=100)
+
+            # 重新查询所有用户（因为新创建的用户需要id）
+            user_map = {}
+            for user in User.objects.filter(username__in=[r['username'] for r in rows_to_process]):
+                user_map[user.username] = user
+
+            # 构建Profile对象
+            existing_profiles = {up.user_id: up for up in UserProfile.objects.filter(user_id__in=user_map.values())}
+
+            for row_data in rows_to_process:
+                user = user_map[row_data['username']]
+                status = 'approved'  # 批量导入用户默认直接生效
+
+                if user.id in existing_profiles:
+                    profile = existing_profiles[user.id]
+                    profile.role = row_data['role']
+                    profile.status = status
+                    profile.real_name = row_data['real_name']
+                    profile.phone = row_data['phone']
+                    profile.wechat = row_data['wechat']
+                    profile.political_status = row_data['political_status']
+                    profile.department = row_data['department_name'] if row_data['department_name'] else None
+                    profile.department_link = row_data['department_obj']
+                    if row_data['student_id']:
+                        profile.student_id = row_data['student_id']
+                    profile.must_change_password = row_data['password'] == '123456'
+                    profiles_to_update.append(profile)
+                else:
+                    profile = UserProfile(
+                        user=user,
+                        role=row_data['role'],
+                        status=status,
+                        real_name=row_data['real_name'],
+                        student_id=row_data['student_id'],
+                        phone=row_data['phone'],
+                        wechat=row_data['wechat'],
+                        political_status=row_data['political_status'],
+                        department=row_data['department_name'] if row_data['department_name'] else None,
+                        department_link=row_data['department_obj'],
+                        must_change_password=row_data['password'] == '123456',
+                    )
+                    profiles_to_create.append(profile)
+
+            # 批量创建和更新Profile
+            if profiles_to_create:
+                UserProfile.objects.bulk_create(profiles_to_create, ignore_conflicts=False)
+
+            if profiles_to_update:
+                UserProfile.objects.bulk_update(
+                    profiles_to_update,
+                    ['role', 'status', 'real_name', 'phone', 'wechat', 'political_status', 'department', 'department_link', 'student_id', 'must_change_password'],
+                    batch_size=100
+                )
+
+    except Exception as e:
+        # 事务回滚，返回错误信息
+        if is_ajax:
+            return _json_error(f'导入失败：{str(e)}')
+        messages.error(request, f'导入失败：{str(e)}')
+        return redirect(next_url)
 
     summary_text = f'导入完成：新建{created_users}，更新{updated_users}，跳过{skipped}'
     if is_ajax:
@@ -4111,13 +4206,13 @@ def import_users_csv(request):
             'created_users': created_users,
             'updated_users': updated_users,
             'skipped': skipped,
-            'errors': errors[:5],
+            'errors': errors[:10],
             'next_url': next_url,
         })
 
     messages.success(request, summary_text)
     if errors:
-        messages.warning(request, '部分数据有问题：' + '；'.join(errors[:5]))
+        messages.warning(request, '部分数据有问题：' + '；'.join(errors[:10]))
 
     return redirect(next_url)
 
@@ -7530,8 +7625,9 @@ def get_department_members(request, department_id):
     except Department.DoesNotExist:
         return JsonResponse({'error': '部门不存在'}, status=404)
         
+    # Include both staff and admin users in the department
     members = UserProfile.objects.filter(
-        role='staff',
+        role__in=['staff', 'admin'],
         department_link=department
     ).select_related('user').order_by('staff_level', 'user__username')
     

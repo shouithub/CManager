@@ -298,14 +298,13 @@
         gap: var(--md3-spacing-sm);
         flex-shrink: 0;
     }
-    
+
+    .btn-edit,
     .btn-delete {
         display: inline-flex;
         align-items: center;
         gap: var(--md3-spacing-xs);
         padding: var(--md3-spacing-sm) var(--md3-spacing-md);
-        background: var(--md3-error-container);
-        color: var(--md3-on-error-container);
         border-radius: var(--md3-radius-md);
         font-size: 0.75rem;
         font-weight: 600;
@@ -314,13 +313,30 @@
         cursor: pointer;
         transition: all 0.2s ease;
     }
+
+    .btn-edit {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .btn-edit:hover {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-1);
+    }
+    
+    .btn-delete {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
     
     .btn-delete:hover {
         background: var(--md3-error);
         color: var(--md3-on-error);
         box-shadow: var(--md3-elevation-1);
     }
-    
+
+    .btn-edit .material-icons,
     .btn-delete .material-icons {
         font-size: 1rem;
     }
@@ -490,6 +506,10 @@
                     {% endif %}
                 </div>
                 <div class="announcement-actions">
+                    <a href="{% url 'clubs:edit_announcement' announcement.id %}" class="btn-edit">
+                        <span class="material-icons">edit</span>
+                        编辑
+                    </a>
                     <a href="{% url 'clubs:delete_announcement' announcement.id %}" class="btn-delete" onclick="return confirm('确定要删除此公告吗？');">
                         <span class="material-icons">delete</span>
                         删除

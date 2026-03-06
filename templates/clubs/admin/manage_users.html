@@ -762,13 +762,15 @@ bulkImportForm.addEventListener('submit', function(e) {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', bulkImportForm.action, true);
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    // 增加超时时间，CSV导入可能需要较长时间处理（默认30秒太短）
+    xhr.timeout = 300000;  // 5分钟超时
 
     xhr.upload.addEventListener('progress', function(event) {
         if (event.lengthComputable) {
-            const uploadPercent = Math.round((event.loaded / event.total) * 70);
+            const uploadPercent = Math.round((event.loaded / event.total) * 50);
             setImportProgress(uploadPercent, `上传中... ${Math.round((event.loaded / event.total) * 100)}%`);
         } else {
-            setImportProgress(50, '上传中...');
+            setImportProgress(30, '上传中...');
         }
     });
 
@@ -792,9 +794,10 @@ bulkImportForm.addEventListener('submit', function(e) {
                 msg += `（部分行有问题：${resp.errors.join('；')}）`;
             }
             importResult.textContent = msg;
+            // 延迟刷新页面，让用户看到完成状态
             setTimeout(function() {
                 window.location.reload();
-            }, 900);
+            }, 1200);
             return;
         }
 
@@ -811,9 +814,23 @@ bulkImportForm.addEventListener('submit', function(e) {
         bulkImportSubmitBtn.disabled = false;
     });
 
+    xhr.addEventListener('timeout', function() {
+        setImportProgress(100, '请求超时');
+        importResult.style.display = 'block';
+        importResult.textContent = '导入耗时过长，请求超时。可能部分数据已导入，请刷新页面查看进度。';
+        bulkImportSubmitBtn.disabled = false;
+    });
+
+    xhr.addEventListener('abort', function() {
+        setImportProgress(100, '已中止');
+        importResult.style.display = 'block';
+        importResult.textContent = '导入已中止。';
+        bulkImportSubmitBtn.disabled = false;
+    });
+
     const formData = new FormData(bulkImportForm);
     xhr.send(formData);
-    setImportProgress(80, '文件已上传，服务器处理中...');
+    setImportProgress(55, '文件已上传，服务器处理中...');
 });
 </script>
 

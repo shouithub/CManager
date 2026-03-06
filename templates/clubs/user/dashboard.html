@@ -19,38 +19,42 @@
     }
     
     /* 页面标题 */
-    .dashboard-title {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        gap: var(--md3-spacing-md);
-        margin-bottom: var(--md3-spacing-lg);
-        width: 100%;
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
     }
-    
-    .dashboard-title .material-icons {
+
+    .page-header .material-icons {
         font-size: 2.5rem;
         color: var(--md3-primary);
-        flex-shrink: 0;
-        display: inline-block !important;
     }
-    
-    .dashboard-title h1 {
-        margin: 0;
-        font-size: 2rem;
+
+    .page-header-content {
+        flex: 1;
+    }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.75rem;
         font-weight: 600;
         color: var(--md3-on-surface);
-        white-space: nowrap !important;
-        writing-mode: horizontal-tb !important;
-        text-orientation: mixed;
-        display: inline-block !important;
     }
-    
-    .dashboard-subtitle {
+
+    .page-header .subtitle {
         color: var(--md3-on-surface-variant);
-        font-size: 1rem;
-        margin-bottom: var(--md3-spacing-2xl);
+        font-size: 0.875rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        flex-shrink: 0;
     }
     
     /* 社团卡片网格 */
@@ -290,21 +294,27 @@
             overflow-x: hidden;
         }
         
-        .dashboard-title {
-            flex-direction: row;
-            justify-content: flex-start;
-            margin-bottom: var(--md3-spacing-md);
-            width: 100%;
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
         }
-        
-        .dashboard-title .material-icons {
+
+        .page-header .material-icons {
             font-size: 2rem;
         }
-        
-        .dashboard-title h1 {
-            font-size: 1.25rem;
-            white-space: nowrap;
-            writing-mode: horizontal-tb;
+
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .header-actions {
+            width: 100%;
+            margin-top: var(--md3-spacing-md);
+        }
+
+        .header-actions .btn {
+            width: 100%;
+            justify-content: center;
         }
         
         .clubs-grid {
@@ -339,18 +349,19 @@
 {% block content %}
 <div class="dashboard-container">
     <!-- 页面标题 -->
-    <div class="dashboard-title">
-        <div style="display: flex; align-items: center; gap: var(--md3-spacing-md);">
-            <span class="material-icons">dashboard</span>
+    <div class="page-header">
+        <span class="material-icons">dashboard</span>
+        <div class="page-header-content">
             <h1>我的社团</h1>
+            <p class="subtitle">欢迎 {{ user.profile.get_full_name }}，以下是您的社团管理信息</p>
         </div>
-        <div style="margin-left: auto;">
+        <div class="header-actions">
             <a href="{% url 'clubs:register_club' %}" class="btn btn-primary">
+                <span class="material-icons">add</span>
                 创建新社团
             </a>
         </div>
     </div>
-    <p class="dashboard-subtitle">欢迎 {{ user.profile.get_full_name }}，以下是您的社团管理信息</p>
 
     <!-- 我的社团 -->
     <div class="section-header">
