@@ -18,6 +18,7 @@ from django.conf import settings
 from django.http import HttpResponse, FileResponse, HttpResponseForbidden, JsonResponse
 from django.db.models import Q, Prefetch
 from django.core.cache import cache
+from collections import defaultdict
 import os
 import re
 import urllib.parse
@@ -486,13 +487,25 @@ def user_detail(request, user_id):
 def index(request):
     """首页 - 显示部门介绍、社团信息和最新公告"""
     from .models import Department
-    
+
+    # 共享数据（所有用户类型复用，缓存30秒）
+    departments = cache.get('index:departments')
+    if departments is None:
+        departments = list(Department.objects.all().order_by('order'))
+        cache.set('index:departments', departments, 30)
+
+    announcements = cache.get('index:announcements')
+    if announcements is None:
+        announcements = list(Announcement.objects.filter(status='published').order_by('-published_at')[:5])
+        cache.set('index:announcements', announcements, 30)
+
+    carousel_images = cache.get('index:carousel_images')
+    if carousel_images is None:
+        carousel_images = list(CarouselImage.objects.filter(is_active=True).order_by('order', '-uploaded_at'))
+        cache.set('index:carousel_images', carousel_images, 30)
+
     # 未登录用户显示部门介绍和公告
     if not request.user.is_authenticated:
-        departments = Department.objects.all().order_by('order')
-        announcements = Announcement.objects.filter(status='published').order_by('-published_at')[:5]
-        carousel_images = CarouselImage.objects.filter(is_active=True).order_by('-uploaded_at')
-        
         context = {
             'is_anonymous': True,
             'departments': departments,
@@ -500,63 +513,56 @@ def index(request):
             'carousel_images': carousel_images,
         }
         return render(request, 'clubs/index.html', context)
-    
-    # 社长访问首页：跳转到社长工作台
-    # if _is_president(request.user):
-    #    return redirect('clubs:user_dashboard')
-    
+
     # 检查是否为干事或管理员
     staff_admin = is_staff_or_admin(request.user)
-    
+
     if staff_admin:
         # 为干事和管理员显示部门介绍和树状图
         from .models import StaffClubRelation
-        
-        # 获取部门介绍
-        departments = Department.objects.all().order_by('order')
-        
+
         # 获取组织统计
         total_staff = UserProfile.objects.filter(role='staff', status='approved').count()
         total_directors = UserProfile.objects.filter(role='staff', staff_level='director').count()
         total_members = UserProfile.objects.filter(role='staff', staff_level='member').count()
-        
-        # 获取所有干事用户
-        staff_users = UserProfile.objects.filter(role='staff', status='approved').select_related('user')
-        
-        # 构建树状图数据
+
+        # 获取所有干事，消除 N+1：一次性批量查出所有干事-社团关系
+        staff_users = list(
+            UserProfile.objects.filter(role='staff', status='approved')
+            .select_related('user')
+            .only('id', 'real_name', 'department', 'staff_level', 'user__username')
+        )
+        staff_ids = [s.id for s in staff_users]
+
+        relations_qs = (
+            StaffClubRelation.objects
+            .filter(staff_id__in=staff_ids, is_active=True)
+            .select_related('club')
+            .only('staff_id', 'club__id', 'club__name', 'club__status',
+                  'club__members_count', 'club__founded_date', 'club__description')
+        )
+        clubs_by_staff: dict = defaultdict(list)
+        for rel in relations_qs:
+            clubs_by_staff[rel.staff_id].append({
+                'id': rel.club.id,
+                'name': rel.club.name,
+                'status': rel.club.status,
+                'members_count': rel.club.members_count,
+                'founded_date': rel.club.founded_date,
+                'description': rel.club.description,
+            })
+
         staff_tree_data = []
         for staff_profile in staff_users:
-            # 获取该干事负责的社团
-            relations = StaffClubRelation.objects.filter(
-                staff=staff_profile, 
-                is_active=True
-            ).select_related('club')
-            
-            clubs = []
-            for relation in relations:
-                clubs.append({
-                    'id': relation.club.id,  # type: ignore[attr-defined]
-                    'name': relation.club.name,
-                    'status': relation.club.status,
-                    'members_count': relation.club.members_count,
-                    'founded_date': relation.club.founded_date,
-                    'description': relation.club.description,
-                })
-            
+            clubs = clubs_by_staff.get(staff_profile.id, [])
             staff_tree_data.append({
-                'staff_id': staff_profile.id,  # type: ignore[attr-defined]
+                'staff_id': staff_profile.id,
                 'staff_name': staff_profile.get_full_name(),
                 'staff_username': staff_profile.user.username,
                 'clubs': clubs,
                 'clubs_count': len(clubs),
             })
-        
-        # 获取最新的已发布公告
-        announcements = Announcement.objects.filter(status='published').order_by('-published_at')[:5]
-        
-        # 获取轮播图片
-        carousel_images = CarouselImage.objects.filter(is_active=True).order_by('order', '-uploaded_at')
-        
+
         context = {
             'is_staff_or_admin': staff_admin,
             'departments': departments,
@@ -570,39 +576,30 @@ def index(request):
             'total_clubs': Club.objects.count(),
         }
         return render(request, 'clubs/index.html', context)
-    
+
     # 普通用户显示所有社团
-    clubs = Club.objects.all()
-    # 获取最新的已发布公告
-    announcements = Announcement.objects.filter(status='published').order_by('-published_at')[:5]
-    
-    # 获取轮播图片
-    carousel_images = CarouselImage.objects.filter(is_active=True).order_by('order', '-uploaded_at')
-    
-    # 获取部门介绍
-    departments = Department.objects.all().order_by('order')
-    
-    # 为每个社团添加当前用户是否是社长的信息（作为字典存储）
-    clubs_data = []
-    for club in clubs:
-        is_president = Officer.objects.filter(
+    clubs = list(Club.objects.all())
+    # 一次性查出当前用户担任社长的所有社团 ID，消除 N+1
+    president_club_ids = set(
+        Officer.objects.filter(
             user_profile__user=request.user,
-            club=club,
             position='president',
             is_current=True
-        ).exists()
-        clubs_data.append({
-            'club': club,
-            'is_president': is_president
-        })
-    
+        ).values_list('club_id', flat=True)
+    )
+
+    clubs_data = [
+        {'club': club, 'is_president': club.id in president_club_ids}
+        for club in clubs
+    ]
+
     context = {
         'clubs_data': clubs_data,
         'clubs': clubs,
         'announcements': announcements,
         'carousel_images': carousel_images,
         'departments': departments,
-        'total_clubs': clubs.count(),
+        'total_clubs': len(clubs),
     }
     return render(request, 'clubs/index.html', context)
 

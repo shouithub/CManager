@@ -233,6 +233,11 @@ elif _env_bool('SESSION_USE_CACHED_DB', True):
     SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
     SESSION_CACHE_ALIAS = 'default'
 
+# 并发调优参数 - 访问统计批量写入 & 初始化检测缓存
+VISIT_STAT_FLUSH_INTERVAL = _env_int('VISIT_STAT_FLUSH_INTERVAL', 20)
+VISIT_STAT_FLUSH_LOCK_SECONDS = _env_int('VISIT_STAT_FLUSH_LOCK_SECONDS', 5)
+INITIAL_SETUP_CACHE_SECONDS = _env_int('INITIAL_SETUP_CACHE_SECONDS', 30)
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 from .models import (
     ReviewSubmission, 
     ClubRegistration, 
@@ -27,6 +28,7 @@ def _is_admin(user):
     except UserProfile.DoesNotExist:
         return False
 
+@require_GET
 def api_staff_review_history(request, review_type):
     """API endpoint to fetch review history for modal"""
     if not _is_staff(request.user) and not _is_admin(request.user):
@@ -35,7 +37,13 @@ def api_staff_review_history(request, review_type):
     items_data = []
     
     if review_type == 'submission':
-        submissions = ReviewSubmission.objects.exclude(status='pending').order_by('-reviewed_at')
+        submissions = (
+            ReviewSubmission.objects
+            .exclude(status='pending')
+            .select_related('club')
+            .only('id', 'club__name', 'status', 'submission_year', 'reviewed_at')
+            .order_by('-reviewed_at')
+        )
         for item in submissions:
             items_data.append({
                 'id': item.id,
@@ -47,7 +55,13 @@ def api_staff_review_history(request, review_type):
             })
             
     elif review_type == 'club_registration':
-        registrations = ClubRegistration.objects.exclude(status='pending').order_by('-reviewed_at')
+        registrations = (
+            ClubRegistration.objects
+            .exclude(status='pending')
+            .select_related('club')
+            .only('id', 'club__name', 'status', 'submitted_at', 'reviewed_at')
+            .order_by('-reviewed_at')
+        )
         for item in registrations:
             items_data.append({
                 'id': item.id,
@@ -59,7 +73,13 @@ def api_staff_review_history(request, review_type):
             })
             
     elif review_type == 'reimbursement':
-        reimbursements = Reimbursement.objects.exclude(status='pending').order_by('-reviewed_at')
+        reimbursements = (
+            Reimbursement.objects
+            .exclude(status='pending')
+            .select_related('club')
+            .only('id', 'club__name', 'status', 'submitted_at', 'reviewed_at', 'reimbursement_amount')
+            .order_by('-reviewed_at')
+        )
         for item in reimbursements:
             items_data.append({
                 'id': item.id,
@@ -71,7 +91,12 @@ def api_staff_review_history(request, review_type):
             })
             
     elif review_type == 'club_application':
-        applications = ClubRegistrationRequest.objects.exclude(status='pending').order_by('-reviewed_at')
+        applications = (
+            ClubRegistrationRequest.objects
+            .exclude(status='pending')
+            .only('id', 'club_name', 'status', 'submitted_at', 'reviewed_at')
+            .order_by('-reviewed_at')
+        )
         for item in applications:
             items_data.append({
                 'id': item.id,
@@ -83,7 +108,13 @@ def api_staff_review_history(request, review_type):
             })
 
     elif review_type == 'activity_application':
-        activities = ActivityApplication.objects.exclude(status='pending').order_by('-reviewed_at')
+        activities = (
+            ActivityApplication.objects
+            .exclude(status='pending')
+            .only('id', 'activity_name', 'status', 'staff_approved',
+                  'activity_date', 'submitted_at', 'reviewed_at')
+            .order_by('-reviewed_at')
+        )
         for item in activities:
             status = 'pending'
             if item.staff_approved: status = 'approved'
@@ -99,14 +130,24 @@ def api_staff_review_history(request, review_type):
             })
             
     elif review_type == 'president_transition':
-        transitions = PresidentTransition.objects.exclude(status='pending').order_by('-reviewed_at')
+        transitions = (
+            PresidentTransition.objects
+            .exclude(status='pending')
+            .select_related('club', 'new_president_officer__user_profile')
+            .only('id', 'club__name', 'status', 'created_at', 'reviewed_at',
+                  'new_president_officer__user_profile__real_name')
+            .order_by('-reviewed_at')
+        )
         for item in transitions:
+            new_president_name = ''
+            if item.new_president_officer and item.new_president_officer.user_profile:
+                new_president_name = item.new_president_officer.user_profile.real_name
             items_data.append({
                 'id': item.id,
                 'title': item.club.name,
                 'status': item.status,
                 'date': item.created_at.strftime('%Y-%m-%d') if item.created_at else '',
-                'meta': item.new_president_name,
+                'meta': new_president_name,
                 'type': 'president_transition'
             })
             

@@ -6,7 +6,8 @@ from django.db.utils import OperationalError, ProgrammingError
 
 class VisitTrackingMiddleware:
     """统计每日页面访问量，写入 DailyStat 表。
-    静态文件、媒体文件、API 及管理接口不计入统计。"""
+    静态文件、媒体文件、API 及管理接口不计入统计。
+    使用缓存批量聚合访问量，每 VISIT_STAT_FLUSH_INTERVAL 次请求才写一次 DB。"""
     _SKIP_PREFIXES = ('/static/', '/media/', '/admin/', '/api/', '/sw.js', '/favicon')
 
     def __init__(self, get_response):
@@ -18,16 +19,33 @@ class VisitTrackingMiddleware:
         if not any(path.startswith(p) for p in self._SKIP_PREFIXES):
             try:
                 from django.utils import timezone
+                from django.core.cache import cache
                 from clubs.models import DailyStat
+                from django.db.models import F
+
                 today = timezone.localdate()
-                DailyStat.objects.update_or_create(
-                    date=today,
-                    defaults={},  # 确保记录存在
-                    create_defaults={'visits': 1},
-                )
-                DailyStat.objects.filter(date=today).update(
-                    visits=__import__('django.db.models', fromlist=['F']).F('visits') + 1
-                )
+                flush_interval = getattr(settings, 'VISIT_STAT_FLUSH_INTERVAL', 20)
+                lock_seconds = getattr(settings, 'VISIT_STAT_FLUSH_LOCK_SECONDS', 5)
+                counter_key = f'visit_counter:{today}'
+
+                # 原子性递增计数器；若 key 不存在则初始化
+                if not cache.add(counter_key, 1, timeout=86400):
+                    count = cache.incr(counter_key)
+                else:
+                    count = 1
+
+                # 每累积 flush_interval 次才批量写入 DB
+                if count % flush_interval == 0:
+                    lock_key = f'visit_flush_lock:{today}'
+                    if cache.add(lock_key, 1, timeout=lock_seconds):
+                        DailyStat.objects.update_or_create(
+                            date=today,
+                            defaults={},
+                            create_defaults={'visits': 0},
+                        )
+                        DailyStat.objects.filter(date=today).update(
+                            visits=F('visits') + flush_interval
+                        )
             except Exception:
                 pass
         return response
@@ -61,9 +79,16 @@ class InitialSetupMiddleware:
         try:
             from clubs.oobe_bootstrap import bootstrap_oobe_if_needed
             from clubs.models import UserProfile
+            from django.core.cache import cache
 
             bootstrap_oobe_if_needed()
-            has_admin = UserProfile.objects.filter(role='admin').exists()
+
+            cache_key = 'oobe:has_admin'
+            has_admin = cache.get(cache_key)
+            if has_admin is None:
+                has_admin = UserProfile.objects.filter(role='admin').exists()
+                cache.set(cache_key, has_admin,
+                          timeout=getattr(settings, 'INITIAL_SETUP_CACHE_SECONDS', 30))
         except (OperationalError, ProgrammingError):
             has_admin = False
         except Exception:

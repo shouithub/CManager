@@ -95,6 +95,10 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = '用户角色'
         verbose_name_plural = '用户角色'
+        indexes = [
+            models.Index(fields=['role', 'status'], name='up_role_status_idx'),
+            models.Index(fields=['role', 'staff_level'], name='up_role_staff_lvl_idx'),
+        ]
 
 
 class Club(models.Model):
@@ -161,6 +165,10 @@ class Officer(models.Model):
         verbose_name_plural = '社团干部'
         unique_together = ['club', 'user_profile', 'position']
         ordering = ['-appointed_date']
+        indexes = [
+            models.Index(fields=['user_profile', 'position', 'is_current'], name='officer_user_pos_cur_idx'),
+            models.Index(fields=['club', 'position', 'is_current'], name='officer_club_pos_cur_idx'),
+        ]
     
     def __str__(self):
         real_name = self.user_profile.real_name if self.user_profile else "未知"
@@ -242,6 +250,10 @@ class ReviewSubmission(models.Model):
         verbose_name_plural = '年审材料'
         ordering = ['-submitted_at']
         unique_together = ('club', 'submission_year')
+        indexes = [
+            models.Index(fields=['club', 'status', '-submitted_at'], name='rsub_club_status_idx'),
+            models.Index(fields=['status', '-reviewed_at'], name='rsub_status_reviewed_idx'),
+        ]
     
     def __str__(self):
         return f"{self.club.name} - 注册申请"
@@ -283,6 +295,10 @@ class Reimbursement(models.Model):
         verbose_name = '报销材料'
         verbose_name_plural = '报销材料'
         ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['club', 'status', '-submitted_at'], name='reimb_club_status_idx'),
+            models.Index(fields=['status', '-reviewed_at'], name='reimb_status_reviewed_idx'),
+        ]
     
     def __str__(self):
         return f"{self.club.name} - {self.submission_date} - ¥{self.reimbursement_amount}"
@@ -397,6 +413,9 @@ class Announcement(models.Model):
         verbose_name = '公告'
         verbose_name_plural = '公告'
         ordering = ['-published_at', '-created_at']
+        indexes = [
+            models.Index(fields=['status', '-published_at'], name='ann_status_pub_idx'),
+        ]
     
     def __str__(self):
         return self.title
@@ -416,6 +435,10 @@ class StaffClubRelation(models.Model):
         verbose_name = '干事负责社团'
         verbose_name_plural = '干事负责社团'
         unique_together = ['staff', 'club']
+        indexes = [
+            models.Index(fields=['staff', 'is_active'], name='scr_staff_active_idx'),
+            models.Index(fields=['club', 'is_active'], name='scr_club_active_idx'),
+        ]
     
     def __str__(self):
         return f"{self.staff.real_name} - {self.club.name}"
@@ -501,6 +524,10 @@ class ClubRegistrationRequest(models.Model):
         verbose_name = '社团注册申请'
         verbose_name_plural = '社团注册申请'
         ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['requested_by', 'status', '-submitted_at'], name='crr_user_status_idx'),
+            models.Index(fields=['status', '-reviewed_at'], name='crr_status_reviewed_idx'),
+        ]
     
     def __str__(self):
         return f"{self.club_name} - {self.get_status_display()}"
@@ -661,6 +688,10 @@ class ClubRegistration(models.Model):
     class Meta:
         verbose_name = '社团注册'
         verbose_name_plural = '社团注册'
+        indexes = [
+            models.Index(fields=['club', 'status', '-submitted_at'], name='cr_club_status_idx'),
+            models.Index(fields=['status', '-reviewed_at'], name='cr_status_reviewed_idx'),
+        ]
 
     def __str__(self):
         return f"{self.club.name} - 注册申请"
@@ -752,6 +783,10 @@ class PresidentTransition(models.Model):
         verbose_name = '社长换届申请'
         verbose_name_plural = '社长换届申请'
         ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['club', 'status', '-submitted_at'], name='pt_club_status_idx'),
+            models.Index(fields=['status', '-reviewed_at'], name='pt_status_reviewed_idx'),
+        ]
     
     def __str__(self):
         new_pres_name = self.new_president_officer.user_profile.real_name if self.new_president_officer and self.new_president_officer.user_profile else '未知'
@@ -826,6 +861,11 @@ class ActivityApplication(models.Model):
         verbose_name = '活动申请'
         verbose_name_plural = '活动申请'
         ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['club', 'status', '-submitted_at'], name='aa_club_status_idx'),
+            models.Index(fields=['status', '-reviewed_at'], name='aa_status_reviewed_idx'),
+            models.Index(fields=['staff_approved', '-submitted_at'], name='aa_staff_approved_idx'),
+        ]
     
     def __str__(self):
         return f"{self.club.name} - {self.activity_name} ({self.activity_date})"
@@ -957,6 +997,9 @@ class CarouselImage(models.Model):
         verbose_name = '轮播图片'
         verbose_name_plural = '轮播图片'
         ordering = ['order', '-uploaded_at']
+        indexes = [
+            models.Index(fields=['is_active', 'order', '-uploaded_at'], name='carousel_active_ord_idx'),
+        ]
     
     def __str__(self):
         return self.title or f"轮播图片 {self.id}"
@@ -1073,6 +1116,11 @@ class RoomBooking(models.Model):
                 condition=models.Q(end_time__gt=models.F('start_time')),
                 name='room_end_time_after_start_time'
             )
+        ]
+        indexes = [
+            models.Index(fields=['room', 'booking_date', 'status'], name='rb_room_date_idx'),
+            models.Index(fields=['user', 'booking_date'], name='rb_user_date_idx'),
+            models.Index(fields=['club', 'booking_date'], name='rb_club_date_idx'),
         ]
     
     def __str__(self) -> str:
