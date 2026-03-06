@@ -21,12 +21,23 @@ def _load_env_file(env_path: Path):
     if not env_path.exists():
         return
 
-    for line in env_path.read_text(encoding='utf-8').splitlines():
+    for line in env_path.read_text(encoding='utf-8-sig').splitlines():
         stripped = line.strip()
         if not stripped or stripped.startswith('#') or '=' not in stripped:
             continue
+
+        # Support shell-style "export KEY=VALUE" entries.
+        if stripped.startswith('export '):
+            stripped = stripped[7:].strip()
+
         key, value = stripped.split('=', 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+        cleaned = value.strip()
+
+        # Trim inline comments for unquoted values: KEY=value # comment
+        if cleaned and cleaned[0] not in ('"', "'") and ' #' in cleaned:
+            cleaned = cleaned.split(' #', 1)[0].rstrip()
+
+        os.environ.setdefault(key.strip(), cleaned.strip('"').strip("'"))
 
 
 def _load_env():
@@ -39,7 +50,8 @@ def _env_list(name, default):
     value = os.environ.get(name)
     if value is None:
         return default
-    return [item.strip() for item in value.split(',') if item.strip()]
+    normalized = value.replace('，', ',').replace(';', ',')
+    return [item.strip() for item in normalized.split(',') if item.strip()]
 
 
 def _env_bool(name, default=False):
@@ -58,6 +70,39 @@ def _env_int(name, default):
 
 _load_env()
 
+# Allow MySQL backend to run with PyMySQL when mysqlclient is unavailable.
+if os.getenv('DB_ENGINE', '').strip() == 'django.db.backends.mysql':
+    try:
+        import MySQLdb  # type: ignore # noqa: F401
+    except Exception:
+        try:
+            import pymysql  # type: ignore
+            pymysql.install_as_MySQLdb()
+        except Exception:
+            # Keep Django's native error message if neither driver is available.
+            pass
+
+
+def _default_csrf_trusted_origins_from_hosts(hosts):
+    origins = []
+    for host in hosts:
+        if not host or host == '*':
+            continue
+        host = host.strip()
+        if host.startswith('.'):
+            host = host[1:]
+        if not host:
+            continue
+        origins.append(f'https://{host}')
+        origins.append(f'http://{host}')
+
+    # Keep loopback defaults for local debugging.
+    if 'http://127.0.0.1' not in origins:
+        origins.append('http://127.0.0.1')
+    if 'http://localhost' not in origins:
+        origins.append('http://localhost')
+    return origins
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -70,7 +115,10 @@ DEBUG = _env_bool('DEBUG', False)
 ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', ['localhost', '127.0.0.1'])
 
 # CSRF信任源，用于解决反向代理环境下的CSRF验证问题
-CSRF_TRUSTED_ORIGINS = _env_list('CSRF_TRUSTED_ORIGINS', ['http://127.0.0.1', 'http://localhost'])
+CSRF_TRUSTED_ORIGINS = _env_list(
+    'CSRF_TRUSTED_ORIGINS',
+    _default_csrf_trusted_origins_from_hosts(ALLOWED_HOSTS),
+)
 
 # 生产环境安全设置
 SECURE_BROWSER_XSS_FILTER = _env_bool('SECURE_BROWSER_XSS_FILTER', True)
@@ -78,6 +126,14 @@ SECURE_CONTENT_TYPE_NOSNIFF = _env_bool('SECURE_CONTENT_TYPE_NOSNIFF', True)
 SESSION_COOKIE_SECURE = _env_bool('SESSION_COOKIE_SECURE', False)
 CSRF_COOKIE_SECURE = _env_bool('CSRF_COOKIE_SECURE', False)
 X_FRAME_OPTIONS = os.getenv('X_FRAME_OPTIONS', 'DENY')
+
+# 反向代理常见部署设置（Nginx/Caddy/Traefik 等）
+USE_X_FORWARDED_HOST = _env_bool('USE_X_FORWARDED_HOST', True)
+USE_X_FORWARDED_PORT = _env_bool('USE_X_FORWARDED_PORT', True)
+if _env_bool('USE_X_FORWARDED_PROTO', True):
+    forwarded_proto_header = os.getenv('FORWARDED_PROTO_HEADER', 'HTTP_X_FORWARDED_PROTO').strip()
+    forwarded_proto_value = os.getenv('FORWARDED_PROTO_VALUE', 'https').strip() or 'https'
+    SECURE_PROXY_SSL_HEADER = (forwarded_proto_header, forwarded_proto_value)
 
 # 静态文件配置
 STATIC_URL = '/static/'
@@ -228,6 +284,9 @@ else:
     }
 
 if DATABASES['default']['ENGINE'] == 'django.db.backends.dummy':
+    SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+elif (BASE_DIR / '.oobe_pending.json').exists():
+    # During bootstrap, avoid session-table dependency before migrations settle.
     SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 elif _env_bool('SESSION_USE_CACHED_DB', True):
     SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
