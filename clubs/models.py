@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -11,72 +12,72 @@ from datetime import timedelta
 class UserProfile(models.Model):
     """用户角色扩展模型"""
     ROLE_CHOICES = [
-        ('president', '社长'),
-        ('staff', '干事'),
-        ('admin', '管理员'),
+        ('president', _('社长')),
+        ('staff', _('干事')),
+        ('admin', _('管理员')),
     ]
     
     STATUS_CHOICES = [
-        ('pending', '待审核'),
-        ('approved', '已批准'),
-        ('rejected', '已拒绝'),
+        ('pending', _('待审核')),
+        ('approved', _('已批准')),
+        ('rejected', _('已拒绝')),
     ]
     
     STAFF_LEVEL_CHOICES = [
-        ('member', '部员'),
-        ('director', '部长'),
+        ('member', _('部员')),
+        ('director', _('部长')),
     ]
     
     POLITICAL_STATUS_CHOICES = [
-        ('communist_party_member', '中共党员'),
-        ('communist_party_probationary', '中共预备党员'),
-        ('communist_youth_league', '共青团员'),
-        ('revolutionary_committee', '民革党员'),
-        ('china_democratic_league', '民盟盟员'),
-        ('democratic_national_construction', '民建会员'),
-        ('china_peasants_workers_democratic', '农工党党员'),
-        ('china_council_for_promoting', '致公党党员'),
-        ('jiusanshe', '九三学社社员'),
-        ('taiwan_democratic_self_government', '台盟盟员'),
-        ('non_party_personage', '无党派人士'),
-        ('progressive', '入党积极分子'),
-        ('non_member', '群众'),
+        ('communist_party_member', _('中共党员')),
+        ('communist_party_probationary', _('中共预备党员')),
+        ('communist_youth_league', _('共青团员')),
+        ('revolutionary_committee', _('民革党员')),
+        ('china_democratic_league', _('民盟盟员')),
+        ('democratic_national_construction', _('民建会员')),
+        ('china_peasants_workers_democratic', _('农工党党员')),
+        ('china_council_for_promoting', _('致公党党员')),
+        ('jiusanshe', _('九三学社社员')),
+        ('taiwan_democratic_self_government', _('台盟盟员')),
+        ('non_party_personage', _('无党派人士')),
+        ('progressive', _('入党积极分子')),
+        ('non_member', _('群众')),
     ]
     
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name='用户')
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='president', verbose_name='角色')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name=_('用户'))
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='president', verbose_name=_('角色'))
     
     # 审核状态 - 只有干事需要审核
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='approved', verbose_name='状态')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='approved', verbose_name=_('状态'))
     
     # 干事专属字段 - 部门和职级
-    department = models.CharField(max_length=20, null=True, blank=True, verbose_name='部门')
-    department_link = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='关联部门', related_name='staff_profiles')
-    staff_level = models.CharField(max_length=20, choices=STAFF_LEVEL_CHOICES, default='member', verbose_name='部员/部长', help_text='仅对干事有效')
+    department = models.CharField(max_length=20, null=True, blank=True, verbose_name=_('部门'))
+    department_link = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_('关联部门'), related_name='staff_profiles')
+    staff_level = models.CharField(max_length=20, choices=STAFF_LEVEL_CHOICES, default='member', verbose_name=_('部员/部长'), help_text=_('仅对干事有效'))
     
     # 实名信息字段
-    real_name = models.CharField(max_length=100, verbose_name='真名', blank=True)
-    student_id = models.CharField(max_length=50, verbose_name='学号', blank=True)
-    phone = models.CharField(max_length=20, verbose_name='电话', blank=True)
-    wechat = models.CharField(max_length=100, verbose_name='微信', blank=True)
+    real_name = models.CharField(max_length=100, verbose_name=_('真名'), blank=True)
+    student_id = models.CharField(max_length=50, verbose_name=_('学号'), blank=True)
+    phone = models.CharField(max_length=20, verbose_name=_('电话'), blank=True)
+    wechat = models.CharField(max_length=100, verbose_name=_('微信'), blank=True)
     political_status = models.CharField(
         max_length=40, 
         choices=POLITICAL_STATUS_CHOICES, 
         default='non_member', 
-        verbose_name='政治面貌'
+        verbose_name=_('政治面貌')
     )
     
     # 信息披露设置
-    is_info_public = models.BooleanField(default=False, verbose_name='是否公开个人信息')
+    is_info_public = models.BooleanField(default=False, verbose_name=_('是否公开个人信息'))
 
     # 首次登录强制改密
-    must_change_password = models.BooleanField(default=False, verbose_name='是否需要修改密码')
+    must_change_password = models.BooleanField(default=False, verbose_name=_('是否需要修改密码'))
     
     # 头像
-    avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True, verbose_name='头像')
+    avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True, verbose_name=_('头像'))
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_('更新时间'))
     
     def get_full_name(self):
         """
@@ -93,31 +94,31 @@ class UserProfile(models.Model):
         return f"{self.user.username} ({self.get_full_name()}) - {self.get_role_display()}"
     
     class Meta:
-        verbose_name = '用户角色'
-        verbose_name_plural = '用户角色'
+        verbose_name = _('用户角色')
+        verbose_name_plural = _('用户角色')
 
 
 class Club(models.Model):
     """社团模型"""
     STATUS_CHOICES = [
-        ('active', '活跃'),
-        ('inactive', '不活跃'),
-        ('suspended', '停止'),
+        ('active', _('活跃')),
+        ('inactive', _('不活跃')),
+        ('suspended', _('停止')),
     ]
     
-    name = models.CharField(max_length=100, unique=True, verbose_name='社团名称')
-    description = models.TextField(blank=True, verbose_name='社团介绍')
-    founded_date = models.DateField(verbose_name='成立日期')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='状态')
-    members_count = models.IntegerField(default=0, verbose_name='成员数')
-    review_enabled = models.BooleanField(default=False, verbose_name='是否开启年审')
-    registration_enabled = models.BooleanField(default=False, verbose_name='是否开启注册')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    name = models.CharField(max_length=100, unique=True, verbose_name=_('社团名称'))
+    description = models.TextField(blank=True, verbose_name=_('社团介绍'))
+    founded_date = models.DateField(verbose_name=_('成立日期'))
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name=_('状态'))
+    members_count = models.IntegerField(default=0, verbose_name=_('成员数'))
+    review_enabled = models.BooleanField(default=False, verbose_name=_('是否开启年审'))
+    registration_enabled = models.BooleanField(default=False, verbose_name=_('是否开启注册'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_('更新时间'))
     
     class Meta:
-        verbose_name = '社团'
-        verbose_name_plural = '社团'
+        verbose_name = _('社团')
+        verbose_name_plural = _('社团')
         ordering = ['-created_at']
     
     def __str__(self):
@@ -146,19 +147,19 @@ class Club(models.Model):
 class Officer(models.Model):
     """社团干部模型"""
     POSITION_CHOICES = [
-        ('president', '社长'),
+        ('president', _('社长')),
     ]
     
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='officers', verbose_name='社团')
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True, verbose_name='用户信息')
-    position = models.CharField(max_length=20, choices=POSITION_CHOICES, verbose_name='职位')
-    appointed_date = models.DateField(verbose_name='任命日期')
-    end_date = models.DateField(null=True, blank=True, verbose_name='结束日期')
-    is_current = models.BooleanField(default=True, verbose_name='是否现任')
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='officers', verbose_name=_('社团'))
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_('用户信息'))
+    position = models.CharField(max_length=20, choices=POSITION_CHOICES, verbose_name=_('职位'))
+    appointed_date = models.DateField(verbose_name=_('任命日期'))
+    end_date = models.DateField(null=True, blank=True, verbose_name=_('结束日期'))
+    is_current = models.BooleanField(default=True, verbose_name=_('是否现任'))
     
     class Meta:
-        verbose_name = '社团干部'
-        verbose_name_plural = '社团干部'
+        verbose_name = _('社团干部')
+        verbose_name_plural = _('社团干部')
         unique_together = ['club', 'user_profile', 'position']
         ordering = ['-appointed_date']
     

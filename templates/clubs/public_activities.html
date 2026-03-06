@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}活动管理 - 社团管理系统{% endblock %}
 
@@ -585,13 +586,13 @@
     <div class="page-header">
         <span class="material-icons">event_note</span>
         <div class="page-header-content">
-            <h1>活动管理</h1>
-            <p class="subtitle">查看和管理社团活动</p>
+            <h1>{% trans "活动管理" %}</h1>
+            <p class="subtitle">{% trans "查看和管理社团活动" %}</p>
         </div>
         {% if user.is_authenticated %}
         <div class="header-actions">
             <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-primary">
-                <span>返回仪表板</span>
+                <span>{% trans "返回仪表板" %}</span>
             </a>
         </div>
         {% endif %}
@@ -602,9 +603,7 @@
         <div class="filters-card">
             <div class="filters-header">
                 <h2>
-                    <span class="material-icons">filter_list</span>
-                    筛选和搜索
-                </h2>
+                    <span class="material-icons">filter_list</span>{% trans "筛选和搜索" %}</h2>
             </div>
             <div class="filters-body">
                 <form method="get" class="filters-form">
@@ -612,15 +611,13 @@
                         <!-- 搜索框 -->
                         <div class="filter-group">
                             <label class="filter-label" for="search">
-                                <span class="material-icons">search</span>
-                                搜索
-                            </label>
+                                <span class="material-icons">search</span>{% trans "搜索" %}</label>
                             <input
                                 type="text"
                                 id="search"
                                 name="search"
                                 value="{{ search_query }}"
-                                placeholder="输入社团名称或活动名称"
+                                placeholder="{% trans "输入社团名称或活动名称" %}"
                                 class="filter-input"
                             >
                         </div>
@@ -628,24 +625,22 @@
                         <!-- 社团筛选 -->
                         <div class="filter-group">
                             <label class="filter-label" for="club">
-                                <span class="material-icons">business</span>
-                                社团名称
-                            </label>
+                                <span class="material-icons">business</span>{% trans "社团名称" %}</label>
                             {% if user.is_authenticated and user.profile.role == 'president' %}
                             {% if all_clubs.exists %}
                                 {% with only_club=all_clubs.first %}
-                                <select id="club" name="club" class="filter-select" disabled aria-disabled="true" title="仅允许选择本社团">
+                                <select id="club" name="club" class="filter-select" disabled aria-disabled="true" title="{% trans "仅允许选择本社团" %}">
                                     <option value="{{ only_club.name }}" selected>{{ only_club.name }}</option>
                                 </select>
                                 <!-- 使用隐藏字段确保表单提交时仍提交社团参数 -->
                                 <input type="hidden" name="club" value="{{ only_club.name }}">
                                 {% endwith %}
                             {% else %}
-                                <select class="filter-select" disabled aria-disabled="true"><option>无所属社团</option></select>
+                                <select class="filter-select" disabled aria-disabled="true"><option>{% trans "无所属社团" %}</option></select>
                             {% endif %}
                         {% else %}
                             <select id="club" name="club" class="filter-select">
-                                <option value="">全部社团</option>
+                                <option value="">{% trans "全部社团" %}</option>
                                 {% for club in all_clubs %}
                                 <option value="{{ club.name }}" {% if club_filter == club.name %}selected{% endif %}>
                                     {{ club.name }}
@@ -658,11 +653,9 @@
                         <!-- 活动类型筛选 -->
                         <div class="filter-group">
                             <label class="filter-label" for="activity_type">
-                                <span class="material-icons">local_activity</span>
-                                活动类型
-                            </label>
+                                <span class="material-icons">local_activity</span>{% trans "活动类型" %}</label>
                             <select id="activity_type" name="activity_type" class="filter-select">
-                                <option value="">全部类型</option>
+                                <option value="">{% trans "全部类型" %}</option>
                                 {% for value, display in activity_type_choices %}
                                 <option value="{{ value }}" {% if activity_type_filter == value %}selected{% endif %}>
                                     {{ display }}
@@ -674,9 +667,7 @@
                         <!-- 日期筛选 -->
                         <div class="filter-group">
                             <label class="filter-label" for="date">
-                                <span class="material-icons">date_range</span>
-                                活动日期
-                            </label>
+                                <span class="material-icons">date_range</span>{% trans "活动日期" %}</label>
                             <input
                                 type="date"
                                 id="date"
@@ -694,26 +685,20 @@
                             <div class="export-inline-group" style="display: flex; align-items: center; gap: 1rem;">
                                 <div class="select-all-container">
                                     <input type="checkbox" id="select-all" onclick="toggleAllActivities(this)">
-                                    <label for="select-all">全选</label>
+                                    <label for="select-all">{% trans "全选" %}</label>
                                 </div>
-                                <span class="selected-count" id="selected-count">已选择 0 个活动</span>
+                                <span class="selected-count" id="selected-count">{% trans "已选择 0 个活动" %}</span>
                                 <button type="button" class="btn-export" id="export-btn" onclick="exportActivities()" disabled style="padding: 0.5rem 1rem;">
-                                    <span class="material-icons" style="font-size: 1.1rem;">table_chart</span>
-                                    导出为 Excel
-                                </button>
+                                    <span class="material-icons" style="font-size: 1.1rem;">table_chart</span>{% trans "导出为 Excel" %}</button>
                             </div>
                             {% endif %}
                         </div>
 
                         <div class="filters-actions">
                             <button type="submit" class="btn btn-primary">
-                                <span class="material-icons">search</span>
-                                搜索
-                            </button>
+                                <span class="material-icons">search</span>{% trans "搜索" %}</button>
                             <a href="{% url 'clubs:public_activities' %}" class="btn btn-outlined">
-                                <span class="material-icons">clear</span>
-                                清除筛选
-                            </a>
+                                <span class="material-icons">clear</span>{% trans "清除筛选" %}</a>
                         </div>
                     </div>
                 </form>
@@ -751,35 +736,35 @@
                             <div class="activity-detail-item">
                                 <span class="material-icons detail-icon">event</span>
                                 <div class="detail-content">
-                                    <span class="detail-label">日期</span>
+                                    <span class="detail-label">{% trans "日期" %}</span>
                                     <span class="detail-value">{{ activity.activity_date|date:"Y年m月d日" }}</span>
                                 </div>
                             </div>
                             <div class="activity-detail-item">
                                 <span class="material-icons detail-icon">schedule</span>
                                 <div class="detail-content">
-                                    <span class="detail-label">时间</span>
+                                    <span class="detail-label">{% trans "时间" %}</span>
                                     <span class="detail-value">{{ activity.activity_time_start|time:"H:i" }} - {{ activity.activity_time_end|time:"H:i" }}</span>
                                 </div>
                             </div>
                             <div class="activity-detail-item">
                                 <span class="material-icons detail-icon">location_on</span>
                                 <div class="detail-content">
-                                    <span class="detail-label">地点</span>
+                                    <span class="detail-label">{% trans "地点" %}</span>
                                     <span class="detail-value">{{ activity.activity_location }}</span>
                                 </div>
                             </div>
                             <div class="activity-detail-item">
                                 <span class="material-icons detail-icon">group</span>
                                 <div class="detail-content">
-                                    <span class="detail-label">人数</span>
+                                    <span class="detail-label">{% trans "人数" %}</span>
                                     <span class="detail-value">{{ activity.expected_participants }}人</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="activity-description">
-                            <span class="description-label">活动简介</span>
+                            <span class="description-label">{% trans "活动简介" %}</span>
                             <p>{{ activity.activity_description|truncatewords:30 }}</p>
                         </div>
                     </div>
@@ -800,14 +785,10 @@
                                 <!-- 编辑按钮：干事、管理员和负责老师可见 -->
                                 {% if user.profile.role in 'admin,staff' %}
                                     <a href="{% url 'clubs:edit_activity_application' activity.id %}" class="btn-edit-activity">
-                                        <span class="material-icons">edit</span>
-                                        编辑
-                                    </a>
+                                        <span class="material-icons">edit</span>{% trans "编辑" %}</a>
                                 {% endif %}
                             {% else %}
-                                <a href="{% url 'clubs:login' %}" class="btn-join-activity btn-join-activity-disabled">
-                                    登录参加
-                                </a>
+                                <a href="{% url 'clubs:login' %}" class="btn-join-activity btn-join-activity-disabled">{% trans "登录参加" %}</a>
                             {% endif %}
                         </div>
                     </div>
@@ -817,7 +798,7 @@
     {% else %}
         <div class="empty-state">
             <span class="material-icons empty-icon">event_busy</span>
-            <p>暂无即将举办的活动</p>
+            <p>{% trans "暂无即将举办的活动" %}</p>
         </div>
     {% endif %}
 </div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}直接修改社团信息 - 社团管理系统{% endblock %}
 
@@ -218,16 +219,14 @@
     <!-- 页面标题 -->
     <div class="page-title">
         <span class="material-icons">edit</span>
-        <h1>直接修改社团信息</h1>
+        <h1>{% trans "直接修改社团信息" %}</h1>
     </div>
 
     <!-- 错误消息 -->
     {% if errors %}
     <div class="info-card error">
         <h5>
-            <span class="material-icons">error</span>
-            操作失败
-        </h5>
+            <span class="material-icons">error</span>{% trans "操作失败" %}</h5>
         <ul>
             {% for error in errors %}
             <li>{{ error }}</li>
@@ -239,9 +238,7 @@
     <!-- 表单卡片 -->
     <div class="form-card">
         <h3>
-            <span class="material-icons">group</span>
-            社团信息编辑
-        </h3>
+            <span class="material-icons">group</span>{% trans "社团信息编辑" %}</h3>
 
         <form method="post" action="{% url 'clubs:direct_edit_club_info' club.id %}">
             {% csrf_token %}
@@ -249,36 +246,28 @@
             <div class="form-grid">
                 <div class="form-group full-width">
                     <label for="name">
-                        <span class="material-icons">business</span>
-                        社团名称 *
-                    </label>
+                        <span class="material-icons">business</span>{% trans "社团名称 *" %}</label>
                     <input type="text" id="name" name="name"
                            value="{{ form_data.name|default:club.name }}" required>
                 </div>
 
                 <div class="form-group full-width">
                     <label for="description">
-                        <span class="material-icons">description</span>
-                        社团介绍
-                    </label>
+                        <span class="material-icons">description</span>{% trans "社团介绍" %}</label>
                     <textarea id="description" name="description" rows="5">
 {{ form_data.description|default:club.description|default:'' }}</textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="founded_date">
-                        <span class="material-icons">today</span>
-                        成立日期
-                    </label>
+                        <span class="material-icons">today</span>{% trans "成立日期" %}</label>
                     <input type="date" id="founded_date" name="founded_date"
                            value="{{ form_data.founded_date|default:club.founded_date|date:'Y-m-d' }}">
                 </div>
 
                 <div class="form-group">
                     <label for="members_count">
-                        <span class="material-icons">people</span>
-                        成员数量
-                    </label>
+                        <span class="material-icons">people</span>{% trans "成员数量" %}</label>
                     <input type="number" id="members_count" name="members_count"
                            value="{{ form_data.members_count|default:club.members_count }}">
                 </div>
@@ -286,13 +275,9 @@
 
             <div class="button-group">
                 <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-outlined">
-                    <span class="material-icons">arrow_back</span>
-                    取消
-                </a>
+                    <span class="material-icons">arrow_back</span>{% trans "取消" %}</a>
                 <button type="submit" class="btn btn-primary">
-                    <span class="material-icons">save</span>
-                    保存修改
-                </button>
+                    <span class="material-icons">save</span>{% trans "保存修改" %}</button>
             </div>
         </form>
     </div>

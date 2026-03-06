@@ -1,0 +1,331 @@
+{% load i18n %}
+
+<div class="md3-language-switcher" title="{% trans '选择语言' %}">
+    <form action="{% url 'set_language' %}" method="post" id="language-form" class="language-form">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+        
+        <!-- MD3 Outlined Button Trigger -->
+        <button type="button" class="md3-language-button" id="languageTrigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="md3-button-content">
+                <span class="md3-icon material-icons">language</span>
+                <span class="md3-button-label">
+                    {% get_current_language as LANGUAGE_CODE %}
+                    {% if LANGUAGE_CODE == 'zh-hans' %}
+                        {% trans '简体中文' %}
+                    {% elif LANGUAGE_CODE == 'en' %}
+                        {% trans 'English' %}
+                    {% else %}
+                        {{ LANGUAGE_CODE }}
+                    {% endif %}
+                </span>
+                <span class="md3-icon material-icons md3-dropdown-icon">arrow_drop_down</span>
+            </span>
+        </button>
+        
+        <!-- MD3 Menu Dropdown with proper semantics -->
+        <div class="md3-language-menu" id="languageMenu" role="listbox" style="display: none;">
+            <div class="md3-menu-scrim"></div>
+            <div class="md3-menu-surface">
+                {% get_available_languages as LANGUAGES %}
+                {% for lang_code, lang_name in LANGUAGES %}
+                    <button type="submit" name="language" value="{{ lang_code }}" 
+                            class="md3-menu-item {% if LANGUAGE_CODE == lang_code %}selected{% endif %}"
+                            role="option"
+                            aria-selected="{% if LANGUAGE_CODE == lang_code %}true{% else %}false{% endif %}">
+                        <span class="md3-menu-item-text">{{ lang_name }}</span>
+                        {% if LANGUAGE_CODE == lang_code %}
+                            <span class="material-icons md3-menu-check">check</span>
+                        {% endif %}
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+/* MD3 Language Switcher Container */
+.md3-language-switcher {
+    position: relative;
+    margin: 8px 0;
+    padding: 16px 0;
+    border-top: 1px solid var(--md3-outline-variant, rgba(128, 128, 128, 0.2));
+}
+
+.language-form {
+    position: relative;
+}
+
+/* MD3 Button Styles (Outlined variant) */
+.md3-language-button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--md3-outline, rgba(128, 128, 128, 0.5));
+    border-radius: 8px;
+    background-color: transparent;
+    color: var(--md3-on-surface, #1f1f1f);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.md3-language-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--md3-primary, #1d73e8);
+    opacity: 0;
+    transition: left 0.2s, opacity 0.2s;
+    z-index: -1;
+}
+
+.md3-language-button:hover {
+    border-color: var(--md3-primary, #1d73e8);
+    background-color: rgba(29, 115, 232, 0.04);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.md3-language-button:focus-visible {
+    outline: 2px solid var(--md3-primary, #1d73e8);
+    outline-offset: 2px;
+}
+
+.md3-language-button:active {
+    background-color: rgba(29, 115, 232, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.md3-button-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.md3-button-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.md3-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--md3-on-surface, #1f1f1f);
+    user-select: none;
+}
+
+.md3-dropdown-icon {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.md3-language-button[aria-expanded="true"] .md3-dropdown-icon {
+    transform: rotate(180deg);
+}
+
+/* MD3 Menu Dropdown */
+.md3-language-menu {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    margin-bottom: 8px;
+    z-index: 1000;
+    animation: md3MenuEnter 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes md3MenuEnter {
+    from {
+        opacity: 0;
+        transform: scaleY(0.95) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1) translateY(0);
+    }
+}
+
+.md3-menu-scrim {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
+.md3-menu-surface {
+    position: relative;
+    background-color: var(--md3-surface, #fffbfe);
+    border-radius: 4px;
+    box-shadow: 
+        0 5px 5px -3px rgba(0, 0, 0, 0.2),
+        0 8px 10px 1px rgba(0, 0, 0, 0.14),
+        0 3px 14px 2px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    min-width: 200px;
+}
+
+.md3-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background-color: transparent;
+    color: var(--md3-on-surface, #1f1f1f);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1);
+    position: relative;
+}
+
+.md3-menu-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--md3-primary, #1d73e8);
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: -1;
+}
+
+.md3-menu-item:hover::before {
+    opacity: 0.08;
+}
+
+.md3-menu-item:focus-visible {
+    outline: 2px solid var(--md3-primary, #1d73e8);
+    outline-offset: -2px;
+}
+
+.md3-menu-item.selected {
+    background-color: rgba(29, 115, 232, 0.12);
+    color: var(--md3-primary, #1d73e8);
+    font-weight: 600;
+}
+
+.md3-menu-item-text {
+    flex: 1;
+}
+
+.md3-menu-check {
+    margin-left: 12px;
+    color: var(--md3-primary, #1d73e8);
+    font-size: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .md3-language-button {
+        height: 36px;
+        padding: 0 12px;
+        font-size: 13px;
+    }
+    
+    .md3-button-content {
+        gap: 8px;
+    }
+    
+    .md3-icon {
+        font-size: 20px;
+    }
+    
+    .md3-menu-item {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+}
+</style>
+
+<script>
+// MD3 Language Switcher functionality
+const languageTrigger = document.getElementById('languageTrigger');
+const languageMenu = document.getElementById('languageMenu');
+
+if (languageTrigger && languageMenu) {
+    // Toggle menu on button click
+    languageTrigger.addEventListener('click', function(event) {
+        event.stopPropagation();
+        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+        
+        if (isExpanded) {
+            languageMenu.style.display = 'none';
+            this.setAttribute('aria-expanded', 'false');
+        } else {
+            languageMenu.style.display = 'block';
+            this.setAttribute('aria-expanded', 'true');
+            // Focus first menu item for keyboard navigation
+            const firstItem = languageMenu.querySelector('.md3-menu-item');
+            if (firstItem) firstItem.focus();
+        }
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.md3-language-switcher')) {
+            languageMenu.style.display = 'none';
+            languageTrigger.setAttribute('aria-expanded', 'false');
+        }
+    });
+    
+    // Close menu on escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            languageMenu.style.display = 'none';
+            languageTrigger.setAttribute('aria-expanded', 'false');
+            languageTrigger.focus();
+        }
+    });
+    
+    // Handle keyboard navigation in menu
+    const menuItems = languageMenu.querySelectorAll('.md3-menu-item');
+    menuItems.forEach((item, index) => {
+        item.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                const nextIndex = (index + 1) % menuItems.length;
+                menuItems[nextIndex].focus();
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                const prevIndex = (index - 1 + menuItems.length) % menuItems.length;
+                menuItems[prevIndex].focus();
+            }
+        });
+    });
+    
+    // Close menu after language selection
+    menuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            setTimeout(() => {
+                languageMenu.style.display = 'none';
+                languageTrigger.setAttribute('aria-expanded', 'false');
+            }, 200);
+        });
+    });
+}
+</script>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}审批中心{% endblock %}
@@ -321,7 +322,7 @@
     <!-- 页面标题 -->
     <div class="page-header">
         <span class="material-icons">assignment_turned_in</span>
-        <h1>审批中心</h1>
+        <h1>{% trans "审批中心" %}</h1>
     </div>
     
     <!-- 审批类型卡片网格 -->
@@ -330,7 +331,7 @@
         <div class="approval-card">
             <div class="approval-card-header">
                 <span class="material-icons">assignment</span>
-                <h2>年审记录</h2>
+                <h2>{% trans "年审记录" %}</h2>
                 {% if unread_approval_counts.annual_review > 0 %}
                 <span class="approval-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
                     {{ unread_approval_counts.annual_review }} 未处理
@@ -347,11 +348,11 @@
                         <div class="approval-item-header">
                             <span class="approval-item-title">{{ item.club.name }}</span>
                             {% if item.status == 'approved' %}
-                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>{% trans "已批准" %}</span>
                             {% elif item.status == 'rejected' %}
-                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>{% trans "已拒绝" %}</span>
                             {% elif item.status == 'pending' %}
-                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>{% trans "待审核" %}</span>
                             {% endif %}
                         </div>
                         <div class="approval-item-footer">
@@ -360,8 +361,7 @@
                             </div>
                             {% if item.status == 'rejected' and not item.has_newer_version %}
                             <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=review&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
-                                <span class="material-icons">edit</span>修改
-                            </a>
+                                <span class="material-icons">edit</span>{% trans "修改" %}</a>
                             {% endif %}
                         </div>
                     </div>
@@ -370,14 +370,13 @@
                 {% if approved_rejected_items.annual_review|length > 3 %}
                 <div class="card-footer">
                     <a href="{% url 'clubs:approval_history_by_type' 'annual_review' %}" class="btn-text">
-                        <span class="material-icons">history</span> 历史记录
-                    </a>
+                        <span class="material-icons">history</span>{% trans "历史记录" %}</a>
                 </div>
                 {% endif %}
                 {% else %}
                 <div class="empty-state">
                     <span class="material-icons">assignment</span>
-                    <p>暂无年审记录</p>
+                    <p>{% trans "暂无年审记录" %}</p>
                 </div>
                 {% endif %}
             </div>
@@ -387,7 +386,7 @@
         <div class="approval-card">
             <div class="approval-card-header">
                 <span class="material-icons">add_circle</span>
-                <h2>社团注册记录</h2>
+                <h2>{% trans "社团注册记录" %}</h2>
                 {% if unread_approval_counts.registration > 0 %}
                 <span class="approval-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
                     {{ unread_approval_counts.registration }} 未处理
@@ -404,11 +403,11 @@
                         <div class="approval-item-header">
                             <span class="approval-item-title">{{ item.club.name }}</span>
                             {% if item.status == 'approved' %}
-                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>{% trans "已批准" %}</span>
                             {% elif item.status == 'rejected' %}
-                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>{% trans "已拒绝" %}</span>
                             {% elif item.status == 'pending' %}
-                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>{% trans "待审核" %}</span>
                             {% endif %}
                         </div>
                         <div class="approval-item-footer">
@@ -417,8 +416,7 @@
                             </div>
                             {% if item.status == 'rejected' and not item.has_newer_version %}
                             <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=club_registration&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
-                                <span class="material-icons">edit</span>修改
-                            </a>
+                                <span class="material-icons">edit</span>{% trans "修改" %}</a>
                             {% endif %}
                         </div>
                     </div>
@@ -427,14 +425,13 @@
                 {% if approved_rejected_items.registration|length > 3 %}
                 <div class="card-footer">
                     <a href="{% url 'clubs:approval_history_by_type' 'registration' %}" class="btn-text">
-                        <span class="material-icons">history</span> 历史记录
-                    </a>
+                        <span class="material-icons">history</span>{% trans "历史记录" %}</a>
                 </div>
                 {% endif %}
                 {% else %}
                 <div class="empty-state">
                     <span class="material-icons">add_circle</span>
-                    <p>暂无社团注册记录</p>
+                    <p>{% trans "暂无社团注册记录" %}</p>
                 </div>
                 {% endif %}
             </div>
@@ -444,7 +441,7 @@
         <div class="approval-card">
             <div class="approval-card-header">
                 <span class="material-icons">edit</span>
-                <h2>社团申请记录</h2>
+                <h2>{% trans "社团申请记录" %}</h2>
                 {% if unread_approval_counts.application > 0 %}
                 <span class="approval-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
                     {{ unread_approval_counts.application }} 未处理
@@ -461,11 +458,11 @@
                         <div class="approval-item-header">
                             <span class="approval-item-title">{{ item.club_name }}</span>
                             {% if item.status == 'approved' %}
-                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>{% trans "已批准" %}</span>
                             {% elif item.status == 'rejected' %}
-                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>{% trans "已拒绝" %}</span>
                             {% elif item.status == 'pending' %}
-                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>{% trans "待审核" %}</span>
                             {% endif %}
                         </div>
                         <div class="approval-item-footer">
@@ -474,8 +471,7 @@
                             </div>
                             {% if item.status == 'rejected' and not item.has_newer_version %}
                             <a href="{% url 'clubs:edit_rejected_review' item.id %}?type=club_application&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
-                                <span class="material-icons">edit</span>修改
-                            </a>
+                                <span class="material-icons">edit</span>{% trans "修改" %}</a>
                             {% endif %}
                         </div>
                     </div>
@@ -484,14 +480,13 @@
                 {% if approved_rejected_items.application|length > 3 %}
                 <div class="card-footer">
                     <a href="{% url 'clubs:approval_history_by_type' 'application' %}" class="btn-text">
-                        <span class="material-icons">history</span> 历史记录
-                    </a>
+                        <span class="material-icons">history</span>{% trans "历史记录" %}</a>
                 </div>
                 {% endif %}
                 {% else %}
                 <div class="empty-state">
                     <span class="material-icons">edit</span>
-                    <p>暂无社团申请记录</p>
+                    <p>{% trans "暂无社团申请记录" %}</p>
                 </div>
                 {% endif %}
             </div>
@@ -501,7 +496,7 @@
         <div class="approval-card">
             <div class="approval-card-header">
                 <span class="material-icons">attach_money</span>
-                <h2>报销记录</h2>
+                <h2>{% trans "报销记录" %}</h2>
                 {% if unread_approval_counts.reimbursement > 0 %}
                 <span class="approval-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
                     {{ unread_approval_counts.reimbursement }} 未处理
@@ -518,13 +513,13 @@
                         <div class="approval-item-header">
                             <span class="approval-item-title">{{ item.club.name }}</span>
                             {% if item.status == 'approved' %}
-                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>{% trans "已批准" %}</span>
                             {% elif item.status == 'rejected' %}
-                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>{% trans "已拒绝" %}</span>
                             {% elif item.status == 'pending' %}
-                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>{% trans "待审核" %}</span>
                             {% elif item.status == 'partially_rejected' %}
-                            <span class="status-badge partially-rejected"><span class="material-icons">warning</span>部分拒绝</span>
+                            <span class="status-badge partially-rejected"><span class="material-icons">warning</span>{% trans "部分拒绝" %}</span>
                             {% endif %}
                         </div>
                         <div class="approval-item-footer">
@@ -533,8 +528,7 @@
                             </div>
                             {% if item.status == 'rejected' and not item.has_newer_version %}
                             <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=reimbursement&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
-                                <span class="material-icons">edit</span>修改
-                            </a>
+                                <span class="material-icons">edit</span>{% trans "修改" %}</a>
                             {% endif %}
                         </div>
                     </div>
@@ -543,14 +537,13 @@
                 {% if approved_rejected_items.reimbursement|length > 3 %}
                 <div class="card-footer">
                     <a href="{% url 'clubs:approval_history_by_type' 'reimbursement' %}" class="btn-text">
-                        <span class="material-icons">history</span> 历史记录
-                    </a>
+                        <span class="material-icons">history</span>{% trans "历史记录" %}</a>
                 </div>
                 {% endif %}
                 {% else %}
                 <div class="empty-state">
                     <span class="material-icons">attach_money</span>
-                    <p>暂无报销记录</p>
+                    <p>{% trans "暂无报销记录" %}</p>
                 </div>
                 {% endif %}
             </div>
@@ -560,7 +553,7 @@
         <div class="approval-card">
             <div class="approval-card-header">
                 <span class="material-icons">event</span>
-                <h2>活动申请记录</h2>
+                <h2>{% trans "活动申请记录" %}</h2>
                 {% if unread_approval_counts.activity_application > 0 %}
                 <span class="approval-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
                     {{ unread_approval_counts.activity_application }} 未处理
@@ -577,11 +570,11 @@
                         <div class="approval-item-header">
                             <span class="approval-item-title">{{ item.club.name }}</span>
                             {% if item.status == 'approved' %}
-                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>{% trans "已批准" %}</span>
                             {% elif item.status == 'rejected' %}
-                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>{% trans "已拒绝" %}</span>
                             {% elif item.status == 'pending' %}
-                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>{% trans "待审核" %}</span>
                             {% endif %}
                         </div>
                         <div class="approval-item-footer">
@@ -590,8 +583,7 @@
                             </div>
                             {% if item.status == 'rejected' and not item.has_newer_version %}
                             <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=activity_application&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
-                                <span class="material-icons">edit</span>修改
-                            </a>
+                                <span class="material-icons">edit</span>{% trans "修改" %}</a>
                             {% endif %}
                         </div>
                     </div>
@@ -600,14 +592,13 @@
                 {% if approved_rejected_items.activity_application|length > 3 %}
                 <div class="card-footer">
                     <a href="{% url 'clubs:approval_history_by_type' 'activity_application' %}" class="btn-text">
-                        <span class="material-icons">history</span> 历史记录
-                    </a>
+                        <span class="material-icons">history</span>{% trans "历史记录" %}</a>
                 </div>
                 {% endif %}
                 {% else %}
                 <div class="empty-state">
                     <span class="material-icons">event</span>
-                    <p>暂无活动申请记录</p>
+                    <p>{% trans "暂无活动申请记录" %}</p>
                 </div>
                 {% endif %}
             </div>
@@ -617,7 +608,7 @@
         <div class="approval-card">
             <div class="approval-card-header">
                 <span class="material-icons">swap_horiz</span>
-                <h2>社长换届申请</h2>
+                <h2>{% trans "社长换届申请" %}</h2>
                 {% if unread_approval_counts.president_transition > 0 %}
                 <span class="approval-card-badge" style="background: var(--md3-error-container); color: var(--md3-on-error-container);">
                     {{ unread_approval_counts.president_transition }} 未处理
@@ -634,11 +625,11 @@
                         <div class="approval-item-header">
                             <span class="approval-item-title">{{ item.club.name }}</span>
                             {% if item.status == 'approved' %}
-                            <span class="status-badge approved"><span class="material-icons">check_circle</span>已批准</span>
+                            <span class="status-badge approved"><span class="material-icons">check_circle</span>{% trans "已批准" %}</span>
                             {% elif item.status == 'rejected' %}
-                            <span class="status-badge rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                            <span class="status-badge rejected"><span class="material-icons">cancel</span>{% trans "已拒绝" %}</span>
                             {% elif item.status == 'pending' %}
-                            <span class="status-badge pending"><span class="material-icons">schedule</span>待审核</span>
+                            <span class="status-badge pending"><span class="material-icons">schedule</span>{% trans "待审核" %}</span>
                             {% endif %}
                         </div>
                         <div class="approval-item-footer">
@@ -647,8 +638,7 @@
                             </div>
                             {% if item.status == 'rejected' and not item.has_newer_version %}
                             <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=president_transition&request_id={{ item.id }}" class="edit-btn" onclick="event.stopPropagation();">
-                                <span class="material-icons">edit</span>修改
-                            </a>
+                                <span class="material-icons">edit</span>{% trans "修改" %}</a>
                             {% endif %}
                         </div>
                     </div>
@@ -657,14 +647,13 @@
                 {% if approved_rejected_items.president_transition|length > 3 %}
                 <div class="card-footer">
                     <a href="{% url 'clubs:approval_history_by_type' 'president_transition' %}" class="btn-text">
-                        <span class="material-icons">history</span> 历史记录
-                    </a>
+                        <span class="material-icons">history</span>{% trans "历史记录" %}</a>
                 </div>
                 {% endif %}
                 {% else %}
                 <div class="empty-state">
                     <span class="material-icons">swap_horiz</span>
-                    <p>暂无社长换届申请记录</p>
+                    <p>{% trans "暂无社长换届申请记录" %}</p>
                 </div>
                 {% endif %}
             </div>

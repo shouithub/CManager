@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}用户注册{% endblock %}
 
@@ -127,8 +128,8 @@
             <div class="auth-icon">
                 <span class="material-icons">person_add</span>
             </div>
-            <h1 class="auth-title">用户注册</h1>
-            <p class="auth-subtitle">欢迎来到系统，请填写以下信息注册</p>
+            <h1 class="auth-title">{% trans "用户注册" %}</h1>
+            <p class="auth-subtitle">{% trans "欢迎来到系统，请填写以下信息注册" %}</p>
         </div>
         
         {% if errors %}
@@ -145,7 +146,7 @@
         <div class="message-container">
             <div class="message info">
                 <span class="material-icons">info</span>
-                <span>请注册等待管理员审核，社长注册请直接登录</span>
+                <span>{% trans "请注册等待管理员审核，社长注册请直接登录" %}</span>
             </div>
         </div>
 
@@ -155,82 +156,82 @@
             <!-- 用户名 & 姓名 -->
             <div class="grid-2">
                 <div class="form-group">
-                    <label for="username">用户名 *</label>
+                    <label for="username">{% trans "用户名 *" %}</label>
                     <input type="text" id="username" name="username" 
-                           value="{{ form_data.username }}" placeholder="请输入用户名" required autocomplete="username">
+                           value="{{ form_data.username }}" placeholder="{% trans "请输入用户名" %}" required autocomplete="username">
                 </div>
                 <div class="form-group">
-                    <label for="real_name">真实姓名 *</label>
+                    <label for="real_name">{% trans "真实姓名 *" %}</label>
                     <input type="text" id="real_name" name="real_name" 
-                           value="{{ form_data.real_name }}" placeholder="请输入真实姓名" required>
+                           value="{{ form_data.real_name }}" placeholder="{% trans "请输入真实姓名" %}" required>
                 </div>
             </div>
 
             <!-- 邮箱 -->
             <div class="form-group">
-                <label for="email">邮箱 *</label>
+                <label for="email">{% trans "邮箱 *" %}</label>
                 <input type="email" id="email" name="email" 
-                       value="{{ form_data.email }}" placeholder="请输入邮箱地址" required autocomplete="email">
-                <div class="form-hint">用于接收系统通知</div>
+                       value="{{ form_data.email }}" placeholder="{% trans "请输入邮箱地址" %}" required autocomplete="email">
+                <div class="form-hint">{% trans "用于接收系统通知" %}</div>
             </div>
 
             <!-- 密码 -->
             <div class="grid-2">
                 <div class="form-group">
-                    <label for="password">密码 *</label>
+                    <label for="password">{% trans "密码 *" %}</label>
                     <input type="password" id="password" name="password" 
-                           placeholder="请输入密码" required autocomplete="new-password">
+                           placeholder="{% trans "请输入密码" %}" required autocomplete="new-password">
                 </div>
                 <div class="form-group">
-                    <label for="password_confirm">确认密码 *</label>
+                    <label for="password_confirm">{% trans "确认密码 *" %}</label>
                     <input type="password" id="password_confirm" name="password_confirm" 
-                           placeholder="请再次输入密码" required autocomplete="new-password">
+                           placeholder="{% trans "请再次输入密码" %}" required autocomplete="new-password">
                 </div>
             </div>
 
             <!-- 角色选择 -->
             <div class="form-group">
-                <label for="role">角色 *</label>
+                <label for="role">{% trans "角色 *" %}</label>
                 <select id="role" name="role" required>
-                    <option value="">请选择角色</option>
-                    <option value="president" {% if form_data.role == 'president' %}selected{% endif %}>社长</option>
-                    <option value="staff" {% if form_data.role == 'staff' %}selected{% endif %}>干事</option>
+                    <option value="">{% trans "请选择角色" %}</option>
+                    <option value="president" {% if form_data.role == 'president' %}selected{% endif %}>{% trans "社长" %}</option>
+                    <option value="staff" {% if form_data.role == 'staff' %}selected{% endif %}>{% trans "干事" %}</option>
                 </select>
             </div>
 
             <!-- 学号 & 政治面貌 -->
             <div class="grid-2">
                 <div class="form-group">
-                    <label for="student_id">学号 *</label>
+                    <label for="student_id">{% trans "学号 *" %}</label>
                     <input type="text" id="student_id" name="student_id" 
-                           value="{{ form_data.student_id }}" placeholder="请输入学号" required>
+                           value="{{ form_data.student_id }}" placeholder="{% trans "请输入学号" %}" required>
                 </div>
                 <div class="form-group">
-                    <label for="political_status">政治面貌</label>
+                    <label for="political_status">{% trans "政治面貌" %}</label>
                     <select id="political_status" name="political_status">
-                        <option value="">请选择政治面貌</option>
-                        <option value="communist_party_member" {% if form_data.political_status == 'communist_party_member' %}selected{% endif %}>中共党员</option>
-                        <option value="communist_party_probationary" {% if form_data.political_status == 'communist_party_probationary' %}selected{% endif %}>中共预备党员</option>
-                        <option value="communist_youth_league" {% if form_data.political_status == 'communist_youth_league' %}selected{% endif %}>共青团员</option>
-                        <option value="revolutionary_committee" {% if form_data.political_status == 'revolutionary_committee' %}selected{% endif %}>民革党员</option>
-                        <option value="china_democratic_league" {% if form_data.political_status == 'china_democratic_league' %}selected{% endif %}>民盟盟员</option>
-                        <option value="democratic_national_construction" {% if form_data.political_status == 'democratic_national_construction' %}selected{% endif %}>民建会员</option>
-                        <option value="china_peasants_workers_democratic" {% if form_data.political_status == 'china_peasants_workers_democratic' %}selected{% endif %}>农工党党员</option>
-                        <option value="china_council_for_promoting" {% if form_data.political_status == 'china_council_for_promoting' %}selected{% endif %}>致公党党员</option>
-                        <option value="jiusanshe" {% if form_data.political_status == 'jiusanshe' %}selected{% endif %}>九三学社社员</option>
-                        <option value="taiwan_democratic_self_government" {% if form_data.political_status == 'taiwan_democratic_self_government' %}selected{% endif %}>台盟盟员</option>
-                        <option value="non_party_personage" {% if form_data.political_status == 'non_party_personage' %}selected{% endif %}>无党派人士</option>
-                        <option value="progressive" {% if form_data.political_status == 'progressive' %}selected{% endif %}>入党积极分子</option>
-                        <option value="non_member" {% if form_data.political_status == 'non_member' %}selected{% endif %}>群众</option>
+                        <option value="">{% trans "请选择政治面貌" %}</option>
+                        <option value="communist_party_member" {% if form_data.political_status == 'communist_party_member' %}selected{% endif %}>{% trans "中共党员" %}</option>
+                        <option value="communist_party_probationary" {% if form_data.political_status == 'communist_party_probationary' %}selected{% endif %}>{% trans "中共预备党员" %}</option>
+                        <option value="communist_youth_league" {% if form_data.political_status == 'communist_youth_league' %}selected{% endif %}>{% trans "共青团员" %}</option>
+                        <option value="revolutionary_committee" {% if form_data.political_status == 'revolutionary_committee' %}selected{% endif %}>{% trans "民革党员" %}</option>
+                        <option value="china_democratic_league" {% if form_data.political_status == 'china_democratic_league' %}selected{% endif %}>{% trans "民盟盟员" %}</option>
+                        <option value="democratic_national_construction" {% if form_data.political_status == 'democratic_national_construction' %}selected{% endif %}>{% trans "民建会员" %}</option>
+                        <option value="china_peasants_workers_democratic" {% if form_data.political_status == 'china_peasants_workers_democratic' %}selected{% endif %}>{% trans "农工党党员" %}</option>
+                        <option value="china_council_for_promoting" {% if form_data.political_status == 'china_council_for_promoting' %}selected{% endif %}>{% trans "致公党党员" %}</option>
+                        <option value="jiusanshe" {% if form_data.political_status == 'jiusanshe' %}selected{% endif %}>{% trans "九三学社社员" %}</option>
+                        <option value="taiwan_democratic_self_government" {% if form_data.political_status == 'taiwan_democratic_self_government' %}selected{% endif %}>{% trans "台盟盟员" %}</option>
+                        <option value="non_party_personage" {% if form_data.political_status == 'non_party_personage' %}selected{% endif %}>{% trans "无党派人士" %}</option>
+                        <option value="progressive" {% if form_data.political_status == 'progressive' %}selected{% endif %}>{% trans "入党积极分子" %}</option>
+                        <option value="non_member" {% if form_data.political_status == 'non_member' %}selected{% endif %}>{% trans "群众" %}</option>
                     </select>
                 </div>
             </div>
 
             <!-- 部门选择（仅干事） -->
             <div class="form-group" id="department-container" style="display: none;">
-                <label for="department">部门 *</label>
+                <label for="department">{% trans "部门 *" %}</label>
                 <select id="department" name="department">
-                    <option value="">请选择部门</option>
+                    <option value="">{% trans "请选择部门" %}</option>
                     {% for dept in departments %}
                     <option value="{{ dept.id }}" {% if form_data.department == dept.id|stringformat:"s" %}selected{% endif %}>{{ dept.name }}</option>
                     {% endfor %}
@@ -240,25 +241,22 @@
             <!-- 电话 & 微信 -->
             <div class="grid-2">
                 <div class="form-group">
-                    <label for="phone">电话 *</label>
+                    <label for="phone">{% trans "电话 *" %}</label>
                     <input type="tel" id="phone" name="phone" 
-                           value="{{ form_data.phone }}" placeholder="请输入电话号码" required autocomplete="tel">
+                           value="{{ form_data.phone }}" placeholder="{% trans "请输入电话号码" %}" required autocomplete="tel">
                 </div>
                 <div class="form-group">
-                    <label for="wechat">微信 *</label>
+                    <label for="wechat">{% trans "微信 *" %}</label>
                     <input type="text" id="wechat" name="wechat" 
-                           value="{{ form_data.wechat }}" placeholder="请输入微信号" required>
+                           value="{{ form_data.wechat }}" placeholder="{% trans "请输入微信号" %}" required>
                 </div>
             </div>
 
             <button type="submit" class="btn btn-filled btn-block btn-lg" style="margin-top: var(--md3-spacing-md);">
-                <span class="material-icons">person_add</span>
-                创建账户
-            </button>
+                <span class="material-icons">person_add</span>{% trans "创建账户" %}</button>
         </form>
 
-        <div class="auth-link">
-            已有账户？ <a href="{% url 'clubs:login' %}">立即登录</a>
+        <div class="auth-link">{% trans "已有账户？" %}<a href="{% url 'clubs:login' %}">{% trans "立即登录" %}</a>
         </div>
     </div>
 </div>

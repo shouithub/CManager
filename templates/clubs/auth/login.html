@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}登录{% endblock %}
 
@@ -146,8 +147,8 @@
             <div class="auth-icon">
                 <span class="material-icons">account_circle</span>
             </div>
-            <h1 class="auth-title">欢迎回来</h1>
-            <p class="auth-subtitle">登录您的账户以继续</p>
+            <h1 class="auth-title">{% trans "欢迎回来" %}</h1>
+            <p class="auth-subtitle">{% trans "登录您的账户以继续" %}</p>
         </div>
 
         {% if messages %}
@@ -169,37 +170,34 @@
             {% csrf_token %}
             
             <div class="form-group">
-                <label for="username">用户名</label>
-                <input type="text" id="username" name="username" value="{{ username }}" placeholder="请输入用户名" required autocomplete="username">
+                <label for="username">{% trans "用户名" %}</label>
+                <input type="text" id="username" name="username" value="{{ username }}" placeholder="{% trans "请输入用户名" %}" required autocomplete="username">
             </div>
             
             <div class="form-group">
-                <label for="password">密码</label>
-                <input type="password" id="password" name="password" placeholder="请输入密码" required autocomplete="current-password">
+                <label for="password">{% trans "密码" %}</label>
+                <input type="password" id="password" name="password" placeholder="{% trans "请输入密码" %}" required autocomplete="current-password">
             </div>
 
             <button type="submit" class="btn btn-filled btn-block btn-lg">
-                <span class="material-icons">arrow_forward</span>
-                立即登录
-            </button>
+                <span class="material-icons">arrow_forward</span>{% trans "立即登录" %}</button>
         </form>
 
         {% if show_admin_reset_prompt %}
         <div class="admin-reset-prompt">
-            <strong>登录已被锁定</strong>
-            <p>由于多次失败的登录尝试，您的账号（或此 IP）已被暂时锁定 5 分钟。请等待解锁或联系管理员重置密码。</p>
+            <strong>{% trans "登录已被锁定" %}</strong>
+            <p>{% trans "由于多次失败的登录尝试，您的账号（或此 IP）已被暂时锁定 5 分钟。请等待解锁或联系管理员重置密码。" %}</p>
             {% if admin_contact_email %}
-            <a href="mailto:{{ admin_contact_email }}" class="action-btn">联系管理员</a>
+            <a href="mailto:{{ admin_contact_email }}" class="action-btn">{% trans "联系管理员" %}</a>
             {% else %}
-            <button class="action-btn" onclick="alert('请联系系统管理员或使用管理员面板重置密码');">联系管理员</button>
+            <button class="action-btn" onclick="alert('请联系系统管理员或使用管理员面板重置密码');">{% trans "联系管理员" %}</button>
             {% endif %}
         </div>
         {% endif %}
 
-        <div class="auth-divider">或者</div>
+        <div class="auth-divider">{% trans "或者" %}</div>
 
-        <div class="auth-link">
-            还没有账户？ <a href="{% url 'clubs:register' %}">立即注册</a>
+        <div class="auth-link">{% trans "还没有账户？" %}<a href="{% url 'clubs:register' %}">{% trans "立即注册" %}</a>
         </div>
     </div>
 </div>

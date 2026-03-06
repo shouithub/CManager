@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}修改属性{% endblock %}
 
@@ -211,7 +212,7 @@
     <div class="card">
         <div class="card-header">
             <span class="material-icons">person_add</span>
-            <h2>修改属性</h2>
+            <h2>{% trans "修改属性" %}</h2>
         </div>
 
         {% if messages %}
@@ -224,13 +225,13 @@
 
         <div class="info-message">
             <span class="material-icons">info</span>
-            <span>为用户分配部门和职级</span>
+            <span>{% trans "为用户分配部门和职级" %}</span>
         </div>
 
         <!-- 用户信息 -->
         <div class="user-info">
             <div class="user-info-item">
-                <span class="user-info-label">登录用户名：</span>
+                <span class="user-info-label">{% trans "登录用户名：" %}</span>
                 <span class="user-info-value">
                     <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
@@ -247,22 +248,22 @@
                 </span>
             </div>
             <div class="user-info-item">
-                <span class="user-info-label">真实姓名：</span>
+                <span class="user-info-label">{% trans "真实姓名：" %}</span>
                 <span class="user-info-value">{{ profile.get_full_name }}</span>
             </div>
             <div class="user-info-item">
-                <span class="user-info-label">当前角色：</span>
+                <span class="user-info-label">{% trans "当前角色：" %}</span>
                 <span class="user-info-value">{{ profile.get_role_display }}</span>
             </div>
             {% if profile.department or profile.department_link %}
             <div class="user-info-item">
-                <span class="user-info-label">当前部门：</span>
+                <span class="user-info-label">{% trans "当前部门：" %}</span>
                 <span class="user-info-value">{{ profile.department_link.name|default:profile.department }}</span>
             </div>
             {% endif %}
             {% if profile.staff_level %}
             <div class="user-info-item">
-                <span class="user-info-label">当前职级：</span>
+                <span class="user-info-label">{% trans "当前职级：" %}</span>
                 <span class="user-info-value">{{ profile.get_staff_level_display }}</span>
             </div>
             {% endif %}
@@ -274,9 +275,7 @@
 
             <!-- 部门选择 -->
             <div class="form-group">
-                <label class="form-label">
-                    部门
-                </label>
+                <label class="form-label">{% trans "部门" %}</label>
                 <select class="form-select" name="department" required>
                     <option value="">-- 选择部门 --</option>
                     {% for dept in departments %}
@@ -285,14 +284,12 @@
                         </option>
                     {% endfor %}
                 </select>
-                <span class="form-help">选择所属的部门</span>
+                <span class="form-help">{% trans "选择所属的部门" %}</span>
             </div>
 
             <!-- 职级选择 -->
             <div class="form-group">
-                <label class="form-label">
-                    职级
-                </label>
+                <label class="form-label">{% trans "职级" %}</label>
                 <select class="form-select" name="staff_level" required>
                     <option value="">-- 选择职级 --</option>
                     {% for value, display in staff_level_choices %}
@@ -301,18 +298,18 @@
                         </option>
                     {% endfor %}
                 </select>
-                <span class="form-help">选择在部门中的职级</span>
+                <span class="form-help">{% trans "选择在部门中的职级" %}</span>
             </div>
 
             <!-- 操作按钮 -->
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
                     <span class="material-icons">check</span>
-                    <span>保存修改</span>
+                    <span>{% trans "保存修改" %}</span>
                 </button>
                 <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
                     <span class="material-icons">close</span>
-                    <span>取消</span>
+                    <span>{% trans "取消" %}</span>
                 </a>
             </div>
         </form>

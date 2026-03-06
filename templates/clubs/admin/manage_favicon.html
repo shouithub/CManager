@@ -1,4 +1,5 @@
 {% extends "clubs/base.html" %}
+{% load i18n %}
 
 
 
@@ -955,10 +956,10 @@
   <div>
 
 
-    <h1>图标与字体管理</h1>
+    <h1>{% trans "图标与字体管理" %}</h1>
 
 
-    <p class="ia-subtitle">管理网站 Favicon 图标、图标字体镜像和正文字体配置</p>
+    <p class="ia-subtitle">{% trans "管理网站 Favicon 图标、图标字体镜像和正文字体配置" %}</p>
 
 
   </div>
@@ -967,10 +968,7 @@
   <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-text" style="margin-left:auto;">
 
 
-    <span class="material-icons">arrow_back</span>返回仪表板
-
-
-  </a>
+    <span class="material-icons">arrow_back</span>{% trans "返回仪表板" %}</a>
 
 
 </div>
@@ -988,10 +986,7 @@
   <div class="ia-section-title">
 
 
-    <span class="material-icons">image</span>网站图标 Favicon
-
-
-  </div>
+    <span class="material-icons">image</span>{% trans "网站图标 Favicon" %}</div>
 
 
   <div class="ia-card">
@@ -1003,7 +998,7 @@
       <span class="material-icons">bookmark</span>
 
 
-      <h2>当前图标与上传</h2>
+      <h2>{% trans "当前图标与上传" %}</h2>
 
 
     </div>
@@ -1024,10 +1019,10 @@
           {% if site_favicon_preview_url %}
 
 
-            <img src="{{ site_favicon_preview_url }}" alt="当前 Favicon">
+            <img src="{{ site_favicon_preview_url }}" alt="{% trans "当前 Favicon" %}">
 
 
-            <p>当前网站图标<br><span style="opacity:.6;font-size:.75rem;">浏览器标签页显示</span></p>
+            <p>{% trans "当前网站图标" %}<br><span style="opacity:.6;font-size:.75rem;">{% trans "浏览器标签页显示" %}</span></p>
 
 
           {% else %}
@@ -1042,7 +1037,7 @@
             </div>
 
 
-            <p>未设置自定义图标</p>
+            <p>{% trans "未设置自定义图标" %}</p>
 
 
           {% endif %}
@@ -1066,7 +1061,7 @@
             <div class="ia-field">
 
 
-              <label for="favicon-input">选择新图标文件</label>
+              <label for="favicon-input">{% trans "选择新图标文件" %}</label>
 
 
               <input type="file" name="favicon" accept=".ico,.png,.jpg,.jpeg"
@@ -1078,13 +1073,7 @@
               <div class="ia-helper">
 
 
-                <span class="material-icons">info</span>
-
-
-                支持 .ico / .png / .jpg，建议尺寸 64×64 或 128×128
-
-
-              </div>
+                <span class="material-icons">info</span>{% trans "支持 .ico / .png / .jpg，建议尺寸 64×64 或 128×128" %}</div>
 
 
             </div>
@@ -1120,7 +1109,7 @@
               </div>
 
 
-              <div class="ia-helper">拖动图片调整位置，滑块调整缩放</div>
+              <div class="ia-helper">{% trans "拖动图片调整位置，滑块调整缩放" %}</div>
 
 
             </div>
@@ -1132,10 +1121,7 @@
               <button type="submit" class="btn btn-filled">
 
 
-                <span class="material-icons">upload</span>上传更新图标
-
-
-              </button>
+                <span class="material-icons">upload</span>{% trans "上传更新图标" %}</button>
 
 
             </div>
@@ -1171,10 +1157,7 @@
   <div class="ia-section-title">
 
 
-    <span class="material-icons">font_download</span>字体配置
-
-
-  </div>
+    <span class="material-icons">font_download</span>{% trans "字体配置" %}</div>
 
 
   <form method="post" id="font-settings-form">
@@ -1201,7 +1184,7 @@
         <span class="material-icons">language</span>
 
 
-        <h2>图标字体 Material Icons</h2>
+        <h2>{% trans "图标字体 Material Icons" %}</h2>
 
 
       </div>
@@ -1231,13 +1214,7 @@
         <div class="ia-helper" style="margin-bottom:var(--md3-spacing-sm);">
 
 
-          <span class="material-icons">tips_and_updates</span>
-
-
-          选择一个可用镜像以保证图标正常加载
-
-
-        </div>
+          <span class="material-icons">tips_and_updates</span>{% trans "选择一个可用镜像以保证图标正常加载" %}</div>
 
 
         <div class="ia-preset-chips">
@@ -1312,7 +1289,7 @@
         <span class="material-icons">text_fields</span>
 
 
-        <h2>正文字体（可选）</h2>
+        <h2>{% trans "正文字体（可选）" %}</h2>
 
 
       </div>
@@ -1339,7 +1316,7 @@
                      value="{{ cfg.body_font_url }}" class="form-control"
 
 
-                     placeholder="留空则不加载外部字体">
+                     placeholder="{% trans "留空则不加载外部字体" %}">
 
 
             </div>
@@ -1357,7 +1334,7 @@
                      value="{{ cfg.body_font_family }}" class="form-control"
 
 
-                     placeholder="例如 'Noto Sans SC', sans-serif">
+                     placeholder="{% trans "例如 'Noto Sans SC', sans-serif" %}">
 
 
             </div>
@@ -1372,13 +1349,7 @@
             <div class="ia-helper" style="margin-bottom:var(--md3-spacing-md);">
 
 
-              <span class="material-icons">tips_and_updates</span>
-
-
-              选择预设后自动填入地址和字体族名称
-
-
-            </div>
+              <span class="material-icons">tips_and_updates</span>{% trans "选择预设后自动填入地址和字体族名称" %}</div>
 
 
             <div class="ia-preset-chips">
@@ -1417,16 +1388,13 @@
         <div class="ia-actions">
 
 
-          <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-text">取消</a>
+          <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-text">{% trans "取消" %}</a>
 
 
           <button type="submit" class="btn btn-filled">
 
 
-            <span class="material-icons">save</span>保存字体设置
-
-
-          </button>
+            <span class="material-icons">save</span>{% trans "保存字体设置" %}</button>
 
 
         </div>

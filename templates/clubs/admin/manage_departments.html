@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}管理部门介绍{% endblock %}
@@ -264,13 +265,11 @@
     <div class="page-header">
         <span class="material-icons">category</span>
         <div class="page-header-content">
-            <h1>管理部门介绍</h1>
-            <p class="subtitle">管理社团部门的介绍信息和图标</p>
+            <h1>{% trans "管理部门介绍" %}</h1>
+            <p class="subtitle">{% trans "管理社团部门的介绍信息和图标" %}</p>
         </div>
         <a href="{% url 'clubs:add_department' %}" class="add-btn">
-            <span class="material-icons">add</span>
-            添加部门
-        </a>
+            <span class="material-icons">add</span>{% trans "添加部门" %}</a>
     </div>
     
     <div class="department-grid">
@@ -320,12 +319,10 @@
                     
                     <div class="department-card-actions">
                         <a href="{% url 'clubs:edit_department' department.id %}" class="btn btn-edit">
-                            <span class="material-icons">edit</span>
-                            编辑
-                        </a>
+                            <span class="material-icons">edit</span>{% trans "编辑" %}</a>
                         <form action="{% url 'clubs:delete_department' department.id %}" method="post" style="display: inline;" onsubmit="return confirm('确定要删除这个部门吗？');">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-delete" title="删除">
+                            <button type="submit" class="btn btn-delete" title="{% trans "删除" %}">
                                 <span class="material-icons">delete</span>
                             </button>
                         </form>
@@ -336,7 +333,7 @@
         {% empty %}
         <div class="empty-state">
             <span class="material-icons" style="font-size: 4rem; color: var(--md3-outline);">info</span>
-            <p>暂无部门信息，点击右上角添加</p>
+            <p>{% trans "暂无部门信息，点击右上角添加" %}</p>
         </div>
         {% endfor %}
     </div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 
 {% block title %}提交报销材料 - {{ club.name }}{% endblock %}
@@ -322,7 +323,7 @@
     <div class="page-header">
         <span class="material-icons">attach_money</span>
         <div class="page-header-content">
-            <h1>提交报销材料</h1>
+            <h1>{% trans "提交报销材料" %}</h1>
             <p class="subtitle">{{ club.name }}</p>
         </div>
     </div>
@@ -340,19 +341,15 @@
     <!-- 提交说明 -->
     <div class="info-card info">
         <h5>
-            <span class="material-icons">info</span>
-            提交说明
-        </h5>
-        <p>请填写报销详情并上传相关凭证。所有标记为 <strong style="color: var(--md3-error);">*</strong> 的字段为必填项。</p>
-        <p><strong>重要提醒：</strong>请确保上传的凭证清晰可见，支持图片(.jpg, .png)或PDF格式。</p>
+            <span class="material-icons">info</span>{% trans "提交说明" %}</h5>
+        <p>{% trans "请填写报销详情并上传相关凭证。所有标记为" %}<strong style="color: var(--md3-error);">*</strong>{% trans "的字段为必填项。" %}</p>
+        <p><strong>{% trans "重要提醒：" %}</strong>{% trans "请确保上传的凭证清晰可见，支持图片(.jpg, .png)或PDF格式。" %}</p>
     </div>
 
     <!-- 表单卡片 -->
     <div class="form-card">
         <h3>
-            <span class="material-icons">edit</span>
-            报销信息填写
-        </h3>
+            <span class="material-icons">edit</span>{% trans "报销信息填写" %}</h3>
 
         <form method="post" enctype="multipart/form-data" class="submit-form">
             {% csrf_token %}
@@ -360,28 +357,22 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label for="submission_date">
-                        <span class="material-icons">today</span>
-                        报销日期 *
-                    </label>
+                        <span class="material-icons">today</span>{% trans "报销日期 *" %}</label>
                     <input type="date" id="submission_date" name="submission_date" required>
                 </div>
 
                 <div class="form-group">
                     <label for="reimbursement_amount">
-                        <span class="material-icons">attach_money</span>
-                        报销金额 (¥) *
-                    </label>
+                        <span class="material-icons">attach_money</span>{% trans "报销金额 (¥) *" %}</label>
                     <input type="number" id="reimbursement_amount" name="reimbursement_amount"
                            step="0.01" min="0.01" placeholder="0.00" required>
                 </div>
 
                 <div class="form-group full-width">
                     <label for="description">
-                        <span class="material-icons">description</span>
-                        报销说明 *
-                    </label>
+                        <span class="material-icons">description</span>{% trans "报销说明 *" %}</label>
                     <textarea id="description" name="description" required
-                              placeholder="请详细说明报销事由和明细"></textarea>
+                              placeholder="{% trans "请详细说明报销事由和明细" %}"></textarea>
                 </div>
 
                 {% for req in requirements %}
@@ -397,13 +388,9 @@
 
             <div class="action-buttons">
                 <a href="{% url 'clubs:user_dashboard' %}" class="btn-secondary">
-                    <span class="material-icons">arrow_back</span>
-                    返回
-                </a>
+                    <span class="material-icons">arrow_back</span>{% trans "返回" %}</a>
                 <button type="submit" class="btn-primary">
-                    <span class="material-icons">check_circle</span>
-                    提交报销
-                </button>
+                    <span class="material-icons">check_circle</span>{% trans "提交报销" %}</button>
             </div>
         </form>
     </div>

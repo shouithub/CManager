@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}编辑预约{% endblock %}
 
@@ -198,8 +199,8 @@
     <div class="page-header">
         <span class="material-icons">edit_calendar</span>
         <div class="page-header-content">
-            <h1>编辑预约</h1>
-            <div class="subtitle">修改房间预约信息</div>
+            <h1>{% trans "编辑预约" %}</h1>
+            <div class="subtitle">{% trans "修改房间预约信息" %}</div>
         </div>
     </div>
 
@@ -208,18 +209,17 @@
         
         <div class="info-box">
             <span class="material-icons" style="font-size: 20px;">info</span>
-            <div>修改预约时间时会自动检查冲突，若与其他预约重叠将无法保存。</div>
+            <div>{% trans "修改预约时间时会自动检查冲突，若与其他预约重叠将无法保存。" %}</div>
         </div>
 
         <div class="section-title">
-            <span class="material-icons" style="font-size: 20px;">event</span> 基本信息
-        </div>
+            <span class="material-icons" style="font-size: 20px;">event</span>{% trans "基本信息" %}</div>
         
         <div class="form-row">
             <div>
-                <label class="form-label">选择房间 <span class="required">*</span></label>
+                <label class="form-label">{% trans "选择房间" %}<span class="required">*</span></label>
                 <select name="room_id" class="form-control" required>
-                    <option value="">请选择房间...</option>
+                    <option value="">{% trans "请选择房间..." %}</option>
                     {% for room in rooms %}
                     <option value="{{ room.id }}" {% if booking.room.id == room.id %}selected{% endif %}>{{ room.name }} (容量: {{ room.capacity }})</option>
                     {% endfor %}
@@ -239,15 +239,15 @@
         </div>
 
         <div class="form-group">
-            <label class="form-label">借用日期 <span class="required">*</span></label>
+            <label class="form-label">{% trans "借用日期" %}<span class="required">*</span></label>
             <input type="date" name="booking_date" class="form-control" value="{{ booking.booking_date|date:'Y-m-d' }}" required>
         </div>
 
         <div class="form-row">
             <div>
-                <label class="form-label">开始时间 <span class="required">*</span></label>
+                <label class="form-label">{% trans "开始时间" %}<span class="required">*</span></label>
                 <select name="start_time" id="startTime" class="form-control" required>
-                    <option value="">请选择开始时间...</option>
+                    <option value="">{% trans "请选择开始时间..." %}</option>
                     {% for slot in time_slots %}
                     <option value="{{ slot.start_time|time:'H:i' }}" {% if booking.start_time|time:'H:i' == slot.start_time|time:'H:i' %}selected{% endif %}>
                         {{ slot.label }} 开始 ({{ slot.start_time|time:'H:i' }})
@@ -256,9 +256,9 @@
                 </select>
             </div>
             <div>
-                <label class="form-label">结束时间 <span class="required">*</span></label>
+                <label class="form-label">{% trans "结束时间" %}<span class="required">*</span></label>
                 <select name="end_time" id="endTime" class="form-control" required>
-                    <option value="">请选择结束时间...</option>
+                    <option value="">{% trans "请选择结束时间..." %}</option>
                     {% for slot in time_slots %}
                     <option value="{{ slot.end_time|time:'H:i' }}" {% if booking.end_time|time:'H:i' == slot.end_time|time:'H:i' %}selected{% endif %}>
                         {{ slot.label }} 结束 ({{ slot.end_time|time:'H:i' }})
@@ -269,38 +269,34 @@
         </div>
 
         <div class="section-title">
-            <span class="material-icons" style="font-size: 20px;">description</span> 使用详情
-        </div>
+            <span class="material-icons" style="font-size: 20px;">description</span>{% trans "使用详情" %}</div>
 
         <div class="form-group">
-            <label class="form-label">使用目的 <span class="required">*</span></label>
-            <textarea name="purpose" class="form-control" placeholder="请简要说明房间使用目的..." required>{{ booking.purpose }}</textarea>
+            <label class="form-label">{% trans "使用目的" %}<span class="required">*</span></label>
+            <textarea name="purpose" class="form-control" placeholder="{% trans "请简要说明房间使用目的..." %}" required>{{ booking.purpose }}</textarea>
         </div>
 
         <div class="form-row">
             <div>
-                <label class="form-label">预计使用人数 <span class="required">*</span></label>
+                <label class="form-label">{% trans "预计使用人数" %}<span class="required">*</span></label>
                 <input type="number" name="participant_count" class="form-control" min="1" value="{{ booking.participant_count }}" required>
             </div>
             <div>
-                <label class="form-label">联系电话 <span class="required">*</span></label>
+                <label class="form-label">{% trans "联系电话" %}<span class="required">*</span></label>
                 <input type="tel" name="contact_phone" class="form-control" value="{{ booking.contact_phone }}" required>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="form-label">特殊需求</label>
-            <textarea name="special_requirements" class="form-control" placeholder="如需要投影仪、音响等设备，请在此说明...">{{ booking.special_requirements }}</textarea>
+            <label class="form-label">{% trans "特殊需求" %}</label>
+            <textarea name="special_requirements" class="form-control" placeholder="{% trans "如需要投影仪、音响等设备，请在此说明..." %}">{{ booking.special_requirements }}</textarea>
         </div>
 
         <div class="form-actions">
             <a href="{% url 'clubs:my_room_bookings' %}" class="btn btn-secondary">
-                <span class="material-icons" style="font-size: 1.125rem;">arrow_back</span> 取消
-            </a>
+                <span class="material-icons" style="font-size: 1.125rem;">arrow_back</span>{% trans "取消" %}</a>
             <button type="submit" class="btn btn-primary">
-                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">save</span>
-                保存修改
-            </button>
+                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">save</span>{% trans "保存修改" %}</button>
         </div>
     </form>
 </div>

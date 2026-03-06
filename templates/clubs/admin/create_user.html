@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}创建用户账户 - CManager{% endblock %}
 
@@ -253,8 +254,8 @@
         <div class="header-content">
             <span class="material-icons">person_add</span>
             <div class="header-text">
-                <h1>创建用户账户</h1>
-                <p>为系统创建新的用户账户</p>
+                <h1>{% trans "创建用户账户" %}</h1>
+                <p>{% trans "为系统创建新的用户账户" %}</p>
             </div>
         </div>
     </div>
@@ -288,9 +289,7 @@
     <div class="form-card">
         <div class="form-card-header">
             <h2>
-                <span class="material-icons">edit</span>
-                用户信息
-            </h2>
+                <span class="material-icons">edit</span>{% trans "用户信息" %}</h2>
         </div>
 
         <div class="form-card-body">
@@ -300,9 +299,7 @@
                 <!-- 第一行：用户名和真实姓名 -->
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label" for="username">
-                            登录用户名
-                            <span class="required-indicator">*</span>
+                        <label class="form-label" for="username">{% trans "登录用户名" %}<span class="required-indicator">*</span>
                         </label>
                         <input
                             type="text"
@@ -310,16 +307,14 @@
                             name="username"
                             value="{{ form_data.username }}"
                             class="form-input"
-                            placeholder="输入登录用户名"
+                            placeholder="{% trans "输入登录用户名" %}"
                             required
                         >
-                        <div class="form-hint">用于登录系统的用户名，3-30个字符</div>
+                        <div class="form-hint">{% trans "用于登录系统的用户名，3-30个字符" %}</div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="real_name">
-                            真实姓名
-                            <span class="required-indicator">*</span>
+                        <label class="form-label" for="real_name">{% trans "真实姓名" %}<span class="required-indicator">*</span>
                         </label>
                         <input
                             type="text"
@@ -327,7 +322,7 @@
                             name="real_name"
                             value="{{ form_data.real_name }}"
                             class="form-input"
-                            placeholder="输入真实姓名"
+                            placeholder="{% trans "输入真实姓名" %}"
                             required
                         >
                     </div>
@@ -336,9 +331,7 @@
                 <!-- 第二行：邮箱和电话 -->
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label" for="email">
-                            邮箱地址
-                            <span class="required-indicator">*</span>
+                        <label class="form-label" for="email">{% trans "邮箱地址" %}<span class="required-indicator">*</span>
                         </label>
                         <input
                             type="email"
@@ -346,15 +339,13 @@
                             name="email"
                             value="{{ form_data.email }}"
                             class="form-input"
-                            placeholder="输入邮箱地址"
+                            placeholder="{% trans "输入邮箱地址" %}"
                             required
                         >
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="phone">
-                            电话号码
-                            <span class="required-indicator">*</span>
+                        <label class="form-label" for="phone">{% trans "电话号码" %}<span class="required-indicator">*</span>
                         </label>
                         <input
                             type="tel"
@@ -362,7 +353,7 @@
                             name="phone"
                             value="{{ form_data.phone }}"
                             class="form-input"
-                            placeholder="输入电话号码"
+                            placeholder="{% trans "输入电话号码" %}"
                             required
                         >
                     </div>
@@ -371,9 +362,7 @@
                 <!-- 第三行：微信号和用户角色 -->
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label" for="wechat">
-                            微信号
-                            <span class="required-indicator">*</span>
+                        <label class="form-label" for="wechat">{% trans "微信号" %}<span class="required-indicator">*</span>
                         </label>
                         <input
                             type="text"
@@ -381,30 +370,26 @@
                             name="wechat"
                             value="{{ form_data.wechat }}"
                             class="form-input"
-                            placeholder="输入微信号"
+                            placeholder="{% trans "输入微信号" %}"
                             required
                         >
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="role">
-                            用户角色
-                            <span class="required-indicator">*</span>
+                        <label class="form-label" for="role">{% trans "用户角色" %}<span class="required-indicator">*</span>
                         </label>
                         <select id="role" name="role" class="form-select" required>
-                            <option value="president" {% if form_data.role == 'president' %}selected{% endif %}>社长</option>
-                            <option value="staff" {% if form_data.role == 'staff' %}selected{% endif %}>干事</option>
-                            <option value="admin" {% if form_data.role == 'admin' %}selected{% endif %}>管理员</option>
+                            <option value="president" {% if form_data.role == 'president' %}selected{% endif %}>{% trans "社长" %}</option>
+                            <option value="staff" {% if form_data.role == 'staff' %}selected{% endif %}>{% trans "干事" %}</option>
+                            <option value="admin" {% if form_data.role == 'admin' %}selected{% endif %}>{% trans "管理员" %}</option>
                         </select>
-                        <div class="form-hint">干事角色创建后需要管理员审核才能激活</div>
+                        <div class="form-hint">{% trans "干事角色创建后需要管理员审核才能激活" %}</div>
                     </div>
                 </div>
 
                 <!-- 第四行：学号 -->
                 <div class="form-group">
-                    <label class="form-label" for="student_id">
-                        学号
-                        <span class="required-indicator">*</span>
+                    <label class="form-label" for="student_id">{% trans "学号" %}<span class="required-indicator">*</span>
                     </label>
                     <input
                         type="text"
@@ -412,41 +397,37 @@
                         name="student_id"
                         value="{{ form_data.student_id }}"
                         class="form-input"
-                        placeholder="输入学号"
+                        placeholder="{% trans "输入学号" %}"
                         required
                     >
-                    <div class="form-hint">学生的学号，用于记录身份信息</div>
+                    <div class="form-hint">{% trans "学生的学号，用于记录身份信息" %}</div>
                 </div>
 
                 <!-- 第五行：密码 -->
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label" for="password">
-                            密码
-                            <span class="required-indicator">*</span>
+                        <label class="form-label" for="password">{% trans "密码" %}<span class="required-indicator">*</span>
                         </label>
                         <input
                             type="password"
                             id="password"
                             name="password"
                             class="form-input"
-                            placeholder="输入密码"
+                            placeholder="{% trans "输入密码" %}"
                             required
                         >
-                        <div class="form-hint">密码至少6个字符</div>
+                        <div class="form-hint">{% trans "密码至少6个字符" %}</div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="password2">
-                            确认密码
-                            <span class="required-indicator">*</span>
+                        <label class="form-label" for="password2">{% trans "确认密码" %}<span class="required-indicator">*</span>
                         </label>
                         <input
                             type="password"
                             id="password2"
                             name="password2"
                             class="form-input"
-                            placeholder="再次输入密码"
+                            placeholder="{% trans "再次输入密码" %}"
                             required
                         >
                     </div>
@@ -455,13 +436,9 @@
                 <!-- 表单动作 -->
                 <div class="form-actions">
                     <a href="{% url 'clubs:manage_users' %}" class="btn btn-outlined">
-                        <span class="material-icons">close</span>
-                        取消
-                    </a>
+                        <span class="material-icons">close</span>{% trans "取消" %}</a>
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">person_add</span>
-                        创建用户账户
-                    </button>
+                        <span class="material-icons">person_add</span>{% trans "创建用户账户" %}</button>
                 </div>
             </form>
         </div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}发布公告{% endblock %}
 
@@ -360,10 +361,8 @@
     <div class="page-header">
         <span class="material-icons">campaign</span>
         <div>
-            <h1 style="margin: 0;">发布系统公告</h1>
-            <p style="margin: var(--md3-spacing-sm) 0 0 0; color: var(--md3-on-surface-variant); font-size: 0.95rem;">
-                面向全校发布重要通知或活动信息，支持草稿与附件上传。
-            </p>
+            <h1 style="margin: 0;">{% trans "发布系统公告" %}</h1>
+            <p style="margin: var(--md3-spacing-sm) 0 0 0; color: var(--md3-on-surface-variant); font-size: 0.95rem;">{% trans "面向全校发布重要通知或活动信息，支持草稿与附件上传。" %}</p>
         </div>
     </div>
     
@@ -383,7 +382,7 @@
             {% csrf_token %}
             
             <div class="form-group">
-                <label for="title" class="form-label">公告标题 <span class="required">*</span></label>
+                <label for="title" class="form-label">{% trans "公告标题" %}<span class="required">*</span></label>
                 <input 
                     type="text" 
                     id="title" 
@@ -391,62 +390,58 @@
                     class="form-input"
                     required 
                     maxlength="200"
-                    placeholder="输入公告标题"
+                    placeholder="{% trans "输入公告标题" %}"
                     value="{{ title }}"
                 >
             </div>
             
             <div class="form-group">
-                <label for="content" class="form-label">公告内容 <span class="required">*</span></label>
+                <label for="content" class="form-label">{% trans "公告内容" %}<span class="required">*</span></label>
                 <textarea 
                     id="content" 
                     name="content" 
                     class="form-textarea"
                     required 
-                    placeholder="输入公告内容"
+                    placeholder="{% trans "输入公告内容" %}"
                 >{{ content }}</textarea>
             </div>
             
             <div class="form-group">
-                <label for="expires_at" class="form-label">失效时间（可选）</label>
+                <label for="expires_at" class="form-label">{% trans "失效时间（可选）" %}</label>
                 <input 
                     type="datetime-local" 
                     id="expires_at" 
                     name="expires_at"
                     class="form-input"
                 >
-                <small class="form-hint">公告将在指定时间后自动归档。如不填写，公告将一直有效。</small>
+                <small class="form-hint">{% trans "公告将在指定时间后自动归档。如不填写，公告将一直有效。" %}</small>
             </div>
             
             <div class="form-group">
-                <label for="attachment" class="form-label">附件（可选）</label>
+                <label for="attachment" class="form-label">{% trans "附件（可选）" %}</label>
                 <input 
                     type="file" 
                     id="attachment" 
                     name="attachment"
                     class="form-file"
                 >
-                <small class="form-hint">支持上传各种类型的文件，如文档、图片等。</small>
+                <small class="form-hint">{% trans "支持上传各种类型的文件，如文档、图片等。" %}</small>
             </div>
             
             <div class="form-group">
-                <label for="status" class="form-label">发布状态 <span class="required">*</span></label>
+                <label for="status" class="form-label">{% trans "发布状态" %}<span class="required">*</span></label>
                 <select id="status" name="status" class="form-select" required>
                     <option value="">-- 请选择 --</option>
-                    <option value="draft">草稿（保存但不显示）</option>
-                    <option value="published">发布（立即显示在首页）</option>
+                    <option value="draft">{% trans "草稿（保存但不显示）" %}</option>
+                    <option value="published">{% trans "发布（立即显示在首页）" %}</option>
                 </select>
             </div>
             
             <div class="form-actions">
                 <button type="submit" name="action" value="publish" class="btn btn-primary">
-                    <span class="material-icons">send</span>
-                    发布公告
-                </button>
+                    <span class="material-icons">send</span>{% trans "发布公告" %}</button>
                 <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-secondary">
-                    <span class="material-icons">close</span>
-                    取消
-                </a>
+                    <span class="material-icons">close</span>{% trans "取消" %}</a>
             </div>
         </form>
     </div>
@@ -455,9 +450,7 @@
     {% if announcements %}
     <div class="announcements-card">
         <h3>
-            <span class="material-icons">list</span>
-            最近发布的公告
-        </h3>
+            <span class="material-icons">list</span>{% trans "最近发布的公告" %}</h3>
         <div class="announcement-list">
             {% for announcement in announcements %}
             <div class="announcement-item">
@@ -468,7 +461,7 @@
                         {% if announcement.expires_at %}
                             <span>失效于 {{ announcement.expires_at|date:"Y-m-d H:i" }}</span>
                         {% else %}
-                            <span>永久有效</span>
+                            <span>{% trans "永久有效" %}</span>
                         {% endif %}
                         <span class="status-badge {{ announcement.status }}">
                             <span class="material-icons">
@@ -491,9 +484,7 @@
                 </div>
                 <div class="announcement-actions">
                     <a href="{% url 'clubs:delete_announcement' announcement.id %}" class="btn-delete" onclick="return confirm('确定要删除此公告吗？');">
-                        <span class="material-icons">delete</span>
-                        删除
-                    </a>
+                        <span class="material-icons">delete</span>{% trans "删除" %}</a>
                 </div>
             </div>
             {% endfor %}

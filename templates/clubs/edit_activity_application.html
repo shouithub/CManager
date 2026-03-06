@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}编辑活动信息 - 社团管理系统{% endblock %}
 
@@ -178,12 +179,12 @@
 <div class="edit-container">
     <div class="page-header">
         <span class="material-icons">edit</span>
-        <h1>编辑活动信息</h1>
+        <h1>{% trans "编辑活动信息" %}</h1>
     </div>
 
     {% if errors %}
     <div class="errors">
-        <h3>请修正以下错误：</h3>
+        <h3>{% trans "请修正以下错误：" %}</h3>
         <ul>
             {% for error in errors %}
                 <li>{{ error }}</li>
@@ -197,7 +198,7 @@
             {% csrf_token %}
             
             <div class="form-group">
-                <label for="activity_name" class="form-label">活动名称 *</label>
+                <label for="activity_name" class="form-label">{% trans "活动名称 *" %}</label>
                 <input 
                     type="text" 
                     id="activity_name" 
@@ -211,16 +212,16 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="activity_type" class="form-label">活动类型 *</label>
+                    <label for="activity_type" class="form-label">{% trans "活动类型 *" %}</label>
                     <select id="activity_type" name="activity_type" class="form-select" required>
-                        <option value="">请选择活动类型</option>
+                        <option value="">{% trans "请选择活动类型" %}</option>
                         {% for value, display in activity.ACTIVITY_TYPE_CHOICES %}
                             <option value="{{ value }}" {% if value == activity_type|default:activity.activity_type %}selected{% endif %}>{{ display }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="expected_participants" class="form-label">预计参与人数</label>
+                    <label for="expected_participants" class="form-label">{% trans "预计参与人数" %}</label>
                     <input 
                         type="number" 
                         id="expected_participants" 
@@ -233,19 +234,19 @@
             </div>
 
             <div class="form-group">
-                <label for="activity_description" class="form-label">活动描述 *</label>
+                <label for="activity_description" class="form-label">{% trans "活动描述 *" %}</label>
                 <textarea 
                     id="activity_description" 
                     name="activity_description" 
                     class="form-textarea" 
                     required 
-                    placeholder="请详细描述活动内容、目的和安排..."
+                    placeholder="{% trans "请详细描述活动内容、目的和安排..." %}"
                 >{{ activity_description|default:activity.activity_description }}</textarea>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="activity_date" class="form-label">活动日期 *</label>
+                    <label for="activity_date" class="form-label">{% trans "活动日期 *" %}</label>
                     <input 
                         type="date" 
                         id="activity_date" 
@@ -256,7 +257,7 @@
                     >
                 </div>
                 <div class="form-group">
-                    <label for="budget" class="form-label">活动预算（元）</label>
+                    <label for="budget" class="form-label">{% trans "活动预算（元）" %}</label>
                     <input 
                         type="number" 
                         id="budget" 
@@ -271,7 +272,7 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="activity_time_start" class="form-label">开始时间 *</label>
+                    <label for="activity_time_start" class="form-label">{% trans "开始时间 *" %}</label>
                     <input 
                         type="time" 
                         id="activity_time_start" 
@@ -282,7 +283,7 @@
                     >
                 </div>
                 <div class="form-group">
-                    <label for="activity_time_end" class="form-label">结束时间 *</label>
+                    <label for="activity_time_end" class="form-label">{% trans "结束时间 *" %}</label>
                     <input 
                         type="time" 
                         id="activity_time_end" 
@@ -295,7 +296,7 @@
             </div>
 
             <div class="form-group">
-                <label for="activity_location" class="form-label">活动地点 *</label>
+                <label for="activity_location" class="form-label">{% trans "活动地点 *" %}</label>
                 <input 
                     type="text" 
                     id="activity_location" 
@@ -309,7 +310,7 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="contact_person" class="form-label">联系人 *</label>
+                    <label for="contact_person" class="form-label">{% trans "联系人 *" %}</label>
                     <input 
                         type="text" 
                         id="contact_person" 
@@ -321,7 +322,7 @@
                     >
                 </div>
                 <div class="form-group">
-                    <label for="contact_phone" class="form-label">联系电话</label>
+                    <label for="contact_phone" class="form-label">{% trans "联系电话" %}</label>
                     <input 
                         type="tel" 
                         id="contact_phone" 
@@ -336,11 +337,11 @@
             <div class="action-buttons">
                 <a href="{% url 'clubs:public_activities' %}" class="btn btn-secondary">
                     <span class="material-icons">cancel</span>
-                    <span>取消</span>
+                    <span>{% trans "取消" %}</span>
                 </a>
                 <button type="submit" class="btn btn-primary">
                     <span class="material-icons">save</span>
-                    <span>保存修改</span>
+                    <span>{% trans "保存修改" %}</span>
                 </button>
             </div>
         </form>

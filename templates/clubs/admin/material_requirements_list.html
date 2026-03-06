@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}材料要求管理{% endblock %}
 
@@ -453,8 +454,8 @@
     <div class="page-header">
         <span class="material-icons">description</span>
         <div class="page-header-content">
-            <h1>材料要求管理</h1>
-            <p class="subtitle">管理各类申请的材料上传要求</p>
+            <h1>{% trans "材料要求管理" %}</h1>
+            <p class="subtitle">{% trans "管理各类申请的材料上传要求" %}</p>
         </div>
     </div>
 
@@ -463,23 +464,21 @@
         <div class="section-header">
             <h2 style="flex: 1;">{{ group.name }}</h2>
             <button onclick="openAddModal('{{ type_code }}', '{{ group.name }}')" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.75rem;">
-                <span class="material-icons" style="font-size: 1rem;">add</span>
-                添加要求
-            </button>
+                <span class="material-icons" style="font-size: 1rem;">add</span>{% trans "添加要求" %}</button>
         </div>
         
         {% if group.items %}
         <table class="requirements-table">
             <thead>
                 <tr>
-                    <th style="width: 50px;">排序</th>
-                    <th style="width: 25%;">名称</th>
-                    <th style="width: 100px;">图标</th>
-                    <th style="width: 30%;">描述</th>
-                    <th style="width: 100px;">必填</th>
-                    <th style="width: 100px;">状态</th>
-                    <th>格式限制</th>
-                    <th style="width: 100px;">操作</th>
+                    <th style="width: 50px;">{% trans "排序" %}</th>
+                    <th style="width: 25%;">{% trans "名称" %}</th>
+                    <th style="width: 100px;">{% trans "图标" %}</th>
+                    <th style="width: 30%;">{% trans "描述" %}</th>
+                    <th style="width: 100px;">{% trans "必填" %}</th>
+                    <th style="width: 100px;">{% trans "状态" %}</th>
+                    <th>{% trans "格式限制" %}</th>
+                    <th style="width: 100px;">{% trans "操作" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -494,16 +493,16 @@
                     <td>{{ item.description|default:"-" }}</td>
                     <td>
                         {% if item.is_required %}
-                        <span class="badge badge-required">必填</span>
+                        <span class="badge badge-required">{% trans "必填" %}</span>
                         {% else %}
-                        <span class="badge badge-optional">选填</span>
+                        <span class="badge badge-optional">{% trans "选填" %}</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if item.is_active %}
-                        <span class="badge badge-active">启用</span>
+                        <span class="badge badge-active">{% trans "启用" %}</span>
                         {% else %}
-                        <span class="badge badge-inactive">停用</span>
+                        <span class="badge badge-inactive">{% trans "停用" %}</span>
                         {% endif %}
                     </td>
                     <td>
@@ -514,12 +513,12 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button onclick="openEditModal('{{ item.id }}', '{{ item.name|escapejs }}', '{{ item.icon|default:'cloud_upload'|escapejs }}', '{{ item.description|escapejs }}', {{ item.is_required|yesno:'true,false' }}, '{{ item.allowed_extensions|escapejs }}', {{ item.max_size_mb }}, {{ item.order }}, {{ item.is_active|yesno:'true,false' }})" class="btn-icon" title="编辑">
+                            <button onclick="openEditModal('{{ item.id }}', '{{ item.name|escapejs }}', '{{ item.icon|default:'cloud_upload'|escapejs }}', '{{ item.description|escapejs }}', {{ item.is_required|yesno:'true,false' }}, '{{ item.allowed_extensions|escapejs }}', {{ item.max_size_mb }}, {{ item.order }}, {{ item.is_active|yesno:'true,false' }})" class="btn-icon" title="{% trans "编辑" %}">
                                 <span class="material-icons">edit</span>
                             </button>
                             <form method="post" action="{% url 'clubs:delete_material_requirement' item.id %}" onsubmit="return confirm('确定要删除这个材料要求吗？已提交的材料可能会受到影响。');" style="display: inline;">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-icon delete" title="删除">
+                                <button type="submit" class="btn-icon delete" title="{% trans "删除" %}">
                                     <span class="material-icons">delete</span>
                                 </button>
                             </form>
@@ -530,9 +529,7 @@
             </tbody>
         </table>
         {% else %}
-        <div class="empty-state">
-            暂无配置要求
-        </div>
+        <div class="empty-state">{% trans "暂无配置要求" %}</div>
         {% endif %}
     </div>
     {% endfor %}
@@ -542,7 +539,7 @@
 <div id="addModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 id="modalTitle">添加材料要求</h2>
+            <h2 id="modalTitle">{% trans "添加材料要求" %}</h2>
             <button onclick="closeAddModal()" class="modal-close">
                 <span class="material-icons">close</span>
             </button>
@@ -553,59 +550,59 @@
             
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">材料名称</label>
-                    <input type="text" name="name" class="form-control" required placeholder="例如：年度财务报表">
+                    <label class="form-label">{% trans "材料名称" %}</label>
+                    <input type="text" name="name" class="form-control" required placeholder="{% trans "例如：年度财务报表" %}">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">图标 (Material Icons)</label>
+                    <label class="form-label">{% trans "图标 (Material Icons)" %}</label>
                     <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="text" name="icon" id="add_icon" class="form-control" value="cloud_upload" placeholder="例如：description" oninput="updateIconPreview(this.value, 'add_icon_preview')">
+                        <input type="text" name="icon" id="add_icon" class="form-control" value="cloud_upload" placeholder="{% trans "例如：description" %}" oninput="updateIconPreview(this.value, 'add_icon_preview')">
                         <span class="material-icons" id="add_icon_preview" style="color: var(--md3-primary); font-size: 24px;">cloud_upload</span>
                     </div>
-                    <div class="form-text">参考 <a href="https://fonts.google.com/icons" target="_blank">Google Fonts Icons</a></div>
+                    <div class="form-text">{% trans "参考" %}<a href="https://fonts.google.com/icons" target="_blank">Google Fonts Icons</a></div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">描述说明</label>
-                    <textarea name="description" class="form-control" rows="3" placeholder="可选，显示在上传处的提示信息"></textarea>
+                    <label class="form-label">{% trans "描述说明" %}</label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="{% trans "可选，显示在上传处的提示信息" %}"></textarea>
                 </div>
 
                 <div class="form-group">
                     <div class="checkbox-wrapper">
                         <input type="checkbox" name="is_required" id="is_required" checked>
-                        <label for="is_required">是否必填</label>
+                        <label for="is_required">{% trans "是否必填" %}</label>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">允许的文件扩展名</label>
+                    <label class="form-label">{% trans "允许的文件扩展名" %}</label>
                     <input type="text" name="allowed_extensions" class="form-control" value=".docx,.pdf,.jpg,.png,.zip">
-                    <div class="form-text">用逗号分隔，例如：.docx,.pdf,.jpg</div>
+                    <div class="form-text">{% trans "用逗号分隔，例如：.docx,.pdf,.jpg" %}</div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">最大文件大小 (MB)</label>
+                    <label class="form-label">{% trans "最大文件大小 (MB)" %}</label>
                     <input type="number" name="max_size_mb" class="form-control" value="10" min="1">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">排序权重</label>
+                    <label class="form-label">{% trans "排序权重" %}</label>
                     <input type="number" name="order" class="form-control" value="0">
-                    <div class="form-text">数字越小越靠前</div>
+                    <div class="form-text">{% trans "数字越小越靠前" %}</div>
                 </div>
 
                 <div class="form-group">
                     <div class="checkbox-wrapper">
                         <input type="checkbox" name="is_active" id="is_active" checked>
-                        <label for="is_active">启用此要求</label>
+                        <label for="is_active">{% trans "启用此要求" %}</label>
                     </div>
                 </div>
             </div>
             
             <div class="modal-footer">
-                <button type="button" onclick="closeAddModal()" class="btn btn-secondary">取消</button>
-                <button type="submit" class="btn btn-primary">保存</button>
+                <button type="button" onclick="closeAddModal()" class="btn btn-secondary">{% trans "取消" %}</button>
+                <button type="submit" class="btn btn-primary">{% trans "保存" %}</button>
             </div>
         </form>
     </div>
@@ -616,7 +613,7 @@
 <div id="editModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>编辑材料要求</h2>
+            <h2>{% trans "编辑材料要求" %}</h2>
             <button onclick="closeEditModal()" class="modal-close">
                 <span class="material-icons">close</span>
             </button>
@@ -625,59 +622,59 @@
             {% csrf_token %}
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">材料名称</label>
+                    <label class="form-label">{% trans "材料名称" %}</label>
                     <input type="text" name="name" id="edit_name" class="form-control" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">图标 (Material Icons)</label>
+                    <label class="form-label">{% trans "图标 (Material Icons)" %}</label>
                     <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="text" name="icon" id="edit_icon" class="form-control" placeholder="例如：description" oninput="updateIconPreview(this.value, 'edit_icon_preview')">
+                        <input type="text" name="icon" id="edit_icon" class="form-control" placeholder="{% trans "例如：description" %}" oninput="updateIconPreview(this.value, 'edit_icon_preview')">
                         <span class="material-icons" id="edit_icon_preview" style="color: var(--md3-primary); font-size: 24px;">cloud_upload</span>
                     </div>
-                    <div class="form-text">参考 <a href="https://fonts.google.com/icons" target="_blank">Google Fonts Icons</a></div>
+                    <div class="form-text">{% trans "参考" %}<a href="https://fonts.google.com/icons" target="_blank">Google Fonts Icons</a></div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">描述说明</label>
+                    <label class="form-label">{% trans "描述说明" %}</label>
                     <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
                 </div>
 
                 <div class="form-group">
                     <div class="checkbox-wrapper">
                         <input type="checkbox" name="is_required" id="edit_is_required">
-                        <label for="edit_is_required">是否必填</label>
+                        <label for="edit_is_required">{% trans "是否必填" %}</label>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">允许的文件扩展名</label>
+                    <label class="form-label">{% trans "允许的文件扩展名" %}</label>
                     <input type="text" name="allowed_extensions" id="edit_allowed_extensions" class="form-control">
-                    <div class="form-text">用逗号分隔，例如：.docx,.pdf,.jpg</div>
+                    <div class="form-text">{% trans "用逗号分隔，例如：.docx,.pdf,.jpg" %}</div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">最大文件大小 (MB)</label>
+                    <label class="form-label">{% trans "最大文件大小 (MB)" %}</label>
                     <input type="number" name="max_size_mb" id="edit_max_size_mb" class="form-control" min="1">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">排序权重</label>
+                    <label class="form-label">{% trans "排序权重" %}</label>
                     <input type="number" name="order" id="edit_order" class="form-control">
-                    <div class="form-text">数字越小越靠前</div>
+                    <div class="form-text">{% trans "数字越小越靠前" %}</div>
                 </div>
 
                 <div class="form-group">
                     <div class="checkbox-wrapper">
                         <input type="checkbox" name="is_active" id="edit_is_active">
-                        <label for="edit_is_active">启用此要求</label>
+                        <label for="edit_is_active">{% trans "启用此要求" %}</label>
                     </div>
                 </div>
             </div>
             
             <div class="modal-footer">
-                <button type="button" onclick="closeEditModal()" class="btn btn-secondary">取消</button>
-                <button type="submit" class="btn btn-primary">保存修改</button>
+                <button type="button" onclick="closeEditModal()" class="btn btn-secondary">{% trans "取消" %}</button>
+                <button type="submit" class="btn btn-primary">{% trans "保存修改" %}</button>
             </div>
         </form>
     </div>

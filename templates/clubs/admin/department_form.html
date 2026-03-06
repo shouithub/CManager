@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}{% if department %}编辑部门{% else %}添加部门{% endif %}{% endblock %}
@@ -181,45 +182,41 @@
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
-                <label for="id_name">部门名称</label>
+                <label for="id_name">{% trans "部门名称" %}</label>
                 <input type="text" id="id_name" name="name" value="{{ department.name|default:'' }}" maxlength="50" required>
             </div>
             
             <div class="form-group">
-                <label for="id_description">职责描述</label>
+                <label for="id_description">{% trans "职责描述" %}</label>
                 <textarea id="id_description" name="description" required>{{ department.description|default:'' }}</textarea>
             </div>
             
             <div class="form-group">
-                <label for="id_highlights">重点工作</label>
-                <textarea id="id_highlights" name="highlights" placeholder="多个重点工作用换行分隔">{{ department.highlights|default:'' }}</textarea>
-                <div class="form-help">多个重点工作请用换行分隔</div>
+                <label for="id_highlights">{% trans "重点工作" %}</label>
+                <textarea id="id_highlights" name="highlights" placeholder="{% trans "多个重点工作用换行分隔" %}">{{ department.highlights|default:'' }}</textarea>
+                <div class="form-help">{% trans "多个重点工作请用换行分隔" %}</div>
             </div>
             
             <div class="form-group">
-                <label for="id_icon">图标名称 (Material Icons)</label>
+                <label for="id_icon">{% trans "图标名称 (Material Icons)" %}</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <input type="text" id="id_icon" name="icon" value="{{ department.icon|default:'work' }}" maxlength="50" required oninput="updateIconPreview(this.value)">
                     <span class="material-icons" id="icon-preview">{{ department.icon|default:'work' }}</span>
                 </div>
-                <div class="form-help">请参考 <a href="https://fonts.google.com/icons" target="_blank">Google Material Icons</a></div>
+                <div class="form-help">{% trans "请参考" %}<a href="https://fonts.google.com/icons" target="_blank">Google Material Icons</a></div>
             </div>
             
             <div class="form-group">
-                <label for="id_order">排序顺序</label>
+                <label for="id_order">{% trans "排序顺序" %}</label>
                 <input type="number" id="id_order" name="order" value="{{ department.order|default:'0' }}" required>
-                <div class="form-help">数字越小越靠前</div>
+                <div class="form-help">{% trans "数字越小越靠前" %}</div>
             </div>
             
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
-                    <span class="material-icons">save</span>
-                    保存
-                </button>
+                    <span class="material-icons">save</span>{% trans "保存" %}</button>
                 <a href="{% url 'clubs:manage_departments' %}" class="btn btn-secondary">
-                    <span class="material-icons">cancel</span>
-                    取消
-                </a>
+                    <span class="material-icons">cancel</span>{% trans "取消" %}</a>
             </div>
         </form>
     </div>

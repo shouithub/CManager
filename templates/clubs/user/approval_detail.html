@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 
 {% block title %}{{ title }}{% endblock %}
@@ -213,30 +214,28 @@
 <div class="detail-container">
     <!-- 返回按钮 -->
     <a href="{% url 'clubs:approval_center' item_type %}" class="back-button">
-        <span class="material-icons">arrow_back</span>
-        返回审批中心
-    </a>
+        <span class="material-icons">arrow_back</span>{% trans "返回审批中心" %}</a>
 
     <!-- 页面标题 -->
     <div class="detail-header">
         {% if item_type == 'annual_review' %}
             <span class="material-icons">assignment</span>
-            <h1>年审记录详情</h1>
+            <h1>{% trans "年审记录详情" %}</h1>
         {% elif item_type == 'registration' %}
             <span class="material-icons">add_circle</span>
-            <h1>社团注册详情</h1>
+            <h1>{% trans "社团注册详情" %}</h1>
         {% elif item_type == 'application' %}
             <span class="material-icons">business</span>
-            <h1>新社团申请详情</h1>
+            <h1>{% trans "新社团申请详情" %}</h1>
         {% elif item_type == 'reimbursement' %}
             <span class="material-icons">receipt</span>
-            <h1>报销申请详情</h1>
+            <h1>{% trans "报销申请详情" %}</h1>
         {% elif item_type == 'activity_application' %}
             <span class="material-icons">event</span>
-            <h1>活动申请详情</h1>
+            <h1>{% trans "活动申请详情" %}</h1>
         {% elif item_type == 'president_transition' %}
             <span class="material-icons">person_add</span>
-            <h1>社长交接详情</h1>
+            <h1>{% trans "社长交接详情" %}</h1>
         {% endif %}
     </div>
 
@@ -244,7 +243,7 @@
     <div class="info-card">
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">社团名称</span>
+                <span class="info-label">{% trans "社团名称" %}</span>
                 <span class="info-value">
                     {% if item_type == 'application' %}
                         {{ item.club_name }}
@@ -255,7 +254,7 @@
             </div>
 
             <div class="info-item">
-                <span class="info-label">当前状态</span>
+                <span class="info-label">{% trans "当前状态" %}</span>
                 <span class="status-badge {% if item.status == 'approved' %}approved{% elif item.status == 'rejected' %}rejected{% elif item.status == 'pending' %}pending{% endif %}">
                     {% if item.status == 'approved' %}
                         <span class="material-icons">check_circle</span>
@@ -272,26 +271,26 @@
 
             {% if item_type == 'annual_review' %}
             <div class="info-item">
-                <span class="info-label">年份</span>
+                <span class="info-label">{% trans "年份" %}</span>
                 <span class="info-value">{{ item.submission_year }}</span>
             </div>
             {% endif %}
 
             {% if item_type == 'reimbursement' %}
             <div class="info-item">
-                <span class="info-label">报销金额</span>
+                <span class="info-label">{% trans "报销金额" %}</span>
                 <span class="info-value" style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
             </div>
             {% if item.resubmission_attempt > 1 %}
             <div class="info-item">
-                <span class="info-label">提交次数</span>
+                <span class="info-label">{% trans "提交次数" %}</span>
                 <span class="info-value">第 {{ item.resubmission_attempt }} 次提交</span>
             </div>
             {% endif %}
             {% endif %}
 
             <div class="info-item">
-                <span class="info-label">提交时间</span>
+                <span class="info-label">{% trans "提交时间" %}</span>
                 <span class="info-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
             </div>
         </div>
@@ -301,10 +300,10 @@
     
     <!-- 附件材料组件 (如果存在) -->
     {% if materials %}
-    {% include 'clubs/components/_materials_display.html' with materials=materials title="附件材料" show_zip=materials_zip_show zip_url=materials_zip_url %}
+    {% include 'clubs/components/_materials_display.html' with materials=materials title="{% trans "附件材料" %}" show_zip=materials_zip_show zip_url=materials_zip_url %}
     {% endif %}
 
     <!-- 审核历史时间轴组件 -->
-    {% include 'clubs/components/_review_history.html' with reviews=reviews title="审核历史" %}
+    {% include 'clubs/components/_review_history.html' with reviews=reviews title="{% trans "审核历史" %}" %}
 </div>
 {% endblock %}

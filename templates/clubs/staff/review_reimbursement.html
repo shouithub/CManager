@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 
 {% block title %}审核报销申请{% endblock %}
@@ -548,23 +549,23 @@
     <!-- ===== 页面顶部标题 ===== -->
     <div class="page-header">
         <span class="material-icons">account_balance_wallet</span>
-        <h1>审核报销申请</h1>
+        <h1>{% trans "审核报销申请" %}</h1>
     </div>
     
     <!-- ===== 基本信息卡片 ===== -->
     <div class="card">
         <div class="card-header">
             <span class="material-icons">info</span>
-            <h2>基本信息</h2>
+            <h2>{% trans "基本信息" %}</h2>
         </div>
         
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">社团名称</span>
+                <span class="info-label">{% trans "社团名称" %}</span>
                 <span class="info-value">{{ reimbursement.club.name }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">社长</span>
+                <span class="info-label">{% trans "社长" %}</span>
                 <span class="info-value">
                     {% if reimbursement.club.president %}
                     <a href="{% url 'clubs:user_detail' reimbursement.club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -585,11 +586,11 @@
                 </span>
             </div>
             <div class="info-item">
-                <span class="info-label">申请时间</span>
+                <span class="info-label">{% trans "申请时间" %}</span>
                 <span class="info-value">{{ reimbursement.submitted_at|date:"Y-m-d H:i" }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">提交次数</span>
+                <span class="info-label">{% trans "提交次数" %}</span>
                 <span class="info-value">
                     第 {{ reimbursement.resubmission_attempt }} 次提交
                     {% if reimbursement.resubmission_attempt > 1 %}
@@ -598,7 +599,7 @@
                 </span>
             </div>
             <div class="info-item">
-                <span class="info-label">当前状态</span>
+                <span class="info-label">{% trans "当前状态" %}</span>
                 <span class="status-badge {{ reimbursement.status }}">
                     <span class="material-icons">
                         {% if reimbursement.status == 'approved' %}check_circle{% elif reimbursement.status == 'rejected' %}cancel{% else %}schedule{% endif %}
@@ -610,7 +611,7 @@
         
         {% if reimbursement.club.responsible_staff.all %}
         <div class="info-item">
-            <span class="info-label">负责干事</span>
+            <span class="info-label">{% trans "负责干事" %}</span>
             <div class="info-value">
                 {% for relation in reimbursement.club.responsible_staff.all %}
                     {% if relation.is_active %}
@@ -651,43 +652,37 @@
     <div class="card">
         <div class="card-header">
             <span class="material-icons">receipt</span>
-            <h2>报销详情</h2>
+            <h2>{% trans "报销详情" %}</h2>
         </div>
         
         <div class="detail-grid">
             <div class="detail-item">
                 <span class="detail-label">
-                    <span class="material-icons">attach_money</span>
-                    报销金额
-                </span>
+                    <span class="material-icons">attach_money</span>{% trans "报销金额" %}</span>
                 <span class="detail-value" style="font-size: 1.5rem; color: var(--md3-primary); font-weight: 700;">¥{{ reimbursement.reimbursement_amount }}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">
-                    <span class="material-icons">today</span>
-                    报销日期
-                </span>
+                    <span class="material-icons">today</span>{% trans "报销日期" %}</span>
                 <span class="detail-value">{{ reimbursement.submission_date|date:"Y-m-d" }}</span>
             </div>
         </div>
         
         <div class="detail-section">
             <div class="detail-label full-width">
-                <span class="material-icons">description</span>
-                报销说明
-            </div>
+                <span class="material-icons">description</span>{% trans "报销说明" %}</div>
             <div class="detail-description">{{ reimbursement.description }}</div>
         </div>
     </div>
     
     <!-- ===== 附件材料卡片 ===== -->
-    {% include 'clubs/components/_materials_display.html' with materials=materials title="附件材料" %}
+    {% include 'clubs/components/_materials_display.html' with materials=materials title="{% trans "附件材料" %}" %}
     
     <!-- ===== 审核历史时间 ===== -->
-    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews title="审核历史" %}
+    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews title="{% trans "审核历史" %}" %}
     
     <!-- ===== 干事审核表单 ===== -->
-    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='reimbursement' title="干事审核" approve_text="批准报销" reject_text="拒绝报销" %}
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='reimbursement' title="{% trans "干事审核" %}" approve_text="批准报销" reject_text="拒绝报销" %}
 </div>
 
 <script>

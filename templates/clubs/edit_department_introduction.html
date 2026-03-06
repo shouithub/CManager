@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}编辑部门介绍 - 社团管理系统{% endblock %}
@@ -305,10 +306,8 @@
     <!-- 页面标题 -->
     <div class="edit-header">
         <h1 class="edit-title">
-            <span class="material-icons">edit</span>
-            编辑部门介绍
-        </h1>
-        <p class="edit-subtitle">管理各部门的介绍内容、重点工作和图标</p>
+            <span class="material-icons">edit</span>{% trans "编辑部门介绍" %}</h1>
+        <p class="edit-subtitle">{% trans "管理各部门的介绍内容、重点工作和图标" %}</p>
     </div>
 
     <!-- 消息提示 -->
@@ -341,36 +340,32 @@
 
                 <!-- 部门描述 -->
                 <div class="form-group">
-                    <label for="dept_{{ dept.id }}_description" class="form-label">部门职责描述</label>
+                    <label for="dept_{{ dept.id }}_description" class="form-label">{% trans "部门职责描述" %}</label>
                     <textarea
                         class="form-control"
                         id="dept_{{ dept.id }}_description"
                         name="dept_{{ dept.id }}_description"
-                        placeholder="请输入部门的主要职责和介绍（最多500字）"
+                        placeholder="{% trans "请输入部门的主要职责和介绍（最多500字）" %}"
                         maxlength="500"
                     >{{ dept.description }}</textarea>
-                    <div class="form-text">
-                        简洁清晰地描述该部门的主要职责和工作内容
-                    </div>
+                    <div class="form-text">{% trans "简洁清晰地描述该部门的主要职责和工作内容" %}</div>
                 </div>
 
                 <!-- 重点工作 -->
                 <div class="form-group">
-                    <label for="dept_{{ dept.id }}_highlights" class="form-label">重点工作</label>
+                    <label for="dept_{{ dept.id }}_highlights" class="form-label">{% trans "重点工作" %}</label>
                     <textarea
                         class="form-control"
                         id="dept_{{ dept.id }}_highlights"
                         name="dept_{{ dept.id }}_highlights"
-                        placeholder="请输入部门的重点工作，多个重点工作用换行分隔"
+                        placeholder="{% trans "请输入部门的重点工作，多个重点工作用换行分隔" %}"
                     >{{ dept.highlights }}</textarea>
-                    <div class="form-text">
-                        每行一个重点工作，将按行分隔显示
-                    </div>
+                    <div class="form-text">{% trans "每行一个重点工作，将按行分隔显示" %}</div>
                 </div>
 
                 <!-- 部门图标 -->
                 <div class="form-group">
-                    <label class="form-label">部门图标</label>
+                    <label class="form-label">{% trans "部门图标" %}</label>
                     <div class="icon-selector">
                         {% for icon in material_icons %}
                         <label class="icon-option {% if dept.icon == icon %}selected{% endif %}">
@@ -384,9 +379,7 @@
                         </label>
                         {% endfor %}
                     </div>
-                    <div class="form-text">
-                        选择代表该部门特色的Material Icons图标
-                    </div>
+                    <div class="form-text">{% trans "选择代表该部门特色的Material Icons图标" %}</div>
                 </div>
             </div>
             {% endfor %}
@@ -395,11 +388,11 @@
             <div class="action-buttons">
                 <button type="submit" class="btn btn-primary">
                     <span class="material-icons">save</span>
-                    <span>保存更改</span>
+                    <span>{% trans "保存更改" %}</span>
                 </button>
                 <a href="{% url 'clubs:index' %}" class="btn btn-secondary">
                     <span class="material-icons">cancel</span>
-                    <span>取消</span>
+                    <span>{% trans "取消" %}</span>
                 </a>
             </div>
         </form>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}改变社团状态{% endblock %}
 
@@ -218,23 +219,21 @@
     <!-- 页面标题 -->
     <div class="page-title">
         <span class="material-icons">edit</span>
-        <h1>改变社团状态</h1>
+        <h1>{% trans "改变社团状态" %}</h1>
     </div>
 
     <!-- 社团信息卡片 -->
     <div class="info-card">
         <h5>
-            <span class="material-icons">group</span>
-            社团信息
-        </h5>
+            <span class="material-icons">group</span>{% trans "社团信息" %}</h5>
         <div style="display: flex; flex-direction: column; gap: var(--md3-spacing-md);">
             <div style="display: flex; gap: var(--md3-spacing-lg);">
                 <div>
-                    <div style="font-size: 0.875rem; font-weight: 500; color: var(--md3-on-surface-variant);">社团名称</div>
+                    <div style="font-size: 0.875rem; font-weight: 500; color: var(--md3-on-surface-variant);">{% trans "社团名称" %}</div>
                     <div style="font-size: 1rem; font-weight: 500; color: var(--md3-on-surface);">{{ club.name }}</div>
                 </div>
                 <div>
-                    <div style="font-size: 0.875rem; font-weight: 500; color: var(--md3-on-surface-variant);">当前状态</div>
+                    <div style="font-size: 0.875rem; font-weight: 500; color: var(--md3-on-surface-variant);">{% trans "当前状态" %}</div>
                     <div style="margin-top: var(--md3-spacing-xs);">
                         <span class="badge {% if club.status == 'active' %}badge-info{% elif club.status == 'inactive' %}badge-warning{% else %}badge-danger{% endif %}">
                             {% if club.status == 'active' %}活跃{% elif club.status == 'inactive' %}不活跃{% else %}停止{% endif %}
@@ -271,9 +270,7 @@
     <!-- 表单卡片 -->
     <div class="form-card">
         <h3>
-            <span class="material-icons">edit</span>
-            选择新状态
-        </h3>
+            <span class="material-icons">edit</span>{% trans "选择新状态" %}</h3>
 
         <form method="post" action="{% url 'clubs:change_club_status' club.id %}">
             {% csrf_token %}
@@ -294,23 +291,19 @@
 
             <!-- 状态说明 -->
             <div style="background: var(--md3-surface-container-high); border-left: 3px solid var(--md3-info); padding: var(--md3-spacing-lg); border-radius: var(--md3-radius-md); margin-bottom: var(--md3-spacing-lg); font-size: 0.875rem; color: var(--md3-on-surface);">
-                <p style="margin: 0 0 var(--md3-spacing-sm) 0; font-weight: 500;"><span class="material-icons" style="vertical-align: middle; font-size: 1rem; margin-right: 4px;">info</span>状态说明</p>
+                <p style="margin: 0 0 var(--md3-spacing-sm) 0; font-weight: 500;"><span class="material-icons" style="vertical-align: middle; font-size: 1rem; margin-right: 4px;">info</span>{% trans "状态说明" %}</p>
                 <ul style="margin: var(--md3-spacing-xs) 0 0 0; padding-left: var(--md3-spacing-xl);">
-                    <li><strong>活跃:</strong> 社团正常运营中，可以进行各项活动</li>
-                    <li><strong>不活跃:</strong> 社团暂时停止活动，但仍然存在</li>
-                    <li><strong>停止:</strong> 社团已停止运营，不再接受新活动</li>
+                    <li><strong>{% trans "活跃:" %}</strong>{% trans "社团正常运营中，可以进行各项活动" %}</li>
+                    <li><strong>{% trans "不活跃:" %}</strong>{% trans "社团暂时停止活动，但仍然存在" %}</li>
+                    <li><strong>{% trans "停止:" %}</strong>{% trans "社团已停止运营，不再接受新活动" %}</li>
                 </ul>
             </div>
 
             <div class="button-group">
                 <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-outlined">
-                    <span class="material-icons">arrow_back</span>
-                    取消
-                </a>
+                    <span class="material-icons">arrow_back</span>{% trans "取消" %}</a>
                 <button type="submit" class="btn btn-primary">
-                    <span class="material-icons">save</span>
-                    保存修改
-                </button>
+                    <span class="material-icons">save</span>{% trans "保存修改" %}</button>
             </div>
         </form>
     </div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}用户仪表板{% endblock %}
 
@@ -342,12 +343,10 @@
     <div class="dashboard-title">
         <div style="display: flex; align-items: center; gap: var(--md3-spacing-md);">
             <span class="material-icons">dashboard</span>
-            <h1>我的社团</h1>
+            <h1>{% trans "我的社团" %}</h1>
         </div>
         <div style="margin-left: auto;">
-            <a href="{% url 'clubs:register_club' %}" class="btn btn-primary">
-                创建新社团
-            </a>
+            <a href="{% url 'clubs:register_club' %}" class="btn btn-primary">{% trans "创建新社团" %}</a>
         </div>
     </div>
     <p class="dashboard-subtitle">欢迎 {{ user.profile.get_full_name }}，以下是您的社团管理信息</p>
@@ -371,16 +370,14 @@
             <div class="club-info-item">
                 <span class="material-icons">assignment</span>
                 <div class="club-info-content">
-                    <div class="club-info-label">年审状态</div>
+                    <div class="club-info-label">{% trans "年审状态" %}</div>
                     <div class="club-info-value">
                         {% if club_data.has_submitted_review %}
                         <span class="status-badge success">
-                            <span class="material-icons">check_circle</span> 已提交
-                        </span>
+                            <span class="material-icons">check_circle</span>{% trans "已提交" %}</span>
                         {% else %}
                         <span class="status-badge pending">
-                            <span class="material-icons">schedule</span> 未提交
-                        </span>
+                            <span class="material-icons">schedule</span>{% trans "未提交" %}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -391,16 +388,14 @@
             <div class="club-info-item">
                 <span class="material-icons">add_circle</span>
                 <div class="club-info-content">
-                    <div class="club-info-label">社团注册</div>
+                    <div class="club-info-label">{% trans "社团注册" %}</div>
                     <div class="club-info-value">
                         {% if club_data.has_submitted_registration %}
                         <span class="status-badge success">
-                            <span class="material-icons">check_circle</span> 已提交
-                        </span>
+                            <span class="material-icons">check_circle</span>{% trans "已提交" %}</span>
                         {% else %}
                         <span class="status-badge pending">
-                            <span class="material-icons">schedule</span> 未提交
-                        </span>
+                            <span class="material-icons">schedule</span>{% trans "未提交" %}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -410,7 +405,7 @@
             <div class="club-info-item">
                 <span class="material-icons">person</span>
                 <div class="club-info-content">
-                    <div class="club-info-label">负责干事</div>
+                    <div class="club-info-label">{% trans "负责干事" %}</div>
                     <div class="club-info-value">
                         {% if club_data.assigned_staff %}
                         <div class="staff-list">
@@ -441,7 +436,7 @@
                             {% endfor %}
                         </div>
                         {% else %}
-                        <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
+                        <span style="color: var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -449,47 +444,37 @@
             
             <div class="quick-actions">
                 <a href="{% url 'clubs:club_detail' club_data.club.id %}" class="btn btn-outlined">
-                    <span class="material-icons">info</span> 详情
-                </a>
+                    <span class="material-icons">info</span>{% trans "详情" %}</a>
                 {% if club_data.club.review_enabled %}
                     {% if club_data.has_submitted_review %}
                     <span class="btn btn-outlined" style="opacity: 0.6; cursor: not-allowed;">
-                        <span class="material-icons">check_circle</span> 年审已提交
-                    </span>
+                        <span class="material-icons">check_circle</span>{% trans "年审已提交" %}</span>
                     {% else %}
                     <a href="{% url 'clubs:submit_review' club_data.club.id %}" class="btn btn-success">
-                        <span class="material-icons">assignment</span> 年审
-                    </a>
+                        <span class="material-icons">assignment</span>{% trans "年审" %}</a>
                     {% endif %}
                 {% else %}
-                <span class="btn btn-outlined" style="opacity: 0.5; cursor: not-allowed;" title="年审功能未开启">
-                    <span class="material-icons">block</span> 年审未开启
-                </span>
+                <span class="btn btn-outlined" style="opacity: 0.5; cursor: not-allowed;" title="{% trans "年审功能未开启" %}">
+                    <span class="material-icons">block</span>{% trans "年审未开启" %}</span>
                 {% endif %}
                 {% if club_data.club.registration_enabled %}
                     {% if club_data.has_submitted_registration %}
                     <span class="btn btn-outlined" style="opacity: 0.6; cursor: not-allowed;">
-                        <span class="material-icons">check_circle</span> 注册已提交
-                    </span>
+                        <span class="material-icons">check_circle</span>{% trans "注册已提交" %}</span>
                     {% else %}
                     <a href="{% url 'clubs:submit_club_registration' club_data.club.id %}" class="btn btn-primary">
-                        <span class="material-icons">add_circle</span> 注册
-                    </a>
+                        <span class="material-icons">add_circle</span>{% trans "注册" %}</a>
                     {% endif %}
                 {% else %}
-                <span class="btn btn-outlined" style="opacity: 0.5; cursor: not-allowed;" title="注册功能未开启">
-                    <span class="material-icons">block</span> 注册未开启
-                </span>
+                <span class="btn btn-outlined" style="opacity: 0.5; cursor: not-allowed;" title="{% trans "注册功能未开启" %}">
+                    <span class="material-icons">block</span>{% trans "注册未开启" %}</span>
                 {% endif %}
                 <a href="{% url 'clubs:submit_reimbursement' club_data.club.id %}" class="btn btn-info">
-                    <span class="material-icons">attach_money</span> 报销
-                </a>
+                    <span class="material-icons">attach_money</span>{% trans "报销" %}</a>
                 <a href="{% url 'clubs:submit_activity_application' club_data.club.id %}" class="btn btn-primary">
-                    <span class="material-icons">event</span> 活动申请
-                </a>
+                    <span class="material-icons">event</span>{% trans "活动申请" %}</a>
                 <a href="{% url 'clubs:submit_president_transition' club_data.club.id %}" class="btn btn-warning">
-                    <span class="material-icons">swap_horiz</span> 社长换届
-                </a>
+                    <span class="material-icons">swap_horiz</span>{% trans "社长换届" %}</a>
             </div>
         </div>
         {% endfor %}
@@ -497,7 +482,7 @@
     {% else %}
     <div class="empty-state">
         <span class="material-icons">school</span>
-        <p>您目前没有管理任何社团</p>
+        <p>{% trans "您目前没有管理任何社团" %}</p>
     </div>
     {% endif %}
 </div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}用户名单 - CManager{% endblock %}
 
@@ -10,8 +11,8 @@
                 <span class="material-icons">group</span>
             </div>
             <div>
-                <h1>系统用户名单</h1>
-                <p>查看专用，无编辑权限</p>
+                <h1>{% trans "系统用户名单" %}</h1>
+                <p>{% trans "查看专用，无编辑权限" %}</p>
             </div>
         </div>
         <div class="header-chip">
@@ -23,39 +24,35 @@
     <div class="card md3-card">
         <form method="get" class="search-form">
             <div class="form-field">
-                <label>关键词</label>
+                <label>{% trans "关键词" %}</label>
                 <div class="input-wrapper">
                     <span class="material-icons">search</span>
                     <input 
                         type="text" 
                         name="search" 
-                        placeholder="搜索用户名、邮箱"
+                        placeholder="{% trans "搜索用户名、邮箱" %}"
                         value="{{ search }}"
                     >
                 </div>
             </div>
 
             <div class="form-field">
-                <label>角色</label>
+                <label>{% trans "角色" %}</label>
                 <div class="select-wrapper">
                     <select name="role">
-                        <option value="">所有角色</option>
-                        <option value="president" {% if role == 'president' %}selected{% endif %}>社长</option>
-                        <option value="staff" {% if role == 'staff' %}selected{% endif %}>干事</option>
-                        <option value="admin" {% if role == 'admin' %}selected{% endif %}>管理员</option>
+                        <option value="">{% trans "所有角色" %}</option>
+                        <option value="president" {% if role == 'president' %}selected{% endif %}>{% trans "社长" %}</option>
+                        <option value="staff" {% if role == 'staff' %}selected{% endif %}>{% trans "干事" %}</option>
+                        <option value="admin" {% if role == 'admin' %}selected{% endif %}>{% trans "管理员" %}</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-actions">
                 <button type="submit" class="md3-btn primary">
-                    <span class="material-icons">tune</span>
-                    筛选
-                </button>
+                    <span class="material-icons">tune</span>{% trans "筛选" %}</button>
                 <a href="?" class="md3-btn ghost">
-                    <span class="material-icons">refresh</span>
-                    重置
-                </a>
+                    <span class="material-icons">refresh</span>{% trans "重置" %}</a>
             </div>
         </form>
     </div>
@@ -66,21 +63,21 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>用户名</th>
-                        <th>邮箱</th>
-                        <th>全名</th>
-                        <th>电话</th>
-                        <th>微信</th>
-                        <th>政治面貌</th>
-                        <th>角色</th>
-                        <th>状态</th>
-                        <th>加入时间</th>
+                        <th>{% trans "用户名" %}</th>
+                        <th>{% trans "邮箱" %}</th>
+                        <th>{% trans "全名" %}</th>
+                        <th>{% trans "电话" %}</th>
+                        <th>{% trans "微信" %}</th>
+                        <th>{% trans "政治面貌" %}</th>
+                        <th>{% trans "角色" %}</th>
+                        <th>{% trans "状态" %}</th>
+                        <th>{% trans "加入时间" %}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for user in users %}
                     <tr>
-                        <td data-label="用户名">
+                        <td data-label="{% trans "用户名" %}">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                                     {% if user.profile.avatar %}
@@ -94,61 +91,59 @@
                                 {{ user.username }}
                             </div>
                         </td>
-                        <td data-label="真实姓名">
+                        <td data-label="{% trans "真实姓名" %}">
                             <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit; font-weight: 600;">
                                 {{ user.profile.get_full_name|default:"--" }}
                             </a>
                         </td>
-                        <td data-label="电话">{{ user.profile.phone|default:"--" }}</td>
-                        <td data-label="微信">{{ user.profile.wechat|default:"--" }}</td>
-                        <td data-label="政治面貌">
+                        <td data-label="{% trans "电话" %}">{{ user.profile.phone|default:"--" }}</td>
+                        <td data-label="{% trans "微信" %}">{{ user.profile.wechat|default:"--" }}</td>
+                        <td data-label="{% trans "政治面貌" %}">
                             {% if user.profile.role == 'president' or user.profile.role == 'staff' %}
                                 {{ user.profile.get_political_status_display|default:"未填写" }}
                             {% else %}
                                 <span class="text-muted">--</span>
                             {% endif %}
                         </td>
-                        <td data-label="角色">
+                        <td data-label="{% trans "角色" %}">
                             {% if user.profile.role == 'president' %}
-                                <span class="chip role president"><span class="material-icons">flag</span>社长</span>
+                                <span class="chip role president"><span class="material-icons">flag</span>{% trans "社长" %}</span>
                             {% elif user.profile.role == 'staff' %}
-                                <span class="chip role staff"><span class="material-icons">assignment_ind</span>干事</span>
+                                <span class="chip role staff"><span class="material-icons">assignment_ind</span>{% trans "干事" %}</span>
                             {% elif user.profile.role == 'admin' %}
-                                <span class="chip role admin"><span class="material-icons">security</span>管理员</span>
+                                <span class="chip role admin"><span class="material-icons">security</span>{% trans "管理员" %}</span>
                             {% else %}
-                                <span class="chip role unknown"><span class="material-icons">help</span>未设定</span>
+                                <span class="chip role unknown"><span class="material-icons">help</span>{% trans "未设定" %}</span>
                             {% endif %}
                         </td>
-                        <td data-label="状态">
+                        <td data-label="{% trans "状态" %}">
                             {% if user.profile.role == 'staff' %}
                                 {% if user.profile.status == 'pending' %}
-                                    <span class="chip status pending"><span class="material-icons">hourglass_bottom</span>待审核</span>
+                                    <span class="chip status pending"><span class="material-icons">hourglass_bottom</span>{% trans "待审核" %}</span>
                                 {% elif user.profile.status == 'approved' %}
-                                    <span class="chip status approved"><span class="material-icons">check_circle</span>已批准</span>
+                                    <span class="chip status approved"><span class="material-icons">check_circle</span>{% trans "已批准" %}</span>
                                 {% elif user.profile.status == 'rejected' %}
-                                    <span class="chip status rejected"><span class="material-icons">cancel</span>已拒绝</span>
+                                    <span class="chip status rejected"><span class="material-icons">cancel</span>{% trans "已拒绝" %}</span>
                                 {% else %}
-                                    <span class="chip status unknown"><span class="material-icons">help</span>未知</span>
+                                    <span class="chip status unknown"><span class="material-icons">help</span>{% trans "未知" %}</span>
                                 {% endif %}
                             {% else %}
-                                <span class="chip status approved"><span class="material-icons">check_circle</span>已激活</span>
+                                <span class="chip status approved"><span class="material-icons">check_circle</span>{% trans "已激活" %}</span>
                             {% endif %}
                         </td>
-                        <td data-label="加入时间">{{ user.date_joined|date:"Y-m-d" }}</td>
+                        <td data-label="{% trans "加入时间" %}">{{ user.date_joined|date:"Y-m-d" }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         <div class="info-banner">
-            <span class="material-icons">info</span>
-            该页面为查看专用，不支持编辑。如需修改用户信息，请联系管理员。
-        </div>
+            <span class="material-icons">info</span>{% trans "该页面为查看专用，不支持编辑。如需修改用户信息，请联系管理员。" %}</div>
     </div>
     {% else %}
     <div class="card md3-card empty-state">
         <span class="material-icons">search_off</span>
-        <p>未找到匹配的用户</p>
+        <p>{% trans "未找到匹配的用户" %}</p>
     </div>
     {% endif %}
 </div>

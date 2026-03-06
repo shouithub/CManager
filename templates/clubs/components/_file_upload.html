@@ -1,3 +1,4 @@
+{% load i18n %}
 {% comment %}
 通用文件上传组件
 使用方式: 
@@ -31,8 +32,8 @@
             <span class="material-icons placeholder-icon">add_circle_outline</span>
             <div class="placeholder-content">
                 <div class="placeholder-text">
-                    <span class="desktop-text">点击或拖拽文件至此</span>
-                    <span class="mobile-text">点击选择文件</span>
+                    <span class="desktop-text">{% trans "点击或拖拽文件至此" %}</span>
+                    <span class="mobile-text">{% trans "点击选择文件" %}</span>
                 </div>
                 <div class="upload-hint">
                     {% if allowed_extensions %}支持格式: {{ allowed_extensions }} {% endif %}
@@ -47,7 +48,7 @@
                 <span class="file-name"></span>
                 <span class="file-size"></span>
             </div>
-            <button type="button" class="remove-btn" title="移除文件">
+            <button type="button" class="remove-btn" title="{% trans "移除文件" %}">
                 <span class="material-icons">close</span>
             </button>
         </div>
@@ -76,7 +77,7 @@
     {% if existing_file %}
     <div class="existing-file-info">
         <span class="material-icons">check_circle</span>
-        <span>当前文件: </span>
+        <span>{% trans "当前文件:" %}</span>
         <a href="{{ existing_file.url }}" target="_blank" class="existing-file-link">
             {{ existing_file.name }}
         </a>

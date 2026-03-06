@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 
 {% block title %}{{ target_user.profile.real_name }} - 用户详情{% endblock %}
@@ -249,7 +250,7 @@
     <!-- 头部信息 -->
     <div class="profile-header-card">
         {% if is_me %}
-        <a href="{% url 'clubs:edit_profile' %}" class="edit-btn" title="编辑资料">
+        <a href="{% url 'clubs:edit_profile' %}" class="edit-btn" title="{% trans "编辑资料" %}">
             <span class="material-icons">edit</span>
         </a>
         {% endif %}
@@ -282,28 +283,26 @@
     {% if is_me or profile.is_info_public or user.is_staff or user.is_superuser %}
     <div class="info-section">
         <h2 class="section-title">
-            <span class="material-icons">contact_phone</span>
-            联系方式
-        </h2>
+            <span class="material-icons">contact_phone</span>{% trans "联系方式" %}</h2>
         <div class="info-list">
             <div class="info-item">
                 <span class="material-icons info-icon">email</span>
                 <div class="info-content">
-                    <div class="info-label">邮箱</div>
+                    <div class="info-label">{% trans "邮箱" %}</div>
                     <div class="info-value">{{ target_user.email|default:"未填写" }}</div>
                 </div>
             </div>
             <div class="info-item">
                 <span class="material-icons info-icon">phone</span>
                 <div class="info-content">
-                    <div class="info-label">手机号码</div>
+                    <div class="info-label">{% trans "手机号码" %}</div>
                     <div class="info-value">{{ profile.phone|default:"未填写" }}</div>
                 </div>
             </div>
             <div class="info-item">
                 <span class="material-icons info-icon">chat</span>
                 <div class="info-content">
-                    <div class="info-label">微信号</div>
+                    <div class="info-label">{% trans "微信号" %}</div>
                     <div class="info-value">{{ profile.wechat|default:"未填写" }}</div>
                 </div>
             </div>
@@ -315,9 +314,7 @@
     {% if profile.role == 'president' and clubs_data %}
     <div class="info-section">
         <h2 class="section-title">
-            <span class="material-icons">groups</span>
-            负责社团
-        </h2>
+            <span class="material-icons">groups</span>{% trans "负责社团" %}</h2>
         <div class="club-list">
             {% for item in clubs_data %}
             <div class="club-card">
@@ -325,7 +322,7 @@
                     <a href="{% url 'clubs:club_detail' item.club.id %}" class="club-name">{{ item.club.name }}</a>
                 </div>
                 <div class="staff-tags">
-                    <span style="font-size: 0.8rem; color: var(--md3-on-surface-variant);">负责干事：</span>
+                    <span style="font-size: 0.8rem; color: var(--md3-on-surface-variant);">{% trans "负责干事：" %}</span>
                     {% for staff in item.staff_list %}
                     <a href="{% url 'clubs:user_detail' staff.user.id %}" class="staff-tag">
                         {% if staff.avatar %}
@@ -336,7 +333,7 @@
                         {{ staff.real_name }}
                     </a>
                     {% empty %}
-                    <span style="font-size: 0.8rem; color: var(--md3-on-surface-variant);">暂无分配</span>
+                    <span style="font-size: 0.8rem; color: var(--md3-on-surface-variant);">{% trans "暂无分配" %}</span>
                     {% endfor %}
                 </div>
             </div>
@@ -349,9 +346,7 @@
     {% if managed_relations %}
     <div class="info-section">
         <h2 class="section-title">
-            <span class="material-icons">admin_panel_settings</span>
-            管理社团
-        </h2>
+            <span class="material-icons">admin_panel_settings</span>{% trans "管理社团" %}</h2>
         <div class="club-list">
             {% for relation in managed_relations %}
             <div class="club-card">

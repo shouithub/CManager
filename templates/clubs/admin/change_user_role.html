@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}修改用户角色 - CManager{% endblock %}
 
@@ -38,13 +39,13 @@
                     {% endif %}
                 </div>
                 <div>
-                    <div class="label">用户名</div>
+                    <div class="label">{% trans "用户名" %}</div>
                     <div style="font-size: 1.3rem; font-weight: bold;">
                         <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit;">
                             {{ user.username }}
                         </a>
                     </div>
-                    <div class="label" style="margin-top: 0.5rem;">邮箱</div>
+                    <div class="label" style="margin-top: 0.5rem;">{% trans "邮箱" %}</div>
                     <div style="color: #666;">{{ user.email }}</div>
                 </div>
             </div>
@@ -55,81 +56,75 @@
             {% csrf_token %}
             
             <div class="form-group">
-                <label>当前角色</label>
+                <label>{% trans "当前角色" %}</label>
                 <div style="padding: 0.75rem; background: #f5f5f5; border-radius: 0.25rem; margin-bottom: 1rem;">
                     {% if profile %}
                         {% if profile.role == 'president' %}
-                            <span class="role-badge president">社长 (President)</span>
+                            <span class="role-badge president">{% trans "社长 (President)" %}</span>
                         {% elif profile.role == 'staff' %}
-                            <span class="role-badge staff">干事 (Staff)</span>
+                            <span class="role-badge staff">{% trans "干事 (Staff)" %}</span>
                         {% elif profile.role == 'admin' %}
-                            <span class="role-badge admin">管理员 (Admin)</span>
+                            <span class="role-badge admin">{% trans "管理员 (Admin)" %}</span>
                         {% else %}
-                            <span class="role-badge unknown">未设定</span>
+                            <span class="role-badge unknown">{% trans "未设定" %}</span>
                         {% endif %}
                     {% else %}
-                        <span class="role-badge unknown">未设定</span>
+                        <span class="role-badge unknown">{% trans "未设定" %}</span>
                     {% endif %}
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="role">修改为新角色 <span class="required">*</span></label>
+                <label for="role">{% trans "修改为新角色" %}<span class="required">*</span></label>
                 <select id="role" name="new_role" required>
                     <option value="">-- 请选择 --</option>
-                    <option value="president">
-                        社长 (President) - 可以创建社团、提交材料
-                    </option>
-                    <option value="staff">
-                        干事 (Staff) - 可以审核材料、上传模板
-                    </option>
-                    <option value="admin">
-                        管理员 (Admin) - 拥有全部权限
-                    </option>
+                    <option value="president">{% trans "社长 (President) - 可以创建社团、提交材料" %}</option>
+                    <option value="staff">{% trans "干事 (Staff) - 可以审核材料、上传模板" %}</option>
+                    <option value="admin">{% trans "管理员 (Admin) - 拥有全部权限" %}</option>
                 </select>
             </div>
             
             <div class="form-group">
-                <label for="reason">修改原因（可选）</label>
+                <label for="reason">{% trans "修改原因（可选）" %}</label>
                 <textarea 
                     id="reason" 
                     name="reason" 
                     rows="3"
-                    placeholder="输入修改此用户角色的原因（用于记录）"
+                    placeholder="{% trans "输入修改此用户角色的原因（用于记录）" %}"
                 ></textarea>
             </div>
             
             <!-- 角色说明 -->
             <div class="role-info">
-                <h4>角色权限说明</h4>
+                <h4>{% trans "角色权限说明" %}</h4>
                 <div class="role-description">
                     <div class="role-item">
                         <h5>👑 社长 (President)</h5>
                         <ul>
-                            <li>创建并管理社团</li>
-                            <li>提交年审材料</li>
-                            <li>提交报销申请</li>
-                            <li>申请社长变更</li>
-                            <li>查看申请状态和拒绝原因</li>
+                            <li>{% trans "创建并管理社团" %}</li>
+                            <li>{% trans "提交年审材料" %}</li>
+                            <li>{% trans "提交报销申请" %}</li>
+                            <li>{% trans "申请社长变更" %}</li>
+                            <li>{% trans "查看申请状态和拒绝原因" %}</li>
                         </ul>
                     </div>
                     <div class="role-item">
                         <h5>🔨 干事 (Staff)</h5>
                         <ul>
-                            <li>审核社团注册申请</li>
-                            <li>审核年审材料</li>
-                            <li>审核报销申请</li>
-                            <li>审核社长变更申请</li>
-                            <li>上传材料模板</li>
+                            <li>{% trans "审核社团注册申请" %}</li>
+                            <li>{% trans "审核年审材料" %}</li>
+                            <li>{% trans "审核报销申请" %}</li>
+                            <li>{% trans "审核社长变更申请" %}</li>
+                            <li>{% trans "上传材料模板" %}</li>
                         </ul>
                     </div>
                     <div class="role-item">
                         <h5>🛡️ 管理员 (Admin)</h5>
                         <ul>
-                            <li>拥有干事的所有权限</li>
-                            <li>管理用户和修改用户角色</li>
-                            <li>发布系统公告</li>
-                            <li>查看系统统计数据</li>
+                            <li>{% trans "拥有干事的所有权限" %}</li>
+                            <li>{% trans "管理用户和修改用户角色" %}</li>
+                            <li>{% trans "发布系统公告" %}</li>
+                            <li>{% trans "查看系统统计数据" %}</li>
                         </ul>
                     </div>
                 </div>
@@ -139,9 +134,7 @@
                 <button type="submit" class="btn btn-warning">
                     ⚠️ 确认修改角色
                 </button>
-                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
-                    取消
-                </a>
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">{% trans "取消" %}</a>
             </div>
         </form>
     </div>

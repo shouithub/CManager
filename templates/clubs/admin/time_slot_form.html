@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}{% if slot %}编辑时间段{% else %}添加时间段{% endif %}{% endblock %}
 
@@ -146,32 +147,30 @@
         {% csrf_token %}
         
         <div class="form-group">
-            <label for="label" class="form-label">显示名称</label>
-            <input type="text" id="label" name="label" class="form-control" value="{{ slot.label|default:'' }}" required placeholder="例如：第1-2节">
+            <label for="label" class="form-label">{% trans "显示名称" %}</label>
+            <input type="text" id="label" name="label" class="form-control" value="{{ slot.label|default:'' }}" required placeholder="{% trans "例如：第1-2节" %}">
         </div>
 
         <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
-                <label for="start_time" class="form-label">开始时间</label>
+                <label for="start_time" class="form-label">{% trans "开始时间" %}</label>
                 <input type="time" id="start_time" name="start_time" class="form-control" value="{{ slot.start_time|time:'H:i' }}" required>
             </div>
             <div>
-                <label for="end_time" class="form-label">结束时间</label>
+                <label for="end_time" class="form-label">{% trans "结束时间" %}</label>
                 <input type="time" id="end_time" name="end_time" class="form-control" value="{{ slot.end_time|time:'H:i' }}" required>
             </div>
         </div>
 
         <div class="form-check">
             <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {% if not slot or slot.is_active %}checked{% endif %}>
-            <label for="is_active" class="form-label" style="margin: 0;">启用此时间段</label>
+            <label for="is_active" class="form-label" style="margin: 0;">{% trans "启用此时间段" %}</label>
         </div>
 
         <div class="form-actions">
-            <a href="{% url 'clubs:admin_time_slots' %}" class="btn btn-secondary">取消</a>
+            <a href="{% url 'clubs:admin_time_slots' %}" class="btn btn-secondary">{% trans "取消" %}</a>
             <button type="submit" class="btn btn-primary">
-                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">save</span>
-                保存
-            </button>
+                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">save</span>{% trans "保存" %}</button>
         </div>
     </form>
 </div>

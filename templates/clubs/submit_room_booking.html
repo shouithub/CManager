@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}预约房间{% endblock %}
@@ -234,12 +235,12 @@
     <div class="page-header">
         <span class="material-icons">event_available</span>
         <div class="page-header-content">
-            <h1>预约房间</h1>
-            <div class="subtitle">填写以下表单申请使用活动室，请提前规划时间</div>
+            <h1>{% trans "预约房间" %}</h1>
+            <div class="subtitle">{% trans "填写以下表单申请使用活动室，请提前规划时间" %}</div>
         </div>
         <div class="header-actions">
             <a href="{% url 'clubs:room_calendar' %}" class="btn btn-primary">
-                <span>返回日历</span>
+                <span>{% trans "返回日历" %}</span>
             </a>
         </div>
     </div>
@@ -248,8 +249,8 @@
     <div class="info-box">
         <span class="material-icons">info</span>
         <div class="info-box-content">
-            <h3>使用须知</h3>
-            <p>无需审核，提交即预约成功。请确保预约时间不冲突，并在使用完毕后清理现场。</p>
+            <h3>{% trans "使用须知" %}</h3>
+            <p>{% trans "无需审核，提交即预约成功。请确保预约时间不冲突，并在使用完毕后清理现场。" %}</p>
         </div>
     </div>
     
@@ -258,16 +259,15 @@
         <form method="post" class="booking-form">
             {% csrf_token %}
             
-            <div class="form-section-title">基本信息</div>
+            <div class="form-section-title">{% trans "基本信息" %}</div>
             
             <div class="form-row">
                 <div class="form-field">
                     <label for="room_id">
-                        <span class="material-icons">meeting_room</span>
-                        选择房间 <span class="required">*</span>
+                        <span class="material-icons">meeting_room</span>{% trans "选择房间" %}<span class="required">*</span>
                     </label>
                     <select name="room_id" id="room_id" required>
-                        <option value="">请选择房间...</option>
+                        <option value="">{% trans "请选择房间..." %}</option>
                         {% for room in rooms %}
                         <option value="{{ room.id }}" {% if selected_room_id == room.id %}selected{% endif %}>{{ room.name }} (容量: {{ room.capacity }})</option>
                         {% endfor %}
@@ -291,20 +291,18 @@
             <div class="form-row">
                 <div class="form-field">
                     <label for="participant_count">
-                        <span class="material-icons">group</span>
-                        参与人数 <span class="required">*</span>
+                        <span class="material-icons">group</span>{% trans "参与人数" %}<span class="required">*</span>
                     </label>
-                    <input type="number" name="participant_count" id="participant_count" min="1" max="50" placeholder="例如：20" required>
+                    <input type="number" name="participant_count" id="participant_count" min="1" max="50" placeholder="{% trans "例如：20" %}" required>
                 </div>
             </div>
             
-            <div class="form-section-title">时间安排</div>
+            <div class="form-section-title">{% trans "时间安排" %}</div>
             
             <div class="form-row">
                 <div class="form-field full-width">
                     <label for="booking_date">
-                        <span class="material-icons">event</span>
-                        使用日期 <span class="required">*</span>
+                        <span class="material-icons">event</span>{% trans "使用日期" %}<span class="required">*</span>
                     </label>
                     <input type="date" name="booking_date" id="booking_date" value="{{ selected_date|default:today }}" min="{{ today }}" required>
                 </div>
@@ -313,16 +311,14 @@
             <div class="form-row">
                 <div class="form-field">
                     <label for="start_time">
-                        <span class="material-icons">schedule</span>
-                        开始时间 <span class="required">*</span>
+                        <span class="material-icons">schedule</span>{% trans "开始时间" %}<span class="required">*</span>
                     </label>
                     <input type="time" name="start_time" id="start_time" value="{{ selected_start_time }}" readonly style="background-color: var(--md3-surface-container-high); cursor: not-allowed;">
                 </div>
                 
                 <div class="form-field">
                     <label for="end_time">
-                        <span class="material-icons">schedule</span>
-                        结束时间 <span class="required">*</span>
+                        <span class="material-icons">schedule</span>{% trans "结束时间" %}<span class="required">*</span>
                     </label>
                     <input type="time" name="end_time" id="end_time" value="{{ selected_end_time }}" readonly style="background-color: var(--md3-surface-container-high); cursor: not-allowed;">
                 </div>
@@ -330,44 +326,36 @@
 
             <!-- 时间段占用提示 -->
             <div id="time-conflict-warning" class="field-hint" style="color: var(--md3-error); display: none;">
-                <span class="material-icons" style="font-size: 14px; vertical-align: middle;">warning</span>
-                该时间段已被占用
-            </div>
+                <span class="material-icons" style="font-size: 14px; vertical-align: middle;">warning</span>{% trans "该时间段已被占用" %}</div>
             
-            <div class="form-section-title">活动详情</div>
+            <div class="form-section-title">{% trans "活动详情" %}</div>
             
             <div class="form-field full-width">
                 <label for="purpose">
-                    <span class="material-icons">description</span>
-                    活动主题/用途 <span class="required">*</span>
+                    <span class="material-icons">description</span>{% trans "活动主题/用途" %}<span class="required">*</span>
                 </label>
-                <input type="text" name="purpose" id="purpose" placeholder="简要描述活动内容" required>
+                <input type="text" name="purpose" id="purpose" placeholder="{% trans "简要描述活动内容" %}" required>
             </div>
             
             <div class="form-row">
                 <div class="form-field">
                     <label for="contact_phone">
-                        <span class="material-icons">phone</span>
-                        联系电话 <span class="required">*</span>
+                        <span class="material-icons">phone</span>{% trans "联系电话" %}<span class="required">*</span>
                     </label>
-                    <input type="tel" name="contact_phone" id="contact_phone" value="{{ user.profile.phone_number }}" pattern="^1[3-9]\d{9}$" title="请输入11位有效的手机号码" required>
+                    <input type="tel" name="contact_phone" id="contact_phone" value="{{ user.profile.phone_number }}" pattern="^1[3-9]\d{9}$" title="{% trans "请输入11位有效的手机号码" %}" required>
                 </div>
                 
                 <div class="form-field">
                     <label for="special_requirements">
-                        <span class="material-icons">stars</span>
-                        特殊需求
-                    </label>
-                    <input type="text" name="special_requirements" id="special_requirements" placeholder="如：需使用投影仪、白板等">
+                        <span class="material-icons">stars</span>{% trans "特殊需求" %}</label>
+                    <input type="text" name="special_requirements" id="special_requirements" placeholder="{% trans "如：需使用投影仪、白板等" %}">
                 </div>
             </div>
             
             <div class="form-actions">
-                <a href="{% url 'clubs:room_calendar' %}" class="btn btn-secondary">取消</a>
+                <a href="{% url 'clubs:room_calendar' %}" class="btn btn-secondary">{% trans "取消" %}</a>
                 <button type="submit" class="btn btn-primary">
-                    <span class="material-icons">check</span>
-                    提交预约
-                </button>
+                    <span class="material-icons">check</span>{% trans "提交预约" %}</button>
             </div>
         </form>
     </div>

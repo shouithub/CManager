@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib import messages
+from django.utils.translation import gettext as _
 from .models import UserProfile, Club, ReviewSubmission, Reimbursement, ClubRegistrationRequest, RegistrationPeriod, ClubRegistration, StaffClubRelation, Officer
 from datetime import datetime
 from django.utils import timezone
@@ -42,41 +43,41 @@ def register(request):
         
         # 基础验证
         if not username:
-            errors.append('用户名不能为空')
+            errors.append(_('用户名不能为空'))
         elif len(username) < 3 or len(username) > 30:
-            errors.append('用户名长度应在3-30个字符之间')
+            errors.append(_('用户名长度应在3-30个字符之间'))
         elif User.objects.filter(username=username).exists():
-            errors.append('用户名已存在')
+            errors.append(_('用户名已存在'))
         
         if not real_name:
-            errors.append('真实姓名不能为空')
+            errors.append(_('真实姓名不能为空'))
 
         if not email:
-            errors.append('邮箱不能为空')
+            errors.append(_('邮箱不能为空'))
         
         if not password:
-            errors.append('密码不能为空')
+            errors.append(_('密码不能为空'))
         elif len(password) < 6:
-            errors.append('密码至少6个字符')
+            errors.append(_('密码至少6个字符'))
         
         if password != password_confirm:
-            errors.append('两次密码不一致')
+            errors.append(_('两次密码不一致'))
         
         # 必填项验证
         if not student_id:
-            errors.append('学号不能为空')
+            errors.append(_('学号不能为空'))
         elif UserProfile.objects.filter(student_id=student_id).exists():
-            errors.append('学号已被使用')
+            errors.append(_('学号已被使用'))
         
         if not phone:
-            errors.append('电话不能为空')
+            errors.append(_('电话不能为空'))
         if not wechat:
-            errors.append('微信不能为空')
+            errors.append(_('微信不能为空'))
         
         # 角色验证
         valid_roles = ['president', 'staff']
         if role not in valid_roles:
-            errors.append('无效的角色选择')
+            errors.append(_('无效的角色选择'))
         
         # 部门验证（仅干事）
         department = None
@@ -84,19 +85,19 @@ def register(request):
         if role == 'staff':
             department_id = request.POST.get('department', '').strip()
             if not department_id:
-                errors.append('干事必须选择部门')
+                errors.append(_('干事必须选择部门'))
             else:
                 from .models import Department
                 try:
                     department_obj = Department.objects.get(id=department_id)
                     department = department_obj.name
                 except (Department.DoesNotExist, ValueError):
-                    errors.append('无效的部门选择')
+                    errors.append(_('无效的部门选择'))
 
         # 社长必须选择政治面貌
         if role == 'president':
             if not political_status or political_status == '':
-                errors.append('社长必须选择政治面貌')
+                errors.append(_('社长必须选择政治面貌'))
         
         if errors:
             from .models import Department
@@ -155,14 +156,14 @@ def user_login(request):
         client_ip = request.META.get('REMOTE_ADDR', '')
 
         if not username or not password:
-            messages.error(request, '用户名和密码不能为空')
+            messages.error(request, _('用户名和密码不能为空'))
             return render(request, 'clubs/auth/login.html')
 
         # 检查是否被锁定（按用户名或 IP）
         lock_key_user = f'login_lock:user:{username}'
         lock_key_ip = f'login_lock:ip:{client_ip}'
         if cache.get(lock_key_user) or cache.get(lock_key_ip):
-            messages.error(request, '登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！')
+            messages.error(request, _('登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！'))
             return render(request, 'clubs/auth/login.html', {
                 'username': username,
                 'show_admin_reset_prompt': True,
@@ -181,17 +182,17 @@ def user_login(request):
                 # 检查用户状态 - 干事需要审核通过才能登录
                 profile = user.profile
                 if profile.role == 'staff' and profile.status != 'approved':
-                    messages.error(request, '您的账号正在审核中，请等待管理员批准！')
+                    messages.error(request, _('您的账号正在审核中，请等待管理员批准！'))
                     return render(request, 'clubs/auth/login.html', {
                         'username': username,
                     })
 
                 login(request, user)
-                messages.success(request, f'欢迎回来，{username}！')
+                messages.success(request, _('欢迎回来，%(username)s！') % {'username': username})
 
                 # 首次登录/重置后强制改密
                 if getattr(user.profile, 'must_change_password', False):
-                    messages.warning(request, '为了账户安全，请先修改密码后再继续使用系统。')
+                    messages.warning(request, _('为了账户安全，请先修改密码后再继续使用系统。'))
                     return redirect('clubs:edit_profile')
 
                 # 根据角色跳转
@@ -230,7 +231,7 @@ def user_login(request):
 
             # 如果已经被锁定，提示联系管理员重置密码
             if cache.get(lock_key_user) or cache.get(lock_key_ip):
-                messages.error(request, '登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！')
+                messages.error(request, _('登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！'))
                 from django.conf import settings
                 return render(request, 'clubs/auth/login.html', {
                     'username': username,
@@ -238,7 +239,7 @@ def user_login(request):
                     'admin_contact_email': getattr(settings, 'ADMIN_CONTACT_EMAIL', ''),
                 })
 
-            messages.error(request, '用户名或密码错误')
+            messages.error(request, _('用户名或密码错误'))
             return render(request, 'clubs/auth/login.html', {
                 'username': username,
             })
@@ -249,7 +250,7 @@ def user_login(request):
 def user_logout(request):
     """用户登出"""
     logout(request)
-    messages.success(request, '已登出')
+    messages.success(request, _('已登出'))
     return redirect('clubs:index')
 
 
@@ -273,7 +274,7 @@ def delete_account(request):
                 # 管理员账户删除逻辑
                 # 直接删除用户，Django会级联删除相关数据
                 user.delete()
-                messages.success(request, f'管理员账户 {username} 已成功删除！')
+                messages.success(request, _('管理员账户 %(username)s 已成功删除！') % {'username': username})
             
             elif user.profile.role == 'president':
                 # 社长账户删除逻辑
@@ -285,12 +286,12 @@ def delete_account(request):
                 ).update(is_current=False, end_date=timezone.now().date())
                 # 2. 删除用户账户
                 user.delete()
-                messages.success(request, f'社长账户 {username} 已成功删除！您的年审记录已被保留。')
+                messages.success(request, _('社长账户 %(username)s 已成功删除！您的年审记录已被保留。') % {'username': username})
             
             elif user.profile.role == 'staff':
                 # 干事账户删除逻辑 - 完整清除所有数据
                 # 1. 先删除干事在所有社团中的角色关系
-                from .models import Officer, SubmissionReview
+                from .models import SubmissionReview
                 
                 # 删除干事在社团中的干部记录
                 Officer.objects.filter(user_profile=user.profile).delete()
@@ -300,18 +301,18 @@ def delete_account(request):
                 
                 # 2. 删除用户账户（级联删除profile等相关数据）
                 user.delete()
-                messages.success(request, f'干事账户 {username} 已成功删除！所有相关数据已被完整清除。')
+                messages.success(request, _('干事账户 %(username)s 已成功删除！所有相关数据已被完整清除。') % {'username': username})
             
             else:
                 # 其他角色直接删除
                 user.delete()
-                messages.success(request, f'账户 {username} 已成功删除！')
+                messages.success(request, _('账户 %(username)s 已成功删除！') % {'username': username})
             
             # 重定向到首页
             return redirect('clubs:index')
         else:
             # 显示错误消息
-            messages.error(request, '用户名输入错误，账户删除失败。')
+            messages.error(request, _('用户名输入错误，账户删除失败。'))
             
             # 重定向回修改账户设置页面
             return redirect('clubs:change_account_settings')

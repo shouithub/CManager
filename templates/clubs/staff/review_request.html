@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 
 {% block title %}{{ title }}{% endblock %}
@@ -597,15 +598,15 @@
         <div class="info-grid">
             {% if submission %}
                 <div class="info-item">
-                    <span class="info-label">社团名称</span>
+                    <span class="info-label">{% trans "社团名称" %}</span>
                     <span class="info-value">{{ submission.club.name }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">提交时间</span>
+                    <span class="info-label">{% trans "提交时间" %}</span>
                     <span class="info-value">{{ submission.submitted_at|date:"Y-m-d H:i" }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">提交次数</span>
+                    <span class="info-label">{% trans "提交次数" %}</span>
                     <span class="info-value">
                         第{{ submission.resubmission_attempt }} 次提交
                         {% if submission.resubmission_attempt > 1 %}
@@ -614,7 +615,7 @@
                     </span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">当前状态</span>
+                    <span class="info-label">{% trans "当前状态" %}</span>
                     <span class="info-value">
                         <span class="review-badge {{ submission.status }}">{{ submission.get_status_display }}</span>
                     </span>
@@ -639,11 +640,11 @@
                     <span class="info-value">{% if registration.club %}{{ registration.club.name }}{% else %}{{ registration.club_name }}{% endif %}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">提交时间</span>
+                    <span class="info-label">{% trans "提交时间" %}</span>
                     <span class="info-value">{{ registration.submitted_at|date:"Y-m-d H:i" }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">提交次数</span>
+                    <span class="info-label">{% trans "提交次数" %}</span>
                     <span class="info-value">
                         第{{ registration.resubmission_attempt }} 次提交
                         {% if registration.resubmission_attempt > 1 %}
@@ -652,7 +653,7 @@
                     </span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">当前状态</span>
+                    <span class="info-label">{% trans "当前状态" %}</span>
                     <span class="info-value">
                         <span class="review-badge {{ registration.status }}">{{ registration.get_status_display }}</span>
                     </span>
@@ -673,19 +674,19 @@
                 {% endif %}
             {% elif reimbursement %}
                 <div class="info-item">
-                    <span class="info-label">社团名称</span>
+                    <span class="info-label">{% trans "社团名称" %}</span>
                     <span class="info-value">{{ reimbursement.club.name }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">申请人</span>
+                    <span class="info-label">{% trans "申请人" %}</span>
                     <span class="info-value">{% if reimbursement.club.president %}{{ reimbursement.club.president.username }}{% else %}未设置{% endif %}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">报销金额</span>
+                    <span class="info-label">{% trans "报销金额" %}</span>
                     <span class="info-value">¥{{ reimbursement.reimbursement_amount }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">当前状态</span>
+                    <span class="info-label">{% trans "当前状态" %}</span>
                     <span class="info-value">
                         <span class="review-badge {{ reimbursement.status }}">{{ reimbursement.get_status_display }}</span>
                     </span>
@@ -698,9 +699,7 @@
     {% if submission_files %}
     <div class="materials-section">
         <h2 class="section-title">
-            <span class="material-icons">folder_open</span>
-            提交的材料
-        </h2>
+            <span class="material-icons">folder_open</span>{% trans "提交的材料" %}</h2>
         <div class="materials-grid">
             {% for file in submission_files %}
             <div class="material-card">
@@ -709,12 +708,8 @@
                     {{ file.name }}
                 </p>
                 <div class="file-actions">
-                    <a href="{{ file.url }}" class="download-btn" download title="下载文件">
-                        下载
-                    </a>
-                    <button onclick="previewFile('{{ file.url }}', '{{ file.name }}')" class="preview-btn" title="在线预览">
-                        预览
-                    </button>
+                    <a href="{{ file.url }}" class="download-btn" download title="{% trans "下载文件" %}">{% trans "下载" %}</a>
+                    <button onclick="previewFile('{{ file.url }}', '{{ file.name }}')" class="preview-btn" title="{% trans "在线预览" %}">{% trans "预览" %}</button>
                 </div>
             </div>
             {% endfor %}
@@ -723,38 +718,30 @@
         <!-- 合并下载按钮 -->
         {% if request_type == 'submission' and submission %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
-            <a href="{% url 'clubs:zip_download' %}?type=review&id={{ submission.id }}" class="download-btn" style="width: 100%;">
-                打包所有材料为ZIP文件
-            </a>
+            <a href="{% url 'clubs:zip_download' %}?type=review&id={{ submission.id }}" class="download-btn" style="width: 100%;">{% trans "打包所有材料为ZIP文件" %}</a>
         </div>
         {% elif request_type == 'registration' and registration %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
-            <a href="{% url 'clubs:zip_download' %}?type=registration_request&id={{ registration.id }}" class="download-btn" style="width: 100%;">
-                打包所有材料为ZIP文件
-            </a>
+            <a href="{% url 'clubs:zip_download' %}?type=registration_request&id={{ registration.id }}" class="download-btn" style="width: 100%;">{% trans "打包所有材料为ZIP文件" %}</a>
         </div>
         {% elif request_type == 'reimbursement' and reimbursement %}
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
-            <a href="{% url 'clubs:zip_download' %}?type=reimbursement&id={{ reimbursement.id }}" class="download-btn" style="width: 100%;">
-                打包所有材料为ZIP文件
-            </a>
+            <a href="{% url 'clubs:zip_download' %}?type=reimbursement&id={{ reimbursement.id }}" class="download-btn" style="width: 100%;">{% trans "打包所有材料为ZIP文件" %}</a>
         </div>
         {% endif %}
     </div>
     {% endif %}
 
-    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews approved_count=approved_count rejected_count=rejected_count title="审核记录" %}
+    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews approved_count=approved_count rejected_count=rejected_count title="{% trans "审核记录" %}" %}
 
     <!-- 如果用户还没审核过，显示审核表单 -->
     {% if not user_has_reviewed %}
-    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=True materials_list=materials_list cancel_url='clubs:staff_dashboard' title="审核意见" %}
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=True materials_list=materials_list cancel_url='clubs:staff_dashboard' title="{% trans "审核意见" %}" %}
     {% else %}
     <!-- 已审核：显示返回按钮 -->
     <div class="action-buttons">
         <a href="{% url 'clubs:index' %}" class="btn-secondary">
-            <span class="material-icons" style="font-size: 18px;">arrow_back</span>
-            返回列表
-        </a>
+            <span class="material-icons" style="font-size: 18px;">arrow_back</span>{% trans "返回列表" %}</a>
     </div>
     {% endif %}
 </div>

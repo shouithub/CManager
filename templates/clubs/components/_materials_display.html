@@ -1,6 +1,7 @@
+{% load i18n %}
 {% comment %}
 附件材料展示组件
-使用方式: {% include 'clubs/components/_materials_display.html' with materials=materials_list title="附件材料" show_zip=True zip_url=zip_download_url %}
+使用方式: {% include 'clubs/components/_materials_display.html' with materials=materials_list title="{% trans "附件材料" %}" show_zip=True zip_url=zip_download_url %}
 
 参数:
 - materials: 材料列表,格式[{'name': '显示名称', 'file': file_field对象, 'icon': 'material-icon名称'}, ...]
@@ -247,16 +248,14 @@
     {% if show_zip and zip_url %}
     <div style="margin-top: var(--md3-spacing-lg); padding-top: var(--md3-spacing-lg); border-top: 1px solid var(--md3-outline-variant);">
         <a href="{{ zip_url }}" class="btn btn-primary" style="width: 100%; justify-content: center;">
-            <span class="material-icons">folder_zip</span>
-            打包所有材料为ZIP文件
-        </a>
+            <span class="material-icons">folder_zip</span>{% trans "打包所有材料为ZIP文件" %}</a>
     </div>
     {% endif %}
     
     {% else %}
     <div style="text-align: center; padding: var(--md3-spacing-2xl); color: var(--md3-on-surface-variant);">
         <span class="material-icons" style="font-size: 3rem; opacity: 0.3;">folder_open</span>
-        <p style="margin: var(--md3-spacing-md) 0 0 0;">暂无上传的材料</p>
+        <p style="margin: var(--md3-spacing-md) 0 0 0;">{% trans "暂无上传的材料" %}</p>
     </div>
     {% endif %}
 

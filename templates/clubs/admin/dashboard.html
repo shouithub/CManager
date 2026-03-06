@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}管理员仪表板{% endblock %}
 
@@ -551,8 +552,8 @@
     <div class="page-header">
         <span class="material-icons">dashboard</span>
         <div class="page-header-content">
-            <h1>管理员仪表板</h1>
-            <p class="subtitle">系统概览与管理中心</p>
+            <h1>{% trans "管理员仪表板" %}</h1>
+            <p class="subtitle">{% trans "系统概览与管理中心" %}</p>
         </div>
     </div>
     
@@ -562,19 +563,19 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value">{{ total_users }}</div>
-                    <div class="stat-label">系统用户总数</div>
+                    <div class="stat-label">{% trans "系统用户总数" %}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">{{ total_clubs }}</div>
-                    <div class="stat-label">已注册社团数</div>
+                    <div class="stat-label">{% trans "已注册社团数" %}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">{{ pending_all }}</div>
-                    <div class="stat-label">待处理申请</div>
+                    <div class="stat-label">{% trans "待处理申请" %}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">{{ total_visits_14d }}</div>
-                    <div class="stat-label">近14天访问量</div>
+                    <div class="stat-label">{% trans "近14天访问量" %}</div>
                 </div>
             </div>
 
@@ -582,20 +583,18 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--md3-spacing-md);">
                 <div class="stat-card" style="border-left:4px solid var(--md3-tertiary);">
                     <div class="stat-value" style="color:var(--md3-tertiary);">{{ overall_approval_rate }}%</div>
-                    <div class="stat-label">历史总体通过率</div>
+                    <div class="stat-label">{% trans "历史总体通过率" %}</div>
                 </div>
                 <div class="stat-card" style="border-left:4px solid var(--md3-error);">
                     <div class="stat-value" style="color:var(--md3-error);">{{ overall_rejection_rate }}%</div>
-                    <div class="stat-label">历史总体拒绝率</div>
+                    <div class="stat-label">{% trans "历史总体拒绝率" %}</div>
                 </div>
             </div>
 
             <!-- 各类申请分布图 -->
             <div class="card">
                 <h3>
-                    <span class="material-icons">bar_chart</span>
-                    各类申请数量分布
-                </h3>
+                    <span class="material-icons">bar_chart</span>{% trans "各类申请数量分布" %}</h3>
                 <div class="chart-container" style="height:260px;">
                     <canvas id="typeChart"></canvas>
                 </div>
@@ -604,9 +603,7 @@
             <!-- 访问量折线图 -->
             <div class="card">
                 <h3>
-                    <span class="material-icons">show_chart</span>
-                    近14天访问量
-                </h3>
+                    <span class="material-icons">show_chart</span>{% trans "近14天访问量" %}</h3>
                 <div class="chart-container">
                     <canvas id="visitChart"></canvas>
                 </div>
@@ -622,16 +619,16 @@
                 </h3>
                 <div class="redis-grid">
                     <div class="redis-item">
-                        <span class="redis-item-label">已用内存</span>
+                        <span class="redis-item-label">{% trans "已用内存" %}</span>
                         <span class="redis-item-value">{{ redis_info.used_mb }} MB</span>
                     </div>
                     {% if redis_info.max_mb %}
                     <div class="redis-item">
-                        <span class="redis-item-label">最大内存</span>
+                        <span class="redis-item-label">{% trans "最大内存" %}</span>
                         <span class="redis-item-value">{{ redis_info.max_mb }} MB</span>
                     </div>
                     <div class="redis-item">
-                        <span class="redis-item-label">内存使用率</span>
+                        <span class="redis-item-label">{% trans "内存使用率" %}</span>
                         <span class="redis-item-value">{{ redis_info.usage_pct }}%</span>
                         <div class="redis-bar-wrap">
                             <div class="redis-bar-fill {% if redis_info.usage_pct > 85 %}danger{% elif redis_info.usage_pct > 65 %}warn{% endif %}"
@@ -640,11 +637,11 @@
                     </div>
                     {% endif %}
                     <div class="redis-item">
-                        <span class="redis-item-label">缓存键数</span>
+                        <span class="redis-item-label">{% trans "缓存键数" %}</span>
                         <span class="redis-item-value">{{ redis_info.keys }}</span>
                     </div>
                     <div class="redis-item">
-                        <span class="redis-item-label">连接数</span>
+                        <span class="redis-item-label">{% trans "连接数" %}</span>
                         <span class="redis-item-value">{{ redis_info.connected_clients }}</span>
                     </div>
                 </div>
@@ -654,9 +651,7 @@
             {% if announcements %}
             <div class="card">
                 <h3>
-                    <span class="material-icons">notifications</span>
-                    最近发布的公告
-                </h3>
+                    <span class="material-icons">notifications</span>{% trans "最近发布的公告" %}</h3>
                 <div class="announcement-list">
                     {% for announcement in announcements %}
                     <div class="announcement-item">
@@ -679,15 +674,11 @@
                             </div>
                             <div class="announcement-actions">
                                 <a href="{% url 'clubs:edit_announcement' announcement.id %}" class="btn-action btn-edit">
-                                    <span class="material-icons">edit</span>
-                                    编辑
-                                </a>
+                                    <span class="material-icons">edit</span>{% trans "编辑" %}</a>
                                 <form method="post" action="{% url 'clubs:delete_announcement' announcement.id %}" style="display: inline;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn-action btn-delete" onclick="return confirm('确定要删除此公告吗？');">
-                                        <span class="material-icons">delete</span>
-                                        删除
-                                    </button>
+                                        <span class="material-icons">delete</span>{% trans "删除" %}</button>
                                 </form>
                             </div>
                         </div>
@@ -711,61 +702,57 @@
         <div class="dashboard-side">
             <div class="card">
                 <h3>
-                    <span class="material-icons">bolt</span>
-                    快速操作
-                </h3>
+                    <span class="material-icons">bolt</span>{% trans "快速操作" %}</h3>
                 <div class="actions-grid compact">
                     <a href="{% url 'clubs:manage_departments' %}" class="action-btn">
                         <span class="material-icons">category</span>
-                        <span>管理部门介绍</span>
+                        <span>{% trans "管理部门介绍" %}</span>
                     </a>
                     <a href="{% url 'clubs:manage_carousel' %}" class="action-btn">
                         <span class="material-icons">view_carousel</span>
-                        <span>管理轮播图</span>
+                        <span>{% trans "管理轮播图" %}</span>
                     </a>
                     <a href="{% url 'clubs:manage_material_requirements' %}" class="action-btn">
                         <span class="material-icons">description</span>
-                        <span>修改材料</span>
+                        <span>{% trans "修改材料" %}</span>
                     </a>
                     <a href="{% url 'clubs:admin_room_list' %}" class="action-btn">
                         <span class="material-icons">meeting_room</span>
-                        <span>房间管理</span>
+                        <span>{% trans "房间管理" %}</span>
                     </a>
                     <a href="{% url 'clubs:manage_smtp_config' %}" class="action-btn">
                         <span class="material-icons">mail</span>
-                        <span>邮箱设置</span>
+                        <span>{% trans "邮箱设置" %}</span>
                     </a>
                     <a href="{% url 'clubs:manage_favicon' %}" class="action-btn">
                         <span class="material-icons">image</span>
-                        <span>图标&amp;字体</span>
+                        <span>{% trans "图标&amp;字体" %}</span>
                     </a>
                     <a href="{% url 'clubs:admin_assign_presidents' %}" class="action-btn">
                         <span class="material-icons">manage_accounts</span>
-                        <span>指定社团社长</span>
+                        <span>{% trans "指定社团社长" %}</span>
                     </a>
                     <a href="{% url 'clubs:index' %}" class="action-btn">
                         <span class="material-icons">home</span>
-                        <span>返回首页</span>
+                        <span>{% trans "返回首页" %}</span>
                     </a>
                 </div>
             </div>
             
             <div class="card">
                 <h3>
-                    <span class="material-icons">pie_chart</span>
-                    用户角色分布
-                </h3>
+                    <span class="material-icons">pie_chart</span>{% trans "用户角色分布" %}</h3>
                 <div class="role-grid">
                     <div class="role-item president">
-                        <span class="role-label">社长</span>
+                        <span class="role-label">{% trans "社长" %}</span>
                         <span class="role-value">{{ presidents_count }}</span>
                     </div>
                     <div class="role-item staff">
-                        <span class="role-label">干事</span>
+                        <span class="role-label">{% trans "干事" %}</span>
                         <span class="role-value">{{ staff_count }}</span>
                     </div>
                     <div class="role-item admin">
-                        <span class="role-label">管理员</span>
+                        <span class="role-label">{% trans "管理员" %}</span>
                         <span class="role-value">{{ admins_count }}</span>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}{% if action == 'edit' %}编辑房间{% else %}添加房间{% endif %}{% endblock %}
 
@@ -48,37 +49,37 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="name" class="form-label">房间名称</label>
+                        <label for="name" class="form-label">{% trans "房间名称" %}</label>
                         <input type="text" class="form-control" id="name" name="name" value="{{ room.name }}" required>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="capacity" class="form-label">容纳人数</label>
+                        <label for="capacity" class="form-label">{% trans "容纳人数" %}</label>
                         <input type="number" class="form-control" id="capacity" name="capacity" value="{{ room.capacity|default:50 }}" required>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="location" class="form-label">位置</label>
+                        <label for="location" class="form-label">{% trans "位置" %}</label>
                         <input type="text" class="form-control" id="location" name="location" value="{{ room.location }}">
                     </div>
                     
                     <div class="mb-3">
-                        <label for="description" class="form-label">描述</label>
+                        <label for="description" class="form-label">{% trans "描述" %}</label>
                         <textarea class="form-control" id="description" name="description" rows="3">{{ room.description }}</textarea>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="status" class="form-label">状态</label>
+                        <label for="status" class="form-label">{% trans "状态" %}</label>
                         <select class="form-select" id="status" name="status">
-                            <option value="available" {% if room.status == 'available' %}selected{% endif %}>可用</option>
-                            <option value="maintenance" {% if room.status == 'maintenance' %}selected{% endif %}>维护中</option>
-                            <option value="closed" {% if room.status == 'closed' %}selected{% endif %}>关闭</option>
+                            <option value="available" {% if room.status == 'available' %}selected{% endif %}>{% trans "可用" %}</option>
+                            <option value="maintenance" {% if room.status == 'maintenance' %}selected{% endif %}>{% trans "维护中" %}</option>
+                            <option value="closed" {% if room.status == 'closed' %}selected{% endif %}>{% trans "关闭" %}</option>
                         </select>
                     </div>
                     
                     <div class="d-flex justify-content-end gap-2 mt-4">
-                        <a href="{% url 'clubs:admin_room_list' %}" class="btn btn-secondary">取消</a>
-                        <button type="submit" class="btn btn-primary">保存</button>
+                        <a href="{% url 'clubs:admin_room_list' %}" class="btn btn-secondary">{% trans "取消" %}</a>
+                        <button type="submit" class="btn btn-primary">{% trans "保存" %}</button>
                     </div>
                 </form>
             </div>

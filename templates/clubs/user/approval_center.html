@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}
@@ -359,38 +360,38 @@ window.addEventListener('resize', checkLayout);
         {% if current_tab == 'annual_review' %}
         <span class="material-icons">assignment</span>
         <div class="page-header-content">
-            <h1>年审记录</h1>
-            <p class="subtitle">查看和管理社团年审提交记录</p>
+            <h1>{% trans "年审记录" %}</h1>
+            <p class="subtitle">{% trans "查看和管理社团年审提交记录" %}</p>
         </div>
         {% elif current_tab == 'registration' %}
         <span class="material-icons">add_circle</span>
         <div class="page-header-content">
-            <h1>社团注册</h1>
-            <p class="subtitle">查看社团注册申请和审核状态</p>
+            <h1>{% trans "社团注册" %}</h1>
+            <p class="subtitle">{% trans "查看社团注册申请和审核状态" %}</p>
         </div>
         {% elif current_tab == 'application' %}
         <span class="material-icons">create</span>
         <div class="page-header-content">
-            <h1>社团申请</h1>
-            <p class="subtitle">查看新社团创建申请记录</p>
+            <h1>{% trans "社团申请" %}</h1>
+            <p class="subtitle">{% trans "查看新社团创建申请记录" %}</p>
         </div>
         {% elif current_tab == 'reimbursement' %}
         <span class="material-icons">receipt</span>
         <div class="page-header-content">
-            <h1>报销记录</h1>
-            <p class="subtitle">查看社团费用报销申请</p>
+            <h1>{% trans "报销记录" %}</h1>
+            <p class="subtitle">{% trans "查看社团费用报销申请" %}</p>
         </div>
         {% elif current_tab == 'activity_application' %}
         <span class="material-icons">event</span>
         <div class="page-header-content">
-            <h1>活动申请</h1>
-            <p class="subtitle">查看社团活动申请和审批</p>
+            <h1>{% trans "活动申请" %}</h1>
+            <p class="subtitle">{% trans "查看社团活动申请和审批" %}</p>
         </div>
         {% elif current_tab == 'president_transition' %}
         <span class="material-icons">swap_horiz</span>
         <div class="page-header-content">
-            <h1>社长换届</h1>
-            <p class="subtitle">查看社长换届申请记录</p>
+            <h1>{% trans "社长换届" %}</h1>
+            <p class="subtitle">{% trans "查看社长换届申请记录" %}</p>
         </div>
         {% endif %}
     </div>
@@ -401,7 +402,7 @@ window.addEventListener('resize', checkLayout);
         <div class="records-section">
             <div class="section-title">
                 <span class="material-icons">notifications_active</span>
-                <h3>当前活跃</h3>
+                <h3>{% trans "当前活跃" %}</h3>
                 <span class="count">{{ active_items|length }} 条记录</span>
             </div>
             
@@ -426,31 +427,28 @@ window.addEventListener('resize', checkLayout);
                         
                         {% if item.status == 'pending' %}
                         <span class="status-badge pending">
-                            <span class="material-icons">schedule</span> 待审核
-                        </span>
+                            <span class="material-icons">schedule</span>{% trans "待审核" %}</span>
                         {% elif item.status == 'rejected' %}
                         <span class="status-badge rejected">
-                            <span class="material-icons">cancel</span> 已拒绝
-                        </span>
+                            <span class="material-icons">cancel</span>{% trans "已拒绝" %}</span>
                         {% elif item.status == 'partially_rejected' %}
                         <span class="status-badge partially-rejected">
-                            <span class="material-icons">error</span> 部分拒绝
-                        </span>
+                            <span class="material-icons">error</span>{% trans "部分拒绝" %}</span>
                         {% endif %}
                     </div>
                     
                     <div class="record-card-body">
                         {% if current_tab == 'annual_review' %}
                         <div class="record-field">
-                            <span class="record-field-label">年份</span>
+                            <span class="record-field-label">{% trans "年份" %}</span>
                             <span class="record-field-value">{{ item.submission_year }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -466,18 +464,18 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         
                         {% elif current_tab == 'registration' %}
                         <div class="record-field">
-                            <span class="record-field-label">注册期</span>
+                            <span class="record-field-label">{% trans "注册期" %}</span>
                             <span class="record-field-value">{{ item.registration_period.name }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -498,13 +496,13 @@ window.addEventListener('resize', checkLayout);
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
 
                         {% elif current_tab == 'application' %}
                         <div class="record-field">
-                            <span class="record-field-label">申请人</span>
+                            <span class="record-field-label">{% trans "申请人" %}</span>
                             <a href="{% url 'clubs:user_detail' item.requested_by.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
                                     {% if item.requested_by.profile.avatar %}
@@ -519,7 +517,7 @@ window.addEventListener('resize', checkLayout);
                             </a>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -540,17 +538,17 @@ window.addEventListener('resize', checkLayout);
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
 
                         {% elif current_tab == 'reimbursement' %}
                         <div class="record-field">
-                            <span class="record-field-label">报销金额</span>
+                            <span class="record-field-label">{% trans "报销金额" %}</span>
                             <span class="record-field-value" style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -571,17 +569,17 @@ window.addEventListener('resize', checkLayout);
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
 
                         {% elif current_tab == 'activity_application' %}
                         <div class="record-field">
-                            <span class="record-field-label">活动日期</span>
+                            <span class="record-field-label">{% trans "活动日期" %}</span>
                             <span class="record-field-value">{{ item.activity_date|date:"Y-m-d" }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -602,13 +600,13 @@ window.addEventListener('resize', checkLayout);
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
 
                         {% elif current_tab == 'president_transition' %}
                         <div class="record-field">
-                            <span class="record-field-label">新社长</span>
+                            <span class="record-field-label">{% trans "新社长" %}</span>
                             {% if item.new_president_officer and item.new_president_officer.user_profile %}
                             <a href="{% url 'clubs:user_detail' item.new_president_officer.user_profile.user.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
@@ -627,7 +625,7 @@ window.addEventListener('resize', checkLayout);
                             {% endif %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -648,7 +646,7 @@ window.addEventListener('resize', checkLayout);
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         {% endif %}
@@ -659,33 +657,27 @@ window.addEventListener('resize', checkLayout);
                         {% if current_tab == 'annual_review' %}
                         <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=review&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
-                            <span class="material-icons">edit</span> 修改材料
-                        </a>
+                            <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                         {% elif current_tab == 'registration' %}
                         <a href="{% url 'clubs:edit_rejected_review' club_id=item.club.id %}?type=club_registration&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
-                            <span class="material-icons">edit</span> 修改材料
-                        </a>
+                            <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                         {% elif current_tab == 'application' %}
                         <a href="{% url 'clubs:edit_rejected_review' club_id=item.id %}?type=club_application&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
-                            <span class="material-icons">edit</span> 修改材料
-                        </a>
+                            <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                         {% elif current_tab == 'reimbursement' %}
                         <a href="{% url 'clubs:edit_rejected_review' club_id=item.club.id %}?type=reimbursement&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
-                            <span class="material-icons">edit</span> 修改材料
-                        </a>
+                            <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                         {% elif current_tab == 'activity_application' %}
                         <a href="{% url 'clubs:edit_rejected_review' club_id=item.club.id %}?type=activity_application&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
-                            <span class="material-icons">edit</span> 修改材料
-                        </a>
+                            <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                         {% elif current_tab == 'president_transition' %}
                         <a href="{% url 'clubs:edit_rejected_review' club_id=item.club.id %}?type=president_transition&request_id={{ item.id }}" 
                            class="action-btn primary" onclick="event.stopPropagation()">
-                            <span class="material-icons">edit</span> 修改材料
-                        </a>
+                            <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                         {% endif %}
                     </div>
                     {% endif %}
@@ -697,8 +689,8 @@ window.addEventListener('resize', checkLayout);
                 <div class="empty-state-icon">
                     <span class="material-icons">check_circle</span>
                 </div>
-                <h3>暂无活跃记录</h3>
-                <p>当前没有待处理或已拒绝的申请</p>
+                <h3>{% trans "暂无活跃记录" %}</h3>
+                <p>{% trans "当前没有待处理或已拒绝的申请" %}</p>
             </div>
             {% endif %}
         </div>
@@ -707,7 +699,7 @@ window.addEventListener('resize', checkLayout);
         <div class="records-section">
             <div class="section-title">
                 <span class="material-icons">done_all</span>
-                <h3>已通过记录</h3>
+                <h3>{% trans "已通过记录" %}</h3>
                 <span class="count">{{ completed_items|length }} 条记录</span>
             </div>
             
@@ -731,18 +723,17 @@ window.addEventListener('resize', checkLayout);
                         {% endif %}
                         
                         <span class="status-badge approved">
-                            <span class="material-icons">check_circle</span> 已批准
-                        </span>
+                            <span class="material-icons">check_circle</span>{% trans "已批准" %}</span>
                     </div>
                     
                     <div class="record-card-body">
                         {% if current_tab == 'annual_review' %}
                         <div class="record-field">
-                            <span class="record-field-label">年份</span>
+                            <span class="record-field-label">{% trans "年份" %}</span>
                             <span class="record-field-value">{{ item.submission_year }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -758,22 +749,22 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         
                         {% elif current_tab == 'registration' %}
                         <div class="record-field">
-                            <span class="record-field-label">注册期</span>
+                            <span class="record-field-label">{% trans "注册期" %}</span>
                             <span class="record-field-value">{{ item.registration_period.name }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -789,18 +780,18 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         
                         {% elif current_tab == 'application' %}
                         <div class="record-field">
-                            <span class="record-field-label">申请人</span>
+                            <span class="record-field-label">{% trans "申请人" %}</span>
                             <a href="{% url 'clubs:user_detail' item.requested_by.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
                                     {% if item.requested_by.profile.avatar %}
@@ -815,7 +806,7 @@ window.addEventListener('resize', checkLayout);
                             </a>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -831,22 +822,22 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         
                         {% elif current_tab == 'reimbursement' %}
                         <div class="record-field">
-                            <span class="record-field-label">报销金额</span>
+                            <span class="record-field-label">{% trans "报销金额" %}</span>
                             <span class="record-field-value" style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -862,22 +853,22 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         
                         {% elif current_tab == 'activity_application' %}
                         <div class="record-field">
-                            <span class="record-field-label">活动日期</span>
+                            <span class="record-field-label">{% trans "活动日期" %}</span>
                             <span class="record-field-value">{{ item.activity_date|date:"Y-m-d" }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -893,18 +884,18 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         
                         {% elif current_tab == 'president_transition' %}
                         <div class="record-field">
-                            <span class="record-field-label">新社长</span>
+                            <span class="record-field-label">{% trans "新社长" %}</span>
                             {% if item.new_president_officer and item.new_president_officer.user_profile %}
                             <a href="{% url 'clubs:user_detail' item.new_president_officer.user_profile.user.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
@@ -923,7 +914,7 @@ window.addEventListener('resize', checkLayout);
                             {% endif %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -939,12 +930,12 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         {% endif %}
@@ -955,9 +946,7 @@ window.addEventListener('resize', checkLayout);
 
             {% if completed_items|length > 3 %}
             <div style="margin-top: var(--md3-spacing-lg); text-align: center;">
-                <button onclick="openHistoryModal()" class="btn btn-secondary" style="border-radius: 20px; padding: 8px 24px;">
-                    查看更多历史记录
-                </button>
+                <button onclick="openHistoryModal()" class="btn btn-secondary" style="border-radius: 20px; padding: 8px 24px;">{% trans "查看更多历史记录" %}</button>
             </div>
             {% endif %}
 
@@ -966,8 +955,8 @@ window.addEventListener('resize', checkLayout);
                 <div class="empty-state-icon">
                     <span class="material-icons">inbox</span>
                 </div>
-                <h3>暂无已通过记录</h3>
-                <p>还没有审批通过的申请</p>
+                <h3>{% trans "暂无已通过记录" %}</h3>
+                <p>{% trans "还没有审批通过的申请" %}</p>
             </div>
             {% endif %}
         </div>
@@ -978,7 +967,7 @@ window.addEventListener('resize', checkLayout);
 <div id="historyModal" class="modal-overlay" style="display: none;">
     <div class="modal-content" style="max-width: 800px;">
         <div class="modal-header">
-            <h2><span class="material-icons" style="vertical-align: middle; margin-right: 8px;">history</span>全部已通过记录</h2>
+            <h2><span class="material-icons" style="vertical-align: middle; margin-right: 8px;">history</span>{% trans "全部已通过记录" %}</h2>
             <button onclick="closeHistoryModal()" class="modal-close">
                 <span class="material-icons">close</span>
             </button>
@@ -1003,18 +992,17 @@ window.addEventListener('resize', checkLayout);
                         {% endif %}
                         
                         <span class="status-badge approved">
-                            <span class="material-icons">check_circle</span> 已批准
-                        </span>
+                            <span class="material-icons">check_circle</span>{% trans "已批准" %}</span>
                     </div>
                     
                     <div class="record-card-body">
                         {% if current_tab == 'annual_review' %}
                         <div class="record-field">
-                            <span class="record-field-label">年份</span>
+                            <span class="record-field-label">{% trans "年份" %}</span>
                             <span class="record-field-value">{{ item.submission_year }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -1030,22 +1018,22 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         
                         {% elif current_tab == 'registration' %}
                         <div class="record-field">
-                            <span class="record-field-label">注册期</span>
+                            <span class="record-field-label">{% trans "注册期" %}</span>
                             <span class="record-field-value">{{ item.registration_period.name }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -1061,22 +1049,22 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
 
                         {% elif current_tab == 'application' %}
                         <div class="record-field">
-                            <span class="record-field-label">申请社团</span>
+                            <span class="record-field-label">{% trans "申请社团" %}</span>
                             <span class="record-field-value">{{ item.club_name }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -1092,22 +1080,22 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
 
                         {% elif current_tab == 'reimbursement' %}
                         <div class="record-field">
-                            <span class="record-field-label">报销金额</span>
+                            <span class="record-field-label">{% trans "报销金额" %}</span>
                             <span class="record-field-value" style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -1123,22 +1111,22 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
 
                         {% elif current_tab == 'activity_application' %}
                         <div class="record-field">
-                            <span class="record-field-label">活动日期</span>
+                            <span class="record-field-label">{% trans "活动日期" %}</span>
                             <span class="record-field-value">{{ item.activity_date|date:"Y-m-d" }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -1154,18 +1142,18 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
 
                         {% elif current_tab == 'president_transition' %}
                         <div class="record-field">
-                            <span class="record-field-label">新社长</span>
+                            <span class="record-field-label">{% trans "新社长" %}</span>
                             {% if item.new_president_officer and item.new_president_officer.user_profile %}
                             <a href="{% url 'clubs:user_detail' item.new_president_officer.user_profile.user.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
@@ -1184,7 +1172,7 @@ window.addEventListener('resize', checkLayout);
                             {% endif %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">审核者</span>
+                            <span class="record-field-label">{% trans "审核者" %}</span>
                             {% with reviewer=item.get_final_reviewer %}
                                 {% if reviewer %}
                                 <a href="{% url 'clubs:user_detail' reviewer.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
@@ -1200,23 +1188,23 @@ window.addEventListener('resize', checkLayout);
                                     <span style="border-bottom: 1px dotted var(--md3-outline);">{{ reviewer.profile.get_full_name|default:reviewer.username }}</span>
                                 </a>
                                 {% else %}
-                                <span class="record-field-value">未知</span>
+                                <span class="record-field-value">{% trans "未知" %}</span>
                                 {% endif %}
                             {% endwith %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         
                         {% elif current_tab == 'application' %}
                         <div class="record-field">
-                            <span class="record-field-label">申请人</span>
+                            <span class="record-field-label">{% trans "申请人" %}</span>
                             <a href="{% url 'clubs:user_detail' item.requested_by.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
                                     {% if item.requested_by.profile.avatar %}
@@ -1231,33 +1219,33 @@ window.addEventListener('resize', checkLayout);
                             </a>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         
                         {% elif current_tab == 'reimbursement' %}
                         <div class="record-field">
-                            <span class="record-field-label">报销金额</span>
+                            <span class="record-field-label">{% trans "报销金额" %}</span>
                             <span class="record-field-value" style="color: var(--md3-primary); font-weight: 600;">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         
                         {% elif current_tab == 'activity_application' %}
                         <div class="record-field">
-                            <span class="record-field-label">活动日期</span>
+                            <span class="record-field-label">{% trans "活动日期" %}</span>
                             <span class="record-field-value">{{ item.activity_date|date:"Y-m-d" }}</span>
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         
                         {% elif current_tab == 'president_transition' %}
                         <div class="record-field">
-                            <span class="record-field-label">新社长</span>
+                            <span class="record-field-label">{% trans "新社长" %}</span>
                             {% if item.new_president_officer and item.new_president_officer.user_profile %}
                             <a href="{% url 'clubs:user_detail' item.new_president_officer.user_profile.user.id %}" class="record-field-value" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
@@ -1276,7 +1264,7 @@ window.addEventListener('resize', checkLayout);
                             {% endif %}
                         </div>
                         <div class="record-field">
-                            <span class="record-field-label">提交时间</span>
+                            <span class="record-field-label">{% trans "提交时间" %}</span>
                             <span class="record-field-value">{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                         {% endif %}
@@ -1286,7 +1274,7 @@ window.addEventListener('resize', checkLayout);
             </div>
         </div>
         <div class="modal-footer">
-            <button onclick="closeHistoryModal()" class="btn btn-secondary">关闭</button>
+            <button onclick="closeHistoryModal()" class="btn btn-secondary">{% trans "关闭" %}</button>
         </div>
     </div>
 </div>

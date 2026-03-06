@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext as _
 from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, Template, Announcement, ClubRegistrationRequest, EmailVerificationCode, SMTPConfig, CarouselImage, Department, Room, TimeSlot, RoomBooking
 
 

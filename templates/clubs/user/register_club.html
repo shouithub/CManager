@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}申请新社团 - CManager{% endblock %}
 
@@ -382,7 +383,7 @@
     <!-- 页面标题 -->
     <div class="page-title">
         <span class="material-icons">flag</span>
-        <h1>申请新社团</h1>
+        <h1>{% trans "申请新社团" %}</h1>
     </div>
 
     <!-- 消息显示 -->
@@ -413,15 +414,11 @@
 
             <!-- 社团基本信息 -->
             <h2 class="section-title">
-                <span class="material-icons">info</span>
-                社团基本信息
-            </h2>
+                <span class="material-icons">info</span>{% trans "社团基本信息" %}</h2>
 
             <div class="form-grid">
                 <div class="form-field">
-                    <label for="name">
-                        社团名称
-                        <span class="required">*</span>
+                    <label for="name">{% trans "社团名称" %}<span class="required">*</span>
                     </label>
                     <input
                         type="text"
@@ -429,15 +426,13 @@
                         name="name"
                         required
                         maxlength="100"
-                        placeholder="输入社团名称"
+                        placeholder="{% trans "输入社团名称" %}"
                         value="{{ form_data.name|default:'' }}"
                     >
                 </div>
 
                 <div class="form-field">
-                    <label for="founded_date">
-                        成立日期
-                        <span class="required">*</span>
+                    <label for="founded_date">{% trans "成立日期" %}<span class="required">*</span>
                     </label>
                     <input
                         type="date"
@@ -449,9 +444,7 @@
                 </div>
 
                 <div class="form-field">
-                    <label for="members_count">
-                        社团人数
-                        <span class="required">*</span>
+                    <label for="members_count">{% trans "社团人数" %}<span class="required">*</span>
                     </label>
                     <input
                         type="number"
@@ -459,27 +452,25 @@
                         name="members_count"
                         required
                         min="1"
-                        placeholder="输入社团人数"
+                        placeholder="{% trans "输入社团人数" %}"
                         value="{{ form_data.members_count|default:'' }}"
                     >
                 </div>
             </div>
 
             <div class="form-field">
-                <label for="description">社团介绍</label>
+                <label for="description">{% trans "社团介绍" %}</label>
                 <textarea
                     id="description"
                     name="description"
                     rows="4"
-                    placeholder="简要介绍社团的宗旨和活动"
+                    placeholder="{% trans "简要介绍社团的宗旨和活动" %}"
                 >{{ form_data.description|default:'' }}</textarea>
             </div>
 
             <!-- 申请材料 -->
             <h2 class="section-title">
-                <span class="material-icons">attach_file</span>
-                申请材料
-            </h2>
+                <span class="material-icons">attach_file</span>{% trans "申请材料" %}</h2>
 
             <div class="form-grid">
                 {% for req in requirements %}
@@ -512,17 +503,13 @@
                     {% if req.template_file %}
                     <div class="template-download-info" style="display: flex; align-items: center; gap: var(--md3-spacing-xs); margin-top: var(--md3-spacing-sm);">
                         <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-primary);">download</span>
-                        <a href="{{ req.template_file.url }}" download class="template-link" style="color: var(--md3-primary); text-decoration: none; font-size: 0.875rem; font-weight: 500;">
-                            下载模板
-                        </a>
+                        <a href="{{ req.template_file.url }}" download class="template-link" style="color: var(--md3-primary); text-decoration: none; font-size: 0.875rem; font-weight: 500;">{% trans "下载模板" %}</a>
                     </div>
                     {% endif %}
                 </div>
                 {% empty %}
                 <div class="message info">
-                    <span class="material-icons">info</span>
-                    无需上传任何材料
-                </div>
+                    <span class="material-icons">info</span>{% trans "无需上传任何材料" %}</div>
                 {% endfor %}
             </div>
 
@@ -530,9 +517,7 @@
 
             <!-- 社长信息 -->
             <h2 class="section-title">
-                <span class="material-icons">person</span>
-                社长信息
-            </h2>
+                <span class="material-icons">person</span>{% trans "社长信息" %}</h2>
 
             <div class="president-grid">
                 <div class="president-card selected" id="current_president_card">
@@ -547,7 +532,7 @@
 
                 {% if other_presidents %}
                 <div class="form-field">
-                    <label for="president_profile_id">选择其他社长</label>
+                    <label for="president_profile_id">{% trans "选择其他社长" %}</label>
                     <select id="president_profile_id" name="president_profile_id">
                         <option value="">-- 使用当前用户 --</option>
                         {% for president in other_presidents %}
@@ -556,32 +541,26 @@
                         </option>
                         {% endfor %}
                     </select>
-                    <span class="field-help">选择其他社长时，申请将代表该用户提交</span>
+                    <span class="field-help">{% trans "选择其他社长时，申请将代表该用户提交" %}</span>
                 </div>
                 {% endif %}
             </div>
 
             <!-- 选中社长信息详情 -->
             <div class="selected-president-card">
-                <div style="font-weight: 600; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-sm);">
-                    申请人信息确认
-                </div>
+                <div style="font-weight: 600; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-sm);">{% trans "申请人信息确认" %}</div>
                 <div class="president-name" id="selected_name">{{ current_user_profile.get_full_name }}</div>
-                <div class="president-detail">用户名: <span id="selected_username">{{ user.username }}</span></div>
-                <div class="president-detail">电话: <span id="selected_phone">{{ current_user_profile.phone|default:'--' }}</span></div>
-                <div class="president-detail">微信: <span id="selected_wechat">{{ current_user_profile.wechat|default:'--' }}</span></div>
+                <div class="president-detail">{% trans "用户名:" %}<span id="selected_username">{{ user.username }}</span></div>
+                <div class="president-detail">{% trans "电话:" %}<span id="selected_phone">{{ current_user_profile.phone|default:'--' }}</span></div>
+                <div class="president-detail">{% trans "微信:" %}<span id="selected_wechat">{{ current_user_profile.wechat|default:'--' }}</span></div>
             </div>
 
             <!-- 提交按钮 -->
             <div class="form-actions">
                 <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-secondary">
-                    <span class="material-icons">arrow_back</span>
-                    返回
-                </a>
+                    <span class="material-icons">arrow_back</span>{% trans "返回" %}</a>
                 <button type="submit" class="btn btn-success">
-                    <span class="material-icons">send</span>
-                    提交注册申请
-                </button>
+                    <span class="material-icons">send</span>{% trans "提交注册申请" %}</button>
             </div>
         </form>
     </div>

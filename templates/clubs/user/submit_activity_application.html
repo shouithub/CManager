@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 {% load custom_filters %}
 
@@ -239,7 +240,7 @@
     <div class="page-header">
         <span class="material-icons">event</span>
         <div class="page-header-content">
-            <h1>提交活动申请</h1>
+            <h1>{% trans "提交活动申请" %}</h1>
             <p class="subtitle">{{ club.name }}</p>
         </div>
     </div>
@@ -247,7 +248,7 @@
     <!-- 错误提示 -->
     {% if errors %}
     <div class="error-list">
-        <strong>请修正以下错误：</strong>
+        <strong>{% trans "请修正以下错误：" %}</strong>
         <ul>
             {% for error in errors %}
             <li>{{ error }}</li>
@@ -262,9 +263,9 @@
         
         <!-- 选择社团 -->
         <div class="form-section">
-            <h2><span class="material-icons">groups</span> 选择社团</h2>
+            <h2><span class="material-icons">groups</span>{% trans "选择社团" %}</h2>
             <div class="form-group">
-                <label for="club_id">请选择要提交活动申请的社团 <span class="required">*</span></label>
+                <label for="club_id">{% trans "请选择要提交活动申请的社团" %}<span class="required">*</span></label>
                 <select id="club_id" name="club_id" required>
                     {% for c in clubs %}
                     <option value="{{ c.id }}" {% if c.id == selected_club_id %}selected{% endif %}>{{ c.name }}</option>
@@ -275,87 +276,87 @@
         
         <!-- 活动基本信息 -->
         <div class="form-section">
-            <h2><span class="material-icons">info</span> 活动基本信息</h2>
+            <h2><span class="material-icons">info</span>{% trans "活动基本信息" %}</h2>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="activity_name">活动名称 <span class="required">*</span></label>
-                    <input type="text" id="activity_name" name="activity_name" required value="{{ activity_name }}" placeholder="例如：春季联谊会">
+                    <label for="activity_name">{% trans "活动名称" %}<span class="required">*</span></label>
+                    <input type="text" id="activity_name" name="activity_name" required value="{{ activity_name }}" placeholder="{% trans "例如：春季联谊会" %}">
                 </div>
                 <div class="form-group">
-                    <label for="activity_type">活动类型 <span class="required">*</span></label>
+                    <label for="activity_type">{% trans "活动类型" %}<span class="required">*</span></label>
                     <select id="activity_type" name="activity_type" required>
                         <option value="">-- 请选择 --</option>
-                        <option value="academic" {% if activity_type == 'academic' %}selected{% endif %}>学术讲座</option>
-                        <option value="social" {% if activity_type == 'social' %}selected{% endif %}>社交活动</option>
-                        <option value="volunteer" {% if activity_type == 'volunteer' %}selected{% endif %}>志愿服务</option>
-                        <option value="sports" {% if activity_type == 'sports' %}selected{% endif %}>体育竞赛</option>
-                        <option value="cultural" {% if activity_type == 'cultural' %}selected{% endif %}>文化艺术</option>
-                        <option value="other" {% if activity_type == 'other' %}selected{% endif %}>其他</option>
+                        <option value="academic" {% if activity_type == 'academic' %}selected{% endif %}>{% trans "学术讲座" %}</option>
+                        <option value="social" {% if activity_type == 'social' %}selected{% endif %}>{% trans "社交活动" %}</option>
+                        <option value="volunteer" {% if activity_type == 'volunteer' %}selected{% endif %}>{% trans "志愿服务" %}</option>
+                        <option value="sports" {% if activity_type == 'sports' %}selected{% endif %}>{% trans "体育竞赛" %}</option>
+                        <option value="cultural" {% if activity_type == 'cultural' %}selected{% endif %}>{% trans "文化艺术" %}</option>
+                        <option value="other" {% if activity_type == 'other' %}selected{% endif %}>{% trans "其他" %}</option>
                     </select>
                 </div>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="activity_date">活动日期 <span class="required">*</span></label>
+                    <label for="activity_date">{% trans "活动日期" %}<span class="required">*</span></label>
                     <input type="date" id="activity_date" name="activity_date" required value="{{ activity_date }}">
                 </div>
                 <div class="form-group">
-                    <label for="activity_time_start">活动开始时间 <span class="required">*</span></label>
+                    <label for="activity_time_start">{% trans "活动开始时间" %}<span class="required">*</span></label>
                     <input type="time" id="activity_time_start" name="activity_time_start" required value="{{ activity_time_start }}">
                 </div>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="activity_location">活动地点 <span class="required">*</span></label>
-                    <input type="text" id="activity_location" name="activity_location" required value="{{ activity_location }}" placeholder="例如：大学生活动中心205">
+                    <label for="activity_location">{% trans "活动地点" %}<span class="required">*</span></label>
+                    <input type="text" id="activity_location" name="activity_location" required value="{{ activity_location }}" placeholder="{% trans "例如：大学生活动中心205" %}">
                 </div>
                 <div class="form-group">
-                    <label for="activity_time_end">活动结束时间 <span class="required">*</span></label>
+                    <label for="activity_time_end">{% trans "活动结束时间" %}<span class="required">*</span></label>
                     <input type="time" id="activity_time_end" name="activity_time_end" required value="{{ activity_time_end }}">
                 </div>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="expected_participants">预计参与人数 <span class="required">*</span></label>
-                    <input type="number" id="expected_participants" name="expected_participants" min="1" value="{{ expected_participants }}" placeholder="例如：50" required>
+                    <label for="expected_participants">{% trans "预计参与人数" %}<span class="required">*</span></label>
+                    <input type="number" id="expected_participants" name="expected_participants" min="1" value="{{ expected_participants }}" placeholder="{% trans "例如：50" %}" required>
                 </div>
                 <div class="form-group">
-                    <label for="budget">活动预算（元）<span class="required">*</span></label>
-                    <input type="number" id="budget" name="budget" min="0" step="0.01" value="{{ budget }}" placeholder="例如：1000.00" required>
+                    <label for="budget">{% trans "活动预算（元）" %}<span class="required">*</span></label>
+                    <input type="number" id="budget" name="budget" min="0" step="0.01" value="{{ budget }}" placeholder="{% trans "例如：1000.00" %}" required>
                 </div>
             </div>
             
             <div class="form-row">
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    <label for="activity_description">活动描述 <span class="required">*</span></label>
-                    <textarea id="activity_description" name="activity_description" required placeholder="详细描述活动内容、目的和意义...">{{ activity_description }}</textarea>
+                    <label for="activity_description">{% trans "活动描述" %}<span class="required">*</span></label>
+                    <textarea id="activity_description" name="activity_description" required placeholder="{% trans "详细描述活动内容、目的和意义..." %}">{{ activity_description }}</textarea>
                 </div>
             </div>
         </div>
         
         <!-- 联系信息 -->
         <div class="form-section">
-            <h2><span class="material-icons">contacts</span> 联系信息</h2>
+            <h2><span class="material-icons">contacts</span>{% trans "联系信息" %}</h2>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="contact_person">联系人（自动填写）</label>
-                    <input type="text" id="contact_person" name="contact_person" value="{{ contact_person }}" placeholder="自动使用您的姓名" readonly>
+                    <label for="contact_person">{% trans "联系人（自动填写）" %}</label>
+                    <input type="text" id="contact_person" name="contact_person" value="{{ contact_person }}" placeholder="{% trans "自动使用您的姓名" %}" readonly>
                 </div>
                 <div class="form-group">
-                    <label for="contact_phone">联系电话（自动填写，如有）</label>
-                    <input type="tel" id="contact_phone" name="contact_phone" value="{{ contact_phone }}" placeholder="自动使用资料中的电话" readonly>
+                    <label for="contact_phone">{% trans "联系电话（自动填写，如有）" %}</label>
+                    <input type="tel" id="contact_phone" name="contact_phone" value="{{ contact_phone }}" placeholder="{% trans "自动使用资料中的电话" %}" readonly>
                 </div>
             </div>
         </div>
         
         <!-- 附件上传 -->
         <div class="form-section">
-            <h2><span class="material-icons">attach_file</span> 附件上传</h2>
+            <h2><span class="material-icons">attach_file</span>{% trans "附件上传" %}</h2>
             
             {% for req in requirements %}
             <div class="form-row">
@@ -373,13 +374,9 @@
         <!-- 操作按钮 -->
         <div class="action-buttons">
             <a href="{% url 'clubs:club_detail' club.id %}" class="btn-secondary">
-                <span class="material-icons">arrow_back</span>
-                返回
-            </a>
+                <span class="material-icons">arrow_back</span>{% trans "返回" %}</a>
             <button type="submit" class="btn-primary">
-                <span class="material-icons">check_circle</span>
-                提交申请
-            </button>
+                <span class="material-icons">check_circle</span>{% trans "提交申请" %}</button>
         </div>
     </form>
 </div>

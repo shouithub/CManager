@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}初始化向导{% endblock %}
 
@@ -89,15 +90,15 @@
 <div class="oobe-wrap">
     <div class="oobe-hero">
         <div>
-            <h1 class="oobe-title">首次启动初始化向导</h1>
-            <p class="oobe-subtitle">按步骤完成管理员、数据库、缓存、品牌与邮箱配置。每一步确认后会自动进入下一步。</p>
+            <h1 class="oobe-title">{% trans "首次启动初始化向导" %}</h1>
+            <p class="oobe-subtitle">{% trans "按步骤完成管理员、数据库、缓存、品牌与邮箱配置。每一步确认后会自动进入下一步。" %}</p>
         </div>
         <div class="oobe-pill-row">
-            <span class="oobe-pill">管理员</span>
-            <span class="oobe-pill">数据库</span>
-            <span class="oobe-pill">缓存</span>
+            <span class="oobe-pill">{% trans "管理员" %}</span>
+            <span class="oobe-pill">{% trans "数据库" %}</span>
+            <span class="oobe-pill">{% trans "缓存" %}</span>
             <span class="oobe-pill">Logo</span>
-            <span class="oobe-pill">邮箱 + 测试</span>
+            <span class="oobe-pill">{% trans "邮箱 + 测试" %}</span>
         </div>
         <div class="oobe-progress">
             <div class="oobe-progress-track" id="oobeProgressTrack">
@@ -107,7 +108,7 @@
                 <span class="oobe-dot" data-step-dot="3"></span>
                 <span class="oobe-dot" data-step-dot="4"></span>
             </div>
-            <div class="oobe-progress-label" id="oobeProgressLabel">第 1 / 5 步</div>
+            <div class="oobe-progress-label" id="oobeProgressLabel">{% trans "第 1 / 5 步" %}</div>
         </div>
     </div>
 
@@ -131,20 +132,20 @@
 <template id="step-admin">
     <section class="oobe-stage" data-step-section="0">
         <div class="oobe-stage-head">
-            <h3 class="oobe-stage-title"><span class="material-icons">admin_panel_settings</span> 第一步：管理员账户</h3>
-            <p class="oobe-stage-desc">创建首个管理员账号并配置系统运行安全参数</p>
+            <h3 class="oobe-stage-title"><span class="material-icons">admin_panel_settings</span>{% trans "第一步：管理员账户" %}</h3>
+            <p class="oobe-stage-desc">{% trans "创建首个管理员账号并配置系统运行安全参数" %}</p>
         </div>
         <div class="oobe-grid-2">
-            <div class="oobe-field"><label>管理员用户名</label><input type="text" name="admin_username" value="{{ form_data.admin_username }}" required></div>
-            <div class="oobe-field"><label>管理员真名</label><input type="text" name="admin_real_name" value="{{ form_data.admin_real_name }}" placeholder="建议填写真实姓名"></div>
-            <div class="oobe-field"><label>管理员邮箱（推荐）</label><input type="email" name="admin_email" value="{{ form_data.admin_email }}" placeholder="admin@example.com"></div>
-            <div class="oobe-field"><label>管理员学号</label><input type="text" name="admin_student_id" value="{{ form_data.admin_student_id }}" placeholder="可选"></div>
-            <div class="oobe-field"><label>管理员密码</label><input type="password" name="admin_password" required></div>
-            <div class="oobe-field"><label>确认密码</label><input type="password" name="admin_password_confirm" required></div>
-            <div class="oobe-field"><label>联系电话</label><input type="text" name="admin_phone" value="{{ form_data.admin_phone }}" placeholder="可选"></div>
-            <div class="oobe-field"><label>微信号</label><input type="text" name="admin_wechat" value="{{ form_data.admin_wechat }}" placeholder="可选"></div>
+            <div class="oobe-field"><label>{% trans "管理员用户名" %}</label><input type="text" name="admin_username" value="{{ form_data.admin_username }}" required></div>
+            <div class="oobe-field"><label>{% trans "管理员真名" %}</label><input type="text" name="admin_real_name" value="{{ form_data.admin_real_name }}" placeholder="{% trans "建议填写真实姓名" %}"></div>
+            <div class="oobe-field"><label>{% trans "管理员邮箱（推荐）" %}</label><input type="email" name="admin_email" value="{{ form_data.admin_email }}" placeholder="admin@example.com"></div>
+            <div class="oobe-field"><label>{% trans "管理员学号" %}</label><input type="text" name="admin_student_id" value="{{ form_data.admin_student_id }}" placeholder="{% trans "可选" %}"></div>
+            <div class="oobe-field"><label>{% trans "管理员密码" %}</label><input type="password" name="admin_password" required></div>
+            <div class="oobe-field"><label>{% trans "确认密码" %}</label><input type="password" name="admin_password_confirm" required></div>
+            <div class="oobe-field"><label>{% trans "联系电话" %}</label><input type="text" name="admin_phone" value="{{ form_data.admin_phone }}" placeholder="{% trans "可选" %}"></div>
+            <div class="oobe-field"><label>{% trans "微信号" %}</label><input type="text" name="admin_wechat" value="{{ form_data.admin_wechat }}" placeholder="{% trans "可选" %}"></div>
             <div class="oobe-field">
-                <label>政治面貌</label>
+                <label>{% trans "政治面貌" %}</label>
                 <select name="admin_political_status">
                     {% for value, label in political_status_choices %}
                     <option value="{{ value }}" {% if form_data.admin_political_status == value %}selected{% endif %}>{{ label }}</option>
@@ -152,7 +153,7 @@
                 </select>
             </div>
             <div class="oobe-field">
-                <label>是否公开个人信息</label>
+                <label>{% trans "是否公开个人信息" %}</label>
                 <select name="admin_is_info_public">
                     <option value="no" {% if form_data.admin_is_info_public != 'yes' %}selected{% endif %}>否</option>
                     <option value="yes" {% if form_data.admin_is_info_public == 'yes' %}selected{% endif %}>是</option>
@@ -205,18 +206,18 @@
                 </select>
             </div>
         </div>
-        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="1"><span class="material-icons">arrow_forward</span>继续</button></div>
+        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="1"><span class="material-icons">arrow_forward</span>{% trans "继续" %}</button></div>
     </section>
 </template>
 
 <template id="step-db">
     <section class="oobe-stage" data-step-section="1">
         <div class="oobe-stage-head">
-            <h3 class="oobe-stage-title"><span class="material-icons">storage</span> 第二步：数据库</h3>
-            <p class="oobe-stage-desc">开发建议 SQLite；生产建议 PostgreSQL/MySQL</p>
+            <h3 class="oobe-stage-title"><span class="material-icons">storage</span>{% trans "第二步：数据库" %}</h3>
+            <p class="oobe-stage-desc">{% trans "开发建议 SQLite；生产建议 PostgreSQL/MySQL" %}</p>
         </div>
         <div class="oobe-field" style="margin-bottom: 10px;">
-            <label>数据库类型</label>
+            <label>{% trans "数据库类型" %}</label>
             <select name="db_type" id="db_type" required>
                 {% for value, label in db_choices %}
                 <option value="{{ value }}" {% if form_data.db_type == value %}selected{% elif not form_data.db_type and value == 'sqlite' %}selected{% endif %}>{{ label }}</option>
@@ -224,7 +225,7 @@
             </select>
         </div>
         <div class="oobe-grid-2" id="db_advanced">
-            <div class="oobe-field"><label>DB_NAME</label><input type="text" name="db_name" value="{{ form_data.db_name }}" placeholder="sqlite 可留空，默认 db.sqlite3"></div>
+            <div class="oobe-field"><label>DB_NAME</label><input type="text" name="db_name" value="{{ form_data.db_name }}" placeholder="{% trans "sqlite 可留空，默认 db.sqlite3" %}"></div>
             <div class="oobe-field db-server-only"><label>DB_USER</label><input type="text" name="db_user" value="{{ form_data.db_user }}"></div>
             <div class="oobe-field db-server-only"><label>DB_PASSWORD</label><input type="password" name="db_password" value="{{ form_data.db_password }}"></div>
             <div class="oobe-field db-server-only"><label>DB_HOST</label><input type="text" name="db_host" value="{{ form_data.db_host }}" placeholder="127.0.0.1"></div>
@@ -244,15 +245,15 @@
             <div class="oobe-field"><label>SQLITE_CACHE_SIZE</label><input type="number" name="sqlite_cache_size" value="{{ form_data.sqlite_cache_size }}"></div>
             <div class="oobe-field"><label>SQLITE_MMAP_SIZE</label><input type="number" min="0" name="sqlite_mmap_size" value="{{ form_data.sqlite_mmap_size }}"></div>
         </div>
-        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="2"><span class="material-icons">arrow_forward</span>继续</button></div>
+        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="2"><span class="material-icons">arrow_forward</span>{% trans "继续" %}</button></div>
     </section>
 </template>
 
 <template id="step-cache">
     <section class="oobe-stage" data-step-section="2">
         <div class="oobe-stage-head">
-            <h3 class="oobe-stage-title"><span class="material-icons">bolt</span> 第三步：缓存</h3>
-            <p class="oobe-stage-desc">完整缓存参数配置</p>
+            <h3 class="oobe-stage-title"><span class="material-icons">bolt</span>{% trans "第三步：缓存" %}</h3>
+            <p class="oobe-stage-desc">{% trans "完整缓存参数配置" %}</p>
         </div>
         <div class="oobe-grid-2">
             <div class="oobe-field">
@@ -275,51 +276,51 @@
                 </select>
             </div>
         </div>
-        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="3"><span class="material-icons">arrow_forward</span>继续</button></div>
+        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="3"><span class="material-icons">arrow_forward</span>{% trans "继续" %}</button></div>
     </section>
 </template>
 
 <template id="step-logo">
     <section class="oobe-stage" data-step-section="3">
         <div class="oobe-stage-head">
-            <h3 class="oobe-stage-title"><span class="material-icons">branding_watermark</span> 第四步：网站Logo</h3>
-            <p class="oobe-stage-desc">可选上传，系统自动生成 favicon</p>
+            <h3 class="oobe-stage-title"><span class="material-icons">branding_watermark</span>{% trans "第四步：网站Logo" %}</h3>
+            <p class="oobe-stage-desc">{% trans "可选上传，系统自动生成 favicon" %}</p>
         </div>
         <div class="oobe-field">
-            <label>上传 Logo（可跳过）</label>
+            <label>{% trans "上传 Logo（可跳过）" %}</label>
             <div class="oobe-file">
                 <input type="file" id="site_logo" name="site_logo" accept=".ico,.png,.jpg,.jpeg,.webp">
-                <div id="logoFileName" class="oobe-hint">未选择文件</div>
+                <div id="logoFileName" class="oobe-hint">{% trans "未选择文件" %}</div>
             </div>
             <div class="oobe-crop-wrap" id="logoCropWrap">
                 <canvas id="logoCropCanvas" class="oobe-crop-canvas" width="256" height="256"></canvas>
                 <div class="oobe-field" style="margin-top:8px; max-width:320px;">
-                    <label>缩放</label>
+                    <label>{% trans "缩放" %}</label>
                     <input type="range" id="logoCropZoom" min="1" max="3" step="0.01" value="1">
                 </div>
             </div>
-            <div class="oobe-hint">支持 .ico/.png/.jpg/.jpeg/.webp，建议正方形图片。</div>
+            <div class="oobe-hint">{% trans "支持 .ico/.png/.jpg/.jpeg/.webp，建议正方形图片。" %}</div>
         </div>
-        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="4"><span class="material-icons">arrow_forward</span>继续</button></div>
+        <div class="oobe-action-row"><button class="oobe-btn primary" type="button" data-next-step="4"><span class="material-icons">arrow_forward</span>{% trans "继续" %}</button></div>
     </section>
 </template>
 
 <template id="step-email">
     <section class="oobe-stage" data-step-section="4">
         <div class="oobe-stage-head">
-            <h3 class="oobe-stage-title"><span class="material-icons">mail</span> 第五步：邮箱配置</h3>
-            <p class="oobe-stage-desc">支持测试邮件，确认可用后完成初始化</p>
+            <h3 class="oobe-stage-title"><span class="material-icons">mail</span>{% trans "第五步：邮箱配置" %}</h3>
+            <p class="oobe-stage-desc">{% trans "支持测试邮件，确认可用后完成初始化" %}</p>
         </div>
         <div class="oobe-grid-2" style="margin-bottom: 10px;">
             <div class="oobe-field">
-                <label>是否启用SMTP邮箱</label>
+                <label>{% trans "是否启用SMTP邮箱" %}</label>
                 <select name="enable_email" id="enable_email">
-                    <option value="no" {% if form_data.enable_email != 'yes' %}selected{% endif %}>否（仅控制台）</option>
-                    <option value="yes" {% if form_data.enable_email == 'yes' %}selected{% endif %}>是（启用真实发信）</option>
+                    <option value="no" {% if form_data.enable_email != 'yes' %}selected{% endif %}>{% trans "否（仅控制台）" %}</option>
+                    <option value="yes" {% if form_data.enable_email == 'yes' %}selected{% endif %}>{% trans "是（启用真实发信）" %}</option>
                 </select>
             </div>
             <div class="oobe-field">
-                <label>邮箱服务商</label>
+                <label>{% trans "邮箱服务商" %}</label>
                 <select name="email_provider" id="email_provider">
                     {% for value, label in smtp_provider_choices %}
                     <option value="{{ value }}" {% if form_data.email_provider == value %}selected{% elif not form_data.email_provider and value == 'qq' %}selected{% endif %}>{{ label }}</option>
@@ -330,22 +331,22 @@
         <div id="smtp_detail" class="oobe-grid-2">
             <div class="oobe-field"><label>SMTP服务器地址</label><input type="text" name="smtp_host" id="smtp_host" value="{{ form_data.smtp_host }}" placeholder="smtp.qq.com"></div>
             <div class="oobe-field"><label>SMTP端口</label><input type="number" name="smtp_port" id="smtp_port" value="{{ form_data.smtp_port }}" placeholder="587"></div>
-            <div class="oobe-field"><label>发送邮箱</label><input type="email" name="sender_email" id="sender_email" value="{{ form_data.sender_email }}" placeholder="no-reply@example.com"></div>
-            <div class="oobe-field"><label>邮箱密码/授权码</label><input type="password" name="sender_password" id="sender_password" value="{{ form_data.sender_password }}"></div>
+            <div class="oobe-field"><label>{% trans "发送邮箱" %}</label><input type="email" name="sender_email" id="sender_email" value="{{ form_data.sender_email }}" placeholder="no-reply@example.com"></div>
+            <div class="oobe-field"><label>{% trans "邮箱密码/授权码" %}</label><input type="password" name="sender_password" id="sender_password" value="{{ form_data.sender_password }}"></div>
             <div class="oobe-field"><label>TLS加密</label><select name="smtp_use_tls" id="smtp_use_tls"><option value="yes" {% if form_data.smtp_use_tls != 'no' %}selected{% endif %}>是</option><option value="no" {% if form_data.smtp_use_tls == 'no' %}selected{% endif %}>否</option></select></div>
-            <div class="oobe-field"><label>测试收件邮箱</label><input type="email" id="test_to_email" placeholder="your-email@example.com"></div>
+            <div class="oobe-field"><label>{% trans "测试收件邮箱" %}</label><input type="email" id="test_to_email" placeholder="your-email@example.com"></div>
         </div>
 
         <div class="oobe-mail-test-result" id="mailTestResult"></div>
 
         <div class="oobe-summary">
-            <div class="oobe-summary-item"><span class="oobe-summary-key">提示：</span>点击“发送测试邮件”可先验证 SMTP；保存后请重启服务，系统会自动执行迁移与管理员初始化。</div>
-            <div class="oobe-summary-item"><span class="oobe-summary-key">保存目标：</span>配置将写入 .env.local，Logo 将保存到 media/site。</div>
+            <div class="oobe-summary-item"><span class="oobe-summary-key">{% trans "提示：" %}</span>{% trans "点击“发送测试邮件”可先验证 SMTP；保存后请重启服务，系统会自动执行迁移与管理员初始化。" %}</div>
+            <div class="oobe-summary-item"><span class="oobe-summary-key">{% trans "保存目标：" %}</span>{% trans "配置将写入 .env.local，Logo 将保存到 media/site。" %}</div>
         </div>
 
         <div class="oobe-action-row">
-            <button class="oobe-btn tonal" type="button" id="btnTestMail"><span class="material-icons">outgoing_mail</span>发送测试邮件</button>
-            <button class="oobe-btn primary" type="submit"><span class="material-icons">rocket_launch</span>保存配置</button>
+            <button class="oobe-btn tonal" type="button" id="btnTestMail"><span class="material-icons">outgoing_mail</span>{% trans "发送测试邮件" %}</button>
+            <button class="oobe-btn primary" type="submit"><span class="material-icons">rocket_launch</span>{% trans "保存配置" %}</button>
         </div>
     </section>
 </template>

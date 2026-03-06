@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
+from django.utils.translation import gettext as _
 
 from .email_utils import send_test_email_with_config
 from .models import SMTPConfig, UserProfile

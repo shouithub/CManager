@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}管理负责社团 - 干事后台{% endblock %}
 
@@ -312,19 +313,15 @@
     <!-- 页面标题 -->
     <div class="page-title">
         <span class="material-icons">assignment</span>
-        <h1>管理负责社团</h1>
+        <h1>{% trans "管理负责社团" %}</h1>
     </div>
 
     <!-- 主要内容卡片 -->
     <div class="main-card">
         <h2 class="card-title">
-            <span class="material-icons">check</span>
-            选择负责的社团
-        </h2>
+            <span class="material-icons">check</span>{% trans "选择负责的社团" %}</h2>
 
-        <p style="color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xl);">
-            请选择您负责管理的社团（可多选）。选择后，相关审核任务将自动分配给您。
-        </p>
+        <p style="color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xl);">{% trans "请选择您负责管理的社团（可多选）。选择后，相关审核任务将自动分配给您。" %}</p>
 
         <form method="post" id="manage-clubs-form">
             {% csrf_token %}
@@ -357,8 +354,7 @@
                             </div>
                             <div class="club-info-item">
                                 <span class="material-icons">info</span>
-                                <span>状态:
-                                    <span class="status-badge {{ club.status }}">
+                                <span>{% trans "状态:" %}<span class="status-badge {{ club.status }}">
                                         {% if club.status == 'active' %}
                                             <span class="material-icons" style="font-size: 12px;">check_circle</span> 活跃
                                         {% elif club.status == 'inactive' %}
@@ -378,13 +374,9 @@
             <!-- 按钮区域 -->
             <div class="action-buttons">
                 <button type="submit" class="btn-primary">
-                    <span class="material-icons">save</span>
-                    保存设置
-                </button>
+                    <span class="material-icons">save</span>{% trans "保存设置" %}</button>
                 <a href="{% url 'clubs:index' %}" class="btn-secondary">
-                    <span class="material-icons">arrow_back</span>
-                    返回仪表板
-                </a>
+                    <span class="material-icons">arrow_back</span>{% trans "返回仪表板" %}</a>
             </div>
         </form>
     </div>
@@ -392,25 +384,23 @@
     <!-- 说明卡片 -->
     <div class="info-card">
         <h3 class="info-card-title">
-            <span class="material-icons">help_outline</span>
-            使用说明
-        </h3>
+            <span class="material-icons">help_outline</span>{% trans "使用说明" %}</h3>
         <ul class="info-list">
             <li>
                 <span class="material-icons">list</span>
-                <span>选择您负责管理的社团后，相关审核任务将自动分配给您</span>
+                <span>{% trans "选择您负责管理的社团后，相关审核任务将自动分配给您" %}</span>
             </li>
             <li>
                 <span class="material-icons">edit</span>
-                <span>您可以随时修改负责的社团列表</span>
+                <span>{% trans "您可以随时修改负责的社团列表" %}</span>
             </li>
             <li>
                 <span class="material-icons">visibility</span>
-                <span>社长在查看社团信息时，可以看到负责他们社团的干事信息</span>
+                <span>{% trans "社长在查看社团信息时，可以看到负责他们社团的干事信息" %}</span>
             </li>
             <li>
                 <span class="material-icons">balance</span>
-                <span>建议根据您的工作能力合理选择负责的社团数量</span>
+                <span>{% trans "建议根据您的工作能力合理选择负责的社团数量" %}</span>
             </li>
         </ul>
     </div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}取消预约{% endblock %}
@@ -67,40 +68,36 @@
 <div class="page-shell">
     <div class="page-header">
         <h1 class="page-title">
-            <span class="material-icons">delete</span>
-            取消预约
-        </h1>
+            <span class="material-icons">delete</span>{% trans "取消预约" %}</h1>
     </div>
 
     <div class="card">
         <div class="alert">
             <span class="material-icons" style="font-size:20px;">warning</span>
-            <div>
-                确认取消？操作不可撤销，时间段将立即释放给其他人。
-            </div>
+            <div>{% trans "确认取消？操作不可撤销，时间段将立即释放给其他人。" %}</div>
         </div>
 
         <div class="detail-card">
             <div class="detail-row">
-                <span class="detail-label">房间</span>
+                <span class="detail-label">{% trans "房间" %}</span>
                 <span class="detail-value">{{ booking.room.name }}</span>
             </div>
             <div class="detail-row">
-                <span class="detail-label">日期时间</span>
+                <span class="detail-label">{% trans "日期时间" %}</span>
                 <span class="detail-value">{{ booking.booking_date|date:'Y年m月d日' }} {{ booking.start_time|date:'H:i' }} - {{ booking.end_time|date:'H:i' }}</span>
             </div>
             {% if booking.club %}
             <div class="detail-row">
-                <span class="detail-label">预约社团</span>
+                <span class="detail-label">{% trans "预约社团" %}</span>
                 <span class="detail-value">{{ booking.club.name }}</span>
             </div>
             {% endif %}
             <div class="detail-row">
-                <span class="detail-label">使用目的</span>
+                <span class="detail-label">{% trans "使用目的" %}</span>
                 <span class="detail-value">{{ booking.purpose }}</span>
             </div>
             <div class="detail-row">
-                <span class="detail-label">预计人数</span>
+                <span class="detail-label">{% trans "预计人数" %}</span>
                 <span class="detail-value">{{ booking.participant_count }} 人</span>
             </div>
         </div>
@@ -109,11 +106,9 @@
             {% csrf_token %}
             <div class="actions">
                 <a href="{% url 'clubs:my_room_bookings' %}" class="btn btn-secondary">
-                    <span class="material-icons">arrow_back</span> 返回
-                </a>
+                    <span class="material-icons">arrow_back</span>{% trans "返回" %}</a>
                 <button type="submit" class="btn btn-danger">
-                    <span class="material-icons">delete_forever</span> 确认取消
-                </button>
+                    <span class="material-icons">delete_forever</span>{% trans "确认取消" %}</button>
             </div>
         </form>
     </div>

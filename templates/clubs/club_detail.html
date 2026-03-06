@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}社团详情{% endblock %}
 
@@ -275,19 +276,15 @@
         <span class="material-icons">groups</span>
         <div class="page-header-content">
             <h1>{{ club.name }}</h1>
-            <div class="subtitle">社团详情</div>
+            <div class="subtitle">{% trans "社团详情" %}</div>
         </div>
         
         {% if user.profile.role == 'staff' or user.is_superuser %}
         <a href="{% url 'clubs:staff_management' %}" class="back-btn">
-            <span class="material-icons">arrow_back</span>
-            返回管理
-        </a>
+            <span class="material-icons">arrow_back</span>{% trans "返回管理" %}</a>
         {% else %}
         <a href="{% url 'clubs:user_dashboard' %}" class="back-btn">
-            <span class="material-icons">arrow_back</span>
-            返回工作台
-        </a>
+            <span class="material-icons">arrow_back</span>{% trans "返回工作台" %}</a>
         {% endif %}
     </div>
 
@@ -295,25 +292,19 @@
     <div class="info-grid">
         <div class="info-card">
             <div class="info-card-header">
-                <span class="material-icons">calendar_today</span>
-                成立日期
-            </div>
+                <span class="material-icons">calendar_today</span>{% trans "成立日期" %}</div>
             <div class="info-card-value">{{ club.founded_date|default:"--" }}</div>
         </div>
         
         <div class="info-card">
             <div class="info-card-header">
-                <span class="material-icons">person</span>
-                成员人数
-            </div>
+                <span class="material-icons">person</span>{% trans "成员人数" %}</div>
             <div class="info-card-value">{{ club.members_count }} 人</div>
         </div>
         
         <div class="info-card">
             <div class="info-card-header">
-                <span class="material-icons">info</span>
-                当前状态
-            </div>
+                <span class="material-icons">info</span>{% trans "当前状态" %}</div>
             <div class="info-card-value" style="margin-left: 0; margin-top: 4px; display: flex;">
                 <span class="status-badge {% if club.status == 'active' %}status-active{% elif club.status == 'inactive' %}status-inactive{% else %}status-suspended{% endif %}">
                     <span class="material-icons" style="font-size: 1rem;">
@@ -332,7 +323,7 @@
     <div class="detail-card">
         <div class="detail-card-header">
             <span class="material-icons">description</span>
-            <h2>社团简介</h2>
+            <h2>{% trans "社团简介" %}</h2>
         </div>
         <div class="description-content">{{ club.description }}</div>
     </div>
@@ -343,17 +334,17 @@
     <div class="detail-card">
         <div class="detail-card-header">
             <span class="material-icons">badge</span>
-            <h2>现任干部</h2>
+            <h2>{% trans "现任干部" %}</h2>
         </div>
         <div class="officers-table-wrapper">
             <table class="officers-table">
                 <thead>
                     <tr>
-                        <th>姓名</th>
-                        <th>学号</th>
-                        <th>职位</th>
-                        <th>任命日期</th>
-                        <th>联系方式</th>
+                        <th>{% trans "姓名" %}</th>
+                        <th>{% trans "学号" %}</th>
+                        <th>{% trans "职位" %}</th>
+                        <th>{% trans "任命日期" %}</th>
+                        <th>{% trans "联系方式" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -403,7 +394,7 @@
                             {% if is_president or is_staff or user.is_superuser or officer.user_profile.is_info_public %}
                                 {{ officer.user_profile.phone|default:"--" }}
                             {% else %}
-                                <span style="color: var(--md3-on-surface-variant); font-size: 0.8em;">未公开</span>
+                                <span style="color: var(--md3-on-surface-variant); font-size: 0.8em;">{% trans "未公开" %}</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -419,40 +410,33 @@
     <div class="detail-card">
         <div class="detail-card-header">
             <span class="material-icons">bolt</span>
-            <h2>管理操作</h2>
+            <h2>{% trans "管理操作" %}</h2>
         </div>
         <div class="action-grid">
             {% if is_president %}
                 <!-- 社长操作 -->
                 {% if club.registration_enabled %}
                 <a href="{% url 'clubs:submit_club_registration' club.id %}" class="action-btn btn-primary">
-                    <span class="material-icons">verified</span> 提交注册
-                </a>
+                    <span class="material-icons">verified</span>{% trans "提交注册" %}</a>
                 {% else %}
-                <button class="action-btn btn-disabled" disabled title="当前未开放注册">
-                    <span class="material-icons">block</span> 注册未开放
-                </button>
+                <button class="action-btn btn-disabled" disabled title="{% trans "当前未开放注册" %}">
+                    <span class="material-icons">block</span>{% trans "注册未开放" %}</button>
                 {% endif %}
                 
                 <a href="{% url 'clubs:submit_review' club.id %}" class="action-btn btn-primary">
-                    <span class="material-icons">assignment</span> 提交年审
-                </a>
+                    <span class="material-icons">assignment</span>{% trans "提交年审" %}</a>
 
                 <a href="{% url 'clubs:submit_reimbursement' club.id %}" class="action-btn btn-secondary">
-                    <span class="material-icons">receipt_long</span> 报销申请
-                </a>
+                    <span class="material-icons">receipt_long</span>{% trans "报销申请" %}</a>
                 
                 <a href="{% url 'clubs:submit_activity_application' club.id %}" class="action-btn btn-secondary">
-                    <span class="material-icons">event</span> 活动申请
-                </a>
+                    <span class="material-icons">event</span>{% trans "活动申请" %}</a>
                 
                 <a href="{% url 'clubs:submit_president_transition' club.id %}" class="action-btn btn-secondary">
-                    <span class="material-icons">manage_accounts</span> 社长换届
-                </a>
+                    <span class="material-icons">manage_accounts</span>{% trans "社长换届" %}</a>
                 
                 <button onclick="openDescriptionModal()" class="action-btn btn-secondary" style="font-family: inherit; font-size: 1rem; cursor: pointer;">
-                    <span class="material-icons">edit_note</span> 修改简介
-                </button>
+                    <span class="material-icons">edit_note</span>{% trans "修改简介" %}</button>
 
 
             {% endif %}
@@ -460,20 +444,16 @@
             {% if is_staff or user.is_superuser %}
                 <!-- 管理员操作 -->
                 <a href="{% url 'clubs:change_club_status' club.id %}" class="action-btn btn-secondary">
-                    <span class="material-icons">sync_alt</span> 变更状态
-                </a>
+                    <span class="material-icons">sync_alt</span>{% trans "变更状态" %}</a>
                 
                 <a href="{% url 'clubs:direct_edit_club_info' club.id %}" class="action-btn btn-secondary">
-                    <span class="material-icons">edit</span> 编辑信息
-                </a>
+                    <span class="material-icons">edit</span>{% trans "编辑信息" %}</a>
                 
                 <button onclick="openDescriptionModal()" class="action-btn btn-secondary">
-                    <span class="material-icons">edit_note</span> 修改简介
-                </button>
+                    <span class="material-icons">edit_note</span>{% trans "修改简介" %}</button>
                 
                 <a href="{% url 'clubs:delete_club' club.id %}" class="action-btn btn-danger" onclick="return confirm('确定要删除该社团吗？此操作不可恢复！');">
-                    <span class="material-icons">delete_forever</span> 删除社团
-                </a>
+                    <span class="material-icons">delete_forever</span>{% trans "删除社团" %}</a>
             {% endif %}
         </div>
     </div>
@@ -484,16 +464,16 @@
 <!-- 修改简介模态框 -->
 <div id="descriptionModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center;">
     <div class="modal-content" style="background-color: var(--md3-surface); padding: 24px; border-radius: 28px; width: 90%; max-width: 500px; box-shadow: var(--md3-elevation-3); position: relative;">
-        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 24px; color: var(--md3-on-surface);">修改社团简介</h3>
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 24px; color: var(--md3-on-surface);">{% trans "修改社团简介" %}</h3>
         <form method="post" action="{% url 'clubs:update_club_description' club.id %}">
             {% csrf_token %}
             <div style="margin-bottom: 24px;">
-                <label for="descriptionInput" style="display: block; margin-bottom: 8px; color: var(--md3-on-surface-variant); font-size: 14px;">社团简介</label>
+                <label for="descriptionInput" style="display: block; margin-bottom: 8px; color: var(--md3-on-surface-variant); font-size: 14px;">{% trans "社团简介" %}</label>
                 <textarea id="descriptionInput" name="description" rows="6" style="width: 100%; padding: 12px; border: 1px solid var(--md3-outline); border-radius: 8px; background: var(--md3-surface-container-highest); color: var(--md3-on-surface-container); font-family: 'Roboto', sans-serif; font-size: 16px; resize: vertical;">{{ club.description }}</textarea>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                <button type="button" onclick="closeDescriptionModal()" class="action-btn btn-outline" style="border: none; padding: 10px 24px;">取消</button>
-                <button type="submit" class="action-btn btn-primary" style="padding: 10px 24px;">保存</button>
+                <button type="button" onclick="closeDescriptionModal()" class="action-btn btn-outline" style="border: none; padding: 10px 24px;">{% trans "取消" %}</button>
+                <button type="submit" class="action-btn btn-primary" style="padding: 10px 24px;">{% trans "保存" %}</button>
             </div>
         </form>
     </div>

@@ -1,3 +1,4 @@
+{% load i18n %}
 {% comment %}
 审核记录时间轴组件
 使用方式: {% include 'clubs/components/_review_history.html' with reviews=existing_reviews approved_count=approved_count rejected_count=rejected_count %}
@@ -82,7 +83,7 @@
                 <strong style="border-bottom: 1px dotted var(--md3-outline);">{{ review.reviewer.profile.get_full_name|default:review.reviewer.username }}</strong>
             </a>
         {% else %}
-            <strong>系统管理员</strong>
+            <strong>{% trans "系统管理员" %}</strong>
         {% endif %}
     </span>
 </div>
@@ -95,7 +96,7 @@
                         
                         {% if review.rejected_materials %}
                         <div style="margin-top: var(--md3-spacing-md); padding: var(--md3-spacing-sm); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-md);">
-                            <div style="font-size: 0.75rem; font-weight: 500; color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xs); text-transform: uppercase;">被拒绝的材料</div>
+                            <div style="font-size: 0.75rem; font-weight: 500; color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xs); text-transform: uppercase;">{% trans "被拒绝的材料" %}</div>
                             <div style="display: flex; flex-wrap: wrap; gap: 4px;">
                                 {% for material in review.rejected_materials %}
                                 <span style="display: inline-flex; padding: 2px 8px; background: var(--md3-error-container); color: var(--md3-on-error-container); border-radius: var(--md3-radius-full); font-size: 0.75rem;">{{ material|material_name }}</span>
@@ -147,7 +148,7 @@
                 <strong style="border-bottom: 1px dotted var(--md3-outline);">{{ review.reviewer.profile.get_full_name|default:review.reviewer.username }}</strong>
             </a>
         {% else %}
-            <strong>系统管理员</strong>
+            <strong>{% trans "系统管理员" %}</strong>
         {% endif %}
     </span>
 </div>
@@ -160,7 +161,7 @@
                     
                     {% if review.rejected_materials %}
                     <div style="margin-top: var(--md3-spacing-md); padding: var(--md3-spacing-sm); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-md);">
-                        <div style="font-size: 0.75rem; font-weight: 500; color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xs); text-transform: uppercase;">被拒绝的材料</div>
+                        <div style="font-size: 0.75rem; font-weight: 500; color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xs); text-transform: uppercase;">{% trans "被拒绝的材料" %}</div>
                         <div style="display: flex; flex-wrap: wrap; gap: 4px;">
                             {% for material in review.rejected_materials %}
                             <span style="display: inline-flex; padding: 2px 8px; background: var(--md3-error-container); color: var(--md3-on-error-container); border-radius: var(--md3-radius-full); font-size: 0.75rem;">{{ material|material_name }}</span>
@@ -181,19 +182,17 @@
         </span>
         <span class="status-badge approved">
             <span class="material-icons" style="font-size: 0.875rem;">check_circle</span>
-            <strong>{{ approved_count|default:0 }}</strong> 人批准
-        </span>
+            <strong>{{ approved_count|default:0 }}</strong>{% trans "人批准" %}</span>
         <span class="status-badge rejected">
             <span class="material-icons" style="font-size: 0.875rem;">cancel</span>
-            <strong>{{ rejected_count|default:0 }}</strong> 人拒绝
-        </span>
+            <strong>{{ rejected_count|default:0 }}</strong>{% trans "人拒绝" %}</span>
     </div>
     {% endif %}
     
     {% else %}
     <div style="text-align: center; padding: var(--md3-spacing-2xl); color: var(--md3-on-surface-variant);">
         <span class="material-icons" style="font-size: 3rem; opacity: 0.3;">history</span>
-        <p style="margin: var(--md3-spacing-md) 0 0 0;">暂无审核记录</p>
+        <p style="margin: var(--md3-spacing-md) 0 0 0;">{% trans "暂无审核记录" %}</p>
     </div>
     {% endif %}
 

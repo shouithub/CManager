@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}我的预约{% endblock %}
@@ -301,12 +302,12 @@
     <div class="page-header">
         <span class="material-icons">event_note</span>
         <div class="page-header-content">
-            <h1>我的预约</h1>
-            <div class="subtitle">查看和管理您的房间借用记录</div>
+            <h1>{% trans "我的预约" %}</h1>
+            <div class="subtitle">{% trans "查看和管理您的房间借用记录" %}</div>
         </div>
         <div class="header-actions">
             <a href="{% url 'clubs:room_calendar' %}" class="btn btn-primary">
-                <span>返回日历</span>
+                <span>{% trans "返回日历" %}</span>
             </a>
         </div>
     </div>
@@ -329,7 +330,7 @@
                 </div>
                 
                 <div class="booking-purpose">
-                    <strong>用途：</strong>{{ booking.purpose }}
+                    <strong>{% trans "用途：" %}</strong>{{ booking.purpose }}
                 </div>
                 
                 <div class="booking-details">
@@ -359,23 +360,17 @@
             <div class="booking-actions-col">
                 {% if booking.status == 'active' %}
                     <span class="status-badge active">
-                        <span class="material-icons" style="font-size: 16px;">check_circle</span>
-                        有效
-                    </span>
+                        <span class="material-icons" style="font-size: 16px;">check_circle</span>{% trans "有效" %}</span>
                     <div class="action-buttons">
-                        <a href="{% url 'clubs:edit_room_booking' booking.id %}" class="btn btn-tonal" title="编辑">
-                            <span class="material-icons">edit</span>
-                            编辑
-                        </a>
-                        <a href="{% url 'clubs:delete_room_booking' booking.id %}" class="btn-icon" title="取消预约">
+                        <a href="{% url 'clubs:edit_room_booking' booking.id %}" class="btn btn-tonal" title="{% trans "编辑" %}">
+                            <span class="material-icons">edit</span>{% trans "编辑" %}</a>
+                        <a href="{% url 'clubs:delete_room_booking' booking.id %}" class="btn-icon" title="{% trans "取消预约" %}">
                             <span class="material-icons" style="color: var(--md3-error);">delete</span>
                         </a>
                     </div>
                 {% elif booking.status == 'cancelled' %}
                     <span class="status-badge cancelled">
-                        <span class="material-icons" style="font-size: 16px;">cancel</span>
-                        已取消
-                    </span>
+                        <span class="material-icons" style="font-size: 16px;">cancel</span>{% trans "已取消" %}</span>
                 {% endif %}
             </div>
         </div>
@@ -384,12 +379,10 @@
     {% else %}
     <div class="empty-state">
         <span class="material-icons empty-icon">event_busy</span>
-        <h2 class="empty-title">暂无预约记录</h2>
-        <p class="empty-text">您还没有任何有效的房间借用记录</p>
+        <h2 class="empty-title">{% trans "暂无预约记录" %}</h2>
+        <p class="empty-text">{% trans "您还没有任何有效的房间借用记录" %}</p>
         <a href="{% url 'clubs:submit_room_booking' %}" class="btn btn-primary">
-            <span class="material-icons">add_circle</span>
-            立即预约
-        </a>
+            <span class="material-icons">add_circle</span>{% trans "立即预约" %}</a>
     </div>
     {% endif %}
 </div>

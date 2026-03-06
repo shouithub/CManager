@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 {% load custom_filters %}
 
@@ -518,15 +519,15 @@
     <div class="page-header">
         <span class="material-icons">edit_document</span>
         <div class="page-header-content">
-            <h1>修改被拒材料</h1>
+            <h1>{% trans "修改被拒材料" %}</h1>
             {% if review_type == 'review' %}
             <p class="subtitle">{{ club.name }} · 社团年审申请</p>
             {% elif review_type == 'club_registration' %}
             <p class="subtitle">{{ club.name }} · 社团注册申请</p>
             {% elif review_type == 'club_application' or review_type == 'application' %}
-            <p class="subtitle">新社团申请</p>
+            <p class="subtitle">{% trans "新社团申请" %}</p>
             {% elif review_type == 'reimbursement' %}
-            <p class="subtitle">报销申请</p>
+            <p class="subtitle">{% trans "报销申请" %}</p>
             {% elif review_type == 'activity_application' %}
             <p class="subtitle">{{ club.name }} · 活动申请</p>
             {% elif review_type == 'president_transition' %}
@@ -534,9 +535,7 @@
             {% endif %}
         </div>
         <a href="{% if review_type == 'review' %}{% url 'clubs:approval_center' 'annual_review' %}{% elif review_type == 'club_application' or review_type == 'application' %}{% url 'clubs:approval_center' 'application' %}{% elif review_type == 'club_registration' %}{% url 'clubs:approval_center' 'registration' %}{% elif review_type == 'reimbursement' %}{% url 'clubs:approval_center' 'reimbursement' %}{% elif review_type == 'activity_application' %}{% url 'clubs:approval_center' 'activity_application' %}{% elif review_type == 'president_transition' %}{% url 'clubs:approval_center' 'president_transition' %}{% elif club %}{% url 'clubs:club_detail' club.id %}{% else %}{% url 'clubs:user_dashboard' %}{% endif %}" class="back-btn">
-            <span class="material-icons">arrow_back</span>
-            返回
-        </a>
+            <span class="material-icons">arrow_back</span>{% trans "返回" %}</a>
     </div>
     
     <!-- 消息提示 -->
@@ -553,7 +552,7 @@
     <div class="message error">
         <span class="material-icons">error</span>
         <div class="message-content">
-            <strong>提交失败，请修正以下问题：</strong>
+            <strong>{% trans "提交失败，请修正以下问题：" %}</strong>
             <ul>
                 {% for error in errors %}
                 <li>{{ error }}</li>
@@ -568,27 +567,25 @@
     <div class="card">
         <div class="card-header">
             <span class="material-icons">info</span>
-            <h2>申请信息</h2>
+            <h2>{% trans "申请信息" %}</h2>
         </div>
         
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">提交时间</span>
+                <span class="info-label">{% trans "提交时间" %}</span>
                 <span class="info-value">{{ rejected_submission.submitted_at|date:"Y-m-d H:i" }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">年审年份</span>
+                <span class="info-label">{% trans "年审年份" %}</span>
                 <span class="info-value">{{ rejected_submission.submission_year }}年</span>
             </div>
             <div class="info-item">
-                <span class="info-label">当前状态</span>
+                <span class="info-label">{% trans "当前状态" %}</span>
                 <span class="status-badge rejected">
-                    <span class="material-icons">cancel</span>
-                    已拒绝
-                </span>
+                    <span class="material-icons">cancel</span>{% trans "已拒绝" %}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">提交次数</span>
+                <span class="info-label">{% trans "提交次数" %}</span>
                 <span class="info-value">第{{ rejected_submission.resubmission_attempt }}次</span>
             </div>
         </div>
@@ -596,9 +593,7 @@
         {% if review_comments %}
         <div class="comment-section">
             <div class="comment-label">
-                <span class="material-icons">comment</span>
-                审核意见
-            </div>
+                <span class="material-icons">comment</span>{% trans "审核意见" %}</div>
             {% for comment in review_comments %}
             <div class="comment-content">{{ comment }}</div>
             {% endfor %}
@@ -611,23 +606,23 @@
     <div class="card">
         <div class="card-header">
             <span class="material-icons">info</span>
-            <h2>申请信息</h2>
+            <h2>{% trans "申请信息" %}</h2>
         </div>
         
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">提交时间</span>
+                <span class="info-label">{% trans "提交时间" %}</span>
                 <span class="info-value">{{ registration.submitted_at|date:"Y-m-d H:i" }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">当前状态</span>
+                <span class="info-label">{% trans "当前状态" %}</span>
                 <span class="status-badge {% if registration.status == 'partially_rejected' %}partially_rejected{% else %}rejected{% endif %}">
                     <span class="material-icons">{% if registration.status == 'partially_rejected' %}warning{% else %}cancel{% endif %}</span>
                     {% if registration.status == 'partially_rejected' %}部分拒绝{% elif registration.status == 'rejected' %}已拒绝{% else %}{{ registration.status }}{% endif %}
                 </span>
             </div>
             <div class="info-item">
-                <span class="info-label">提交次数</span>
+                <span class="info-label">{% trans "提交次数" %}</span>
                 <span class="info-value">第{{ registration.resubmission_attempt }}次</span>
             </div>
         </div>
@@ -635,9 +630,7 @@
         {% if registration.reviewer_comment %}
         <div class="comment-section">
             <div class="comment-label">
-                <span class="material-icons">comment</span>
-                审核意见
-            </div>
+                <span class="material-icons">comment</span>{% trans "审核意见" %}</div>
             <div class="comment-content">{{ registration.reviewer_comment }}</div>
         </div>
         {% endif %}
@@ -648,7 +641,7 @@
     <div class="card">
         <div class="card-header">
             <span class="material-icons">feedback</span>
-            <h2>审核拒绝理由</h2>
+            <h2>{% trans "审核拒绝理由" %}</h2>
         </div>
         <div class="comment-section" style="margin-top:0; padding-top:0; border-top:none;">
             {% for reason in rejected_reasons %}
@@ -660,14 +653,14 @@
     
     <!-- 被拒绝材料卡片 -->
     {% if rejected_material_items %}
-        {% include 'clubs/components/_materials_display.html' with materials=rejected_material_items title="需重新提交的材料" show_zip=False %}
+        {% include 'clubs/components/_materials_display.html' with materials=rejected_material_items title="{% trans "需重新提交的材料" %}" show_zip=False %}
     {% endif %}
     
     <!-- 上传表单卡片 -->
     <div class="card">
         <div class="card-header">
             <span class="material-icons">upload_file</span>
-            <h2>上传新材料</h2>
+            <h2>{% trans "上传新材料" %}</h2>
         </div>
         
         <!-- 模板下载区域 -->
@@ -675,7 +668,7 @@
         <div class="template-section">
             <div class="template-header">
                 <span class="material-icons">folder_zip</span>
-                <h3>可用模板下载</h3>
+                <h3>{% trans "可用模板下载" %}</h3>
             </div>
             <div class="template-grid">
                 {% for template in registration_templates %}
@@ -733,45 +726,35 @@
             
             <div class="form-group">
                 <label class="form-label">
-                    <span class="material-icons">event</span>
-                    报销日期
-                    <span class="required">*</span>
+                    <span class="material-icons">event</span>{% trans "报销日期" %}<span class="required">*</span>
                 </label>
                 <input type="date" name="submission_date" class="form-input" required value="{% if reimbursement %}{{ reimbursement.submission_date|date:'Y-m-d' }}{% endif %}">
-                <div class="form-hint">选择报销发生的日期</div>
+                <div class="form-hint">{% trans "选择报销发生的日期" %}</div>
             </div>
             
             <div class="form-group">
                 <label class="form-label">
-                    <span class="material-icons">attach_money</span>
-                    报销金额
-                    <span class="required">*</span>
+                    <span class="material-icons">attach_money</span>{% trans "报销金额" %}<span class="required">*</span>
                 </label>
-                <input type="number" name="reimbursement_amount" class="form-input" required step="0.01" min="0" placeholder="输入报销金额" value="{% if reimbursement %}{{ reimbursement.reimbursement_amount }}{% endif %}">
-                <div class="form-hint">输入准确的报销金额（元）</div>
+                <input type="number" name="reimbursement_amount" class="form-input" required step="0.01" min="0" placeholder="{% trans "输入报销金额" %}" value="{% if reimbursement %}{{ reimbursement.reimbursement_amount }}{% endif %}">
+                <div class="form-hint">{% trans "输入准确的报销金额（元）" %}</div>
             </div>
             
             <div class="form-group">
                 <label class="form-label">
-                    <span class="material-icons">description</span>
-                    报销说明
-                    <span class="required">*</span>
+                    <span class="material-icons">description</span>{% trans "报销说明" %}<span class="required">*</span>
                 </label>
-                <textarea name="description" class="form-input" required rows="5" placeholder="详细说明报销用途和事由">{% if reimbursement %}{{ reimbursement.description }}{% endif %}</textarea>
-                <div class="form-hint">请详细描述报销的用途和事由</div>
+                <textarea name="description" class="form-input" required rows="5" placeholder="{% trans "详细说明报销用途和事由" %}">{% if reimbursement %}{{ reimbursement.description }}{% endif %}</textarea>
+                <div class="form-hint">{% trans "请详细描述报销的用途和事由" %}</div>
             </div>
             
             {% endif %}
             
             <div class="action-buttons">
                 <a href="{% if review_type == 'review' %}{% url 'clubs:approval_center' 'annual_review' %}{% elif review_type == 'club_application' or review_type == 'application' %}{% url 'clubs:approval_center' 'application' %}{% elif review_type == 'club_registration' %}{% url 'clubs:approval_center' 'registration' %}{% elif review_type == 'reimbursement' %}{% url 'clubs:approval_center' 'reimbursement' %}{% elif review_type == 'activity_application' %}{% url 'clubs:approval_center' 'activity_application' %}{% elif review_type == 'president_transition' %}{% url 'clubs:approval_center' 'president_transition' %}{% elif club %}{% url 'clubs:club_detail' club.id %}{% else %}{% url 'clubs:user_dashboard' %}{% endif %}" class="btn btn-secondary">
-                    <span class="material-icons">close</span>
-                    取消
-                </a>
+                    <span class="material-icons">close</span>{% trans "取消" %}</a>
                 <button type="submit" class="btn btn-primary">
-                    <span class="material-icons">send</span>
-                    重新提交
-                </button>
+                    <span class="material-icons">send</span>{% trans "重新提交" %}</button>
             </div>
         </form>
     </div>

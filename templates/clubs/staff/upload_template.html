@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}材料模板管理{% endblock %}
 
@@ -384,12 +385,10 @@
 <div class="page-header">
     <span class="material-icons">upload_file</span>
     <div class="page-header-content">
-        <h1>材料模板管理</h1>
-        <p class="subtitle">管理各业务流程所需的文档模板文件</p>
+        <h1>{% trans "材料模板管理" %}</h1>
+        <p class="subtitle">{% trans "管理各业务流程所需的文档模板文件" %}</p>
     </div>
-    <a href="{% url 'clubs:index' %}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); border-radius: var(--md3-radius-full); border: none; cursor: pointer; white-space: nowrap; text-decoration: none;">
-        返回控制台
-    </a>
+    <a href="{% url 'clubs:index' %}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); border-radius: var(--md3-radius-full); border: none; cursor: pointer; white-space: nowrap; text-decoration: none;">{% trans "返回控制台" %}</a>
 </div>
 
 <div class="template-list-container">
@@ -408,14 +407,14 @@
                     <div class="material-title">
                         {{ req.name }}
                         {% if req.is_required %}
-                        <span class="badge bg-secondary">必填</span>
+                        <span class="badge bg-secondary">{% trans "必填" %}</span>
                         {% endif %}
                     </div>
                     <div class="material-desc-container">
                         <p class="material-desc" id="desc-text-{{ req.id }}">
-                            {% if req.description %}{{ req.description }}{% else %}<span class="text-muted">暂无描述</span>{% endif %}
+                            {% if req.description %}{{ req.description }}{% else %}<span class="text-muted">{% trans "暂无描述" %}</span>{% endif %}
                         </p>
-                        <button type="button" class="btn-icon-small" onclick="openEditDescModal('{{ req.id }}', '{{ req.name|escapejs }}')" title="修改描述">
+                        <button type="button" class="btn-icon-small" onclick="openEditDescModal('{{ req.id }}', '{{ req.name|escapejs }}')" title="{% trans "修改描述" %}">
                             <span class="material-icons">edit</span>
                         </button>
                     </div>
@@ -423,15 +422,11 @@
                 
                 <div class="material-actions">
                     {% if req.template_file %}
-                    <a href="{{ req.template_file.url }}" class="status-badge has-file" title="点击下载当前模板" download>
-                        <span class="material-icons" style="font-size: 16px;">description</span>
-                        已有模板
-                    </a>
+                    <a href="{{ req.template_file.url }}" class="status-badge has-file" title="{% trans "点击下载当前模板" %}" download>
+                        <span class="material-icons" style="font-size: 16px;">description</span>{% trans "已有模板" %}</a>
                     {% else %}
                     <span class="status-badge no-file">
-                        <span class="material-icons" style="font-size: 16px;">warning</span>
-                        无模板
-                    </span>
+                        <span class="material-icons" style="font-size: 16px;">warning</span>{% trans "无模板" %}</span>
                     {% endif %}
 
                     <form method="post" enctype="multipart/form-data" class="d-inline" style="margin: 0;">
@@ -451,7 +446,7 @@
     {% empty %}
     <div class="empty-state">
         <span class="material-icons">info</span>
-        <p>暂无启用的材料要求配置。请联系管理员添加材料要求。</p>
+        <p>{% trans "暂无启用的材料要求配置。请联系管理员添加材料要求。" %}</p>
     </div>
     {% endfor %}
 </div>
@@ -460,7 +455,7 @@
 <div class="modal-overlay" id="editDescModal" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>修改描述 - <span id="modalReqName"></span></h2>
+            <h2>{% trans "修改描述 -" %}<span id="modalReqName"></span></h2>
             <button type="button" class="modal-close" onclick="closeEditDescModal()">
                 <span class="material-icons">close</span>
             </button>
@@ -471,13 +466,13 @@
                 <input type="hidden" name="requirement_id" id="modalReqId">
                 <input type="hidden" name="action_type" value="update_description">
                 <div class="mb-3">
-                    <label for="modalDescInput" style="display: block; margin-bottom: 8px; font-weight: 500;">描述内容</label>
+                    <label for="modalDescInput" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "描述内容" %}</label>
                     <textarea class="form-control" name="description" id="modalDescInput" rows="4"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeEditDescModal()">取消</button>
-                <button type="submit" class="btn btn-primary">保存</button>
+                <button type="button" class="btn btn-secondary" onclick="closeEditDescModal()">{% trans "取消" %}</button>
+                <button type="submit" class="btn btn-primary">{% trans "保存" %}</button>
             </div>
         </form>
     </div>

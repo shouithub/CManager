@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}审核年度审查材料{% endblock %}
 
@@ -299,26 +300,26 @@
     <!-- 页面标题 -->
     <div class="page-header">
         <span class="material-icons">assignment</span>
-        <h1>审核年度审查材料</h1>
+        <h1>{% trans "审核年度审查材料" %}</h1>
     </div>
 
     <!-- 基本信息卡片 -->
     <div class="card">
         <div class="card-header">
             <span class="material-icons">info</span>
-            <h2>基本信息</h2>
+            <h2>{% trans "基本信息" %}</h2>
         </div>
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">社团名称</span>
+                <span class="info-label">{% trans "社团名称" %}</span>
                 <span class="info-value">{{ submission.club.name }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">提交时间</span>
+                <span class="info-label">{% trans "提交时间" %}</span>
                 <span class="info-value">{{ submission.submitted_at|date:"Y年m月d日 H:i" }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">提交次数</span>
+                <span class="info-label">{% trans "提交次数" %}</span>
                 <span class="info-value">
                     第{{ submission.resubmission_attempt }} 次提交
                     {% if submission.resubmission_attempt > 1 %}
@@ -327,7 +328,7 @@
                 </span>
             </div>
             <div class="info-item">
-                <span class="info-label">当前状态</span>
+                <span class="info-label">{% trans "当前状态" %}</span>
                 <span class="info-value">
                     <span class="status-badge {{ submission.status }}">
                         <span class="material-icons">
@@ -371,22 +372,22 @@
     </div>
 
     <!-- 附件材料展示组件 -->
-    {% include 'clubs/components/_materials_display.html' with materials=materials title="提交的材料" show_zip=False %}
+    {% include 'clubs/components/_materials_display.html' with materials=materials title="{% trans "提交的材料" %}" show_zip=False %}
 
     <!-- 审核记录时间轴组件 -->
-    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews approved_count=approved_count rejected_count=rejected_count title="审核记录" %}
+    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews approved_count=approved_count rejected_count=rejected_count title="{% trans "审核记录" %}" %}
 
     <!-- 审核表单或状态显示 -->
     {% if submission.status == 'pending' and not has_reviewed %}
-    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=True materials_list=materials cancel_url='clubs:staff_audit_center' cancel_url_args='annual_review' approve_text="通过审核" reject_text="驳回材料" title="年审审核" %}
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=True materials_list=materials cancel_url='clubs:staff_audit_center' cancel_url_args='annual_review' approve_text="通过审核" reject_text="驳回材料" title="{% trans "年审审核" %}" %}
     {% else %}
     <div class="card status-display">
         <div class="card-header">
             <span class="material-icons">info</span>
-            <h2>审核状态</h2>
+            <h2>{% trans "审核状态" %}</h2>
         </div>
         <p>
-            <strong>审核状态：</strong>
+            <strong>{% trans "审核状态：" %}</strong>
             <span class="status-badge {{ submission.status }}">
                 <span class="material-icons">
                     {% if submission.status == 'approved' %}check_circle
@@ -397,13 +398,11 @@
             </span>
         </p>
         {% if submission.reviewed_at %}
-        <p><strong>审核时间：</strong>{{ submission.reviewed_at|date:"Y-m-d H:i" }}</p>
+        <p><strong>{% trans "审核时间：" %}</strong>{{ submission.reviewed_at|date:"Y-m-d H:i" }}</p>
         {% endif %}
         <div class="action-buttons">
             <a href="{% url 'clubs:staff_audit_center' 'annual_review' %}" class="btn-secondary">
-                <span class="material-icons">arrow_back</span>
-                返回列表
-            </a>
+                <span class="material-icons">arrow_back</span>{% trans "返回列表" %}</a>
         </div>
     </div>
     {% endif %}

@@ -1,5 +1,6 @@
 import os
 from django.conf import settings
+from django.utils.translation import gettext as _
 from PIL import Image
 
 

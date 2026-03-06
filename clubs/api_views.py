@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.utils.translation import gettext as _
 from .models import (
     ReviewSubmission, 
     ClubRegistration, 

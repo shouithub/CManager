@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}管理中心 - CManager{% endblock %}
 
@@ -23,10 +24,10 @@
 <div class="admin-layout container" style="padding-top: 20px;">
     <aside class="admin-sidebar">
         <ul>
-            <li><a href="{% url 'clubs:admin_dashboard' %}">仪表板</a></li>
-            <li><a href="{% url 'clubs:manage_users' %}">用户管理</a></li>
-            <li><a href="{% url 'clubs:locked_accounts' %}">被锁定账号</a></li>
-            <li><a href="{% url 'clubs:publish_announcement' %}">发布公告</a></li>
+            <li><a href="{% url 'clubs:admin_dashboard' %}">{% trans "仪表板" %}</a></li>
+            <li><a href="{% url 'clubs:manage_users' %}">{% trans "用户管理" %}</a></li>
+            <li><a href="{% url 'clubs:locked_accounts' %}">{% trans "被锁定账号" %}</a></li>
+            <li><a href="{% url 'clubs:publish_announcement' %}">{% trans "发布公告" %}</a></li>
         </ul>
     </aside>
     <main class="admin-main">

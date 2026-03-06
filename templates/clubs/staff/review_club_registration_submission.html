@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 
 {% block title %}审核社团注册申请{% endblock %}
@@ -856,27 +857,27 @@
     <!-- ===== 页面顶部标题 ===== -->
     <div class="page-header">
         <span class="material-icons">flag</span>
-        <h1>审核社团注册申请</h1>
+        <h1>{% trans "审核社团注册申请" %}</h1>
     </div>
     
     <!-- ===== 基本信息卡片 ===== -->
     <div class="card">
         <div class="card-header">
             <span class="material-icons">info</span>
-            <h2>基本信息</h2>
+            <h2>{% trans "基本信息" %}</h2>
         </div>
         
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">社团名称</span>
+                <span class="info-label">{% trans "社团名称" %}</span>
                 <span class="info-value">{% if registration.club %}{{ registration.club.name|default:"未设置" }}{% else %}未设置{% endif %}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">申请时间</span>
+                <span class="info-label">{% trans "申请时间" %}</span>
                 <span class="info-value">{{ registration.submitted_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">当前状态</span>
+                <span class="info-label">{% trans "当前状态" %}</span>
                 <span class="info-value">
                     <span class="status-badge {{ registration.status }}">
                         <span class="material-icons">
@@ -887,14 +888,14 @@
                 </span>
             </div>
             <div class="info-item">
-                <span class="info-label">提交次数</span>
+                <span class="info-label">{% trans "提交次数" %}</span>
                 <span class="info-value">{{ registration.resubmission_attempt }}</span>
             </div>
         </div>
         
         {% if registration.club.responsible_staff.all %}
         <div class="info-item">
-            <span class="info-label">负责干事</span>
+            <span class="info-label">{% trans "负责干事" %}</span>
             <div class="info-value">
                 {% for relation in registration.club.responsible_staff.all %}
                     {% if relation.is_active %}
@@ -935,29 +936,23 @@
     <div class="card">
         <div class="card-header">
             <span class="material-icons">account_circle</span>
-            <h2>社团基本信息</h2>
+            <h2>{% trans "社团基本信息" %}</h2>
         </div>
         
         <div class="detail-grid">
             <div class="detail-item">
                 <span class="detail-label">
-                    <span class="material-icons">domain</span>
-                    社团名称
-                </span>
+                    <span class="material-icons">domain</span>{% trans "社团名称" %}</span>
                 <span class="detail-value">{% if registration.club %}{{ registration.club.name|default:"未设置" }}{% else %}未设置{% endif %}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">
-                    <span class="material-icons">today</span>
-                    成立日期
-                </span>
+                    <span class="material-icons">today</span>{% trans "成立日期" %}</span>
                 <span class="detail-value">{% if registration.club %}{{ registration.club.founded_date|date:"Y-m-d"|default:"未设置"}}{% else %}未设置{% endif %}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">
-                    <span class="material-icons">person</span>
-                    申请社长
-                </span>
+                    <span class="material-icons">person</span>{% trans "申请社长" %}</span>
                 <div class="detail-value">
                     <a href="{% url 'clubs:user_detail' registration.requested_by.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
                         <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
@@ -983,7 +978,7 @@
     <div class="card">
         <div class="card-header">
             <span class="material-icons">description</span>
-            <h2>社团简介</h2>
+            <h2>{% trans "社团简介" %}</h2>
         </div>
         
         <div>
@@ -995,25 +990,25 @@
     {% url 'clubs:zip_download' as zip_download_base %}
     {% with reg_id=registration.id|stringformat:"s" %}
     {% with zip_download_url=zip_download_base|add:'?type=club_registration&id='|add:reg_id %}
-    {% include 'clubs/components/_materials_display.html' with materials=materials title="上传的材料" show_zip=True zip_url=zip_download_url %}
+    {% include 'clubs/components/_materials_display.html' with materials=materials title="{% trans "上传的材料" %}" show_zip=True zip_url=zip_download_url %}
     {% endwith %}
     {% endwith %}
     
     <!-- ===== 审核历史 ===== -->
-    {% include 'clubs/components/_review_history.html' with reviews=all_reviews approved_count=approved_count rejected_count=rejected_count title="审核历史" current_attempt=registration.resubmission_attempt %}
+    {% include 'clubs/components/_review_history.html' with reviews=all_reviews approved_count=approved_count rejected_count=rejected_count title="{% trans "审核历史" %}" current_attempt=registration.resubmission_attempt %}
     
     <!-- ===== 干事审核表单 ===== -->
     {% if registration.status == 'pending' and not has_reviewed %}
-    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=True materials_list=materials_list cancel_url='clubs:staff_audit_center' cancel_url_args='registration' title="提交审核意见" %}
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=True materials_list=materials_list cancel_url='clubs:staff_audit_center' cancel_url_args='registration' title="{% trans "提交审核意见" %}" %}
     {% else %}
     <div class="card">
         <div class="card-header">
             <span class="material-icons">done_all</span>
-            <h2>审核状态</h2>
+            <h2>{% trans "审核状态" %}</h2>
         </div>
         
         <div style="padding: var(--md3-spacing-lg) 0;">
-            <p><strong>状态：</strong> 
+            <p><strong>{% trans "状态：" %}</strong> 
                 <span class="status-badge {{ registration.status }}">
                     <span class="material-icons">
                         {% if registration.status == 'approved' %}check_circle{% elif registration.status == 'rejected' %}cancel{% else %}schedule{% endif %}
@@ -1022,15 +1017,13 @@
                 </span>
             </p>
             {% if registration.reviewed_at %}
-            <p><strong>审核时间：</strong> {{ registration.reviewed_at|date:"Y-m-d H:i" }}</p>
+            <p><strong>{% trans "审核时间：" %}</strong> {{ registration.reviewed_at|date:"Y-m-d H:i" }}</p>
             {% endif %}
         </div>
         
         <div class="action-buttons">
             <a href="{% url 'clubs:staff_audit_center' 'application' %}" class="btn btn-secondary">
-                <span class="material-icons">arrow_back</span>
-                返回列表
-            </a>
+                <span class="material-icons">arrow_back</span>{% trans "返回列表" %}</a>
         </div>
     </div>
     {% endif %}

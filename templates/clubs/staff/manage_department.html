@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}管理部门人员{% endblock %}
 
@@ -272,7 +273,7 @@
     <!-- 返回按钮 -->
     <a href="{% url 'clubs:index' %}" class="back-button">
         <span class="material-icons">arrow_back</span>
-        <span>返回</span>
+        <span>{% trans "返回" %}</span>
     </a>
 
     <!-- 页面标题 -->
@@ -280,7 +281,7 @@
         <div class="header-content">
             <span class="material-icons">supervisor_account</span>
             <div class="header-text">
-                <h1>管理部门人员</h1>
+                <h1>{% trans "管理部门人员" %}</h1>
                 <p>管理 {{ department }} 的所有干事</p>
             </div>
         </div>
@@ -304,7 +305,7 @@
     <div class="info-card">
         <span class="material-icons">info</span>
         <div>
-            <strong>部门部长管理功能</strong>
+            <strong>{% trans "部门部长管理功能" %}</strong>
             <p style="margin: var(--md3-spacing-xs) 0 0 0;">
                 你是 {{ department }} 的部长，可以查看和了解你部门的所有干事成员。
                 如需修改干事的属性（部门/职级），请联系管理员。
@@ -318,18 +319,18 @@
         <div class="staff-section">
             <div class="section-header">
                 <span class="material-icons">admin_panel_settings</span>
-                <h3>部长</h3>
+                <h3>{% trans "部长" %}</h3>
                 <div class="section-title-suffix">{{ directors.count }} 人</div>
             </div>
             
             <table class="staff-table">
                 <thead>
                     <tr>
-                        <th width="20%">用户名</th>
-                        <th width="20%">姓名</th>
-                        <th width="20%">学号</th>
-                        <th width="20%">电话</th>
-                        <th width="20%">职级</th>
+                        <th width="20%">{% trans "用户名" %}</th>
+                        <th width="20%">{% trans "姓名" %}</th>
+                        <th width="20%">{% trans "学号" %}</th>
+                        <th width="20%">{% trans "电话" %}</th>
+                        <th width="20%">{% trans "职级" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -372,18 +373,18 @@
         <div class="staff-section">
             <div class="section-header">
                 <span class="material-icons">person</span>
-                <h3>部员</h3>
+                <h3>{% trans "部员" %}</h3>
                 <div class="section-title-suffix">{{ members.count }} 人</div>
             </div>
             
             <table class="staff-table">
                 <thead>
                     <tr>
-                        <th width="20%">用户名</th>
-                        <th width="20%">姓名</th>
-                        <th width="20%">学号</th>
-                        <th width="20%">电话</th>
-                        <th width="20%">职级</th>
+                        <th width="20%">{% trans "用户名" %}</th>
+                        <th width="20%">{% trans "姓名" %}</th>
+                        <th width="20%">{% trans "学号" %}</th>
+                        <th width="20%">{% trans "电话" %}</th>
+                        <th width="20%">{% trans "职级" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -425,7 +426,7 @@
     <div class="staff-section">
         <div class="empty-state">
             <span class="material-icons">group_off</span>
-            <p>当前部门暂无成员</p>
+            <p>{% trans "当前部门暂无成员" %}</p>
             <p style="font-size: 0.9rem; color: var(--md3-on-surface-variant);">
                 请等待其他干事加入 {{ department }} 或联系管理员添加
             </p>

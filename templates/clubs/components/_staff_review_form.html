@@ -1,3 +1,4 @@
+{% load i18n %}
 {% comment %}
 干事审核表单组件
 使用方式: {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=True materials_list=materials cancel_url='clubs:staff_audit_center' cancel_url_args='club_registration' %}
@@ -41,9 +42,7 @@
         {% if show_rejected_materials and materials_list %}
         <div id="staff_rejected_materials_panel" style="background: var(--md3-error-container); border: 1px solid var(--md3-error); border-radius: var(--md3-radius-lg); padding: 0; margin-bottom: var(--md3-spacing-lg); max-height: 0; overflow: hidden; opacity: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
             <h4 style="color: var(--md3-on-error-container); margin: 0 0 var(--md3-spacing-md) 0; font-size: 0.9375rem; font-weight: 600; display: flex; align-items: center; gap: var(--md3-spacing-sm);">
-                <span class="material-icons">error_outline</span>
-                选择被拒绝的材料（可多选）
-            </h4>
+                <span class="material-icons">error_outline</span>{% trans "选择被拒绝的材料（可多选）" %}</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--md3-spacing-sm);">
                 {% for item in materials_list %}
                 <label style="display: flex; align-items: center; gap: var(--md3-spacing-sm); color: var(--md3-on-error-container); font-size: 0.875rem; cursor: pointer; padding: var(--md3-spacing-sm) var(--md3-spacing-md); border-radius: var(--md3-radius-sm); transition: background 0.2s ease;">
@@ -57,12 +56,12 @@
         
         <!-- 审核意见 -->
         <div style="margin-bottom: var(--md3-spacing-lg);">
-            <label for="staff_review_comment" style="display: block; margin-bottom: var(--md3-spacing-sm); font-weight: 600; color: var(--md3-on-surface); font-size: 0.9375rem;">审核意见</label>
+            <label for="staff_review_comment" style="display: block; margin-bottom: var(--md3-spacing-sm); font-weight: 600; color: var(--md3-on-surface); font-size: 0.9375rem;">{% trans "审核意见" %}</label>
             <textarea 
                 id="staff_review_comment" 
                 name="review_comment" 
                 style="width: 100%; padding: var(--md3-spacing-md); background: var(--md3-surface-container-highest); border: 1px solid var(--md3-outline-variant); border-radius: var(--md3-radius-md); color: var(--md3-on-surface); font-family: inherit; font-size: 0.9375rem; resize: vertical; min-height: 120px; box-sizing: border-box; transition: all 0.2s ease;"
-                placeholder="请输入您的审核意见（拒绝时必填）"
+                placeholder="{% trans "请输入您的审核意见（拒绝时必填）" %}"
                 rows="4"
                 onfocus="this.style.borderColor='var(--md3-primary)'; this.style.boxShadow='0 0 0 3px var(--md3-primary-container)';"
                 onblur="this.style.borderColor='var(--md3-outline-variant)'; this.style.boxShadow='none';"
@@ -75,13 +74,9 @@
         <!-- 操作按钮 -->
         <div style="display: flex; gap: var(--md3-spacing-md); margin-top: var(--md3-spacing-xl); padding-top: var(--md3-spacing-lg); border-top: 1px solid var(--md3-outline-variant);">
             <button type="submit" class="btn btn-primary" id="staff_submit_btn" style="flex: 1; display: none;">
-                <span class="material-icons">send</span>
-                提交审核
-            </button>
+                <span class="material-icons">send</span>{% trans "提交审核" %}</button>
             <a href="{% if cancel_url_args %}{% url cancel_url cancel_url_args %}{% else %}{% url cancel_url %}{% endif %}" class="btn btn-secondary" style="flex: 1; justify-content: center;">
-                <span class="material-icons">arrow_back</span>
-                返回
-            </a>
+                <span class="material-icons">arrow_back</span>{% trans "返回" %}</a>
         </div>
     </form>
 </div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 
 {% block title %}审核社长换届申请{% endblock %}
@@ -399,27 +400,27 @@
     <!-- ===== 页面顶部标题 ===== -->
     <div class="page-header">
         <span class="material-icons">swap_horiz</span>
-        <h1>审核社长换届申请</h1>
+        <h1>{% trans "审核社长换届申请" %}</h1>
     </div>
     
     <!-- ===== 基本信息卡片 ===== -->
     <div class="card">
         <div class="card-header">
             <span class="material-icons">info</span>
-            <h2>基本信息</h2>
+            <h2>{% trans "基本信息" %}</h2>
         </div>
         
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">社团名称</span>
+                <span class="info-label">{% trans "社团名称" %}</span>
                 <span class="info-value">{{ club.name }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">申请时间</span>
+                <span class="info-label">{% trans "申请时间" %}</span>
                 <span class="info-value">{{ transition.submitted_at|date:"Y-m-d H:i" }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">提交次数</span>
+                <span class="info-label">{% trans "提交次数" %}</span>
                 <span class="info-value">
                     第{{ transition.resubmission_attempt }} 次提交
                     {% if transition.resubmission_attempt > 1 %}
@@ -428,7 +429,7 @@
                 </span>
             </div>
             <div class="info-item">
-                <span class="info-label">当前状态</span>
+                <span class="info-label">{% trans "当前状态" %}</span>
                 <span class="info-value">
                     <span class="status-badge {{ transition.status }}">
                         <span class="material-icons">
@@ -442,7 +443,7 @@
         
         {% if club.responsible_staff.all %}
         <div class="info-item" style="margin-top: var(--md3-spacing-lg);">
-            <span class="info-label">负责干事</span>
+            <span class="info-label">{% trans "负责干事" %}</span>
             <div class="info-value">
                 {% for relation in club.responsible_staff.all %}
                     {% if relation.is_active %}
@@ -483,7 +484,7 @@
     <div class="card transition-info-card">
         <div class="card-header">
             <span class="material-icons">people</span>
-            <h2>社长换届信息</h2>
+            <h2>{% trans "社长换届信息" %}</h2>
         </div>
         
         <!-- 换届对比展示 -->
@@ -499,7 +500,7 @@
                             <span class="material-icons" style="font-size: 24px;">person_off</span>
                         {% endif %}
                     </div>
-                    <span class="person-label">原社长</span>
+                    <span class="person-label">{% trans "原社长" %}</span>
                     <span class="person-name">
                         {% if club.president %}
                             {% if club.president.profile.real_name %}
@@ -530,7 +531,7 @@
                             <span style="font-weight: bold; font-size: 20px;">{{ transition.new_president_officer.user_profile.real_name|slice:":1"|default:transition.new_president_officer.user_profile.user.username|slice:":1" }}</span>
                         {% endif %}
                     </div>
-                    <span class="person-label">新社长</span>
+                    <span class="person-label">{% trans "新社长" %}</span>
                     <span class="person-name">
                         {% if transition.new_president_officer.user_profile.real_name %}
                             {{ transition.new_president_officer.user_profile.real_name }}
@@ -547,23 +548,17 @@
         <div class="detail-grid">
             <div class="detail-item">
                 <span class="detail-label">
-                    <span class="material-icons">phone</span>
-                    新社长联系电话
-                </span>
+                    <span class="material-icons">phone</span>{% trans "新社长联系电话" %}</span>
                 <span class="detail-value">{{ transition.new_president_officer.user_profile.phone|default:"未设置" }}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">
-                    <span class="material-icons">badge</span>
-                    当前职位
-                </span>
+                    <span class="material-icons">badge</span>{% trans "当前职位" %}</span>
                 <span class="detail-value">{{ transition.new_president_officer.get_position_display }}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label">
-                    <span class="material-icons">event</span>
-                    换届日期
-                </span>
+                    <span class="material-icons">event</span>{% trans "换届日期" %}</span>
                 <span class="detail-value">{{ transition.transition_date|date:"Y-m-d" }}</span>
             </div>
         </div>
@@ -571,9 +566,7 @@
         <!-- 换届原因 -->
         <div style="margin-top: var(--md3-spacing-lg); padding-top: var(--md3-spacing-lg); border-top: 1px solid rgba(0,0,0,0.1);">
             <div class="detail-label" style="margin-bottom: var(--md3-spacing-md);">
-                <span class="material-icons">description</span>
-                换届原因
-            </div>
+                <span class="material-icons">description</span>{% trans "换届原因" %}</div>
             <div style="padding: var(--md3-spacing-lg); background: rgba(255,255,255,0.6); border-radius: var(--md3-radius-lg); line-height: 1.8;">
                 {{ transition.transition_reason|default:"未填写"|linebreaks }}
             </div>
@@ -581,20 +574,20 @@
     </div>
     
     <!-- ===== 附件材料卡片 ===== -->
-    {% include 'clubs/components/_materials_display.html' with materials=transition_materials title="附件材料" show_zip=True zip_url=zip_url %}
+    {% include 'clubs/components/_materials_display.html' with materials=transition_materials title="{% trans "附件材料" %}" show_zip=True zip_url=zip_url %}
     
     <!-- ===== 干事审核表单 ===== -->
     {% if transition.status == 'pending' %}
-    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='president_transition' title="提交审核意见" approve_text="批准换届" reject_text="拒绝换届" %}
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='president_transition' title="{% trans "提交审核意见" %}" approve_text="批准换届" reject_text="拒绝换届" %}
     {% else %}
     <div class="card">
         <div class="card-header">
             <span class="material-icons">done_all</span>
-            <h2>审核状态</h2>
+            <h2>{% trans "审核状态" %}</h2>
         </div>
         
         <div style="padding: var(--md3-spacing-lg) 0;">
-            <p><strong>状态：</strong> 
+            <p><strong>{% trans "状态：" %}</strong> 
                 <span class="status-badge {{ transition.status }}">
                     <span class="material-icons">
                         {% if transition.status == 'approved' %}check_circle{% elif transition.status == 'rejected' %}cancel{% else %}schedule{% endif %}
@@ -603,11 +596,11 @@
                 </span>
             </p>
             {% if transition.reviewed_at %}
-            <p style="margin-top: var(--md3-spacing-md);"><strong>审核时间：</strong> {{ transition.reviewed_at|date:"Y-m-d H:i" }}</p>
+            <p style="margin-top: var(--md3-spacing-md);"><strong>{% trans "审核时间：" %}</strong> {{ transition.reviewed_at|date:"Y-m-d H:i" }}</p>
             {% endif %}
             {% if transition.reviewer %}
             <div style="margin-top: var(--md3-spacing-sm); display: flex; align-items: center;">
-                <strong style="margin-right: 8px;">审核人：</strong>
+                <strong style="margin-right: 8px;">{% trans "审核人：" %}</strong>
                 <a href="{% url 'clubs:user_detail' transition.reviewer.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                     <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; margin-right: 8px; flex-shrink: 0;">
                         {% if transition.reviewer.profile.avatar %}
@@ -623,15 +616,13 @@
             </div>
             {% endif %}
             {% if transition.reviewer_comment %}
-            <p style="margin-top: var(--md3-spacing-sm);"><strong>审核意见：</strong> {{ transition.reviewer_comment }}</p>
+            <p style="margin-top: var(--md3-spacing-sm);"><strong>{% trans "审核意见：" %}</strong> {{ transition.reviewer_comment }}</p>
             {% endif %}
         </div>
         
         <div style="display: flex; gap: var(--md3-spacing-md); margin-top: var(--md3-spacing-lg); padding-top: var(--md3-spacing-lg); border-top: 1px solid var(--md3-outline-variant);">
             <a href="{% url 'clubs:staff_audit_center' 'president_transition' %}" style="display: inline-flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-xl); background: var(--md3-surface-container-high); color: var(--md3-on-surface); border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-full); text-decoration: none; font-weight: 600;">
-                <span class="material-icons">arrow_back</span>
-                返回列表
-            </a>
+                <span class="material-icons">arrow_back</span>{% trans "返回列表" %}</a>
         </div>
     </div>
     {% endif %}

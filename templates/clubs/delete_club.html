@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}删除社团 - 社团管理系统{% endblock %}
 
@@ -210,64 +211,54 @@
     <!-- 页面标题 -->
     <div class="page-title">
         <span class="material-icons">delete_forever</span>
-        <h1>删除社团</h1>
+        <h1>{% trans "删除社团" %}</h1>
     </div>
 
     <!-- 警告信息 -->
     <div class="warning-card">
         <div class="warning-header">
-            <span class="material-icons">warning</span>
-            危险操作！
-        </div>
-        <p>删除社团是不可逆转的操作，将导致以下后果：</p>
+            <span class="material-icons">warning</span>{% trans "危险操作！" %}</div>
+        <p>{% trans "删除社团是不可逆转的操作，将导致以下后果：" %}</p>
         <ul>
-            <li>社团 <strong>{{ club.name }}</strong> 的所有基本信息将被永久删除</li>
-            <li>与该社团相关的所有年审记录将被清除</li>
-            <li>该社团的成员信息将被移除</li>
-            <li>该社团的社长变更记录将被清除</li>
-            <li>该社团的所有相关数据将被完整清除</li>
-            <li>此操作不可恢复</li>
+            <li>{% trans "社团" %}<strong>{{ club.name }}</strong>{% trans "的所有基本信息将被永久删除" %}</li>
+            <li>{% trans "与该社团相关的所有年审记录将被清除" %}</li>
+            <li>{% trans "该社团的成员信息将被移除" %}</li>
+            <li>{% trans "该社团的社长变更记录将被清除" %}</li>
+            <li>{% trans "该社团的所有相关数据将被完整清除" %}</li>
+            <li>{% trans "此操作不可恢复" %}</li>
         </ul>
     </div>
 
     <!-- 确认表单 -->
     <div class="confirm-card">
-        <p>请输入社团名称 <strong>{{ club.name }}</strong> 确认您要删除此社团：</p>
+        <p>{% trans "请输入社团名称" %}<strong>{{ club.name }}</strong>{% trans "确认您要删除此社团：" %}</p>
 
         <form method="post">
             {% csrf_token %}
 
             <div class="form-group">
                 <label for="confirm_club_name">
-                    <span class="material-icons">edit</span>
-                    确认社团名称 *
-                </label>
+                    <span class="material-icons">edit</span>{% trans "确认社团名称 *" %}</label>
                 <input
                     type="text"
                     id="confirm_club_name"
                     name="confirm_club_name"
                     required
-                    placeholder="输入社团名称以确认删除"
+                    placeholder="{% trans "输入社团名称以确认删除" %}"
                 >
             </div>
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-danger">
-                    <span class="material-icons">delete</span>
-                    确认删除社团
-                </button>
+                    <span class="material-icons">delete</span>{% trans "确认删除社团" %}</button>
                 <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-secondary">
-                    <span class="material-icons">close</span>
-                    取消
-                </a>
+                    <span class="material-icons">close</span>{% trans "取消" %}</a>
             </div>
         </form>
 
         <div class="back-link">
             <a href="{% url 'clubs:club_detail' club.id %}" class="btn btn-secondary">
-                <span class="material-icons">arrow_back</span>
-                返回社团详情
-            </a>
+                <span class="material-icons">arrow_back</span>{% trans "返回社团详情" %}</a>
         </div>
     </div>
 </div>

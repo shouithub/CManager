@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}首页 - 社团管理系统{% endblock %}
@@ -854,8 +855,8 @@
                 <span class="material-icons">groups</span>
             </div>
             <div class="hero-text">
-                <h1>社团管理服务中心</h1>
-                <p>致力于为社团提供全方位的管理与服务支持，促进社团健康发展</p>
+                <h1>{% trans "社团管理服务中心" %}</h1>
+                <p>{% trans "致力于为社团提供全方位的管理与服务支持，促进社团健康发展" %}</p>
             </div>
         </div>
         <div class="hero-decoration"></div>
@@ -906,7 +907,7 @@
         <div class="announcements-card">
             <div class="announcements-header">
                 <span class="material-icons">campaign</span>
-                <h3>最新公告</h3>
+                <h3>{% trans "最新公告" %}</h3>
             </div>
             <div class="announcements-list">
                 {% for announcement in announcements %}
@@ -914,9 +915,7 @@
                     <div class="announcement-top">
                         <h4 class="announcement-title">{{ announcement.title }}</h4>
                         <span class="announcement-chip">
-                            <span class="material-icons">notifications</span>
-                            公告
-                        </span>
+                            <span class="material-icons">notifications</span>{% trans "公告" %}</span>
                     </div>
                     <div class="announcement-meta">
                         <span class="material-icons">schedule</span>
@@ -949,23 +948,19 @@
             <div class="welcome-card-icon">
                 <span class="material-icons">login</span>
             </div>
-            <h3>已有账号</h3>
-            <p>登录后查看完整的部门信息、社团详情，管理您的社团事务</p>
+            <h3>{% trans "已有账号" %}</h3>
+            <p>{% trans "登录后查看完整的部门信息、社团详情，管理您的社团事务" %}</p>
             <a href="{% url 'clubs:login' %}" class="welcome-btn welcome-btn-primary">
-                <span class="material-icons">arrow_forward</span>
-                立即登录
-            </a>
+                <span class="material-icons">arrow_forward</span>{% trans "立即登录" %}</a>
         </div>
         <div class="welcome-card register">
             <div class="welcome-card-icon">
                 <span class="material-icons">person_add</span>
             </div>
-            <h3>新用户？</h3>
-            <p>注册账号后即可使用社团管理系统的全部功能</p>
+            <h3>{% trans "新用户？" %}</h3>
+            <p>{% trans "注册账号后即可使用社团管理系统的全部功能" %}</p>
             <a href="{% url 'clubs:register' %}" class="welcome-btn welcome-btn-secondary">
-                <span class="material-icons">arrow_forward</span>
-                注册账号
-            </a>
+                <span class="material-icons">arrow_forward</span>{% trans "注册账号" %}</a>
         </div>
     </div>
     
@@ -975,7 +970,7 @@
         <div class="section-header">
             <h2 class="section-title">
                 <span class="material-icons">info</span>
-                <span>部门介绍</span>
+                <span>{% trans "部门介绍" %}</span>
             </h2>
         </div>
         <div class="departments-grid">
@@ -1014,7 +1009,7 @@
                 <span class="material-icons">groups</span>
             </div>
             <div class="stat-info">
-                <div class="stat-label">干事总数</div>
+                <div class="stat-label">{% trans "干事总数" %}</div>
                 <div class="stat-value">{{ total_staff }}</div>
             </div>
         </div>
@@ -1023,7 +1018,7 @@
                 <span class="material-icons">stars</span>
             </div>
             <div class="stat-info">
-                <div class="stat-label">部长人数</div>
+                <div class="stat-label">{% trans "部长人数" %}</div>
                 <div class="stat-value">{{ total_directors }}</div>
             </div>
         </div>
@@ -1032,7 +1027,7 @@
                 <span class="material-icons">person</span>
             </div>
             <div class="stat-info">
-                <div class="stat-label">部员人数</div>
+                <div class="stat-label">{% trans "部员人数" %}</div>
                 <div class="stat-value">{{ total_members }}</div>
             </div>
         </div>
@@ -1045,7 +1040,7 @@
         <div class="section-header">
             <h2 class="section-title">
                 <span class="material-icons">info</span>
-                <span>部门介绍</span>
+                <span>{% trans "部门介绍" %}</span>
             </h2>
         </div>
         <div class="departments-grid">
@@ -1078,7 +1073,7 @@
         <div class="section-header">
             <h2 class="section-title">
                 <span class="material-icons">groups</span>
-                <span>社团列表</span>
+                <span>{% trans "社团列表" %}</span>
             </h2>
         </div>
         <div class="club-list">
@@ -1093,9 +1088,7 @@
                 </div>
                 {% if item.is_president %}
                 <div class="club-list-badge">
-                    <span class="material-icons" style="font-size: 14px;">badge</span>
-                    我是社长
-                </div>
+                    <span class="material-icons" style="font-size: 14px;">badge</span>{% trans "我是社长" %}</div>
                 {% endif %}
                 <span class="material-icons" style="color: var(--md3-on-surface-variant);">chevron_right</span>
             </a>
@@ -1111,7 +1104,7 @@
 <div id="deptMembersModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
     <div class="modal-card" style="background: var(--md3-surface); padding: 24px; border-radius: 28px; width: 90%; max-width: 500px; box-shadow: var(--md3-elevation-3); max-height: 80vh; overflow-y: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 id="modalDeptName" style="margin: 0; font-size: 24px; color: var(--md3-on-surface);">部门成员</h3>
+            <h3 id="modalDeptName" style="margin: 0; font-size: 24px; color: var(--md3-on-surface);">{% trans "部门成员" %}</h3>
             <button onclick="closeDeptModal()" style="background: none; border: none; cursor: pointer; color: var(--md3-on-surface-variant);">
                 <span class="material-icons">close</span>
             </button>
@@ -1190,7 +1183,7 @@ function showDepartmentMembers(deptId) {
             
             // Directors
             if (data.directors.length > 0) {
-                html += '<h4 style="margin: 16px 0 8px; color: var(--md3-primary);">部长</h4>';
+                html += '<h4 style="margin: 16px 0 8px; color: var(--md3-primary);">{% trans "部长" %}</h4>';
                 data.directors.forEach(d => {
                     html += `
                         <div class="member-item">
@@ -1202,7 +1195,7 @@ function showDepartmentMembers(deptId) {
                                     <div class="member-name">${d.name}</div>
                                 </div>
                             </a>
-                            <span class="role-badge role-director">部长</span>
+                            <span class="role-badge role-director">{% trans "部长" %}</span>
                         </div>
                     `;
                 });
@@ -1210,7 +1203,7 @@ function showDepartmentMembers(deptId) {
             
             // Members
             if (data.members.length > 0) {
-                html += '<h4 style="margin: 16px 0 8px; color: var(--md3-secondary);">部员</h4>';
+                html += '<h4 style="margin: 16px 0 8px; color: var(--md3-secondary);">{% trans "部员" %}</h4>';
                 data.members.forEach(m => {
                     html += `
                         <div class="member-item">
@@ -1222,12 +1215,12 @@ function showDepartmentMembers(deptId) {
                                     <div class="member-name">${m.name}</div>
                                 </div>
                             </a>
-                            <span class="role-badge role-member">部员</span>
+                            <span class="role-badge role-member">{% trans "部员" %}</span>
                         </div>
                     `;
                 });
             } else if (data.directors.length === 0) {
-                html += '<p style="text-align: center; color: var(--md3-on-surface-variant);">暂无成员</p>';
+                html += '<p style="text-align: center; color: var(--md3-on-surface-variant);">{% trans "暂无成员" %}</p>';
             }
             
             html += '</div>';
@@ -1235,7 +1228,7 @@ function showDepartmentMembers(deptId) {
         })
         .catch(err => {
             console.error(err);
-            content.innerHTML = '<p style="color: var(--md3-error); text-align: center;">加载失败，请稍后重试</p>';
+            content.innerHTML = '<p style="color: var(--md3-error); text-align: center;">{% trans "加载失败，请稍后重试" %}</p>';
         });
 }
 

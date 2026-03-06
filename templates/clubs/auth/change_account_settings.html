@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}
     {% if is_admin_view %}
@@ -17,10 +18,8 @@
         </span>
         <div class="page-header-content">
             {% if is_admin_view %}
-                <h1>编辑用户账户</h1>
-                <div class="subtitle" style="display: flex; align-items: center; gap: 8px;">
-                    正在编辑：
-                    <a href="{% url 'clubs:user_detail' target_user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                <h1>{% trans "编辑用户账户" %}</h1>
+                <div class="subtitle" style="display: flex; align-items: center; gap: 8px;">{% trans "正在编辑：" %}<a href="{% url 'clubs:user_detail' target_user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
                         <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                             {% if target_user.profile.avatar %}
                                 <img src="{{ target_user.profile.avatar.url }}" alt="{{ target_user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -34,10 +33,8 @@
                     </a>
                 </div>
             {% else %}
-                <h1>修改账户设置</h1>
-                <div class="subtitle" style="display: flex; align-items: center; gap: 8px;">
-                    用户名：
-                    <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                <h1>{% trans "修改账户设置" %}</h1>
+                <div class="subtitle" style="display: flex; align-items: center; gap: 8px;">{% trans "用户名：" %}<a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
                         <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                             {% if user.profile.avatar %}
                                 <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -91,9 +88,7 @@
     <div class="admin-card" style="margin-bottom: 24px;">
         <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--md3-outline-variant);">
             <h3 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
-                <span class="material-icons" style="color: var(--md3-primary);">person</span>
-                修改用户名
-            </h3>
+                <span class="material-icons" style="color: var(--md3-primary);">person</span>{% trans "修改用户名" %}</h3>
         </div>
         
         <form method="post">
@@ -101,8 +96,7 @@
             <input type="hidden" name="action" value="change_username">
             
             <div class="form-group" style="margin-bottom: 16px;">
-                <label for="new_username" style="display: block; margin-bottom: 8px; font-weight: 500;">
-                    新用户名 <span style="color: var(--md3-error);">*</span>
+                <label for="new_username" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "新用户名" %}<span style="color: var(--md3-error);">*</span>
                 </label>
                 <input 
                     type="text" 
@@ -115,14 +109,13 @@
                     {% if is_admin_view %}
                         value="{{ target_user.username }}"
                     {% endif %}
-                    placeholder="输入新用户名（至少3个字符）"
+                    placeholder="{% trans "输入新用户名（至少3个字符）" %}"
                 >
             </div>
             
             {% if not is_admin_view %}
             <div class="form-group" style="margin-bottom: 16px;">
-                <label for="password_username" style="display: block; margin-bottom: 8px; font-weight: 500;">
-                    密码 <span style="color: var(--md3-error);">*</span>
+                <label for="password_username" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "密码" %}<span style="color: var(--md3-error);">*</span>
                 </label>
                 <input 
                     type="password" 
@@ -130,19 +123,15 @@
                     name="password" 
                     class="form-input"
                     required
-                    placeholder="输入当前密码以验证"
+                    placeholder="{% trans "输入当前密码以验证" %}"
                 >
-                <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-top: 4px;">
-                    为了安全起见，修改用户名需要验证密码
-                </div>
+                <div style="font-size: 0.875rem; color: var(--md3-on-surface-variant); margin-top: 4px;">{% trans "为了安全起见，修改用户名需要验证密码" %}</div>
             </div>
             {% endif %}
             
             <div class="form-actions">
                 {% if is_admin_view %}
-                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
-                    取消
-                </a>
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">{% trans "取消" %}</a>
                 {% endif %}
                 <button type="submit" class="btn btn-filled">
                     <span class="material-icons">check</span>
@@ -167,8 +156,7 @@
             
             {% if not is_admin_view %}
             <div class="form-group" style="margin-bottom: 16px;">
-                <label for="old_password" style="display: block; margin-bottom: 8px; font-weight: 500;">
-                    原密码 <span style="color: var(--md3-error);">*</span>
+                <label for="old_password" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "原密码" %}<span style="color: var(--md3-error);">*</span>
                 </label>
                 <input 
                     type="password" 
@@ -176,15 +164,14 @@
                     name="old_password" 
                     class="form-input"
                     required
-                    placeholder="输入原密码"
+                    placeholder="{% trans "输入原密码" %}"
                 >
             </div>
             {% endif %}
             
             <div class="grid-2">
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="new_password" style="display: block; margin-bottom: 8px; font-weight: 500;">
-                        新密码 <span style="color: var(--md3-error);">*</span>
+                    <label for="new_password" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "新密码" %}<span style="color: var(--md3-error);">*</span>
                     </label>
                     <input 
                         type="password" 
@@ -193,13 +180,12 @@
                         class="form-input"
                         required
                         minlength="6"
-                        placeholder="输入新密码（至少6个字符）"
+                        placeholder="{% trans "输入新密码（至少6个字符）" %}"
                     >
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="confirm_password" style="display: block; margin-bottom: 8px; font-weight: 500;">
-                        确认新密码 <span style="color: var(--md3-error);">*</span>
+                    <label for="confirm_password" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "确认新密码" %}<span style="color: var(--md3-error);">*</span>
                     </label>
                     <input 
                         type="password" 
@@ -208,16 +194,14 @@
                         class="form-input"
                         required
                         minlength="6"
-                        placeholder="再次输入新密码"
+                        placeholder="{% trans "再次输入新密码" %}"
                     >
                 </div>
             </div>
             
             <div class="form-actions">
                 {% if is_admin_view %}
-                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
-                    取消
-                </a>
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">{% trans "取消" %}</a>
                 {% endif %}
                 <button type="submit" class="btn btn-filled">
                     <span class="material-icons">check</span>
@@ -237,9 +221,7 @@
     <div class="admin-card" style="margin-bottom: 24px;">
         <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--md3-outline-variant);">
             <h3 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
-                <span class="material-icons" style="color: var(--md3-primary);">manage_accounts</span>
-                修改角色
-            </h3>
+                <span class="material-icons" style="color: var(--md3-primary);">manage_accounts</span>{% trans "修改角色" %}</h3>
         </div>
         
         <form method="post">
@@ -247,8 +229,7 @@
             <input type="hidden" name="action" value="change_role">
             
             <div class="form-group" style="margin-bottom: 16px;">
-                <label for="new_role" style="display: block; margin-bottom: 8px; font-weight: 500;">
-                    新角色 <span style="color: var(--md3-error);">*</span>
+                <label for="new_role" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "新角色" %}<span style="color: var(--md3-error);">*</span>
                 </label>
                 <select 
                     id="new_role" 
@@ -265,13 +246,9 @@
             </div>
             
             <div class="form-actions">
-                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
-                    取消
-                </a>
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">{% trans "取消" %}</a>
                 <button type="submit" class="btn btn-filled">
-                    <span class="material-icons">check</span>
-                    确认修改角色
-                </button>
+                    <span class="material-icons">check</span>{% trans "确认修改角色" %}</button>
             </div>
         </form>
     </div>
@@ -280,9 +257,7 @@
     <div class="admin-card" style="margin-bottom: 24px;">
         <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--md3-outline-variant);">
             <h3 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
-                <span class="material-icons" style="color: var(--md3-primary);">assignment_ind</span>
-                修改用户详细信息
-            </h3>
+                <span class="material-icons" style="color: var(--md3-primary);">assignment_ind</span>{% trans "修改用户详细信息" %}</h3>
         </div>
         
         <form method="post">
@@ -291,8 +266,7 @@
             
             <div class="grid-2">
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="real_name" style="display: block; margin-bottom: 8px; font-weight: 500;">
-                        真实姓名 <span style="color: var(--md3-error);">*</span>
+                    <label for="real_name" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "真实姓名" %}<span style="color: var(--md3-error);">*</span>
                     </label>
                     <input 
                         type="text" 
@@ -300,14 +274,13 @@
                         name="real_name" 
                         class="form-input"
                         value="{% if target_user.profile %}{{ target_user.profile.real_name }}{% endif %}"
-                        placeholder="输入真实姓名"
+                        placeholder="{% trans "输入真实姓名" %}"
                         required
                     >
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="email" style="display: block; margin-bottom: 8px; font-weight: 500;">
-                        邮箱 <span style="color: var(--md3-error);">*</span>
+                    <label for="email" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "邮箱" %}<span style="color: var(--md3-error);">*</span>
                     </label>
                     <input 
                         type="email" 
@@ -315,7 +288,7 @@
                         name="email" 
                         class="form-input"
                         value="{{ target_user.email }}"
-                        placeholder="输入邮箱"
+                        placeholder="{% trans "输入邮箱" %}"
                         required
                     >
                 </div>
@@ -323,45 +296,45 @@
             
             <div class="grid-2">
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="student_id" style="display: block; margin-bottom: 8px; font-weight: 500;">学号</label>
+                    <label for="student_id" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "学号" %}</label>
                     <input 
                         type="text" 
                         id="student_id" 
                         name="student_id" 
                         class="form-input"
                         value="{% if target_user.profile %}{{ target_user.profile.student_id }}{% endif %}"
-                        placeholder="输入学号"
+                        placeholder="{% trans "输入学号" %}"
                     >
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="phone" style="display: block; margin-bottom: 8px; font-weight: 500;">电话</label>
+                    <label for="phone" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "电话" %}</label>
                     <input 
                         type="text" 
                         id="phone" 
                         name="phone" 
                         class="form-input"
                         value="{% if target_user.profile %}{{ target_user.profile.phone }}{% endif %}"
-                        placeholder="输入电话号码"
+                        placeholder="{% trans "输入电话号码" %}"
                     >
                 </div>
             </div>
             
             <div class="grid-2">
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="wechat" style="display: block; margin-bottom: 8px; font-weight: 500;">微信</label>
+                    <label for="wechat" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "微信" %}</label>
                     <input 
                         type="text" 
                         id="wechat" 
                         name="wechat" 
                         class="form-input"
                         value="{% if target_user.profile %}{{ target_user.profile.wechat }}{% endif %}"
-                        placeholder="输入微信号"
+                        placeholder="{% trans "输入微信号" %}"
                     >
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="political_status" style="display: block; margin-bottom: 8px; font-weight: 500;">政治面貌</label>
+                    <label for="political_status" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "政治面貌" %}</label>
                     <select 
                         id="political_status" 
                         name="political_status"
@@ -377,13 +350,9 @@
             </div>
             
             <div class="form-actions">
-                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
-                    取消
-                </a>
+                <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">{% trans "取消" %}</a>
                 <button type="submit" class="btn btn-filled">
-                    <span class="material-icons">check</span>
-                    确认修改详细信息
-                </button>
+                    <span class="material-icons">check</span>{% trans "确认修改详细信息" %}</button>
             </div>
         </form>
     </div>
@@ -392,13 +361,11 @@
     <div class="admin-card" style="margin-bottom: 24px; border: 1px solid var(--md3-error);">
         <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--md3-error-container);">
             <h3 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px; color: var(--md3-error);">
-                <span class="material-icons">warning</span>
-                危险区域
-            </h3>
+                <span class="material-icons">warning</span>{% trans "危险区域" %}</h3>
         </div>
         
         <div style="margin-bottom: 16px; color: var(--md3-on-surface-variant);">
-            <p>删除用户账户是不可恢复的操作。所有与该用户相关的数据（如社团成员关系、审核记录等）可能会被永久删除或受到影响。</p>
+            <p>{% trans "删除用户账户是不可恢复的操作。所有与该用户相关的数据（如社团成员关系、审核记录等）可能会被永久删除或受到影响。" %}</p>
         </div>
         
         <form method="post" onsubmit="return confirm('确定要永久删除此用户账户吗？此操作无法撤销！');">
@@ -407,9 +374,7 @@
             
             <div class="form-actions" style="justify-content: flex-start;">
                 <button type="submit" class="btn" style="background-color: var(--md3-error); color: var(--md3-on-error); border: none;">
-                    <span class="material-icons">delete_forever</span>
-                    删除用户账户
-                </button>
+                    <span class="material-icons">delete_forever</span>{% trans "删除用户账户" %}</button>
             </div>
         </form>
     </div>

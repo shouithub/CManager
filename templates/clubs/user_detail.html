@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}用户详情 - {{ target_user.profile.get_full_name|default:target_user.username }}{% endblock %}
 
@@ -218,21 +219,17 @@
             <span class="material-icons">person</span>
         </div>
         <div class="page-header-content">
-            <h1>用户详情</h1>
-            <p class="subtitle">查看用户个人信息及相关联社团</p>
+            <h1>{% trans "用户详情" %}</h1>
+            <p class="subtitle">{% trans "查看用户个人信息及相关联社团" %}</p>
         </div>
         {% if request.user == target_user or request.user.profile.role == 'admin' %}
         <div style="margin-left: auto;">
             {% if request.user == target_user %}
                 <a href="{% url 'clubs:change_account_settings' %}" class="btn btn-tonal">
-                    <span class="material-icons">edit</span>
-                    编辑资料
-                </a>
+                    <span class="material-icons">edit</span>{% trans "编辑资料" %}</a>
             {% elif request.user.profile.role == 'admin' %}
                 <a href="{% url 'clubs:admin_edit_user_account' target_user.id %}" class="btn btn-tonal">
-                    <span class="material-icons">manage_accounts</span>
-                    管理账户
-                </a>
+                    <span class="material-icons">manage_accounts</span>{% trans "管理账户" %}</a>
             {% endif %}
         </div>
         {% endif %}
@@ -267,7 +264,7 @@
                 <div class="contact-item">
                     <span class="material-icons">apartment</span>
                     <div>
-                        <div style="font-size: 12px; color: var(--md3-outline);">所属部门</div>
+                        <div style="font-size: 12px; color: var(--md3-outline);">{% trans "所属部门" %}</div>
                         {{ target_user.profile.department }}
                     </div>
                 </div>
@@ -276,11 +273,11 @@
                 <div class="contact-item">
                     <span class="material-icons">email</span>
                     <div>
-                        <div style="font-size: 12px; color: var(--md3-outline);">电子邮箱</div>
+                        <div style="font-size: 12px; color: var(--md3-outline);">{% trans "电子邮箱" %}</div>
                         {% if target_user.profile.is_info_public or request.user.profile.role == 'admin' or request.user.profile.role == 'staff' or is_staff_of_viewing_president %}
                             {{ target_user.email|default:"未公开" }}
                         {% else %}
-                            <span style="color: var(--md3-on-surface-variant); opacity: 0.7;">已隐藏</span>
+                            <span style="color: var(--md3-on-surface-variant); opacity: 0.7;">{% trans "已隐藏" %}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -288,11 +285,11 @@
                 <div class="contact-item">
                     <span class="material-icons">phone</span>
                     <div>
-                        <div style="font-size: 12px; color: var(--md3-outline);">联系电话</div>
+                        <div style="font-size: 12px; color: var(--md3-outline);">{% trans "联系电话" %}</div>
                         {% if target_user.profile.is_info_public or request.user.profile.role == 'admin' or request.user.profile.role == 'staff' or is_staff_of_viewing_president %}
                             {{ target_user.profile.phone|default:"未公开" }}
                         {% else %}
-                            <span style="color: var(--md3-on-surface-variant); opacity: 0.7;">已隐藏</span>
+                            <span style="color: var(--md3-on-surface-variant); opacity: 0.7;">{% trans "已隐藏" %}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -300,11 +297,11 @@
                 <div class="contact-item">
                     <span class="material-icons">chat</span>
                     <div>
-                        <div style="font-size: 12px; color: var(--md3-outline);">微信号</div>
+                        <div style="font-size: 12px; color: var(--md3-outline);">{% trans "微信号" %}</div>
                         {% if target_user.profile.is_info_public or request.user.profile.role == 'admin' or request.user.profile.role == 'staff' or is_staff_of_viewing_president %}
                             {{ target_user.profile.wechat|default:"未公开" }}
                         {% else %}
-                            <span style="color: var(--md3-on-surface-variant); opacity: 0.7;">已隐藏</span>
+                            <span style="color: var(--md3-on-surface-variant); opacity: 0.7;">{% trans "已隐藏" %}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -317,9 +314,7 @@
             {% if target_user.profile.role == 'staff' or target_user.profile.role == 'admin' %}
             <div class="info-section">
                 <h3>
-                    <span class="material-icons">supervised_user_circle</span>
-                    负责管理的社团
-                </h3>
+                    <span class="material-icons">supervised_user_circle</span>{% trans "负责管理的社团" %}</h3>
                 {% if responsible_clubs %}
                     <div class="info-grid">
                         {% for relation in responsible_clubs %}
@@ -332,7 +327,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="empty-state">暂未分配负责的社团</div>
+                    <div class="empty-state">{% trans "暂未分配负责的社团" %}</div>
                 {% endif %}
             </div>
             {% endif %}
@@ -341,9 +336,7 @@
             {% if target_user.profile.role == 'president' %}
             <div class="info-section">
                 <h3>
-                    <span class="material-icons">groups</span>
-                    所属社团 (社长/负责人)
-                </h3>
+                    <span class="material-icons">groups</span>{% trans "所属社团 (社长/负责人)" %}</h3>
                 {% if affiliated_clubs_with_staff %}
                     <div class="info-grid">
                         {% for item in affiliated_clubs_with_staff %}
@@ -357,7 +350,7 @@
                                 </a>
 
                                 <div style="margin-top: 12px;">
-                                    <div style="font-size: 12px; color: var(--md3-on-surface-variant); margin-bottom: 8px;">负责干事</div>
+                                    <div style="font-size: 12px; color: var(--md3-on-surface-variant); margin-bottom: 8px;">{% trans "负责干事" %}</div>
                                     {% if item.staff_list %}
                                         <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                                             {% for staff in item.staff_list %}
@@ -376,7 +369,7 @@
                                             {% endfor %}
                                         </div>
                                     {% else %}
-                                        <div class="empty-state" style="padding: 10px; text-align: left;">暂未分配负责干事</div>
+                                        <div class="empty-state" style="padding: 10px; text-align: left;">{% trans "暂未分配负责干事" %}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -397,7 +390,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="empty-state">暂无所属社团记录</div>
+                    <div class="empty-state">{% trans "暂无所属社团记录" %}</div>
                 {% endif %}
             </div>
             {% endif %}

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 
 {% block title %}审核活动申请{% endblock %}
@@ -599,7 +600,7 @@
             <span class="material-icons">event_note</span>
         </div>
         <div class="page-header-text">
-            <h1>审核活动申请</h1>
+            <h1>{% trans "审核活动申请" %}</h1>
             <p>{{ activity.club.name }}</p>
         </div>
     </div>
@@ -608,16 +609,16 @@
     <div class="card">
         <div class="card-header">
             <span class="material-icons">info</span>
-            <h2>基本信息</h2>
+            <h2>{% trans "基本信息" %}</h2>
         </div>
         
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">社团名称</span>
+                <span class="info-label">{% trans "社团名称" %}</span>
                 <span class="info-value">{{ activity.club.name }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">社长</span>
+                <span class="info-label">{% trans "社长" %}</span>
                 <span class="info-value">
                     {% if activity.club.president %}
                         <a href="{% url 'clubs:user_detail' activity.club.president.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
@@ -638,11 +639,11 @@
                 </span>
             </div>
             <div class="info-item">
-                <span class="info-label">提交时间</span>
+                <span class="info-label">{% trans "提交时间" %}</span>
                 <span class="info-value">{{ activity.submitted_at|date:"Y-m-d H:i" }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">提交次数</span>
+                <span class="info-label">{% trans "提交次数" %}</span>
                 <span class="info-value">
                     {{ activity.resubmission_attempt }} 次提交
                     {% if activity.resubmission_attempt > 1 %}
@@ -651,7 +652,7 @@
                 </span>
             </div>
             <div class="info-item">
-                <span class="info-label">当前状态</span>
+                <span class="info-label">{% trans "当前状态" %}</span>
                 <span class="status-badge {{ activity.status }}">
                     <span class="material-icons">
                         {% if activity.status == 'approved' %}check_circle{% elif activity.status == 'rejected' %}cancel{% else %}schedule{% endif %}
@@ -663,7 +664,7 @@
         
         {% if activity.club.responsible_staff.all %}
         <div class="info-item">
-            <span class="info-label">负责干事</span>
+            <span class="info-label">{% trans "负责干事" %}</span>
             <div class="info-value">
                 {% for relation in activity.club.responsible_staff.all %}
                     {% if relation.is_active %}
@@ -704,59 +705,47 @@
     <div class="card">
         <div class="card-header">
             <span class="material-icons">description</span>
-            <h2>活动详情</h2>
+            <h2>{% trans "活动详情" %}</h2>
         </div>
         
         <div class="detail-grid">
             <div class="detail-item">
-                <span class="detail-label">
-                    活动名称
-                </span>
+                <span class="detail-label">{% trans "活动名称" %}</span>
                 <span class="detail-value">{{ activity.activity_name }}</span>
             </div>
             <div class="detail-item">
-                <span class="detail-label">
-                    活动类型
-                </span>
+                <span class="detail-label">{% trans "活动类型" %}</span>
                 <span class="detail-value">{{ activity.get_activity_type_display }}</span>
             </div>
             <div class="detail-item">
-                <span class="detail-label">
-                    活动日期
-                </span>
+                <span class="detail-label">{% trans "活动日期" %}</span>
                 <span class="detail-value">{{ activity.activity_date }}</span>
             </div>
             <div class="detail-item">
-                <span class="detail-label">
-                    活动地点
-                </span>
+                <span class="detail-label">{% trans "活动地点" %}</span>
                 <span class="detail-value">{{ activity.activity_location }}</span>
             </div>
             <div class="detail-item">
-                <span class="detail-label">
-                    联系人
-                </span>
+                <span class="detail-label">{% trans "联系人" %}</span>
                 <span class="detail-value">{{ activity.contact_person }} <span class="contact-phone">({{ activity.contact_phone }})</span></span>
             </div>
         </div>
         
         <div class="detail-section">
             <div class="detail-label full-width">
-                <span class="material-icons">description</span>
-                活动描述
-            </div>
+                <span class="material-icons">description</span>{% trans "活动描述" %}</div>
             <div class="detail-description">{{ activity.activity_description }}</div>
         </div>
     </div>
     
     <!-- ===== 附件材料卡片 ===== -->
-    {% include 'clubs/components/_materials_display.html' with materials=materials title="附件材料" %}
+    {% include 'clubs/components/_materials_display.html' with materials=materials title="{% trans "附件材料" %}" %}
     
     <!-- ===== 审核历史 ===== -->
-    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews title="审核历史" %}
+    {% include 'clubs/components/_review_history.html' with reviews=existing_reviews title="{% trans "审核历史" %}" %}
     
     <!-- ===== 干事审核表单 ===== -->
-    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='activity_application' title="干事审核" approve_text="批准活动" reject_text="拒绝活动" %}
+    {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='activity_application' title="{% trans "干事审核" %}" approve_text="批准活动" reject_text="拒绝活动" %}
 </div>
 
 <script>

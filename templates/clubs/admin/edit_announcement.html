@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}编辑公告 - CManager{% endblock %}
 
@@ -187,7 +188,7 @@
 <div class="edit-announcement-container">
     <div class="page-header">
         <span class="material-icons">edit_note</span>
-        <h1>编辑公告</h1>
+        <h1>{% trans "编辑公告" %}</h1>
     </div>
     
     {% if messages %}
@@ -211,33 +212,33 @@
             {% csrf_token %}
             
             <div class="md3-field">
-                <label for="title">公告标题<span class="required">*</span></label>
+                <label for="title">{% trans "公告标题" %}<span class="required">*</span></label>
                 <input 
                     type="text" 
                     id="title" 
                     name="title" 
                     required 
                     maxlength="200"
-                    placeholder="输入公告标题"
+                    placeholder="{% trans "输入公告标题" %}"
                     value="{{ announcement.title }}"
                     class="md3-input"
                 >
             </div>
             
             <div class="md3-field">
-                <label for="content">公告内容<span class="required">*</span></label>
+                <label for="content">{% trans "公告内容" %}<span class="required">*</span></label>
                 <textarea 
                     id="content" 
                     name="content" 
                     required 
                     rows="8"
-                    placeholder="输入公告内容"
+                    placeholder="{% trans "输入公告内容" %}"
                     class="md3-textarea"
                 >{{ announcement.content }}</textarea>
             </div>
             
             <div class="md3-field">
-                <label for="expires_at">失效时间（可选）</label>
+                <label for="expires_at">{% trans "失效时间（可选）" %}</label>
                 <input 
                     type="datetime-local" 
                     id="expires_at" 
@@ -247,44 +248,39 @@
                     value="{{ announcement.expires_at|date:'Y-m-d\TH:i' }}"
                     {% endif %}
                 >
-                <small class="md3-hint">公告将在指定时间后自动归档。如不填写，公告将一直有效。</small>
+                <small class="md3-hint">{% trans "公告将在指定时间后自动归档。如不填写，公告将一直有效。" %}</small>
             </div>
             
             <div class="md3-field">
-                <label for="attachment">附件（可选）</label>
+                <label for="attachment">{% trans "附件（可选）" %}</label>
                 <input 
                     type="file" 
                     id="attachment" 
                     name="attachment"
                     class="md3-input"
                 >
-                <small class="md3-hint">支持上传各种类型的文件，如文档、图片等。</small>
+                <small class="md3-hint">{% trans "支持上传各种类型的文件，如文档、图片等。" %}</small>
                 {% if announcement.attachment %}
                 <div class="md3-attachment">
-                    <span class="material-icons">attach_file</span>
-                    当前附件：<a href="{{ announcement.attachment.url }}" target="_blank" rel="noopener">{{ announcement.attachment.name }}</a>
+                    <span class="material-icons">attach_file</span>{% trans "当前附件：" %}<a href="{{ announcement.attachment.url }}" target="_blank" rel="noopener">{{ announcement.attachment.name }}</a>
                 </div>
                 {% endif %}
             </div>
             
             <div class="md3-field">
-                <label for="status">发布状态<span class="required">*</span></label>
+                <label for="status">{% trans "发布状态" %}<span class="required">*</span></label>
                 <select id="status" name="status" required class="md3-select">
-                    <option value="draft" {% if announcement.status == 'draft' %}selected{% endif %}>草稿（保存但不显示）</option>
-                    <option value="published" {% if announcement.status == 'published' %}selected{% endif %}>发布（立即显示在首页）</option>
-                    <option value="archived" {% if announcement.status == 'archived' %}selected{% endif %}>归档（不再显示在首页）</option>
+                    <option value="draft" {% if announcement.status == 'draft' %}selected{% endif %}>{% trans "草稿（保存但不显示）" %}</option>
+                    <option value="published" {% if announcement.status == 'published' %}selected{% endif %}>{% trans "发布（立即显示在首页）" %}</option>
+                    <option value="archived" {% if announcement.status == 'archived' %}selected{% endif %}>{% trans "归档（不再显示在首页）" %}</option>
                 </select>
             </div>
             
             <div class="md3-actions">
                 <button type="submit" name="action" value="update" class="md3-btn md3-btn-primary">
-                    <span class="material-icons">save</span>
-                    保存修改
-                </button>
+                    <span class="material-icons">save</span>{% trans "保存修改" %}</button>
                 <a href="{% url 'clubs:admin_dashboard' %}" class="md3-btn md3-btn-tonal">
-                    <span class="material-icons">close</span>
-                    取消
-                </a>
+                    <span class="material-icons">close</span>{% trans "取消" %}</a>
             </div>
         </form>
     </div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 
 {% block title %}提交年审材料 - {{ club.name }}{% endblock %}
@@ -288,7 +289,7 @@
     <div class="error-message">
         <div style="display: flex; align-items: center; gap: var(--md3-spacing-sm); margin-bottom: var(--md3-spacing-sm);">
             <span class="material-icons">error</span>
-            <strong>请检查以下错误：</strong>
+            <strong>{% trans "请检查以下错误：" %}</strong>
         </div>
         <ul>
             {% for error in errors %}
@@ -302,10 +303,8 @@
     {% if is_resubmission %}
     <div class="info-card warning">
         <h5>
-            <span class="material-icons">warning</span>
-            重新提交说明
-        </h5>
-        <p>您的年审材料中有部分内容需要修改，请重新上传以下被拒绝的材料：</p>
+            <span class="material-icons">warning</span>{% trans "重新提交说明" %}</h5>
+        <p>{% trans "您的年审材料中有部分内容需要修改，请重新上传以下被拒绝的材料：" %}</p>
         <ul>
             {% for review in rejected_submission.submissionreview_set.all %}
                 {% if review.rejected_materials %}
@@ -328,31 +327,26 @@
     {% else %}
     <div class="info-card info">
         <h5>
-            <span class="material-icons">info</span>
-            提交说明
-        </h5>
-        <p>请下载相应模板并填写完整后上传。所有标记为 <strong style="color: var(--md3-error);">*</strong> 的字段为必填项。</p>
-        <p><strong>重要提醒：</strong>所有文件必须为Word格式(.doc或.docx)。</p>
+            <span class="material-icons">info</span>{% trans "提交说明" %}</h5>
+        <p>{% trans "请下载相应模板并填写完整后上传。所有标记为" %}<strong style="color: var(--md3-error);">*</strong>{% trans "的字段为必填项。" %}</p>
+        <p><strong>{% trans "重要提醒：" %}</strong>{% trans "所有文件必须为Word格式(.doc或.docx)。" %}</p>
     </div>
     {% endif %}
 
     <!-- 材料上传表单 -->
     <div class="form-card">
         <h3>
-            <span class="material-icons">assignment</span>
-            材料上传
-        </h3>
+            <span class="material-icons">assignment</span>{% trans "材料上传" %}</h3>
 
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
             <!-- 提交年份 -->
             <div class="form-group">
-                <label for="submission_year">
-                    提交年份 <span style="color: var(--md3-error);">*</span>
+                <label for="submission_year">{% trans "提交年份" %}<span style="color: var(--md3-error);">*</span>
                 </label>
                 <input type="number" id="submission_year" name="submission_year" value="{% if is_resubmission %}{{ rejected_submission.submission_year }}{% else %}{{ current_year }}{% endif %}" min="2000" max="2100" required>
-                <small>请选择要提交年审材料的年份</small>
+                <small>{% trans "请选择要提交年审材料的年份" %}</small>
             </div>
 
             <div class="form-grid">
@@ -394,13 +388,9 @@
             <!-- 按钮组 -->
             <div class="action-buttons">
                 <a href="{% url 'clubs:club_detail' club.id %}" class="btn-secondary">
-                    <span class="material-icons">arrow_back</span>
-                    返回
-                </a>
+                    <span class="material-icons">arrow_back</span>{% trans "返回" %}</a>
                 <button type="submit" class="btn-primary">
-                    <span class="material-icons">check_circle</span>
-                    提交审核
-                </button>
+                    <span class="material-icons">check_circle</span>{% trans "提交审核" %}</button>
             </div>
         </form>
     </div>

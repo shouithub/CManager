@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}管理轮播图{% endblock %}
@@ -290,13 +291,13 @@
             <span class="material-icons">view_carousel</span>
         </div>
         <div class="page-header-text">
-            <h1>管理轮播图</h1>
-            <p>管理首页轮播展示的图片、链接与排列顺序</p>
+            <h1>{% trans "管理轮播图" %}</h1>
+            <p>{% trans "管理首页轮播展示的图片、链接与排列顺序" %}</p>
         </div>
         <div class="page-header-actions">
             <a href="{% url 'clubs:add_carousel' %}" class="add-btn">
                 <span class="material-icons">add</span>
-                <span>添加轮播图</span>
+                <span>{% trans "添加轮播图" %}</span>
             </a>
         </div>
     </div>
@@ -353,16 +354,12 @@
                     
                     <div class="carousel-card-actions">
                         <a href="{% url 'clubs:edit_carousel' image.id %}" class="btn btn-edit">
-                            <span class="material-icons">edit</span>
-                            编辑
-                        </a>
+                            <span class="material-icons">edit</span>{% trans "编辑" %}</a>
                         <form method="post" action="{% url 'clubs:delete_carousel' image.id %}" 
                               onsubmit="return confirm('确定要删除这张轮播图吗？');" style="display: inline;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-delete">
-                                <span class="material-icons">delete</span>
-                                删除
-                            </button>
+                                <span class="material-icons">delete</span>{% trans "删除" %}</button>
                         </form>
                     </div>
                 </div>
@@ -373,11 +370,11 @@
     {% else %}
     <div class="empty-state">
         <span class="material-icons">image</span>
-        <h3>还没有轮播图</h3>
-        <p>点击上方"添加轮播图"按钮创建第一张轮播图</p>
+        <h3>{% trans "还没有轮播图" %}</h3>
+        <p>{% trans "点击上方"添加轮播图"按钮创建第一张轮播图" %}</p>
         <a href="{% url 'clubs:add_carousel' %}" class="add-btn">
             <span class="material-icons">add</span>
-            <span>添加轮播图</span>
+            <span>{% trans "添加轮播图" %}</span>
         </a>
     </div>
     {% endif %}

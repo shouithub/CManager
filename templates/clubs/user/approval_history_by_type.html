@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}{{ title }} - 社团管理系统{% endblock %}
@@ -475,7 +476,7 @@
                 {% endif %}
                 {{ title }}
             </h1>
-            <p class="page-subtitle">查看全部历史记录</p>
+            <p class="page-subtitle">{% trans "查看全部历史记录" %}</p>
         </div>
     </div>
 
@@ -483,15 +484,15 @@
     <div class="stats-row">
         <div class="stat-card approved">
             <div class="stat-value" id="approved-count">0</div>
-            <div class="stat-label">已批准</div>
+            <div class="stat-label">{% trans "已批准" %}</div>
         </div>
         <div class="stat-card rejected">
             <div class="stat-value" id="rejected-count">0</div>
-            <div class="stat-label">已拒绝</div>
+            <div class="stat-label">{% trans "已拒绝" %}</div>
         </div>
         <div class="stat-card pending">
             <div class="stat-value" id="pending-count">0</div>
-            <div class="stat-label">待审核</div>
+            <div class="stat-label">{% trans "待审核" %}</div>
         </div>
     </div>
 
@@ -499,9 +500,7 @@
     <div class="main-card">
         <div class="card-header">
             <h2 class="card-title">
-                <span class="material-icons">history</span>
-                历史记录
-            </h2>
+                <span class="material-icons">history</span>{% trans "历史记录" %}</h2>
             <span class="record-count">{{ items|length }} 条</span>
         </div>
 
@@ -560,19 +559,19 @@
                     <!-- 活动申请有两级审核状态 -->
                     <div class="review-status-group">
                         <div class="review-status-item">
-                            <span class="label">干事:</span>
+                            <span class="label">{% trans "干事:" %}</span>
                             {% if item.staff_approved is not None %}
                                 {% if item.staff_approved %}
-                                <span class="mini-badge approved">已批准</span>
+                                <span class="mini-badge approved">{% trans "已批准" %}</span>
                                 {% else %}
-                                <span class="mini-badge rejected">已拒绝</span>
+                                <span class="mini-badge rejected">{% trans "已拒绝" %}</span>
                                 {% endif %}
                             {% else %}
-                            <span class="mini-badge pending">待审核</span>
+                            <span class="mini-badge pending">{% trans "待审核" %}</span>
                             {% endif %}
                         </div>
                         <div class="review-status-item">
-                            <span class="label">教师:</span>
+                            <span class="label">{% trans "教师:" %}</span>
                             <span class="status-badge {{ item.status }}">
                                 {% if item.status == 'approved' %}
                                 <span class="material-icons">check_circle</span> 已批准
@@ -602,56 +601,56 @@
                 <div class="record-details">
                     {% if item_type == 'annual_review' %}
                     <div class="detail-item">
-                        <span class="detail-label">社长</span>
+                        <span class="detail-label">{% trans "社长" %}</span>
                         <span class="detail-value">{{ item.club.president.profile.real_name|default:'未设置' }}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">审核时间</span>
+                        <span class="detail-label">{% trans "审核时间" %}</span>
                         <span class="detail-value">{{ item.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
                     </div>
                     {% elif item_type == 'club_registration' %}
                     <div class="detail-item">
-                        <span class="detail-label">申请人</span>
+                        <span class="detail-label">{% trans "申请人" %}</span>
                         <span class="detail-value">{{ item.requested_by.profile.real_name|default:'未设置' }}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">审核时间</span>
+                        <span class="detail-label">{% trans "审核时间" %}</span>
                         <span class="detail-value">{{ item.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
                     </div>
                     {% elif item_type == 'club_application' %}
                     <div class="detail-item">
-                        <span class="detail-label">申请人</span>
+                        <span class="detail-label">{% trans "申请人" %}</span>
                         <span class="detail-value">{{ item.requested_by.profile.real_name|default:'未设置' }}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">审核时间</span>
+                        <span class="detail-label">{% trans "审核时间" %}</span>
                         <span class="detail-value">{{ item.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
                     </div>
                     {% elif item_type == 'reimbursement' %}
                     <div class="detail-item">
-                        <span class="detail-label">报销金额</span>
+                        <span class="detail-label">{% trans "报销金额" %}</span>
                         <span class="detail-value highlight">¥{{ item.reimbursement_amount|floatformat:2 }}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">审核时间</span>
+                        <span class="detail-label">{% trans "审核时间" %}</span>
                         <span class="detail-value">{{ item.reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
                     </div>
                     {% elif item_type == 'activity_application' %}
                     <div class="detail-item">
-                        <span class="detail-label">社团</span>
+                        <span class="detail-label">{% trans "社团" %}</span>
                         <span class="detail-value">{{ item.club.name }}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">干事审核时间</span>
+                        <span class="detail-label">{% trans "干事审核时间" %}</span>
                         <span class="detail-value">{{ item.staff_reviewed_at|date:"Y-m-d H:i"|default:"未设置" }}</span>
                     </div>
                     {% elif item_type == 'president_transition' %}
                     <div class="detail-item">
-                        <span class="detail-label">原社长</span>
+                        <span class="detail-label">{% trans "原社长" %}</span>
                         <span class="detail-value">{{ item.old_president.profile.real_name }}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">新社长</span>
+                        <span class="detail-label">{% trans "新社长" %}</span>
                         <span class="detail-value highlight">{{ item.new_president_name }}</span>
                     </div>
                     {% endif %}
@@ -661,28 +660,22 @@
                 <div class="record-actions" onclick="event.stopPropagation()">
                     {% if item_type == 'annual_review' %}
                     <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=review&request_id={{ item.id }}" class="action-btn primary">
-                        <span class="material-icons">edit</span> 修改材料
-                    </a>
+                        <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                     {% elif item_type == 'club_registration' %}
                     <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=club_registration&request_id={{ item.id }}" class="action-btn primary">
-                        <span class="material-icons">edit</span> 修改材料
-                    </a>
+                        <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                     {% elif item_type == 'club_application' %}
                     <a href="{% url 'clubs:edit_rejected_review' item.id %}?type=club_application&request_id={{ item.id }}" class="action-btn primary">
-                        <span class="material-icons">edit</span> 修改材料
-                    </a>
+                        <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                     {% elif item_type == 'reimbursement' %}
                     <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=reimbursement&request_id={{ item.id }}" class="action-btn primary">
-                        <span class="material-icons">edit</span> 修改材料
-                    </a>
+                        <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                     {% elif item_type == 'activity_application' %}
                     <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=activity_application&request_id={{ item.id }}" class="action-btn primary">
-                        <span class="material-icons">edit</span> 修改材料
-                    </a>
+                        <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                     {% elif item_type == 'president_transition' %}
                     <a href="{% url 'clubs:edit_rejected_review' item.club.id %}?type=president_transition&request_id={{ item.id }}" class="action-btn primary">
-                        <span class="material-icons">edit</span> 修改材料
-                    </a>
+                        <span class="material-icons">edit</span>{% trans "修改材料" %}</a>
                     {% endif %}
                 </div>
                 {% endif %}
@@ -692,8 +685,8 @@
         {% else %}
         <div class="empty-state">
             <span class="material-icons">inbox</span>
-            <h3>暂无历史记录</h3>
-            <p>当前没有任何审批历史</p>
+            <h3>{% trans "暂无历史记录" %}</h3>
+            <p>{% trans "当前没有任何审批历史" %}</p>
         </div>
         {% endif %}
     </div>

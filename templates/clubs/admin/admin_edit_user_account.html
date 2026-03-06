@@ -1,4 +1,5 @@
 {% extends 'clubs/admin/base.html' %}
+{% load i18n %}
 
 {% block title %}编辑用户账户 - {{ target_user.username }}{% endblock %}
 
@@ -310,15 +311,15 @@
         <div class="account-header-info">
             <h1><a href="{% url 'clubs:user_detail' target_user.id %}" style="text-decoration: none; color: inherit;">{{ target_user.username }}</a></h1>
             <div class="account-info-row">
-                <span class="account-info-label">全名：</span>
+                <span class="account-info-label">{% trans "全名：" %}</span>
                 <span class="account-info-value">{{ target_user.profile.get_full_name|default:"未设置" }}</span>
             </div>
             <div class="account-info-row">
-                <span class="account-info-label">邮箱：</span>
+                <span class="account-info-label">{% trans "邮箱：" %}</span>
                 <span class="account-info-value">{{ target_user.email|default:"—" }}</span>
             </div>
             <div class="account-info-row">
-                <span class="account-info-label">电话：</span>
+                <span class="account-info-label">{% trans "电话：" %}</span>
                 <span class="account-info-value">{{ target_user.profile.phone|default:"—" }}</span>
             </div>
         </div>
@@ -353,9 +354,7 @@
         <!-- 账号信息卡片 -->
         <div class="edit-card">
             <h3>
-                <span class="material-icons">account_circle</span>
-                账号信息
-            </h3>
+                <span class="material-icons">account_circle</span>{% trans "账号信息" %}</h3>
 
             <!-- 用户名部分 -->
             <div class="form-section">
@@ -364,12 +363,12 @@
                     <input type="hidden" name="action" value="change_username">
                     
                     <div class="form-group">
-                        <label class="form-label">用户名</label>
+                        <label class="form-label">{% trans "用户名" %}</label>
                         <div class="form-row">
                             <input class="form-input" name="new_username" value="{{ target_user.username }}" required>
                             <button type="submit" class="btn btn-primary">
                                 <span class="material-icons">save</span>
-                                <span>保存</span>
+                                <span>{% trans "保存" %}</span>
                             </button>
                         </div>
                     </div>
@@ -383,16 +382,16 @@
                     <input type="hidden" name="action" value="change_role">
                     
                     <div class="form-group">
-                        <label class="form-label">角色</label>
+                        <label class="form-label">{% trans "角色" %}</label>
                         <div class="form-row">
                             <select class="form-select" name="new_role">
-                                <option value="president" {% if target_user.profile.role == 'president' %}selected{% endif %}>社长</option>
-                                <option value="staff" {% if target_user.profile.role == 'staff' %}selected{% endif %}>干事</option>
-                                <option value="admin" {% if target_user.profile.role == 'admin' %}selected{% endif %}>管理员</option>
+                                <option value="president" {% if target_user.profile.role == 'president' %}selected{% endif %}>{% trans "社长" %}</option>
+                                <option value="staff" {% if target_user.profile.role == 'staff' %}selected{% endif %}>{% trans "干事" %}</option>
+                                <option value="admin" {% if target_user.profile.role == 'admin' %}selected{% endif %}>{% trans "管理员" %}</option>
                             </select>
                             <button type="submit" class="btn btn-primary">
                                 <span class="material-icons">save</span>
-                                <span>保存</span>
+                                <span>{% trans "保存" %}</span>
                             </button>
                         </div>
                     </div>
@@ -403,9 +402,7 @@
         <!-- 密码与安全卡片 -->
         <div class="edit-card">
             <h3>
-                <span class="material-icons">security</span>
-                密码与安全
-            </h3>
+                <span class="material-icons">security</span>{% trans "密码与安全" %}</h3>
 
             <!-- 密码修改部分 -->
             <div class="form-section">
@@ -414,14 +411,14 @@
                     <input type="hidden" name="action" value="change_password">
                     
                     <div class="form-group">
-                        <label class="form-label">新密码 <span class="required">*</span></label>
+                        <label class="form-label">{% trans "新密码" %}<span class="required">*</span></label>
                         <div class="password-input-group">
                             <input 
                                 class="form-input" 
                                 type="password" 
                                 id="new_password" 
                                 name="new_password" 
-                                placeholder="至少6个字符" 
+                                placeholder="{% trans "至少6个字符" %}" 
                                 minlength="6" 
                                 required
                             >
@@ -429,19 +426,19 @@
                                 type="button" 
                                 class="password-toggle-btn" 
                                 id="toggle-pw"
-                                title="显示/隐藏密码"
-                            >显示</button>
+                                title="{% trans "显示/隐藏密码" %}"
+                            >{% trans "显示" %}</button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">确认新密码 <span class="required">*</span></label>
+                        <label class="form-label">{% trans "确认新密码" %}<span class="required">*</span></label>
                         <input 
                             class="form-input" 
                             type="password" 
                             id="confirm_password" 
                             name="confirm_password" 
-                            placeholder="再次输入新密码" 
+                            placeholder="{% trans "再次输入新密码" %}" 
                             minlength="6" 
                             required
                         >
@@ -450,11 +447,11 @@
                     <div class="form-actions">
                         <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
                             <span class="material-icons">close</span>
-                            <span>取消</span>
+                            <span>{% trans "取消" %}</span>
                         </a>
                         <button type="submit" class="btn btn-primary">
                             <span class="material-icons">check</span>
-                            <span>设置新密码</span>
+                            <span>{% trans "设置新密码" %}</span>
                         </button>
                     </div>
                 </form>
@@ -463,15 +460,13 @@
             <!-- 账号锁定部分 -->
             <div class="form-section">
                 <div class="form-group">
-                    <label class="form-label">账号状态</label>
-                    <p style="color: var(--md3-on-surface-variant); font-size: 0.9rem; margin: var(--md3-spacing-sm) 0;">
-                        如果用户由于多次登录失败而被锁定，可以在此解锁账号。
-                    </p>
+                    <label class="form-label">{% trans "账号状态" %}</label>
+                    <p style="color: var(--md3-on-surface-variant); font-size: 0.9rem; margin: var(--md3-spacing-sm) 0;">{% trans "如果用户由于多次登录失败而被锁定，可以在此解锁账号。" %}</p>
                     <form method="post" action="{% url 'clubs:unlock_account' target_user.username %}" style="display:inline">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-secondary">
                             <span class="material-icons">lock_open</span>
-                            <span>解锁账号</span>
+                            <span>{% trans "解锁账号" %}</span>
                         </button>
                     </form>
                 </div>

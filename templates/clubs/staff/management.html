@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}社团管理{% endblock %}
 
@@ -145,13 +146,11 @@
     <div class="page-header">
         <span class="material-icons">business_center</span>
         <div class="page-header-content">
-            <h1>社团管理</h1>
-            <p class="subtitle">管理社团功能、模板和用户信息</p>
+            <h1>{% trans "社团管理" %}</h1>
+            <p class="subtitle">{% trans "管理社团功能、模板和用户信息" %}</p>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-            <button type="button" class="btn btn-primary" onclick="openBulkOpsModal()">
-                批量操作
-            </button>
+            <button type="button" class="btn btn-primary" onclick="openBulkOpsModal()">{% trans "批量操作" %}</button>
         </div>
     </div>
 
@@ -169,7 +168,7 @@
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
                         <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-                            <span style="color:var(--md3-on-surface-variant);">社长:</span>
+                            <span style="color:var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                 <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
@@ -181,10 +180,10 @@
                                 </div>
                                 <span style="border-bottom:1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                             </a>
-                            {% else %}<span style="color:var(--md3-on-surface-variant);">未设置</span>{% endif %}
+                            {% else %}<span style="color:var(--md3-on-surface-variant);">{% trans "未设置" %}</span>{% endif %}
                         </div>
                         <div style="display:flex;align-items:flex-start;gap:8px;margin-top:4px;">
-                            <span style="color:var(--md3-on-surface-variant);white-space:nowrap;">负责干事:</span>
+                            <span style="color:var(--md3-on-surface-variant);white-space:nowrap;">{% trans "负责干事:" %}</span>
                             <div style="display:flex;flex-wrap:wrap;gap:8px;">
                                 {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}
                                 <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
@@ -193,7 +192,7 @@
                                     </div>
                                     <span style="border-bottom:1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
                                 </a>
-                                {% endfor %}{% else %}<span style="color:var(--md3-on-surface-variant);">暂未分配</span>{% endif %}
+                                {% endfor %}{% else %}<span style="color:var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>{% endif %}
                             </div>
                         </div>
                     </div>
@@ -212,7 +211,7 @@
                             <div class="alert-item">
                                 <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
                                 <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-                                    <span style="color:var(--md3-on-surface-variant);">社长:</span>
+                                    <span style="color:var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                         <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
@@ -220,10 +219,10 @@
                                         </div>
                                         <span style="border-bottom:1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                                     </a>
-                                    {% else %}<span style="color:var(--md3-on-surface-variant);">未设置</span>{% endif %}
+                                    {% else %}<span style="color:var(--md3-on-surface-variant);">{% trans "未设置" %}</span>{% endif %}
                                 </div>
                                 <div style="display:flex;align-items:flex-start;gap:8px;margin-top:4px;">
-                                    <span style="color:var(--md3-on-surface-variant);white-space:nowrap;">负责干事:</span>
+                                    <span style="color:var(--md3-on-surface-variant);white-space:nowrap;">{% trans "负责干事:" %}</span>
                                     <div style="display:flex;flex-wrap:wrap;gap:8px;">
                                         {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}
                                         <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
@@ -232,7 +231,7 @@
                                             </div>
                                             <span style="border-bottom:1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
                                         </a>
-                                        {% endfor %}{% else %}<span style="color:var(--md3-on-surface-variant);">暂未分配</span>{% endif %}
+                                        {% endfor %}{% else %}<span style="color:var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>{% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -241,7 +240,7 @@
                     </div>
                     {% endif %}
                 {% else %}
-                    <div class="alert-item" style="opacity: 0.7; font-style: italic;">暂无你负责的成员不足社团</div>
+                    <div class="alert-item" style="opacity: 0.7; font-style: italic;">{% trans "暂无你负责的成员不足社团" %}</div>
                 {% endif %}
             </div>
 
@@ -256,7 +255,7 @@
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
                         <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-                            <span style="color:var(--md3-on-surface-variant);">社长:</span>
+                            <span style="color:var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                 <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
@@ -264,10 +263,10 @@
                                 </div>
                                 <span style="border-bottom:1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                             </a>
-                            {% else %}<span style="color:var(--md3-on-surface-variant);">未设置</span>{% endif %}
+                            {% else %}<span style="color:var(--md3-on-surface-variant);">{% trans "未设置" %}</span>{% endif %}
                         </div>
                         <div style="display:flex;align-items:flex-start;gap:8px;margin-top:4px;">
-                            <span style="color:var(--md3-on-surface-variant);white-space:nowrap;">负责干事:</span>
+                            <span style="color:var(--md3-on-surface-variant);white-space:nowrap;">{% trans "负责干事:" %}</span>
                             <div style="display:flex;flex-wrap:wrap;gap:8px;">
                                 {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}
                                 <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
@@ -276,7 +275,7 @@
                                     </div>
                                     <span style="border-bottom:1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
                                 </a>
-                                {% endfor %}{% else %}<span style="color:var(--md3-on-surface-variant);">暂未分配</span>{% endif %}
+                                {% endfor %}{% else %}<span style="color:var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>{% endif %}
                             </div>
                         </div>
                     </div>
@@ -295,7 +294,7 @@
                             <div class="alert-item">
                                 <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
                                 <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-                                    <span style="color:var(--md3-on-surface-variant);">社长:</span>
+                                    <span style="color:var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                         <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
@@ -303,10 +302,10 @@
                                         </div>
                                         <span style="border-bottom:1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                                     </a>
-                                    {% else %}<span style="color:var(--md3-on-surface-variant);">未设置</span>{% endif %}
+                                    {% else %}<span style="color:var(--md3-on-surface-variant);">{% trans "未设置" %}</span>{% endif %}
                                 </div>
                                 <div style="display:flex;align-items:flex-start;gap:8px;margin-top:4px;">
-                                    <span style="color:var(--md3-on-surface-variant);white-space:nowrap;">负责干事:</span>
+                                    <span style="color:var(--md3-on-surface-variant);white-space:nowrap;">{% trans "负责干事:" %}</span>
                                     <div style="display:flex;flex-wrap:wrap;gap:8px;">
                                         {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}
                                         <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
@@ -315,7 +314,7 @@
                                             </div>
                                             <span style="border-bottom:1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
                                         </a>
-                                        {% endfor %}{% else %}<span style="color:var(--md3-on-surface-variant);">暂未分配</span>{% endif %}
+                                        {% endfor %}{% else %}<span style="color:var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>{% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -330,13 +329,11 @@
             <div class="alert-buttons">
                 {% if clubs_with_low_members_my.count > 0 %}
                 <button onclick="copyLowMemberClubsMy()" class="btn-copy-my">
-                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
-                </button>
+                    <span class="material-icons" style="font-size:18px;">content_copy</span>{% trans "复制我负责的" %}</button>
                 {% endif %}
                 {% if clubs_with_low_members_other.count > 0 %}
                 <button onclick="copyLowMemberClubsAll()" class="btn-copy-all">
-                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
-                </button>
+                    <span class="material-icons" style="font-size:18px;">content_copy</span>{% trans "复制所有" %}</button>
                 {% endif %}
             </div>
         </div>
@@ -355,7 +352,7 @@
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                            <span style="color: var(--md3-on-surface-variant);">社长:</span>
+                            <span style="color: var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
@@ -370,11 +367,11 @@
                                 <span style="border-bottom: 1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                             </a>
                             {% else %}
-                            <span style="color: var(--md3-on-surface-variant);">未设置</span>
+                            <span style="color: var(--md3-on-surface-variant);">{% trans "未设置" %}</span>
                             {% endif %}
                         </div>
                         <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
-                            <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">负责干事:</span>
+                            <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">{% trans "负责干事:" %}</span>
                             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                 {% if club.responsible_staff.all %}
                                     {% for relation in club.responsible_staff.all %}
@@ -392,7 +389,7 @@
                                     </a>
                                     {% endfor %}
                                 {% else %}
-                                    <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -412,7 +409,7 @@
                             <div class="alert-item">
                                 <strong>{{ club.name }}</strong>
                                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                    <span style="color: var(--md3-on-surface-variant);">社长:</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
@@ -427,11 +424,11 @@
                                         <span style="border-bottom: 1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                                     </a>
                                     {% else %}
-                                    <span style="color: var(--md3-on-surface-variant);">未设置</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "未设置" %}</span>
                                     {% endif %}
                                 </div>
                                 <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
-                                    <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">负责干事:</span>
+                                    <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">{% trans "负责干事:" %}</span>
                                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                         {% if club.responsible_staff.all %}
                                             {% for relation in club.responsible_staff.all %}
@@ -449,7 +446,7 @@
                                             </a>
                                             {% endfor %}
                                         {% else %}
-                                            <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
+                                            <span style="color: var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -460,7 +457,7 @@
                     {% endif %}
 
                 {% else %}
-                    <div class="alert-item" style="opacity: 0.7; font-style: italic;">暂无你负责的未提交社团</div>
+                    <div class="alert-item" style="opacity: 0.7; font-style: italic;">{% trans "暂无你负责的未提交社团" %}</div>
                 {% endif %}
             </div>
 
@@ -476,7 +473,7 @@
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                            <span style="color: var(--md3-on-surface-variant);">社长:</span>
+                            <span style="color: var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
@@ -491,11 +488,11 @@
                                 <span style="border-bottom: 1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                             </a>
                             {% else %}
-                            <span style="color: var(--md3-on-surface-variant);">未设置</span>
+                            <span style="color: var(--md3-on-surface-variant);">{% trans "未设置" %}</span>
                             {% endif %}
                         </div>
                         <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
-                            <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">负责干事:</span>
+                            <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">{% trans "负责干事:" %}</span>
                             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                 {% if club.responsible_staff.all %}
                                     {% for relation in club.responsible_staff.all %}
@@ -513,7 +510,7 @@
                                     </a>
                                     {% endfor %}
                                 {% else %}
-                                    <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -533,7 +530,7 @@
                             <div class="alert-item">
                                 <strong>{{ club.name }}</strong>
                                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                    <span style="color: var(--md3-on-surface-variant);">社长:</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
@@ -548,11 +545,11 @@
                                         <span style="border-bottom: 1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                                     </a>
                                     {% else %}
-                                    <span style="color: var(--md3-on-surface-variant);">未设置</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "未设置" %}</span>
                                     {% endif %}
                                 </div>
                                 <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
-                                    <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">负责干事:</span>
+                                    <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">{% trans "负责干事:" %}</span>
                                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                         {% if club.responsible_staff.all %}
                                             {% for relation in club.responsible_staff.all %}
@@ -570,7 +567,7 @@
                                             </a>
                                             {% endfor %}
                                         {% else %}
-                                            <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
+                                            <span style="color: var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -587,13 +584,11 @@
             <div class="alert-buttons">
                 {% if clubs_enabled_review_not_submitted_my.count > 0 %}
                 <button onclick="copyUnsubmittedClubsMy()" class="btn-copy-my">
-                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
-                </button>
+                    <span class="material-icons" style="font-size:18px;">content_copy</span>{% trans "复制我负责的" %}</button>
                 {% endif %}
                 {% if clubs_enabled_review_not_submitted_other.count > 0 %}
                 <button onclick="copyUnsubmittedClubsAll()" class="btn-copy-all">
-                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
-                </button>
+                    <span class="material-icons" style="font-size:18px;">content_copy</span>{% trans "复制所有" %}</button>
                 {% endif %}
             </div>
         </div>
@@ -612,7 +607,7 @@
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                            <span style="color: var(--md3-on-surface-variant);">社长:</span>
+                            <span style="color: var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
@@ -627,11 +622,11 @@
                                 <span style="border-bottom: 1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                             </a>
                             {% else %}
-                            <span style="color: var(--md3-on-surface-variant);">未设置</span>
+                            <span style="color: var(--md3-on-surface-variant);">{% trans "未设置" %}</span>
                             {% endif %}
                         </div>
                         <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
-                            <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">负责干事:</span>
+                            <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">{% trans "负责干事:" %}</span>
                             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                 {% if club.responsible_staff.all %}
                                     {% for relation in club.responsible_staff.all %}
@@ -649,7 +644,7 @@
                                     </a>
                                     {% endfor %}
                                 {% else %}
-                                    <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -669,7 +664,7 @@
                             <div class="alert-item">
                                 <strong>{{ club.name }}</strong>
                                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                    <span style="color: var(--md3-on-surface-variant);">社长:</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
@@ -684,11 +679,11 @@
                                         <span style="border-bottom: 1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                                     </a>
                                     {% else %}
-                                    <span style="color: var(--md3-on-surface-variant);">未设置</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "未设置" %}</span>
                                     {% endif %}
                                 </div>
                                 <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
-                                    <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">负责干事:</span>
+                                    <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">{% trans "负责干事:" %}</span>
                                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                         {% if club.responsible_staff.all %}
                                             {% for relation in club.responsible_staff.all %}
@@ -706,7 +701,7 @@
                                             </a>
                                             {% endfor %}
                                         {% else %}
-                                            <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
+                                            <span style="color: var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -717,7 +712,7 @@
                     {% endif %}
 
                 {% else %}
-                    <div class="alert-item" style="opacity: 0.7; font-style: italic;">暂无你负责的未提交社团</div>
+                    <div class="alert-item" style="opacity: 0.7; font-style: italic;">{% trans "暂无你负责的未提交社团" %}</div>
                 {% endif %}
             </div>
 
@@ -733,7 +728,7 @@
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                            <span style="color: var(--md3-on-surface-variant);">社长:</span>
+                            <span style="color: var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
@@ -748,11 +743,11 @@
                                 <span style="border-bottom: 1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                             </a>
                             {% else %}
-                            <span style="color: var(--md3-on-surface-variant);">未设置</span>
+                            <span style="color: var(--md3-on-surface-variant);">{% trans "未设置" %}</span>
                             {% endif %}
                         </div>
                         <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
-                            <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">负责干事:</span>
+                            <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">{% trans "负责干事:" %}</span>
                             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                 {% if club.responsible_staff.all %}
                                     {% for relation in club.responsible_staff.all %}
@@ -770,7 +765,7 @@
                                     </a>
                                     {% endfor %}
                                 {% else %}
-                                    <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -790,7 +785,7 @@
                             <div class="alert-item">
                                 <strong>{{ club.name }}</strong>
                                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                                    <span style="color: var(--md3-on-surface-variant);">社长:</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "社长:" %}</span>
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
@@ -805,11 +800,11 @@
                                         <span style="border-bottom: 1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                                     </a>
                                     {% else %}
-                                    <span style="color: var(--md3-on-surface-variant);">未设置</span>
+                                    <span style="color: var(--md3-on-surface-variant);">{% trans "未设置" %}</span>
                                     {% endif %}
                                 </div>
                                 <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
-                                    <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">负责干事:</span>
+                                    <span style="color: var(--md3-on-surface-variant); white-space: nowrap;">{% trans "负责干事:" %}</span>
                                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                         {% if club.responsible_staff.all %}
                                             {% for relation in club.responsible_staff.all %}
@@ -827,7 +822,7 @@
                                             </a>
                                             {% endfor %}
                                         {% else %}
-                                            <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
+                                            <span style="color: var(--md3-on-surface-variant);">{% trans "暂未分配" %}</span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -844,13 +839,11 @@
             <div class="alert-buttons">
                 {% if clubs_enabled_registration_not_submitted_my.count > 0 %}
                 <button onclick="copyUnsubmittedRegistrationClubsMy()" class="btn-copy-my">
-                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
-                </button>
+                    <span class="material-icons" style="font-size:18px;">content_copy</span>{% trans "复制我负责的" %}</button>
                 {% endif %}
                 {% if clubs_enabled_registration_not_submitted_other.count > 0 %}
                 <button onclick="copyUnsubmittedRegistrationClubsAll()" class="btn-copy-all">
-                    <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
-                </button>
+                    <span class="material-icons" style="font-size:18px;">content_copy</span>{% trans "复制所有" %}</button>
                 {% endif %}
             </div>
         </div>
@@ -860,10 +853,10 @@
     <!-- 功能控制 -->
     <div class="control-panel">
         <div class="control-card">
-            <h3><span class="material-icons">settings</span> 功能控制</h3>
+            <h3><span class="material-icons">settings</span>{% trans "功能控制" %}</h3>
             
             <div class="control-group">
-                <span class="control-label">年审功能:</span>
+                <span class="control-label">{% trans "年审功能:" %}</span>
                 <div class="control-button-group">
                     <form method="post" action="{% url 'clubs:toggle_all_review_enabled' %}" style="margin: 0;">
                         {% csrf_token %}
@@ -876,7 +869,7 @@
             </div>
             
             <div class="control-group">
-                <span class="control-label">社团注册:</span>
+                <span class="control-label">{% trans "社团注册:" %}</span>
                 <div class="control-button-group">
                     <form method="post" action="{% url 'clubs:toggle_registration_enabled' %}" style="margin: 0;">
                         {% csrf_token %}
@@ -896,7 +889,7 @@
     <!-- 管理功能 -->
     <div class="section-card">
         <div class="section-header">
-            <h3 class="section-title"><span class="material-icons">dashboard</span> 管理功能</h3>
+            <h3 class="section-title"><span class="material-icons">dashboard</span>{% trans "管理功能" %}</h3>
         </div>
         <div class="section-body">
             <div class="action-grid">
@@ -904,33 +897,30 @@
                     <div class="action-card-icon">
                         <span class="material-icons" style="font-size: 28px;">note</span>
                     </div>
-                    <div class="action-card-title">上传模板</div>
-                    <div class="action-card-desc">上传和管理社团材料提交使用的模板文件</div>
+                    <div class="action-card-title">{% trans "上传模板" %}</div>
+                    <div class="action-card-desc">{% trans "上传和管理社团材料提交使用的模板文件" %}</div>
                     <a href="{% url 'clubs:upload_template' %}" class="btn btn-primary action-card-btn">
-                        <span class="material-icons">flag</span> 管理模板
-                    </a>
+                        <span class="material-icons">flag</span>{% trans "管理模板" %}</a>
                 </div>
 
                 <div class="action-card">
                     <div class="action-card-icon">
                         <span class="material-icons" style="font-size: 28px;">group</span>
                     </div>
-                    <div class="action-card-title">查看用户名单</div>
-                    <div class="action-card-desc">查看所有用户的详细信息和联系方式</div>
+                    <div class="action-card-title">{% trans "查看用户名单" %}</div>
+                    <div class="action-card-desc">{% trans "查看所有用户的详细信息和联系方式" %}</div>
                     <a href="{% url 'clubs:staff_view_users' %}" class="btn btn-secondary action-card-btn">
-                        <span class="material-icons">list</span> 用户名单
-                    </a>
+                        <span class="material-icons">list</span>{% trans "用户名单" %}</a>
                 </div>
 
                 <div class="action-card">
                     <div class="action-card-icon">
                         <span class="material-icons" style="font-size: 28px;">assignment_ind</span>
                     </div>
-                    <div class="action-card-title">管理负责社团</div>
-                    <div class="action-card-desc">分配和管理干事负责的社团列表</div>
+                    <div class="action-card-title">{% trans "管理负责社团" %}</div>
+                    <div class="action-card-desc">{% trans "分配和管理干事负责的社团列表" %}</div>
                     <a href="{% url 'clubs:manage_staff_clubs' %}" class="btn btn-success action-card-btn">
-                        <span class="material-icons">edit</span> 负责社团
-                    </a>
+                        <span class="material-icons">edit</span>{% trans "负责社团" %}</a>
                 </div>
             </div>
         </div>
@@ -939,7 +929,7 @@
     <!-- 社团名单 -->
     <div class="section-card">
         <div class="section-header">
-            <h3 class="section-title"><span class="material-icons">format_list_bulleted</span> 社团名单</h3>
+            <h3 class="section-title"><span class="material-icons">format_list_bulleted</span>{% trans "社团名单" %}</h3>
         </div>
         <div class="section-body">
             <!-- 搜索和工具栏 -->
@@ -951,13 +941,13 @@
                             type="text" 
                             name="q" 
                             value="{{ q|default:'' }}" 
-                            placeholder="搜索社团名称、社长或描述..." 
+                            placeholder="{% trans "搜索社团名称、社长或描述..." %}" 
                             style="flex: 1; border: none; background: transparent; font-size: 1rem; color: var(--md3-on-surface); font-family: inherit;"
                         >
                     </div>
                     <button type="submit" class="btn btn-primary">
                         <span class="material-icons">search</span>
-                        <span>搜索</span>
+                        <span>{% trans "搜索" %}</span>
                     </button>
                 </form>
                 <div style="color: var(--md3-on-surface-variant); font-size: 0.9rem;">
@@ -970,12 +960,12 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background: var(--md3-surface-container-high); border-bottom: 2px solid var(--md3-outline-variant);">
-                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">社团名称</th>
-                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">社长</th>
-                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">状态</th>
-                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">年审</th>
-                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">注册</th>
-                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">操作</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">{% trans "社团名称" %}</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">{% trans "社长" %}</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">{% trans "状态" %}</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">{% trans "年审" %}</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">{% trans "注册" %}</th>
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">{% trans "操作" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1001,59 +991,52 @@
                             <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
                                 {% if club.status == 'active' %}
                                     <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-success-container); color: var(--md3-on-success-container); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span> 活跃
-                                    </span>
+                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span>{% trans "活跃" %}</span>
                                 {% elif club.status == 'inactive' %}
                                     <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">pause_circle</span> 不活跃
-                                    </span>
+                                        <span class="material-icons" style="font-size: 1rem;">pause_circle</span>{% trans "不活跃" %}</span>
                                 {% elif club.status == 'suspended' %}
                                     <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-error-container); color: var(--md3-on-error-container); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">cancel</span> 停止
-                                    </span>
+                                        <span class="material-icons" style="font-size: 1rem;">cancel</span>{% trans "停止" %}</span>
                                 {% endif %}
                             </td>
                             <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
                                 {% if club.review_enabled %}
                                     <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span> 启用
-                                    </span>
+                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span>{% trans "启用" %}</span>
                                 {% else %}
                                     <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">block</span> 禁用
-                                    </span>
+                                        <span class="material-icons" style="font-size: 1rem;">block</span>{% trans "禁用" %}</span>
                                 {% endif %}
                             </td>
                             <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
                                 {% if club.registration_enabled %}
                                     <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span> 启用
-                                    </span>
+                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span>{% trans "启用" %}</span>
                                 {% else %}
                                     <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">block</span> 禁用
-                                    </span>
+                                        <span class="material-icons" style="font-size: 1rem;">block</span>{% trans "禁用" %}</span>
                                 {% endif %}
                             </td>
                             <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
                                 <div style="display: flex; gap: var(--md3-spacing-sm); flex-wrap: wrap;">
                                     <a href="{% url 'clubs:club_detail' club_id=club.id %}" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem;">
-                                        <span class="material-icons" style="font-size: 1rem;">visibility</span> <span>查看</span>
+                                        <span class="material-icons" style="font-size: 1rem;">visibility</span> <span>{% trans "查看" %}</span>
                                     </a>
                                     <form method="post" action="{% url 'clubs:toggle_review_enabled' club_id=club.id %}" style="display: inline;">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem;">
-                                            <span class="material-icons" style="font-size: 1rem;">{% if club.review_enabled %}lock{% else %}lock_open{% endif %}</span> <span>年审</span>
+                                            <span class="material-icons" style="font-size: 1rem;">{% if club.review_enabled %}lock{% else %}lock_open{% endif %}</span> <span>{% trans "年审" %}</span>
                                         </button>
                                     </form>
                                     <form method="post" action="{% url 'clubs:toggle_club_registration_enabled' club_id=club.id %}" style="display: inline;">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem;">
-                                            <span class="material-icons" style="font-size: 1rem;">{% if club.registration_enabled %}lock{% else %}lock_open{% endif %}</span> <span>注册</span>
+                                            <span class="material-icons" style="font-size: 1rem;">{% if club.registration_enabled %}lock{% else %}lock_open{% endif %}</span> <span>{% trans "注册" %}</span>
                                         </button>
                                     </form>
                                     <button type="button" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem; color: var(--md3-error);" onclick="openDeleteModal('{{ club.id }}', '{{ club.name|escapejs }}')">
-                                        <span class="material-icons" style="font-size: 1rem;">delete</span> <span>删除</span>
+                                        <span class="material-icons" style="font-size: 1rem;">delete</span> <span>{% trans "删除" %}</span>
                                     </button>
                                 </div>
                             </td>
@@ -1062,7 +1045,7 @@
                         <tr>
                             <td colspan="6" style="padding: var(--md3-spacing-3xl); text-align: center; color: var(--md3-on-surface-variant);">
                                 <span class="material-icons" style="font-size: 3rem; opacity: 0.5; display: block; margin-bottom: var(--md3-spacing-md);">folder_off</span>
-                                <div>暂无社团记录</div>
+                                <div>{% trans "暂无社团记录" %}</div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -1079,20 +1062,20 @@
                 <div style="display: flex; gap: var(--md3-spacing-md);">
                     {% if clubs_page.has_previous %}
                         <a href="?q={{ q }}&page={{ clubs_page.previous_page_number }}" class="btn btn-secondary">
-                            <span class="material-icons">chevron_left</span> <span>上一页</span>
+                            <span class="material-icons">chevron_left</span> <span>{% trans "上一页" %}</span>
                         </a>
                     {% else %}
                         <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
-                            <span class="material-icons">chevron_left</span> <span>上一页</span>
+                            <span class="material-icons">chevron_left</span> <span>{% trans "上一页" %}</span>
                         </button>
                     {% endif %}
                     {% if clubs_page.has_next %}
                         <a href="?q={{ q }}&page={{ clubs_page.next_page_number }}" class="btn btn-secondary">
-                            <span>下一页</span> <span class="material-icons">chevron_right</span>
+                            <span>{% trans "下一页" %}</span> <span class="material-icons">chevron_right</span>
                         </a>
                     {% else %}
                         <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
-                            <span>下一页</span> <span class="material-icons">chevron_right</span>
+                            <span>{% trans "下一页" %}</span> <span class="material-icons">chevron_right</span>
                         </button>
                     {% endif %}
                 </div>
@@ -1104,13 +1087,12 @@
     <!-- 快速链接 -->
     <div class="section-card">
         <div class="section-header">
-            <h3 class="section-title"><span class="material-icons">link</span> 快速链接</h3>
+            <h3 class="section-title"><span class="material-icons">link</span>{% trans "快速链接" %}</h3>
         </div>
         <div class="section-body">
             <div style="display: flex; flex-wrap: wrap; gap: 12px;">
                 <a href="{% url 'clubs:index' %}" class="btn btn-secondary">
-                    <span class="material-icons">home</span> 返回首页
-                </a>
+                    <span class="material-icons">home</span>{% trans "返回首页" %}</a>
             </div>
         </div>
     </div>
@@ -1119,27 +1101,21 @@
 <div id="bulkOpsModal" class="bulk-modal-overlay">
     <div class="bulk-modal-card">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-            <h3 style="margin:0; font-size:1.2rem;">批量操作</h3>
-            <button type="button" class="btn btn-secondary" onclick="closeBulkOpsModal()">关闭</button>
+            <h3 style="margin:0; font-size:1.2rem;">{% trans "批量操作" %}</h3>
+            <button type="button" class="btn btn-secondary" onclick="closeBulkOpsModal()">{% trans "关闭" %}</button>
         </div>
-        <p style="margin:8px 0 0 0; color: var(--md3-on-surface-variant);">下载社团模板、批量导入社团，或导出全部用户与社团数据。</p>
+        <p style="margin:8px 0 0 0; color: var(--md3-on-surface-variant);">{% trans "下载社团模板、批量导入社团，或导出全部用户与社团数据。" %}</p>
         <div class="bulk-modal-actions">
             <a href="{% url 'clubs:download_club_import_template' %}" class="btn btn-secondary" style="justify-content:center;">
-                <span class="material-icons">download</span>
-                下载社团导入模板
-            </a>
+                <span class="material-icons">download</span>{% trans "下载社团导入模板" %}</a>
             <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn btn-secondary" style="justify-content:center;">
-                <span class="material-icons">file_download</span>
-                导出全部用户+社团
-            </a>
+                <span class="material-icons">file_download</span>{% trans "导出全部用户+社团" %}</a>
             <form method="post" action="{% url 'clubs:import_clubs_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <input type="file" name="csv_file" accept=".csv,text/csv" required class="bulk-modal-file">
                 <button type="submit" class="btn btn-primary" style="justify-content:center;">
-                    <span class="material-icons">upload_file</span>
-                    批量导入社团CSV
-                </button>
+                    <span class="material-icons">upload_file</span>{% trans "批量导入社团CSV" %}</button>
             </form>
         </div>
     </div>
@@ -1148,21 +1124,18 @@
 <!-- 删除确认弹窗 -->
 <div id="deleteModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
     <div class="modal-card" style="background: var(--md3-surface); padding: 24px; border-radius: 28px; width: 90%; max-width: 400px; box-shadow: var(--md3-elevation-3);">
-        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 24px; color: var(--md3-on-surface);">删除社团确认</h3>
-        <p style="margin-bottom: 20px; color: var(--md3-on-surface-variant);">
-            您正在删除社团 <strong id="deleteClubNameDisplay" style="color: var(--md3-on-surface);"></strong>。<br>
-            此操作无法撤销！所有相关数据将被永久删除。
-        </p>
-        <p style="margin-bottom: 8px; font-size: 14px; color: var(--md3-on-surface);">请输入社团全名以确认：</p>
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 24px; color: var(--md3-on-surface);">{% trans "删除社团确认" %}</h3>
+        <p style="margin-bottom: 20px; color: var(--md3-on-surface-variant);">{% trans "您正在删除社团" %}<strong id="deleteClubNameDisplay" style="color: var(--md3-on-surface);"></strong>。<br>{% trans "此操作无法撤销！所有相关数据将被永久删除。" %}</p>
+        <p style="margin-bottom: 8px; font-size: 14px; color: var(--md3-on-surface);">{% trans "请输入社团全名以确认：" %}</p>
         <form id="deleteForm" method="post" action="">
             {% csrf_token %}
             <input type="text" id="confirmNameInput" name="confirm_club_name" 
                    style="width: 100%; padding: 12px; border: 1px solid var(--md3-outline); border-radius: 4px; margin-bottom: 24px; box-sizing: border-box; background: var(--md3-surface-container-highest); color: var(--md3-on-surface);"
-                   placeholder="输入社团全名" oninput="checkDeleteInput()" autocomplete="off">
+                   placeholder="{% trans "输入社团全名" %}" oninput="checkDeleteInput()" autocomplete="off">
             
             <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">取消</button>
-                <button type="submit" id="confirmDeleteBtn" class="btn btn-primary" style="background: var(--md3-error); color: var(--md3-on-error);" disabled>确认删除</button>
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">{% trans "取消" %}</button>
+                <button type="submit" id="confirmDeleteBtn" class="btn btn-primary" style="background: var(--md3-error); color: var(--md3-on-error);" disabled>{% trans "确认删除" %}</button>
             </div>
         </form>
     </div>

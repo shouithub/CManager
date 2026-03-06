@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}审核干事申请{% endblock %}
 
@@ -209,13 +210,13 @@
 <div class="review-wrap">
     <section class="hero">
         <span class="material-icons">assignment_ind</span>
-        <h1>审核干事注册申请</h1>
+        <h1>{% trans "审核干事注册申请" %}</h1>
     </section>
 
     <section class="card">
         <div class="card-head">
             <span class="material-icons">person</span>
-            <h2>申请人信息</h2>
+            <h2>{% trans "申请人信息" %}</h2>
         </div>
         <div class="card-body">
             <div class="user-main">
@@ -228,40 +229,40 @@
                 </div>
                 <div>
                     <h3>{{ profile.get_full_name|default:user.username }}</h3>
-                    <a href="{% url 'clubs:user_detail' user.id %}">查看完整档案</a>
+                    <a href="{% url 'clubs:user_detail' user.id %}">{% trans "查看完整档案" %}</a>
                 </div>
             </div>
 
             <div class="grid">
-                <div class="info-item"><div class="label">用户名</div><div class="value">{{ user.username }}</div></div>
-                <div class="info-item"><div class="label">学号</div><div class="value">{{ profile.student_id|default:"未填写" }}</div></div>
-                <div class="info-item"><div class="label">邮箱</div><div class="value">{{ user.email|default:"未填写" }}</div></div>
-                <div class="info-item"><div class="label">电话</div><div class="value">{{ profile.phone|default:"未填写" }}</div></div>
-                <div class="info-item"><div class="label">微信</div><div class="value">{{ profile.wechat|default:"未填写" }}</div></div>
-                <div class="info-item"><div class="label">政治面貌</div><div class="value">{{ profile.get_political_status_display|default:"未填写" }}</div></div>
-                <div class="info-item"><div class="label">申请时间</div><div class="value">{{ user.date_joined|date:"Y-m-d H:i" }}</div></div>
+                <div class="info-item"><div class="label">{% trans "用户名" %}</div><div class="value">{{ user.username }}</div></div>
+                <div class="info-item"><div class="label">{% trans "学号" %}</div><div class="value">{{ profile.student_id|default:"未填写" }}</div></div>
+                <div class="info-item"><div class="label">{% trans "邮箱" %}</div><div class="value">{{ user.email|default:"未填写" }}</div></div>
+                <div class="info-item"><div class="label">{% trans "电话" %}</div><div class="value">{{ profile.phone|default:"未填写" }}</div></div>
+                <div class="info-item"><div class="label">{% trans "微信" %}</div><div class="value">{{ profile.wechat|default:"未填写" }}</div></div>
+                <div class="info-item"><div class="label">{% trans "政治面貌" %}</div><div class="value">{{ profile.get_political_status_display|default:"未填写" }}</div></div>
+                <div class="info-item"><div class="label">{% trans "申请时间" %}</div><div class="value">{{ user.date_joined|date:"Y-m-d H:i" }}</div></div>
                 <div class="info-item">
-                    <div class="label">状态</div>
+                    <div class="label">{% trans "状态" %}</div>
                     <div class="value">
                         {% if profile.status == 'pending' %}
-                            <span class="status pending"><span class="material-icons" style="font-size:14px;">schedule</span>待审核</span>
+                            <span class="status pending"><span class="material-icons" style="font-size:14px;">schedule</span>{% trans "待审核" %}</span>
                         {% elif profile.status == 'approved' %}
-                            <span class="status approved"><span class="material-icons" style="font-size:14px;">check_circle</span>已批准</span>
+                            <span class="status approved"><span class="material-icons" style="font-size:14px;">check_circle</span>{% trans "已批准" %}</span>
                         {% elif profile.status == 'rejected' %}
-                            <span class="status rejected"><span class="material-icons" style="font-size:14px;">cancel</span>已拒绝</span>
+                            <span class="status rejected"><span class="material-icons" style="font-size:14px;">cancel</span>{% trans "已拒绝" %}</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
-            <div class="hint">请仅对“自行注册申请成为干事”的账号执行审核。批量导入的用户不会进入此审核流程。</div>
+            <div class="hint">{% trans "请仅对“自行注册申请成为干事”的账号执行审核。批量导入的用户不会进入此审核流程。" %}</div>
         </div>
     </section>
 
     <section class="card">
         <div class="card-head">
             <span class="material-icons">fact_check</span>
-            <h2>审核决定</h2>
+            <h2>{% trans "审核决定" %}</h2>
         </div>
         <div class="card-body">
             <form method="post">
@@ -269,27 +270,23 @@
 
                 <div class="decision-grid">
                     <button type="submit" name="review_status" value="approved" class="decision-btn approve">
-                        <div class="decision-title">批准申请</div>
-                        <div class="decision-desc">该用户将成为干事并可立即登录使用干事功能。</div>
+                        <div class="decision-title">{% trans "批准申请" %}</div>
+                        <div class="decision-desc">{% trans "该用户将成为干事并可立即登录使用干事功能。" %}</div>
                     </button>
                     <button type="submit" name="review_status" value="rejected" class="decision-btn reject">
-                        <div class="decision-title">拒绝申请</div>
-                        <div class="decision-desc">该用户申请被驳回，可后续重新发起注册申请。</div>
+                        <div class="decision-title">{% trans "拒绝申请" %}</div>
+                        <div class="decision-desc">{% trans "该用户申请被驳回，可后续重新发起注册申请。" %}</div>
                     </button>
                 </div>
 
-                <label for="review_comment" class="form-label">审核备注（可选）</label>
-                <textarea id="review_comment" name="review_comment" class="textarea" placeholder="输入审核意见或说明..."></textarea>
+                <label for="review_comment" class="form-label">{% trans "审核备注（可选）" %}</label>
+                <textarea id="review_comment" name="review_comment" class="textarea" placeholder="{% trans "输入审核意见或说明..." %}"></textarea>
 
                 <div class="actions">
                     <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
-                        <span class="material-icons">arrow_back</span>
-                        返回用户管理
-                    </a>
+                        <span class="material-icons">arrow_back</span>{% trans "返回用户管理" %}</a>
                     <button type="submit" name="review_status" value="approved" class="btn btn-primary">
-                        <span class="material-icons">check</span>
-                        快速批准
-                    </button>
+                        <span class="material-icons">check</span>{% trans "快速批准" %}</button>
                 </div>
             </form>
         </div>

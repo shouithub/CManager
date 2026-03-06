@@ -1,0 +1,5815 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: CManager 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-06 16:27+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# View messages from auth_views.py
+#: .\clubs\auth_views.py:46
+msgid "用户名不能为空"
+msgstr "Username cannot be empty"
+
+#: .\clubs\auth_views.py:48
+msgid "用户名长度应在3-30个字符之间"
+msgstr "Username must be between 3-30 characters"
+
+#: .\clubs\auth_views.py:50
+msgid "用户名已存在"
+msgstr "Username already exists"
+
+#: .\clubs\auth_views.py:53
+msgid "真实姓名不能为空"
+msgstr "Real name cannot be empty"
+
+#: .\clubs\auth_views.py:56
+msgid "邮箱不能为空"
+msgstr "Email cannot be empty"
+
+#: .\clubs\auth_views.py:59
+msgid "密码不能为空"
+msgstr "Password cannot be empty"
+
+#: .\clubs\auth_views.py:61 .\templates\clubs\admin\create_user.html:419
+msgid "密码至少6个字符"
+msgstr "Password must be at least 6 characters"
+
+#: .\clubs\auth_views.py:64
+msgid "两次密码不一致"
+msgstr "Passwords do not match"
+
+#: .\clubs\auth_views.py:68
+msgid "学号不能为空"
+msgstr "Student ID cannot be empty"
+
+#: .\clubs\auth_views.py:70
+msgid "学号已被使用"
+msgstr "Student ID already in use"
+
+#: .\clubs\auth_views.py:73
+msgid "电话不能为空"
+msgstr "Phone cannot be empty"
+
+#: .\clubs\auth_views.py:75
+msgid "微信不能为空"
+msgstr "WeChat cannot be empty"
+
+#: .\clubs\auth_views.py:80
+msgid "无效的角色选择"
+msgstr "Invalid role selection"
+
+#: .\clubs\auth_views.py:88
+msgid "干事必须选择部门"
+msgstr "Staff must select a department"
+
+#: .\clubs\auth_views.py:95
+msgid "无效的部门选择"
+msgstr "Invalid department selection"
+
+#: .\clubs\auth_views.py:100
+msgid "社长必须选择政治面貌"
+msgstr "President must select political status"
+
+# View messages from auth_views.py
+#: .\clubs\auth_views.py:159
+msgid "用户名和密码不能为空"
+msgstr "Username and password cannot be empty"
+
+#: .\clubs\auth_views.py:166 .\clubs\auth_views.py:234
+msgid "登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！"
+msgstr ""
+"Too many login attempts. Please try again in 5 minutes, or contact an "
+"administrator to reset your password."
+
+#: .\clubs\auth_views.py:185
+msgid "您的账号正在审核中，请等待管理员批准！"
+msgstr "Your account is under review. Please wait for administrator approval."
+
+#: .\clubs\auth_views.py:191
+#, python-format
+msgid "欢迎回来，%(username)s！"
+msgstr "Welcome back, %(username)s!"
+
+#: .\clubs\auth_views.py:195
+msgid "为了账户安全，请先修改密码后再继续使用系统。"
+msgstr "For account security, please change your password before continuing."
+
+#: .\clubs\auth_views.py:242
+msgid "用户名或密码错误"
+msgstr "Incorrect username or password"
+
+#: .\clubs\auth_views.py:253
+msgid "已登出"
+msgstr "Logged out"
+
+#: .\clubs\auth_views.py:277
+#, python-format
+msgid "管理员账户 %(username)s 已成功删除！"
+msgstr "Administrator account %(username)s was deleted successfully!"
+
+#: .\clubs\auth_views.py:289
+#, python-format
+msgid "社长账户 %(username)s 已成功删除！您的年审记录已被保留。"
+msgstr ""
+"President account %(username)s was deleted successfully! Your annual review "
+"records have been retained."
+
+#: .\clubs\auth_views.py:304
+#, python-format
+msgid "干事账户 %(username)s 已成功删除！所有相关数据已被完整清除。"
+msgstr ""
+"Staff account %(username)s was deleted successfully! All related data has "
+"been fully removed."
+
+#: .\clubs\auth_views.py:309
+#, python-format
+msgid "账户 %(username)s 已成功删除！"
+msgstr "Account %(username)s was deleted successfully!"
+
+#: .\clubs\auth_views.py:315
+msgid "用户名输入错误，账户删除失败。"
+msgstr "Username confirmation is incorrect. Account deletion failed."
+
+#: .\clubs\export_views.py:49
+msgid "您没有权限导出日程安排"
+msgstr ""
+
+#: .\clubs\export_views.py:60
+msgid "系统中没有房间"
+msgstr ""
+
+#: .\clubs\export_views.py:69
+msgid "无效的日期格式"
+msgstr ""
+
+#: .\clubs\export_views.py:243
+msgid "您没有权限导出活动数据"
+msgstr ""
+
+#: .\clubs\export_views.py:443
+msgid "您没有权限导出数据"
+msgstr ""
+
+#: .\clubs\export_views.py:849
+msgid "无效的数据类型，无法导出"
+msgstr ""
+
+# Model translations
+#: .\clubs\models.py:15 .\clubs\models.py:150
+#: .\templates\clubs\admin\admin_edit_user_account.html:388
+#: .\templates\clubs\admin\create_user.html:382
+#: .\templates\clubs\admin\dashboard.html:747
+#: .\templates\clubs\admin\manage_users.html:521
+#: .\templates\clubs\admin\manage_users.html:583
+#: .\templates\clubs\auth\register.html:197
+#: .\templates\clubs\staff\management.html:964
+#: .\templates\clubs\staff\review_activity_application.html:621
+#: .\templates\clubs\staff\review_reimbursement.html:568
+#: .\templates\clubs\staff\view_users.html:44
+#: .\templates\clubs\staff\view_users.html:110
+#: .\templates\clubs\user\approval_history_by_type.html:604
+msgid "社长"
+msgstr "President"
+
+#: .\clubs\models.py:16
+#: .\templates\clubs\admin\admin_edit_user_account.html:389
+#: .\templates\clubs\admin\create_user.html:383
+#: .\templates\clubs\admin\dashboard.html:751
+#: .\templates\clubs\admin\manage_users.html:522
+#: .\templates\clubs\admin\manage_users.html:585
+#: .\templates\clubs\auth\register.html:198
+#: .\templates\clubs\staff\view_users.html:45
+#: .\templates\clubs\staff\view_users.html:112
+msgid "干事"
+msgstr "Staff"
+
+#: .\clubs\models.py:17
+#: .\templates\clubs\admin\admin_edit_user_account.html:390
+#: .\templates\clubs\admin\create_user.html:384
+#: .\templates\clubs\admin\dashboard.html:755
+#: .\templates\clubs\admin\manage_users.html:523
+#: .\templates\clubs\admin\manage_users.html:587
+#: .\templates\clubs\oobe_setup.html:97
+#: .\templates\clubs\staff\view_users.html:46
+#: .\templates\clubs\staff\view_users.html:114
+msgid "管理员"
+msgstr "Administrator"
+
+#: .\clubs\models.py:21 .\templates\clubs\admin\manage_users.html:603
+#: .\templates\clubs\admin\review_staff_registration.html:248
+#: .\templates\clubs\staff\audit_center.html:722
+#: .\templates\clubs\staff\audit_center.html:793
+#: .\templates\clubs\staff\audit_center_mobile.html:445
+#: .\templates\clubs\staff\audit_center_mobile.html:498
+#: .\templates\clubs\staff\audit_center_mobile.html:551
+#: .\templates\clubs\staff\audit_center_mobile.html:604
+#: .\templates\clubs\staff\audit_center_mobile.html:653
+#: .\templates\clubs\staff\audit_center_mobile.html:710
+#: .\templates\clubs\staff\view_users.html:122
+#: .\templates\clubs\user\approval_center.html:430
+#: .\templates\clubs\user\approval_center_mobile.html:355
+#: .\templates\clubs\user\approval_center_mobile.html:410
+#: .\templates\clubs\user\approval_center_mobile.html:465
+#: .\templates\clubs\user\approval_center_mobile.html:520
+#: .\templates\clubs\user\approval_center_mobile.html:577
+#: .\templates\clubs\user\approval_center_mobile.html:632
+#: .\templates\clubs\user\approval_history_by_type.html:495
+#: .\templates\clubs\user\approval_history_by_type.html:570
+msgid "待审核"
+msgstr "Pending"
+
+#: .\clubs\models.py:22 .\templates\clubs\admin\manage_users.html:606
+#: .\templates\clubs\admin\review_staff_registration.html:250
+#: .\templates\clubs\staff\audit_center_mobile.html:441
+#: .\templates\clubs\staff\audit_center_mobile.html:494
+#: .\templates\clubs\staff\audit_center_mobile.html:547
+#: .\templates\clubs\staff\audit_center_mobile.html:600
+#: .\templates\clubs\staff\audit_center_mobile.html:655
+#: .\templates\clubs\staff\audit_center_mobile.html:706
+#: .\templates\clubs\staff\view_users.html:124
+#: .\templates\clubs\user\approval_center.html:726
+#: .\templates\clubs\user\approval_center.html:995
+#: .\templates\clubs\user\approval_center_mobile.html:351
+#: .\templates\clubs\user\approval_center_mobile.html:406
+#: .\templates\clubs\user\approval_center_mobile.html:461
+#: .\templates\clubs\user\approval_center_mobile.html:516
+#: .\templates\clubs\user\approval_center_mobile.html:573
+#: .\templates\clubs\user\approval_center_mobile.html:628
+#: .\templates\clubs\user\approval_history_by_type.html:487
+#: .\templates\clubs\user\approval_history_by_type.html:565
+msgid "已批准"
+msgstr "Approved"
+
+#: .\clubs\models.py:23 .\templates\clubs\admin\manage_users.html:609
+#: .\templates\clubs\admin\review_staff_registration.html:252
+#: .\templates\clubs\staff\audit_center.html:724
+#: .\templates\clubs\staff\audit_center.html:796
+#: .\templates\clubs\staff\audit_center.html:1053
+#: .\templates\clubs\staff\audit_center.html:1313
+#: .\templates\clubs\staff\audit_center_mobile.html:443
+#: .\templates\clubs\staff\audit_center_mobile.html:496
+#: .\templates\clubs\staff\audit_center_mobile.html:549
+#: .\templates\clubs\staff\audit_center_mobile.html:602
+#: .\templates\clubs\staff\audit_center_mobile.html:657
+#: .\templates\clubs\staff\audit_center_mobile.html:708
+#: .\templates\clubs\staff\view_users.html:126
+#: .\templates\clubs\user\approval_center.html:433
+#: .\templates\clubs\user\approval_center_mobile.html:353
+#: .\templates\clubs\user\approval_center_mobile.html:408
+#: .\templates\clubs\user\approval_center_mobile.html:463
+#: .\templates\clubs\user\approval_center_mobile.html:518
+#: .\templates\clubs\user\approval_center_mobile.html:575
+#: .\templates\clubs\user\approval_center_mobile.html:630
+#: .\templates\clubs\user\approval_history_by_type.html:491
+#: .\templates\clubs\user\approval_history_by_type.html:567
+#: .\templates\clubs\user\edit_rejected_review.html:585
+msgid "已拒绝"
+msgstr "Rejected"
+
+#: .\clubs\models.py:27 .\templates\clubs\index.html:1206
+#: .\templates\clubs\index.html:1218
+#: .\templates\clubs\staff\manage_department.html:376
+msgid "部员"
+msgstr "Member"
+
+#: .\clubs\models.py:28 .\templates\clubs\index.html:1186
+#: .\templates\clubs\index.html:1198
+#: .\templates\clubs\staff\manage_department.html:322
+msgid "部长"
+msgstr "Director"
+
+#: .\clubs\models.py:32 .\templates\clubs\auth\register.html:213
+msgid "中共党员"
+msgstr "CPC Member"
+
+#: .\clubs\models.py:33 .\templates\clubs\auth\register.html:214
+msgid "中共预备党员"
+msgstr "CPC Probationary Member"
+
+#: .\clubs\models.py:34 .\templates\clubs\auth\register.html:215
+msgid "共青团员"
+msgstr "Communist Youth League Member"
+
+#: .\clubs\models.py:35 .\templates\clubs\auth\register.html:216
+msgid "民革党员"
+msgstr "Revolutionary Committee Member"
+
+#: .\clubs\models.py:36 .\templates\clubs\auth\register.html:217
+msgid "民盟盟员"
+msgstr "China Democratic League Member"
+
+#: .\clubs\models.py:37 .\templates\clubs\auth\register.html:218
+msgid "民建会员"
+msgstr "Democratic National Construction Member"
+
+#: .\clubs\models.py:38 .\templates\clubs\auth\register.html:219
+msgid "农工党党员"
+msgstr "China Peasants Workers Democratic Member"
+
+#: .\clubs\models.py:39 .\templates\clubs\auth\register.html:220
+msgid "致公党党员"
+msgstr "China Council for Promoting Member"
+
+#: .\clubs\models.py:40 .\templates\clubs\auth\register.html:221
+msgid "九三学社社员"
+msgstr "Jiusanshe Member"
+
+#: .\clubs\models.py:41 .\templates\clubs\auth\register.html:222
+msgid "台盟盟员"
+msgstr "Taiwan Democratic Self-Government Member"
+
+#: .\clubs\models.py:42 .\templates\clubs\auth\register.html:223
+msgid "无党派人士"
+msgstr "Non-party Personage"
+
+#: .\clubs\models.py:43 .\templates\clubs\auth\register.html:224
+msgid "入党积极分子"
+msgstr "Progressive"
+
+#: .\clubs\models.py:44 .\templates\clubs\auth\register.html:225
+msgid "群众"
+msgstr "Non-member"
+
+#: .\clubs\models.py:47 .\templates\clubs\base.html:457
+msgid "用户"
+msgstr "User"
+
+#: .\clubs\models.py:48
+#: .\templates\clubs\admin\admin_edit_user_account.html:385
+#: .\templates\clubs\admin\manage_users.html:542
+#: .\templates\clubs\staff\view_users.html:40
+#: .\templates\clubs\staff\view_users.html:72
+#: .\templates\clubs\staff\view_users.html:108
+msgid "角色"
+msgstr "Role"
+
+#: .\clubs\models.py:51 .\clubs\models.py:112
+#: .\templates\clubs\admin\confirm_delete_announcement.html:49
+#: .\templates\clubs\admin\manage_users.html:544
+#: .\templates\clubs\admin\material_requirements_list.html:479
+#: .\templates\clubs\admin\review_staff_registration.html:245
+#: .\templates\clubs\admin\room_form.html:72
+#: .\templates\clubs\admin\time_slots.html:177
+#: .\templates\clubs\staff\audit_center.html:719
+#: .\templates\clubs\staff\management.html:965
+#: .\templates\clubs\staff\view_users.html:73
+#: .\templates\clubs\staff\view_users.html:119
+msgid "状态"
+msgstr "Status"
+
+#: .\clubs\models.py:54
+#: .\templates\clubs\admin\change_staff_attributes.html:278
+#: .\templates\clubs\admin\manage_users.html:543
+msgid "部门"
+msgstr "Department"
+
+#: .\clubs\models.py:55
+msgid "关联部门"
+msgstr "Linked Department"
+
+#: .\clubs\models.py:56
+msgid "部员/部长"
+msgstr "Member/Director"
+
+#: .\clubs\models.py:56
+msgid "仅对干事有效"
+msgstr "Only valid for staff"
+
+#: .\clubs\models.py:59
+msgid "真名"
+msgstr "Real Name"
+
+#: .\clubs\models.py:60 .\templates\clubs\admin\create_user.html:392
+#: .\templates\clubs\admin\review_staff_registration.html:238
+#: .\templates\clubs\auth\change_account_settings.html:299
+#: .\templates\clubs\club_detail.html:344
+#: .\templates\clubs\staff\manage_department.html:331
+#: .\templates\clubs\staff\manage_department.html:385
+#: .\templates\clubs\user\edit_profile.html:350
+msgid "学号"
+msgstr "Student ID"
+
+#: .\clubs\models.py:61 .\templates\clubs\admin\manage_users.html:539
+#: .\templates\clubs\admin\review_staff_registration.html:240
+#: .\templates\clubs\auth\change_account_settings.html:311
+#: .\templates\clubs\staff\manage_department.html:332
+#: .\templates\clubs\staff\manage_department.html:386
+#: .\templates\clubs\staff\view_users.html:69
+#: .\templates\clubs\staff\view_users.html:99
+msgid "电话"
+msgstr "Phone"
+
+#: .\clubs\models.py:62 .\templates\clubs\admin\manage_users.html:540
+#: .\templates\clubs\admin\review_staff_registration.html:241
+#: .\templates\clubs\auth\change_account_settings.html:325
+#: .\templates\clubs\staff\view_users.html:70
+#: .\templates\clubs\staff\view_users.html:100
+msgid "微信"
+msgstr "WeChat"
+
+#: .\clubs\models.py:67 .\templates\clubs\admin\manage_users.html:541
+#: .\templates\clubs\admin\review_staff_registration.html:242
+#: .\templates\clubs\auth\change_account_settings.html:337
+#: .\templates\clubs\auth\register.html:210
+#: .\templates\clubs\oobe_setup.html:148
+#: .\templates\clubs\staff\view_users.html:71
+#: .\templates\clubs\staff\view_users.html:101
+#: .\templates\clubs\user\edit_profile.html:355
+msgid "政治面貌"
+msgstr "Political Status"
+
+#: .\clubs\models.py:71 .\templates\clubs\oobe_setup.html:156
+msgid "是否公开个人信息"
+msgstr "Make profile public"
+
+#: .\clubs\models.py:74
+msgid "是否需要修改密码"
+msgstr "Must change password"
+
+#: .\clubs\models.py:77
+msgid "头像"
+msgstr "Avatar"
+
+#: .\clubs\models.py:79 .\clubs\models.py:116
+msgid "创建时间"
+msgstr "Created At"
+
+#: .\clubs\models.py:80 .\clubs\models.py:117
+msgid "更新时间"
+msgstr "Updated At"
+
+#: .\clubs\models.py:97 .\clubs\models.py:98
+#: .\templates\clubs\admin\create_user.html:379
+msgid "用户角色"
+msgstr "User Profile"
+
+#: .\clubs\models.py:104 .\templates\clubs\staff\management.html:994
+msgid "活跃"
+msgstr "Active"
+
+#: .\clubs\models.py:105 .\templates\clubs\staff\management.html:997
+msgid "不活跃"
+msgstr "Inactive"
+
+#: .\clubs\models.py:106 .\templates\clubs\staff\management.html:1000
+msgid "停止"
+msgstr "Suspended"
+
+#: .\clubs\models.py:109 .\templates\clubs\admin\assign_presidents.html:261
+#: .\templates\clubs\change_club_status.html:232
+#: .\templates\clubs\public_activities.html:628
+#: .\templates\clubs\staff\audit_center.html:707
+#: .\templates\clubs\staff\management.html:963
+#: .\templates\clubs\staff\review_activity_application.html:617
+#: .\templates\clubs\staff\review_club_registration.html:989
+#: .\templates\clubs\staff\review_club_registration_submission.html:872
+#: .\templates\clubs\staff\review_club_registration_submission.html:945
+#: .\templates\clubs\staff\review_detail.html:218
+#: .\templates\clubs\staff\review_president_transition.html:415
+#: .\templates\clubs\staff\review_reimbursement.html:564
+#: .\templates\clubs\staff\review_request.html:601
+#: .\templates\clubs\staff\review_request.html:677
+#: .\templates\clubs\staff\review_submission.html:314
+#: .\templates\clubs\user\approval_detail.html:246
+#: .\templates\clubs\user\register_club.html:421
+msgid "社团名称"
+msgstr "Club Name"
+
+#: .\clubs\models.py:110 .\templates\clubs\direct_edit_club_info.html:256
+#: .\templates\clubs\user\register_club.html:462
+msgid "社团介绍"
+msgstr "Club Description"
+
+#: .\clubs\models.py:111 .\templates\clubs\club_detail.html:295
+#: .\templates\clubs\direct_edit_club_info.html:263
+#: .\templates\clubs\staff\review_club_registration.html:993
+#: .\templates\clubs\staff\review_club_registration_submission.html:950
+#: .\templates\clubs\user\register_club.html:435
+msgid "成立日期"
+msgstr "Founded Date"
+
+#: .\clubs\models.py:113
+msgid "成员数"
+msgstr "Member Count"
+
+#: .\clubs\models.py:114
+msgid "是否开启年审"
+msgstr "Review Enabled"
+
+#: .\clubs\models.py:115
+msgid "是否开启注册"
+msgstr "Registration Enabled"
+
+#: .\clubs\models.py:120 .\clubs\models.py:121 .\clubs\models.py:153
+#: .\templates\clubs\base.html:421 .\templates\clubs\base.html:437
+#: .\templates\clubs\delete_club.html:223
+#: .\templates\clubs\user\approval_history_by_type.html:640
+msgid "社团"
+msgstr "Club"
+
+#: .\clubs\models.py:154 .\templates\clubs\admin\create_user.html:292
+msgid "用户信息"
+msgstr "User Profile"
+
+#: .\clubs\models.py:155 .\templates\clubs\club_detail.html:345
+msgid "职位"
+msgstr "Position"
+
+#: .\clubs\models.py:156 .\templates\clubs\club_detail.html:346
+msgid "任命日期"
+msgstr "Appointed Date"
+
+#: .\clubs\models.py:157 .\templates\clubs\staff\audit_center.html:715
+msgid "结束日期"
+msgstr "End Date"
+
+#: .\clubs\models.py:158
+msgid "是否现任"
+msgstr "Is Current"
+
+#: .\clubs\models.py:161 .\clubs\models.py:162
+msgid "社团干部"
+msgstr "Club Officer"
+
+#: .\clubs\views.py:648
+msgid "仅社长可以注册社团"
+msgstr ""
+
+#: .\clubs\views.py:655
+msgid "用户实名信息未配置，请联系管理员"
+msgstr ""
+
+#: .\clubs\views.py:774
+msgid "社团注册申请已提交，等待干事审核！"
+msgstr ""
+
+#: .\clubs\views.py:792
+msgid "缺少请求ID参数"
+msgstr ""
+
+#: .\clubs\views.py:860
+msgid "您没有权限修改此申请"
+msgstr ""
+
+#: .\clubs\views.py:865
+msgid "仅社长可以修改被拒绝的申请材料"
+msgstr ""
+
+#: .\clubs\views.py:879
+msgid "您没有权限修改此社团的申请材料"
+msgstr ""
+
+#: .\clubs\views.py:892 .\clubs\views.py:945
+msgid "只有被拒绝的申请才能重新提交"
+msgstr ""
+
+#: .\clubs\views.py:903 .\clubs\views.py:956 .\clubs\views.py:1013
+msgid "该申请已被修改提交，不允许再次修改之前的请求"
+msgstr ""
+
+#: .\clubs\views.py:1065
+msgid "只有被拒绝的报销申请才能重新提交"
+msgstr ""
+
+#: .\clubs\views.py:1102
+msgid "只有被拒绝的活动申请才能重新提交"
+msgstr ""
+
+#: .\clubs\views.py:1144
+msgid "只有被拒绝的换届申请才能重新提交"
+msgstr ""
+
+#: .\clubs\views.py:1315
+msgid "仅社长可以提交年审材料"
+msgstr ""
+
+#: .\clubs\views.py:1322
+msgid "您没有权限提交此社团的年审材料"
+msgstr ""
+
+#: .\clubs\views.py:1519 .\clubs\views.py:1605
+msgid "仅社团社长可以访问审批中心"
+msgstr ""
+
+#: .\clubs\views.py:1697 .\clubs\views.py:1792
+msgid "仅社团社长可以访问此页面"
+msgstr ""
+
+#: .\clubs\views.py:1777
+msgid "无效的审批类型"
+msgstr ""
+
+#: .\clubs\views.py:1819 .\clubs\views.py:1846 .\clubs\views.py:1857
+#: .\clubs\views.py:1882 .\clubs\views.py:1901 .\clubs\views.py:1920
+msgid "您没有权限查看此项目"
+msgstr ""
+
+#: .\clubs\views.py:1946 .\clubs\views.py:6374
+msgid "无效的项目类型"
+msgstr ""
+
+#: .\clubs\views.py:1973
+msgid "仅社长可以取消年审请求"
+msgstr ""
+
+#: .\clubs\views.py:1980
+msgid "您没有权限取消此社团的年审请求"
+msgstr ""
+
+#: .\clubs\views.py:1985
+msgid "只有待审核的请求可以取消"
+msgstr ""
+
+#: .\clubs\views.py:2016
+msgid "年审请求已成功取消，所有上传的文件已删除"
+msgstr ""
+
+#: .\clubs\views.py:2030
+msgid "仅干事和管理员可以审核年审材料"
+msgstr ""
+
+#: .\clubs\views.py:2039
+msgid "您已经审核过该材料，无法再次查看审核页面"
+msgstr ""
+
+#: .\clubs\views.py:2048 .\clubs\views.py:2674 .\clubs\views.py:6202
+msgid "无效的审核状态"
+msgstr ""
+
+#: .\clubs\views.py:2154
+msgid "您没有权限查看此页面"
+msgstr ""
+
+#: .\clubs\views.py:2161
+msgid "您没有权限查看此社团的报销历史"
+msgstr ""
+
+#: .\clubs\views.py:2179
+msgid "仅社长可以提交报销材料"
+msgstr ""
+
+#: .\clubs\views.py:2185
+msgid "您没有权限为此社团提交报销"
+msgstr ""
+
+#: .\clubs\views.py:2295
+msgid "报销材料已提交，等待审核！"
+msgstr ""
+
+#: .\clubs\views.py:2328
+msgid "仅干事和管理员可以上传模板"
+msgstr ""
+
+#: .\clubs\views.py:2336
+msgid "参数缺失"
+msgstr ""
+
+#: .\clubs\views.py:2352
+msgid "未检测到有效操作"
+msgstr ""
+
+#: .\clubs\views.py:2355
+msgid "未找到指定的材料要求配置"
+msgstr ""
+
+#: .\clubs\views.py:2382
+msgid "仅干事和管理员可以审核报销"
+msgstr ""
+
+#: .\clubs\views.py:2392 .\clubs\views.py:2462 .\clubs\views.py:2789
+#: .\clubs\views.py:2910 .\clubs\views.py:2956 .\clubs\views.py:3044
+#: .\clubs\views.py:3740
+msgid "状态不合法"
+msgstr ""
+
+#: .\clubs\views.py:2415 .\clubs\views.py:2524 .\clubs\views.py:2846
+#: .\clubs\views.py:2921 .\clubs\views.py:2965 .\clubs\views.py:3158
+#: .\clubs\views.py:6234
+#, fuzzy
+#| msgid "已批准"
+msgid "批准"
+msgstr "Approved"
+
+#: .\clubs\views.py:2441 .\clubs\views.py:3814
+msgid "仅干事和管理员可以审核社团注册"
+msgstr ""
+
+#: .\clubs\views.py:2452 .\clubs\views.py:2769 .\clubs\views.py:3024
+#: .\clubs\views.py:3729
+msgid "您已经审核过该社团注册申请，无法再次审核"
+msgstr ""
+
+#: .\clubs\views.py:2467 .\clubs\views.py:3745
+msgid "拒绝必须选择至少一个被拒绝的材料"
+msgstr ""
+
+#: .\clubs\views.py:2573
+msgid "您没有权限进行审核操作"
+msgstr ""
+
+#: .\clubs\views.py:2581 .\clubs\views.py:3110
+msgid "无效的审核请求类型"
+msgstr ""
+
+#: .\clubs\views.py:2600
+msgid "无效的申请次数"
+msgstr ""
+
+#: .\clubs\views.py:2610
+msgid "无效的申请次数格式"
+msgstr ""
+
+#: .\clubs\views.py:2648 .\clubs\views.py:2654
+msgid "该社团没有这么多次的申请记录"
+msgstr ""
+
+#: .\clubs\views.py:2667
+msgid "您已经审核过该材料，无法重复提交"
+msgstr ""
+
+#: .\clubs\views.py:2879 .\clubs\views.py:2885
+msgid "该社团没有这么多次的报销申请记录"
+msgstr ""
+
+#: .\clubs\views.py:2936 .\clubs\views.py:3127
+msgid "仅管理员可以审核干事注册申请"
+msgstr ""
+
+#: .\clubs\views.py:2944
+msgid "该干事账号不是待审核状态，无需重复审核"
+msgstr ""
+
+#: .\clubs\views.py:2996 .\clubs\views.py:3002
+msgid "该社团没有这么多次的注册申请记录"
+msgstr ""
+
+#: .\clubs\views.py:3010 .\clubs\views.py:3723
+msgid "该申请已完成审核，无法再查看审核页面"
+msgstr ""
+
+#: .\clubs\views.py:3017
+msgid "您已经审核过该申请，无法再次查看审核页面"
+msgstr ""
+
+#: .\clubs\views.py:3072 .\clubs\views.py:3774
+msgid "社团注册申请已拒绝"
+msgstr ""
+
+#: .\clubs\views.py:3078 .\clubs\views.py:3780
+msgid "社团注册申请已批准"
+msgstr ""
+
+#: .\clubs\views.py:3136
+msgid "只能审核待审核状态的干事账号"
+msgstr ""
+
+#: .\clubs\views.py:3139 .\clubs\views.py:4700
+#, fuzzy
+#| msgid "用户角色"
+msgid "用户角色信息不存在"
+msgstr "User Profile"
+
+#: .\clubs\views.py:3147
+msgid "审核结果不合法"
+msgstr ""
+
+#: .\clubs\views.py:3171 .\clubs\views.py:3347 .\clubs\views.py:3360
+#: .\clubs\views.py:3394 .\clubs\views.py:3432 .\clubs\views.py:7573
+msgid "仅管理员可以访问此页面"
+msgstr ""
+
+#: .\clubs\views.py:3372
+msgid "请选择要上传的图片"
+msgstr ""
+
+#: .\clubs\views.py:3384
+msgid "轮播图添加成功"
+msgstr ""
+
+#: .\clubs\views.py:3420
+msgid "轮播图更新成功"
+msgstr ""
+
+#: .\clubs\views.py:3448
+msgid "轮播图删除成功"
+msgstr ""
+
+#: .\clubs\views.py:3457
+msgid "仅管理员可访问此页面"
+msgstr ""
+
+#: .\clubs\views.py:3474 .\clubs\views.py:3505
+msgid "仅管理员可以发布公告"
+msgstr ""
+
+#: .\clubs\views.py:3488
+msgid "仅管理员可执行此操作"
+msgstr ""
+
+#: .\clubs\views.py:3541
+msgid "公告发布成功！"
+msgstr ""
+
+#: .\clubs\views.py:3556
+msgid "仅管理员可以删除公告"
+msgstr ""
+
+#: .\clubs\views.py:3580 .\clubs\views.py:5974
+msgid "社团不存在"
+msgstr ""
+
+#: .\clubs\views.py:3592
+msgid "仅社团社长可以提交社团注册"
+msgstr ""
+
+#: .\clubs\views.py:3598 .\clubs\views.py:3697
+msgid "当前社团注册功能未开启，无法提交注册申请"
+msgstr ""
+
+#: .\clubs\views.py:3679
+msgid "社团注册已提交，等待审核"
+msgstr ""
+
+#: .\clubs\views.py:3817
+msgid "用户配置文件不存在"
+msgstr ""
+
+#: .\clubs\views.py:3826
+msgid "仅管理员可以编辑公告"
+msgstr ""
+
+#: .\clubs\views.py:3868
+msgid "公告修改成功！"
+msgstr ""
+
+#: .\clubs\views.py:3883
+msgid "仅干事和管理员可以下载导入模板"
+msgstr ""
+
+#: .\clubs\views.py:3902
+msgid "仅干事和管理员可以导出数据"
+msgstr ""
+
+#: .\clubs\views.py:3991
+msgid "仅管理员可以批量导入用户"
+msgstr ""
+
+#: .\clubs\views.py:3999 .\clubs\views.py:4158
+msgid "请选择CSV文件后再导入"
+msgstr ""
+
+#: .\clubs\views.py:4005 .\clubs\views.py:4162
+msgid "仅支持CSV文件导入"
+msgstr ""
+
+#: .\clubs\views.py:4020 .\clubs\views.py:4175
+msgid "CSV文件编码无法识别，请使用UTF-8编码"
+msgstr ""
+
+#: .\clubs\views.py:4027 .\clubs\views.py:4180
+msgid "CSV表头无效"
+msgstr ""
+
+#: .\clubs\views.py:4124 .\clubs\views.py:4278
+msgid "部分数据有问题："
+msgstr ""
+
+#: .\clubs\views.py:4134
+msgid "仅干事和管理员可以下载社团导入模板"
+msgstr ""
+
+#: .\clubs\views.py:4152
+msgid "仅干事和管理员可以批量导入社团"
+msgstr ""
+
+#: .\clubs\views.py:4287
+msgid "仅管理员可以管理用户"
+msgstr ""
+
+#: .\clubs\views.py:4327
+msgid "仅干事可以查看用户列表"
+msgstr ""
+
+#: .\clubs\views.py:4359
+msgid "仅管理员可以创建用户账户"
+msgstr ""
+
+#: .\clubs\views.py:4466
+msgid "仅管理员可以编辑用户账户信息"
+msgstr ""
+
+#: .\clubs\views.py:4474
+msgid "请使用您自己的账户设置页面编辑个人信息"
+msgstr ""
+
+#: .\clubs\views.py:4632
+msgid "仅管理员可以修改用户角色"
+msgstr ""
+
+#: .\clubs\views.py:4641
+msgid "角色不合法"
+msgstr ""
+
+#: .\clubs\views.py:4688
+msgid "仅管理员可以修改干事属性"
+msgstr ""
+
+#: .\clubs\views.py:4697
+msgid "仅干事或管理员支持修改部门/职级属性"
+msgstr ""
+
+#: .\clubs\views.py:4715
+#, fuzzy
+#| msgid "无效的部门选择"
+msgid "部门选择无效"
+msgstr "Invalid department selection"
+
+#: .\clubs\views.py:4719
+msgid "职级选择无效"
+msgstr ""
+
+#: .\clubs\views.py:4755
+msgid "仅管理员可以管理SMTP配置"
+msgstr ""
+
+#: .\clubs\views.py:4811
+msgid "SMTP配置创建成功"
+msgstr ""
+
+#: .\clubs\views.py:4817
+msgid "SMTP配置已删除"
+msgstr ""
+
+#: .\clubs\views.py:4873
+msgid "SMTP配置更新成功"
+msgstr ""
+
+#: .\clubs\views.py:4880
+msgid "请输入测试邮箱地址"
+msgstr ""
+
+#: .\clubs\views.py:4923 .\clubs\views.py:5184 .\clubs\views.py:5249
+#: .\templates\clubs\admin\material_requirements_list.html:503
+#: .\templates\clubs\admin\time_slots.html:189
+#: .\templates\clubs\staff\management.html:1006
+#: .\templates\clubs\staff\management.html:1015
+msgid "启用"
+msgstr ""
+
+#: .\clubs\views.py:4937
+msgid "您没有权限下载此材料"
+msgstr ""
+
+#: .\clubs\views.py:4979
+msgid "缺少下载参数，请提供 type 与 id"
+msgstr ""
+
+#: .\clubs\views.py:4985
+msgid "下载参数 id 必须为整数"
+msgstr ""
+
+#: .\clubs\views.py:4999
+msgid "不支持的下载类型"
+msgstr ""
+
+#: .\clubs\views.py:5117
+msgid "该报销记录没有附件"
+msgstr ""
+
+#: .\clubs\views.py:5149
+msgid "该社长变更记录没有附件"
+msgstr ""
+
+#: .\clubs\views.py:5172
+msgid "暂无社团，无需操作"
+msgstr ""
+
+#: .\clubs\views.py:5231
+msgid "检测到年审开关被意外联动，已自动恢复为原状态"
+msgstr ""
+
+#: .\clubs\views.py:5259 .\clubs\views.py:5320 .\clubs\views.py:5382
+#: .\clubs\views.py:6803 .\clubs\views.py:6832 .\clubs\views.py:6871
+#: .\clubs\views.py:6908 .\clubs\views.py:6924 .\clubs\views.py:6935
+#: .\clubs\views.py:6975 .\clubs\views.py:7149 .\clubs\views.py:7175
+msgid "您没有权限执行此操作"
+msgstr ""
+
+#: .\clubs\views.py:5270
+msgid "无效的社团状态"
+msgstr ""
+
+#: .\clubs\views.py:5304
+msgid "社团简介已更新"
+msgstr ""
+
+#: .\clubs\views.py:5366
+msgid "社团信息已成功更新！"
+msgstr ""
+
+#: .\clubs\views.py:5399
+#, fuzzy
+#| msgid "用户名输入错误，账户删除失败。"
+msgid "社团名称输入错误，删除失败！"
+msgstr "Username confirmation is incorrect. Account deletion failed."
+
+#: .\clubs\views.py:5420
+msgid "只有社团社长可以查看换届申请记录"
+msgstr ""
+
+#: .\clubs\views.py:5447
+msgid "只有社团社长可以查看活动申请记录"
+msgstr ""
+
+#: .\clubs\views.py:5593 .\clubs\views.py:5722
+msgid "请填写所有必填字段"
+msgstr ""
+
+#: .\clubs\views.py:5603
+msgid "时间格式不正确"
+msgstr ""
+
+#: .\clubs\views.py:5612
+msgid "您不是该社团的社长"
+msgstr ""
+
+#: .\clubs\views.py:5631
+msgid "该时间段已被预订，请选择其他时间"
+msgstr ""
+
+#: .\clubs\views.py:5635
+msgid "222房间预约成功！"
+msgstr ""
+
+#: .\clubs\views.py:5705 .\clubs\views.py:7334
+msgid "您没有权限编辑此预约"
+msgstr ""
+
+#: .\clubs\views.py:5742
+msgid "该时间段已被其他预订占用，请选择其他时间"
+msgstr ""
+
+#: .\clubs\views.py:5746
+msgid "预约已成功更新"
+msgstr ""
+
+#: .\clubs\views.py:5771
+msgid "您没有权限删除此预约"
+msgstr ""
+
+#: .\clubs\views.py:5800
+msgid "您目前没有负责的社团，无法提交活动申请"
+msgstr ""
+
+#: .\clubs\views.py:5808
+msgid "仅能为自己负责的社团提交活动申请"
+msgstr ""
+
+#: .\clubs\views.py:5943
+msgid "活动申请已提交，等待审核"
+msgstr ""
+
+#: .\clubs\views.py:5986
+msgid "仅社团社长可以提交社长换届申请"
+msgstr ""
+
+#: .\clubs\views.py:6093
+msgid "社长换届申请已提交，等待审核"
+msgstr ""
+
+#: .\clubs\views.py:6122
+msgid "仅干事和管理员可以审核活动申请"
+msgstr ""
+
+#: .\clubs\views.py:6151
+msgid "活动申请已批准"
+msgstr ""
+
+#: .\clubs\views.py:6172
+msgid "活动申请已拒绝"
+msgstr ""
+
+#: .\clubs\views.py:6174
+msgid "无效的审核操作"
+msgstr ""
+
+#: .\clubs\views.py:6192
+msgid "仅干事和管理员可以审核社长换届申请"
+msgstr ""
+
+#: .\clubs\views.py:6254 .\clubs\views.py:6314
+msgid "仅干事和管理员可以访问此页面"
+msgstr ""
+
+#: .\clubs\views.py:6303
+msgid "无效的审核类型"
+msgstr ""
+
+#: .\clubs\views.py:6408
+msgid "您没有权限访问此页面。"
+msgstr ""
+
+#: .\clubs\views.py:6518
+msgid "您没有权限编辑此活动"
+msgstr ""
+
+#: .\clubs\views.py:6604
+msgid "活动信息已更新"
+msgstr ""
+
+#: .\clubs\views.py:6621 .\clubs\views.py:6719
+msgid "仅干事和管理员可以访问审核中心"
+msgstr ""
+
+#: .\clubs\views.py:6756
+msgid "您没有权限编辑部门介绍"
+msgstr ""
+
+#: .\clubs\views.py:6781
+msgid "所有部门介绍已成功更新"
+msgstr ""
+
+#: .\clubs\views.py:6860
+msgid "添加成功"
+msgstr ""
+
+#: .\clubs\views.py:6897
+msgid "修改成功"
+msgstr ""
+
+#: .\clubs\views.py:6915
+msgid "删除成功"
+msgstr ""
+
+#: .\clubs\views.py:6953
+msgid "部门添加成功"
+msgstr ""
+
+#: .\clubs\views.py:6989
+msgid "没有可下载的文件"
+msgstr ""
+
+#: .\clubs\views.py:7040
+msgid "暂时没有可用的房间"
+msgstr ""
+
+#: .\clubs\views.py:7162
+msgid "部门更新成功"
+msgstr ""
+
+#: .\clubs\views.py:7181
+msgid "部门删除成功"
+msgstr ""
+
+#: .\clubs\views.py:7238
+msgid "请填写所有必填项"
+msgstr ""
+
+#: .\clubs\views.py:7243
+msgid "请输入有效的11位手机号码"
+msgstr ""
+
+#: .\clubs\views.py:7255
+msgid "结束时间必须晚于开始时间"
+msgstr ""
+
+#: .\clubs\views.py:7266
+msgid "请选择有效的固定时间段"
+msgstr ""
+
+#: .\clubs\views.py:7276
+msgid "您不是该社团的社长，无法代表申请"
+msgstr ""
+
+#: .\clubs\views.py:7281
+msgid "普通用户必须选择社团进行申请"
+msgstr ""
+
+#: .\clubs\views.py:7295
+msgid "该时间段已被预约，请选择其他时间"
+msgstr ""
+
+#: .\clubs\views.py:7313
+msgid "预约提交成功"
+msgstr ""
+
+#: .\clubs\views.py:7341
+msgid "预约已更新"
+msgstr ""
+
+#: .\clubs\views.py:7352
+msgid "您没有权限取消此预约"
+msgstr ""
+
+#: .\clubs\views.py:7355
+msgid "预约已取消"
+msgstr ""
+
+#: .\clubs\views.py:7478
+msgid "权限不足"
+msgstr ""
+
+#: .\clubs\views.py:7492
+msgid "站点字体设置已保存，刷新页面后生效"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:314
+msgid "全名："
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:318
+msgid "邮箱："
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:322
+#: .\templates\clubs\user\submit_president_transition.html:347
+#, fuzzy
+#| msgid "电话"
+msgid "电话："
+msgstr "Phone"
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:357
+msgid "账号信息"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:366
+#: .\templates\clubs\admin\change_user_role.html:42
+#: .\templates\clubs\admin\locked_accounts.html:11
+#: .\templates\clubs\admin\manage_users.html:536
+#: .\templates\clubs\admin\review_staff_registration.html:237
+#: .\templates\clubs\auth\login.html:173
+#: .\templates\clubs\staff\manage_department.html:329
+#: .\templates\clubs\staff\manage_department.html:383
+#: .\templates\clubs\staff\view_users.html:66
+#: .\templates\clubs\staff\view_users.html:80
+#, fuzzy
+#| msgid "用户"
+msgid "用户名"
+msgstr "User"
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:371
+#: .\templates\clubs\admin\admin_edit_user_account.html:394
+#: .\templates\clubs\admin\carousel_form.html:260
+#: .\templates\clubs\admin\department_form.html:217
+#: .\templates\clubs\admin\material_requirements_list.html:605
+#: .\templates\clubs\admin\room_form.html:82
+#: .\templates\clubs\admin\time_slot_form.html:173
+#: .\templates\clubs\club_detail.html:476
+#: .\templates\clubs\staff\upload_template.html:475
+msgid "保存"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:405
+msgid "密码与安全"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:414
+#: .\templates\clubs\auth\change_account_settings.html:174
+#: .\templates\clubs\user\edit_profile.html:477
+msgid "新密码"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:421
+#, fuzzy
+#| msgid "密码至少6个字符"
+msgid "至少6个字符"
+msgstr "Password must be at least 6 characters"
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:429
+msgid "显示/隐藏密码"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:430
+msgid "显示"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:435
+#: .\templates\clubs\auth\change_account_settings.html:188
+#: .\templates\clubs\user\edit_profile.html:483
+msgid "确认新密码"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:441
+#: .\templates\clubs\auth\change_account_settings.html:197
+msgid "再次输入新密码"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:450
+#: .\templates\clubs\admin\carousel_form.html:262
+#: .\templates\clubs\admin\change_staff_attributes.html:312
+#: .\templates\clubs\admin\change_user_role.html:137
+#: .\templates\clubs\admin\create_user.html:439
+#: .\templates\clubs\admin\department_form.html:219
+#: .\templates\clubs\admin\edit_announcement.html:283
+#: .\templates\clubs\admin\manage_favicon.html:1391
+#: .\templates\clubs\admin\material_requirements_list.html:604
+#: .\templates\clubs\admin\material_requirements_list.html:676
+#: .\templates\clubs\admin\publish_announcement.html:444
+#: .\templates\clubs\admin\room_form.html:81
+#: .\templates\clubs\admin\smtp_config.html:1170
+#: .\templates\clubs\admin\time_slot_form.html:171
+#: .\templates\clubs\auth\change_account_settings.html:134
+#: .\templates\clubs\auth\change_account_settings.html:204
+#: .\templates\clubs\auth\change_account_settings.html:249
+#: .\templates\clubs\auth\change_account_settings.html:353
+#: .\templates\clubs\change_club_status.html:304
+#: .\templates\clubs\club_detail.html:475
+#: .\templates\clubs\delete_club.html:255
+#: .\templates\clubs\direct_edit_club_info.html:278
+#: .\templates\clubs\edit_activity_application.html:340
+#: .\templates\clubs\edit_department_introduction.html:395
+#: .\templates\clubs\edit_room_booking.html:297
+#: .\templates\clubs\room_calendar.html:856
+#: .\templates\clubs\room_my_bookings.html:266
+#: .\templates\clubs\staff\audit_center.html:730
+#: .\templates\clubs\staff\management.html:1137
+#: .\templates\clubs\staff\upload_template.html:474
+#: .\templates\clubs\submit_room_booking.html:356
+#: .\templates\clubs\user\edit_profile.html:522
+#: .\templates\clubs\user\edit_rejected_review.html:755
+msgid "取消"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:454
+msgid "设置新密码"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:463
+msgid "账号状态"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:464
+msgid "如果用户由于多次登录失败而被锁定，可以在此解锁账号。"
+msgstr ""
+
+#: .\templates\clubs\admin\admin_edit_user_account.html:469
+msgid "解锁账号"
+msgstr ""
+
+#: .\templates\clubs\admin\assign_presidents.html:216
+msgid "批量指定社长"
+msgstr ""
+
+#: .\templates\clubs\admin\assign_presidents.html:217
+msgid "为每个社团指定当前社长（Officer 记录），未选择表示该社团暂无社长"
+msgstr ""
+
+#: .\templates\clubs\admin\assign_presidents.html:249
+#, fuzzy
+#| msgid "社团名称"
+msgid "搜索社团名称..."
+msgstr "Club Name"
+
+#: .\templates\clubs\admin\assign_presidents.html:262
+msgid "当前社长"
+msgstr ""
+
+#: .\templates\clubs\admin\assign_presidents.html:263
+msgid "指定新社长"
+msgstr ""
+
+#: .\templates\clubs\admin\assign_presidents.html:279
+msgid "未绑定"
+msgstr ""
+
+#: .\templates\clubs\admin\assign_presidents.html:299
+msgid "暂无社团数据"
+msgstr ""
+
+#: .\templates\clubs\admin\assign_presidents.html:305
+#: .\templates\clubs\admin\manage_favicon.html:971
+#: .\templates\clubs\public_activities.html:595
+#: .\templates\clubs\staff\manage_clubs.html:379
+msgid "返回仪表板"
+msgstr ""
+
+#: .\templates\clubs\admin\assign_presidents.html:307
+msgid "保存所有指定"
+msgstr ""
+
+#: .\templates\clubs\admin\base.html:27
+msgid "仪表板"
+msgstr ""
+
+#: .\templates\clubs\admin\base.html:28 .\templates\clubs\base.html:113
+msgid "用户管理"
+msgstr ""
+
+#: .\templates\clubs\admin\base.html:29
+#: .\templates\clubs\admin\locked_accounts.html:7
+msgid "被锁定账号"
+msgstr ""
+
+#: .\templates\clubs\admin\base.html:30
+#: .\templates\clubs\admin\publish_announcement.html:442
+msgid "发布公告"
+msgstr ""
+
+#: .\templates\clubs\admin\booking_management.html:110
+msgid "预约管理"
+msgstr ""
+
+#: .\templates\clubs\admin\booking_management.html:111
+msgid "管理房间和时间段设置"
+msgstr ""
+
+#: .\templates\clubs\admin\booking_management.html:120
+#: .\templates\clubs\admin\dashboard.html:721
+#: .\templates\clubs\admin\room_list.html:148 .\templates\clubs\base.html:261
+msgid "房间管理"
+msgstr ""
+
+#: .\templates\clubs\admin\booking_management.html:121
+msgid "管理可预约的房间信息，包括房间名称、容量和设备等"
+msgstr ""
+
+#: .\templates\clubs\admin\booking_management.html:128
+#: .\templates\clubs\admin\time_slots.html:162
+msgid "时间段设置"
+msgstr ""
+
+#: .\templates\clubs\admin\booking_management.html:129
+msgid "设置房间预约的可选时间段，管理课程和休息时间"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:206
+msgid "标题"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:208
+msgid "轮播图下方显示的标题文字"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:212
+#: .\templates\clubs\admin\material_requirements_list.html:477
+#: .\templates\clubs\admin\room_form.html:67
+msgid "描述"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:214
+msgid "标题下方显示的详细描述"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:218
+msgid "跳转链接"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:220
+msgid "点击轮播图时跳转的URL地址（选填）"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:224
+#: .\templates\clubs\admin\department_form.html:210
+msgid "排序顺序"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:226
+msgid "数字越小越靠前，相同数字按上传时间排列"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:232
+msgid "推荐尺寸: 1920x500 像素，支持 JPG、PNG 格式"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:243
+msgid "激活显示"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:245
+msgid "仅激活的轮播图会在首页显示"
+msgstr ""
+
+#: .\templates\clubs\admin\carousel_form.html:281
+#: .\templates\clubs\staff\review_request.html:712
+msgid "预览"
+msgstr ""
+
+#: .\templates\clubs\admin\change_staff_attributes.html:215
+msgid "修改属性"
+msgstr ""
+
+#: .\templates\clubs\admin\change_staff_attributes.html:228
+msgid "为用户分配部门和职级"
+msgstr ""
+
+#: .\templates\clubs\admin\change_staff_attributes.html:234
+msgid "登录用户名："
+msgstr ""
+
+#: .\templates\clubs\admin\change_staff_attributes.html:251
+#, fuzzy
+#| msgid "真实姓名不能为空"
+msgid "真实姓名："
+msgstr "Real name cannot be empty"
+
+#: .\templates\clubs\admin\change_staff_attributes.html:255
+msgid "当前角色："
+msgstr ""
+
+#: .\templates\clubs\admin\change_staff_attributes.html:260
+msgid "当前部门："
+msgstr ""
+
+#: .\templates\clubs\admin\change_staff_attributes.html:266
+msgid "当前职级："
+msgstr ""
+
+#: .\templates\clubs\admin\change_staff_attributes.html:287
+msgid "选择所属的部门"
+msgstr ""
+
+#: .\templates\clubs\admin\change_staff_attributes.html:292
+#: .\templates\clubs\staff\manage_department.html:333
+#: .\templates\clubs\staff\manage_department.html:387
+msgid "职级"
+msgstr ""
+
+#: .\templates\clubs\admin\change_staff_attributes.html:301
+msgid "选择在部门中的职级"
+msgstr ""
+
+#: .\templates\clubs\admin\change_staff_attributes.html:308
+#: .\templates\clubs\admin\edit_announcement.html:281
+#: .\templates\clubs\admin\material_requirements_list.html:677
+#: .\templates\clubs\admin\smtp_config.html:1172
+#: .\templates\clubs\change_club_status.html:306
+#: .\templates\clubs\direct_edit_club_info.html:280
+#: .\templates\clubs\edit_activity_application.html:344
+#: .\templates\clubs\edit_room_booking.html:299
+msgid "保存修改"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:48
+#: .\templates\clubs\admin\locked_accounts.html:11
+#: .\templates\clubs\admin\manage_users.html:537
+#: .\templates\clubs\admin\review_staff_registration.html:239
+#: .\templates\clubs\admin\smtp_config.html:814
+#: .\templates\clubs\auth\change_account_settings.html:283
+#: .\templates\clubs\staff\view_users.html:67
+#: .\templates\clubs\user\edit_profile.html:335
+#: .\templates\clubs\user\user_detail.html:291
+msgid "邮箱"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:59
+msgid "当前角色"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:63
+msgid "社长 (President)"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:65
+msgid "干事 (Staff)"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:67
+msgid "管理员 (Admin)"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:69
+#: .\templates\clubs\admin\change_user_role.html:72
+#: .\templates\clubs\admin\manage_users.html:589
+#: .\templates\clubs\staff\view_users.html:116
+msgid "未设定"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:78
+msgid "修改为新角色"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:81
+msgid "社长 (President) - 可以创建社团、提交材料"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:82
+msgid "干事 (Staff) - 可以审核材料、上传模板"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:83
+msgid "管理员 (Admin) - 拥有全部权限"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:88
+msgid "修改原因（可选）"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:93
+msgid "输入修改此用户角色的原因（用于记录）"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:99
+msgid "角色权限说明"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:104
+msgid "创建并管理社团"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:105
+msgid "提交年审材料"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:106
+msgid "提交报销申请"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:107
+msgid "申请社长变更"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:108
+msgid "查看申请状态和拒绝原因"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:114
+#: .\templates\clubs\staff\review_club_registration_submission.html:860
+msgid "审核社团注册申请"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:115
+msgid "审核年审材料"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:116
+#: .\templates\clubs\staff\review_reimbursement.html:552
+msgid "审核报销申请"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:117
+msgid "审核社长变更申请"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:118
+msgid "上传材料模板"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:124
+msgid "拥有干事的所有权限"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:125
+msgid "管理用户和修改用户角色"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:126
+#: .\templates\clubs\admin\publish_announcement.html:364
+msgid "发布系统公告"
+msgstr ""
+
+#: .\templates\clubs\admin\change_user_role.html:127
+msgid "查看系统统计数据"
+msgstr ""
+
+#: .\templates\clubs\admin\confirm_delete_announcement.html:16
+msgid "此操作不可撤销，公告删除后无法恢复。"
+msgstr ""
+
+#: .\templates\clubs\admin\confirm_delete_announcement.html:21
+#: .\templates\clubs\admin\edit_announcement.html:215
+#: .\templates\clubs\admin\publish_announcement.html:385
+msgid "公告标题"
+msgstr ""
+
+#: .\templates\clubs\admin\confirm_delete_announcement.html:26
+msgid "发布者"
+msgstr ""
+
+#: .\templates\clubs\admin\confirm_delete_announcement.html:44
+msgid "发布时间"
+msgstr ""
+
+#: .\templates\clubs\admin\confirm_delete_announcement.html:52
+msgid "已发布"
+msgstr ""
+
+#: .\templates\clubs\admin\confirm_delete_announcement.html:54
+msgid "草稿"
+msgstr ""
+
+#: .\templates\clubs\admin\confirm_delete_announcement.html:56
+msgid "已归档"
+msgstr ""
+
+#: .\templates\clubs\admin\confirm_delete_announcement.html:76
+msgid "如果您只是想隐藏此公告，可以将其状态改为"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:257
+#: .\templates\clubs\admin\create_user.html:441
+msgid "创建用户账户"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:258
+msgid "为系统创建新的用户账户"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:302
+msgid "登录用户名"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:310
+msgid "输入登录用户名"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:313
+msgid "用于登录系统的用户名，3-30个字符"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:317
+#: .\templates\clubs\auth\change_account_settings.html:269
+#: .\templates\clubs\staff\view_users.html:94
+#: .\templates\clubs\user\edit_profile.html:330
+#, fuzzy
+#| msgid "真实姓名不能为空"
+msgid "真实姓名"
+msgstr "Real name cannot be empty"
+
+#: .\templates\clubs\admin\create_user.html:325
+#: .\templates\clubs\auth\change_account_settings.html:277
+msgid "输入真实姓名"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:334
+msgid "邮箱地址"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:342
+msgid "输入邮箱地址"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:348
+msgid "电话号码"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:356
+#: .\templates\clubs\auth\change_account_settings.html:318
+msgid "输入电话号码"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:365
+#: .\templates\clubs\oobe_setup.html:146
+#: .\templates\clubs\user\edit_profile.html:345
+#: .\templates\clubs\user\user_detail.html:305
+#: .\templates\clubs\user_detail.html:300
+#, fuzzy
+#| msgid "微信"
+msgid "微信号"
+msgstr "WeChat"
+
+#: .\templates\clubs\admin\create_user.html:373
+#: .\templates\clubs\auth\change_account_settings.html:332
+msgid "输入微信号"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:386
+msgid "干事角色创建后需要管理员审核才能激活"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:400
+#: .\templates\clubs\auth\change_account_settings.html:306
+msgid "输入学号"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:403
+msgid "学生的学号，用于记录身份信息"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:409
+#: .\templates\clubs\auth\change_account_settings.html:118
+#: .\templates\clubs\auth\login.html:178
+msgid "密码"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:416
+msgid "输入密码"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:423
+#: .\templates\clubs\oobe_setup.html:144
+msgid "确认密码"
+msgstr ""
+
+#: .\templates\clubs\admin\create_user.html:430
+msgid "再次输入密码"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:555
+msgid "管理员仪表板"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:556
+msgid "系统概览与管理中心"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:566
+msgid "系统用户总数"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:570
+msgid "已注册社团数"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:574
+msgid "待处理申请"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:578
+#: .\templates\clubs\admin\dashboard.html:606
+msgid "近14天访问量"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:586
+msgid "历史总体通过率"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:590
+msgid "历史总体拒绝率"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:597
+msgid "各类申请数量分布"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:622
+msgid "已用内存"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:627
+msgid "最大内存"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:631
+msgid "内存使用率"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:640
+msgid "缓存键数"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:644
+msgid "连接数"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:654
+#: .\templates\clubs\admin\publish_announcement.html:453
+msgid "最近发布的公告"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:677
+#: .\templates\clubs\admin\manage_carousel.html:357
+#: .\templates\clubs\admin\manage_departments.html:322
+#: .\templates\clubs\admin\material_requirements_list.html:516
+#: .\templates\clubs\admin\time_slots.html:196
+#: .\templates\clubs\my_room_bookings.html:365
+#: .\templates\clubs\my_room_bookings.html:366
+#: .\templates\clubs\public_activities.html:788
+#: .\templates\clubs\room_calendar.html:1032
+#: .\templates\clubs\room_my_bookings.html:264
+msgid "编辑"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:681
+#: .\templates\clubs\admin\manage_carousel.html:362
+#: .\templates\clubs\admin\manage_departments.html:325
+#: .\templates\clubs\admin\material_requirements_list.html:521
+#: .\templates\clubs\admin\publish_announcement.html:487
+#: .\templates\clubs\admin\time_slots.html:201
+#: .\templates\clubs\room_calendar.html:1036
+#: .\templates\clubs\staff\management.html:1039
+msgid "删除"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:705
+msgid "快速操作"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:709
+#: .\templates\clubs\admin\manage_departments.html:268
+msgid "管理部门介绍"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:713
+#: .\templates\clubs\admin\manage_carousel.html:294
+msgid "管理轮播图"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:717
+#: .\templates\clubs\staff\audit_center.html:985
+#: .\templates\clubs\staff\audit_center.html:989
+#: .\templates\clubs\staff\audit_center.html:993
+#: .\templates\clubs\staff\audit_center.html:997
+#: .\templates\clubs\staff\audit_center.html:1001
+#: .\templates\clubs\staff\audit_center.html:1005
+#: .\templates\clubs\user\approval_center.html:660
+#: .\templates\clubs\user\approval_center.html:664
+#: .\templates\clubs\user\approval_center.html:668
+#: .\templates\clubs\user\approval_center.html:672
+#: .\templates\clubs\user\approval_center.html:676
+#: .\templates\clubs\user\approval_center.html:680
+#: .\templates\clubs\user\approval_history_by_type.html:663
+#: .\templates\clubs\user\approval_history_by_type.html:666
+#: .\templates\clubs\user\approval_history_by_type.html:669
+#: .\templates\clubs\user\approval_history_by_type.html:672
+#: .\templates\clubs\user\approval_history_by_type.html:675
+#: .\templates\clubs\user\approval_history_by_type.html:678
+msgid "修改材料"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:725
+msgid "邮箱设置"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:729
+msgid "图标&amp;字体"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:733
+msgid "指定社团社长"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:737
+#: .\templates\clubs\staff\management.html:1095
+msgid "返回首页"
+msgstr ""
+
+#: .\templates\clubs\admin\dashboard.html:744
+#, fuzzy
+#| msgid "用户角色"
+msgid "用户角色分布"
+msgstr "User Profile"
+
+#: .\templates\clubs\admin\department_form.html:185
+msgid "部门名称"
+msgstr ""
+
+#: .\templates\clubs\admin\department_form.html:190
+msgid "职责描述"
+msgstr ""
+
+#: .\templates\clubs\admin\department_form.html:195
+#: .\templates\clubs\edit_department_introduction.html:356
+msgid "重点工作"
+msgstr ""
+
+#: .\templates\clubs\admin\department_form.html:196
+msgid "多个重点工作用换行分隔"
+msgstr ""
+
+#: .\templates\clubs\admin\department_form.html:197
+msgid "多个重点工作请用换行分隔"
+msgstr ""
+
+#: .\templates\clubs\admin\department_form.html:201
+msgid "图标名称 (Material Icons)"
+msgstr ""
+
+#: .\templates\clubs\admin\department_form.html:206
+msgid "请参考"
+msgstr ""
+
+#: .\templates\clubs\admin\department_form.html:212
+#: .\templates\clubs\admin\material_requirements_list.html:592
+#: .\templates\clubs\admin\material_requirements_list.html:664
+msgid "数字越小越靠前"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:191
+msgid "编辑公告"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:222
+#: .\templates\clubs\admin\publish_announcement.html:393
+msgid "输入公告标题"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:229
+#: .\templates\clubs\admin\publish_announcement.html:399
+msgid "公告内容"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:235
+#: .\templates\clubs\admin\publish_announcement.html:405
+msgid "输入公告内容"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:241
+#: .\templates\clubs\admin\publish_announcement.html:410
+msgid "失效时间（可选）"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:251
+#: .\templates\clubs\admin\publish_announcement.html:417
+msgid "公告将在指定时间后自动归档。如不填写，公告将一直有效。"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:255
+#: .\templates\clubs\admin\publish_announcement.html:421
+msgid "附件（可选）"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:262
+#: .\templates\clubs\admin\publish_announcement.html:428
+msgid "支持上传各种类型的文件，如文档、图片等。"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:265
+msgid "当前附件："
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:271
+#: .\templates\clubs\admin\publish_announcement.html:432
+msgid "发布状态"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:273
+#: .\templates\clubs\admin\publish_announcement.html:435
+msgid "草稿（保存但不显示）"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:274
+#: .\templates\clubs\admin\publish_announcement.html:436
+msgid "发布（立即显示在首页）"
+msgstr ""
+
+#: .\templates\clubs\admin\edit_announcement.html:275
+msgid "归档（不再显示在首页）"
+msgstr ""
+
+#: .\templates\clubs\admin\locked_accounts.html:11
+#: .\templates\clubs\admin\manage_users.html:546
+#: .\templates\clubs\admin\material_requirements_list.html:481
+#: .\templates\clubs\admin\room_list.html:206
+#: .\templates\clubs\admin\time_slots.html:178
+#: .\templates\clubs\staff\management.html:968
+msgid "操作"
+msgstr ""
+
+#: .\templates\clubs\admin\locked_accounts.html:33
+#: .\templates\clubs\admin\manage_users.html:633
+#: .\templates\clubs\admin\manage_users.html:634
+msgid "解锁"
+msgstr ""
+
+#: .\templates\clubs\admin\locked_accounts.html:41
+msgid "当前没有被锁定的账号。"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_carousel.html:295
+msgid "管理首页轮播展示的图片、链接与排列顺序"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_carousel.html:300
+#: .\templates\clubs\admin\manage_carousel.html:377
+msgid "添加轮播图"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_carousel.html:373
+msgid "还没有轮播图"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_carousel.html:374
+msgid "点击上方"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_departments.html:269
+msgid "管理社团部门的介绍信息和图标"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_departments.html:272
+msgid "添加部门"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_departments.html:336
+msgid "暂无部门信息，点击右上角添加"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:959
+msgid "图标与字体管理"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:962
+msgid "管理网站 Favicon 图标、图标字体镜像和正文字体配置"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:989
+msgid "网站图标 Favicon"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1001
+msgid "当前图标与上传"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1022
+msgid "当前 Favicon"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1025
+msgid "当前网站图标"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1025
+msgid "浏览器标签页显示"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1040
+msgid "未设置自定义图标"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1064
+msgid "选择新图标文件"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1076
+msgid "支持 .ico / .png / .jpg，建议尺寸 64×64 或 128×128"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1112
+msgid "拖动图片调整位置，滑块调整缩放"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1124
+msgid "上传更新图标"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1160
+msgid "字体配置"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1187
+msgid "图标字体 Material Icons"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1217
+msgid "选择一个可用镜像以保证图标正常加载"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1292
+msgid "正文字体（可选）"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1319
+msgid "留空则不加载外部字体"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1337
+msgid "例如 'Noto Sans SC', sans-serif"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1352
+msgid "选择预设后自动填入地址和字体族名称"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_favicon.html:1397
+msgid "保存字体设置"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:492
+msgid "系统用户管理"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:493
+msgid "管理所有用户账户和权限"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:496
+#: .\templates\clubs\admin\manage_users.html:660
+#: .\templates\clubs\staff\management.html:153
+#: .\templates\clubs\staff\management.html:1104
+msgid "批量操作"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:498
+msgid "创建用户"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:515
+msgid "搜索用户名、邮箱、全名..."
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:520
+#: .\templates\clubs\staff\view_users.html:43
+msgid "所有角色"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:526
+#: .\templates\clubs\admin\room_list.html:164
+#: .\templates\clubs\admin\room_list.html:185
+#: .\templates\clubs\public_activities.html:614
+#: .\templates\clubs\public_activities.html:699
+#: .\templates\clubs\staff\management.html:950
+msgid "搜索"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:538
+#: .\templates\clubs\staff\view_users.html:68
+msgid "全名"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:545
+#: .\templates\clubs\staff\view_users.html:74
+#: .\templates\clubs\staff\view_users.html:134
+msgid "加入时间"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:611
+#: .\templates\clubs\staff\audit_center.html:826
+#: .\templates\clubs\staff\audit_center.html:890
+#: .\templates\clubs\staff\audit_center.html:921
+#: .\templates\clubs\staff\audit_center.html:969
+#: .\templates\clubs\staff\audit_center.html:1171
+#: .\templates\clubs\staff\audit_center.html:1201
+#: .\templates\clubs\staff\audit_center.html:1246
+#: .\templates\clubs\staff\audit_center.html:1340
+#: .\templates\clubs\staff\audit_center.html:1370
+#: .\templates\clubs\staff\audit_center.html:1411
+#: .\templates\clubs\staff\audit_center.html:1456
+#: .\templates\clubs\staff\audit_center.html:1486
+#: .\templates\clubs\staff\audit_center.html:1516
+#: .\templates\clubs\staff\view_users.html:128
+#: .\templates\clubs\user\approval_center.html:467
+#: .\templates\clubs\user\approval_center.html:752
+#: .\templates\clubs\user\approval_center.html:783
+#: .\templates\clubs\user\approval_center.html:825
+#: .\templates\clubs\user\approval_center.html:856
+#: .\templates\clubs\user\approval_center.html:887
+#: .\templates\clubs\user\approval_center.html:933
+#: .\templates\clubs\user\approval_center.html:1021
+#: .\templates\clubs\user\approval_center.html:1052
+#: .\templates\clubs\user\approval_center.html:1083
+#: .\templates\clubs\user\approval_center.html:1114
+#: .\templates\clubs\user\approval_center.html:1145
+#: .\templates\clubs\user\approval_center.html:1191
+msgid "未知"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:615
+#: .\templates\clubs\staff\view_users.html:131
+msgid "已激活"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:623
+#: .\templates\clubs\base.html:417 .\templates\clubs\base.html:433
+#, fuzzy
+#| msgid "待审核"
+msgid "审核"
+msgstr "Pending"
+
+#: .\templates\clubs\admin\manage_users.html:628
+msgid "属性"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:641
+#: .\templates\clubs\user\dashboard.html:447
+msgid "详情"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:652
+#: .\templates\clubs\staff\view_users.html:146
+msgid "未找到匹配的用户"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:661
+#: .\templates\clubs\admin\room_form.html:76
+#: .\templates\clubs\admin\room_list.html:177
+#: .\templates\clubs\admin\room_list.html:227
+#: .\templates\clubs\room_calendar.html:1039
+#: .\templates\clubs\staff\audit_center.html:1537
+#: .\templates\clubs\staff\management.html:1105
+#: .\templates\clubs\user\approval_center.html:1277
+msgid "关闭"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:663
+msgid "下载模板、批量导入用户，或导出全部用户与社团数据。"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:666
+msgid "下载导入模板"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:668
+#: .\templates\clubs\staff\management.html:1112
+msgid "导出全部用户+社团"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:673
+msgid "浏览"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:674
+#: .\templates\clubs\oobe_setup.html:293
+msgid "未选择文件"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:679
+msgid "批量导入CSV"
+msgstr ""
+
+#: .\templates\clubs\admin\manage_users.html:681
+msgid "准备导入..."
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:457
+msgid "材料要求管理"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:458
+msgid "管理各类申请的材料上传要求"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:467
+msgid "添加要求"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:474
+msgid "排序"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:475
+#, fuzzy
+#| msgid "社团名称"
+msgid "名称"
+msgstr "Club Name"
+
+#: .\templates\clubs\admin\material_requirements_list.html:476
+msgid "图标"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:478
+#: .\templates\clubs\admin\material_requirements_list.html:496
+#: .\templates\clubs\staff\upload_template.html:410
+msgid "必填"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:480
+msgid "格式限制"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:498
+msgid "选填"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:505
+msgid "停用"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:532
+msgid "暂无配置要求"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:542
+msgid "添加材料要求"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:553
+#: .\templates\clubs\admin\material_requirements_list.html:625
+msgid "材料名称"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:554
+msgid "例如：年度财务报表"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:558
+#: .\templates\clubs\admin\material_requirements_list.html:630
+msgid "图标 (Material Icons)"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:560
+#: .\templates\clubs\admin\material_requirements_list.html:632
+msgid "例如：description"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:563
+#: .\templates\clubs\admin\material_requirements_list.html:635
+msgid "参考"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:567
+#: .\templates\clubs\admin\material_requirements_list.html:639
+msgid "描述说明"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:568
+msgid "可选，显示在上传处的提示信息"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:574
+#: .\templates\clubs\admin\material_requirements_list.html:646
+msgid "是否必填"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:579
+#: .\templates\clubs\admin\material_requirements_list.html:651
+msgid "允许的文件扩展名"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:581
+#: .\templates\clubs\admin\material_requirements_list.html:653
+msgid "用逗号分隔，例如：.docx,.pdf,.jpg"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:585
+#: .\templates\clubs\admin\material_requirements_list.html:657
+msgid "最大文件大小 (MB)"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:590
+#: .\templates\clubs\admin\material_requirements_list.html:662
+msgid "排序权重"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:598
+#: .\templates\clubs\admin\material_requirements_list.html:670
+msgid "启用此要求"
+msgstr ""
+
+#: .\templates\clubs\admin\material_requirements_list.html:616
+msgid "编辑材料要求"
+msgstr ""
+
+#: .\templates\clubs\admin\publish_announcement.html:365
+msgid "面向全校发布重要通知或活动信息，支持草稿与附件上传。"
+msgstr ""
+
+#: .\templates\clubs\admin\publish_announcement.html:464
+msgid "永久有效"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:213
+msgid "审核干事注册申请"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:219
+msgid "申请人信息"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:232
+msgid "查看完整档案"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:243
+#: .\templates\clubs\staff\review_club_registration.html:965
+#: .\templates\clubs\staff\review_club_registration_submission.html:876
+#: .\templates\clubs\staff\review_president_transition.html:419
+#: .\templates\clubs\staff\review_reimbursement.html:589
+msgid "申请时间"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:258
+msgid ""
+"请仅对“自行注册申请成为干事”的账号执行审核。批量导入的用户不会进入此审核流"
+"程。"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:265
+msgid "审核决定"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:273
+msgid "批准申请"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:274
+msgid "该用户将成为干事并可立即登录使用干事功能。"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:277
+msgid "拒绝申请"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:278
+msgid "该用户申请被驳回，可后续重新发起注册申请。"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:282
+msgid "审核备注（可选）"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:283
+msgid "输入审核意见或说明..."
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:287
+msgid "返回用户管理"
+msgstr ""
+
+#: .\templates\clubs\admin\review_staff_registration.html:289
+msgid "快速批准"
+msgstr ""
+
+#: .\templates\clubs\admin\room_form.html:52
+#: .\templates\clubs\admin\room_list.html:202
+msgid "房间名称"
+msgstr ""
+
+#: .\templates\clubs\admin\room_form.html:57
+msgid "容纳人数"
+msgstr ""
+
+#: .\templates\clubs\admin\room_form.html:62
+#: .\templates\clubs\admin\room_list.html:204
+msgid "位置"
+msgstr ""
+
+#: .\templates\clubs\admin\room_form.html:74
+#: .\templates\clubs\admin\room_list.html:175
+#: .\templates\clubs\admin\room_list.html:221
+msgid "可用"
+msgstr ""
+
+#: .\templates\clubs\admin\room_form.html:75
+#: .\templates\clubs\admin\room_list.html:176
+#: .\templates\clubs\admin\room_list.html:224
+msgid "维护中"
+msgstr ""
+
+#: .\templates\clubs\admin\room_list.html:149
+msgid "管理系统中的所有可借用房间资源"
+msgstr ""
+
+#: .\templates\clubs\admin\room_list.html:154
+msgid "增加房间"
+msgstr ""
+
+#: .\templates\clubs\admin\room_list.html:161
+#: .\templates\clubs\public_activities.html:606
+msgid "筛选和搜索"
+msgstr ""
+
+#: .\templates\clubs\admin\room_list.html:167
+msgid "输入房间名称或位置"
+msgstr ""
+
+#: .\templates\clubs\admin\room_list.html:172
+msgid "房间状态"
+msgstr ""
+
+#: .\templates\clubs\admin\room_list.html:174
+#: .\templates\clubs\staff\audit_center.html:721
+msgid "全部状态"
+msgstr ""
+
+#: .\templates\clubs\admin\room_list.html:203
+msgid "容量 (人)"
+msgstr ""
+
+#: .\templates\clubs\admin\room_list.html:205
+#: .\templates\clubs\change_club_status.html:236
+#: .\templates\clubs\club_detail.html:307
+#: .\templates\clubs\staff\review_activity_application.html:655
+#: .\templates\clubs\staff\review_club_registration.html:969
+#: .\templates\clubs\staff\review_club_registration_submission.html:880
+#: .\templates\clubs\staff\review_detail.html:229
+#: .\templates\clubs\staff\review_president_transition.html:432
+#: .\templates\clubs\staff\review_reimbursement.html:602
+#: .\templates\clubs\staff\review_request.html:618
+#: .\templates\clubs\staff\review_request.html:656
+#: .\templates\clubs\staff\review_request.html:689
+#: .\templates\clubs\staff\review_submission.html:331
+#: .\templates\clubs\user\approval_detail.html:257
+#: .\templates\clubs\user\edit_rejected_review.html:583
+#: .\templates\clubs\user\edit_rejected_review.html:618
+msgid "当前状态"
+msgstr ""
+
+#: .\templates\clubs\admin\room_list.html:246
+msgid "没有找到符合条件的房间"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:769
+msgid "返回管理面板"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:776
+msgid "配置错误"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:791
+msgid "已有配置"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:810
+msgid "服务地址"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:818
+msgid "加密"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:824
+msgid "点击展开操作"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:832
+msgid "编辑配置"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:841
+msgid "激活此配置"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:847
+msgid "当前已激活"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:856
+msgid "删除配置"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:861
+#: .\templates\clubs\admin\smtp_config.html:865
+#: .\templates\clubs\oobe_setup.html:348
+msgid "发送测试邮件"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:872
+msgid "输入接收测试邮件的邮箱地址"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:874
+msgid "发送"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:889
+msgid "暂无SMTP配置"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:890
+msgid "请创建一个新的SMTP配置以启用邮件发送功能。"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:900
+msgid "创建新的SMTP配置"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:909
+#: .\templates\clubs\admin\smtp_config.html:1114
+msgid "邮箱服务"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:918
+#: .\templates\clubs\admin\smtp_config.html:1123
+msgid "自定义"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:921
+msgid "选择邮箱服务商后将自动填充相应配置"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:924
+#: .\templates\clubs\admin\smtp_config.html:1127
+msgid "发送邮箱地址"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:953
+#: .\templates\clubs\admin\smtp_config.html:1153
+#: .\templates\clubs\oobe_setup.html:335
+msgid "邮箱密码/授权码"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:956
+msgid "请输入邮箱密码或授权码"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:958
+msgid "某些邮箱需要使用授权码而非密码（如QQ邮箱需16位授权码）"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:966
+#: .\templates\clubs\admin\smtp_config.html:1164
+msgid "使用TLS加密"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:970
+msgid "创建后立即激活"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:976
+msgid "创建配置"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:978
+#: .\templates\clubs\components\_staff_review_form.html:79
+#: .\templates\clubs\delete_room_booking.html:109
+#: .\templates\clubs\staff\manage_department.html:276
+#: .\templates\clubs\staff\review_detail.html:189
+#: .\templates\clubs\user\edit_rejected_review.html:538
+#: .\templates\clubs\user\register_club.html:561
+#: .\templates\clubs\user\submit_activity_application.html:377
+#: .\templates\clubs\user\submit_club_registration.html:341
+#: .\templates\clubs\user\submit_president_transition.html:398
+#: .\templates\clubs\user\submit_reimbursement.html:391
+#: .\templates\clubs\user\submit_review.html:393
+msgid "返回"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:1101
+msgid "编辑SMTP配置"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:1155
+msgid "留空则保持原密码不变"
+msgstr ""
+
+#: .\templates\clubs\admin\smtp_config.html:1157
+#, fuzzy
+#| msgid "是否需要修改密码"
+msgid "如不需要修改密码，请留空此"
+msgstr "Must change password"
+
+#: .\templates\clubs\admin\time_slot_form.html:150
+#: .\templates\clubs\admin\time_slots.html:174
+msgid "显示名称"
+msgstr ""
+
+#: .\templates\clubs\admin\time_slot_form.html:151
+msgid "例如：第1-2节"
+msgstr ""
+
+#: .\templates\clubs\admin\time_slot_form.html:156
+#: .\templates\clubs\admin\time_slots.html:175
+#: .\templates\clubs\edit_room_booking.html:248
+#: .\templates\clubs\submit_room_booking.html:314
+msgid "开始时间"
+msgstr ""
+
+#: .\templates\clubs\admin\time_slot_form.html:160
+#: .\templates\clubs\admin\time_slots.html:176
+#: .\templates\clubs\edit_room_booking.html:259
+#: .\templates\clubs\submit_room_booking.html:321
+msgid "结束时间"
+msgstr ""
+
+#: .\templates\clubs\admin\time_slot_form.html:167
+msgid "启用此时间段"
+msgstr ""
+
+#: .\templates\clubs\admin\time_slots.html:163
+msgid "管理房间预约的可选时间段"
+msgstr ""
+
+#: .\templates\clubs\admin\time_slots.html:167
+msgid "添加时间段"
+msgstr ""
+
+#: .\templates\clubs\admin\time_slots.html:191
+#: .\templates\clubs\staff\management.html:1009
+#: .\templates\clubs\staff\management.html:1018
+msgid "禁用"
+msgstr ""
+
+#: .\templates\clubs\admin\time_slots.html:212
+msgid "暂无时间段配置"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:21
+msgid "编辑用户账户"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:22
+msgid "正在编辑："
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:36
+msgid "修改账户设置"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:37
+msgid "用户名："
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:91
+#: .\templates\clubs\user\edit_profile.html:439
+#: .\templates\clubs\user\edit_profile.html:457
+msgid "修改用户名"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:99
+#: .\templates\clubs\user\edit_profile.html:445
+msgid "新用户名"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:112
+msgid "输入新用户名（至少3个字符）"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:126
+msgid "输入当前密码以验证"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:128
+msgid "为了安全起见，修改用户名需要验证密码"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:159
+msgid "原密码"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:167
+msgid "输入原密码"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:183
+#, fuzzy
+#| msgid "密码至少6个字符"
+msgid "输入新密码（至少6个字符）"
+msgstr "Password must be at least 6 characters"
+
+#: .\templates\clubs\auth\change_account_settings.html:224
+msgid "修改角色"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:232
+#, fuzzy
+#| msgid "角色"
+msgid "新角色"
+msgstr "Role"
+
+#: .\templates\clubs\auth\change_account_settings.html:251
+msgid "确认修改角色"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:260
+msgid "修改用户详细信息"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:291
+msgid "输入邮箱"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:355
+msgid "确认修改详细信息"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:364
+#: .\templates\clubs\user\edit_profile.html:498
+msgid "危险区域"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:368
+msgid ""
+"删除用户账户是不可恢复的操作。所有与该用户相关的数据（如社团成员关系、审核记"
+"录等）可能会被永久删除或受到影响。"
+msgstr ""
+
+#: .\templates\clubs\auth\change_account_settings.html:377
+msgid "删除用户账户"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:150
+msgid "欢迎回来"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:151
+msgid "登录您的账户以继续"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:174
+#: .\templates\clubs\auth\register.html:161
+msgid "请输入用户名"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:179
+#: .\templates\clubs\auth\register.html:183
+msgid "请输入密码"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:183
+#: .\templates\clubs\auth\register.html:259 .\templates\clubs\index.html:954
+msgid "立即登录"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:188
+msgid "登录已被锁定"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:189
+msgid ""
+"由于多次失败的登录尝试，您的账号（或此 IP）已被暂时锁定 5 分钟。请等待解锁或"
+"联系管理员重置密码。"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:191 .\templates\clubs\auth\login.html:193
+msgid "联系管理员"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:198
+msgid "或者"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:200
+msgid "还没有账户？"
+msgstr ""
+
+#: .\templates\clubs\auth\login.html:200
+msgid "立即注册"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:131
+msgid "用户注册"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:132
+msgid "欢迎来到系统，请填写以下信息注册"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:149
+msgid "请注册等待管理员审核，社长注册请直接登录"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:159
+msgid "用户名 *"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:164
+#, fuzzy
+#| msgid "真实姓名不能为空"
+msgid "真实姓名 *"
+msgstr "Real name cannot be empty"
+
+#: .\templates\clubs\auth\register.html:166
+msgid "请输入真实姓名"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:172
+msgid "邮箱 *"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:174
+msgid "请输入邮箱地址"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:175
+msgid "用于接收系统通知"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:181
+msgid "密码 *"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:186
+msgid "确认密码 *"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:188
+msgid "请再次输入密码"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:194
+msgid "角色 *"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:196
+msgid "请选择角色"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:205
+msgid "学号 *"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:207
+msgid "请输入学号"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:212
+#, fuzzy
+#| msgid "政治面貌"
+msgid "请选择政治面貌"
+msgstr "Political Status"
+
+#: .\templates\clubs\auth\register.html:232
+msgid "部门 *"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:234
+#, fuzzy
+#| msgid "干事必须选择部门"
+msgid "请选择部门"
+msgstr "Staff must select a department"
+
+#: .\templates\clubs\auth\register.html:244
+msgid "电话 *"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:246
+msgid "请输入电话号码"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:249
+msgid "微信 *"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:251
+msgid "请输入微信号"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:256
+msgid "创建账户"
+msgstr ""
+
+#: .\templates\clubs\auth\register.html:259
+msgid "已有账户？"
+msgstr ""
+
+#: .\templates\clubs\auth\verify_email.html:12
+msgid "邮箱验证"
+msgstr ""
+
+#: .\templates\clubs\auth\verify_email.html:26
+msgid "验证码已发送到："
+msgstr ""
+
+#: .\templates\clubs\auth\verify_email.html:27
+msgid "过期时间："
+msgstr ""
+
+#: .\templates\clubs\auth\verify_email.html:34
+msgid "请输入验证码"
+msgstr ""
+
+#: .\templates\clubs\auth\verify_email.html:36
+msgid "6位数字"
+msgstr ""
+
+#: .\templates\clubs\auth\verify_email.html:37
+msgid "验证码为6位数字，有效期为15分钟"
+msgstr ""
+
+#: .\templates\clubs\auth\verify_email.html:40
+msgid "验证"
+msgstr ""
+
+#: .\templates\clubs\auth\verify_email.html:45
+msgid "没有收到验证码？"
+msgstr ""
+
+#: .\templates\clubs\auth\verify_email.html:47
+msgid "重新发送验证码"
+msgstr ""
+
+# Base template
+#: .\templates\clubs\base.html:10 .\templates\clubs\base.html:84
+msgid "社团管理系统"
+msgstr "Club Management System"
+
+#: .\templates\clubs\base.html:93
+msgid "主要功能"
+msgstr ""
+
+#: .\templates\clubs\base.html:99 .\templates\clubs\base.html:400
+msgid "首页"
+msgstr ""
+
+#: .\templates\clubs\base.html:103
+msgid "活动"
+msgstr ""
+
+#: .\templates\clubs\base.html:109
+msgid "管理后台"
+msgstr ""
+
+# Base template
+#: .\templates\clubs\base.html:117 .\templates\clubs\base.html:122
+#: .\templates\clubs\staff\management.html:149
+#, fuzzy
+#| msgid "社团管理系统"
+msgid "社团管理"
+msgstr "Club Management System"
+
+#: .\templates\clubs\base.html:127
+msgid "部门管理"
+msgstr ""
+
+#: .\templates\clubs\base.html:135
+msgid "预约概览"
+msgstr ""
+
+#: .\templates\clubs\base.html:142 .\templates\clubs\user\dashboard.html:346
+msgid "我的社团"
+msgstr ""
+
+#: .\templates\clubs\base.html:153
+#: .\templates\clubs\staff\audit_center_mobile.html:415
+msgid "审核中心"
+msgstr ""
+
+#: .\templates\clubs\base.html:159
+msgid "年审材料"
+msgstr ""
+
+#: .\templates\clubs\base.html:166 .\templates\clubs\base.html:220
+#: .\templates\clubs\staff\audit_center.html:655
+#: .\templates\clubs\user\approval_center.html:369
+#: .\templates\clubs\user\dashboard.html:391
+msgid "社团注册"
+msgstr ""
+
+#: .\templates\clubs\base.html:173
+#: .\templates\clubs\user\edit_rejected_review.html:528
+msgid "新社团申请"
+msgstr ""
+
+#: .\templates\clubs\base.html:180 .\templates\clubs\club_detail.html:430
+#: .\templates\clubs\user\edit_rejected_review.html:530
+msgid "报销申请"
+msgstr ""
+
+#: .\templates\clubs\base.html:187 .\templates\clubs\base.html:241
+#: .\templates\clubs\club_detail.html:433
+#: .\templates\clubs\staff\audit_center.html:679
+#: .\templates\clubs\user\approval_center.html:387
+#: .\templates\clubs\user\dashboard.html:475
+msgid "活动申请"
+msgstr ""
+
+#: .\templates\clubs\base.html:194 .\templates\clubs\base.html:248
+#: .\templates\clubs\club_detail.html:436
+#: .\templates\clubs\staff\audit_center.html:687
+#: .\templates\clubs\user\approval_center.html:393
+#: .\templates\clubs\user\dashboard.html:477
+msgid "社长换届"
+msgstr ""
+
+#: .\templates\clubs\base.html:207
+#: .\templates\clubs\user\approval_center_mobile.html:325
+msgid "审批中心"
+msgstr ""
+
+#: .\templates\clubs\base.html:213
+#: .\templates\clubs\staff\audit_center.html:647
+#: .\templates\clubs\staff\audit_center_mobile.html:424
+#: .\templates\clubs\user\approval_center.html:363
+#: .\templates\clubs\user\approval_center_mobile.html:334
+msgid "年审记录"
+msgstr ""
+
+#: .\templates\clubs\base.html:227
+#: .\templates\clubs\staff\audit_center.html:663
+#: .\templates\clubs\user\approval_center.html:375
+msgid "社团申请"
+msgstr ""
+
+#: .\templates\clubs\base.html:234
+#: .\templates\clubs\staff\audit_center.html:671
+#: .\templates\clubs\staff\audit_center_mobile.html:583
+#: .\templates\clubs\user\approval_center.html:381
+#: .\templates\clubs\user\approval_center_mobile.html:499
+msgid "报销记录"
+msgstr ""
+
+#: .\templates\clubs\base.html:267
+msgid "房间日历"
+msgstr ""
+
+#: .\templates\clubs\base.html:271 .\templates\clubs\my_room_bookings.html:305
+#: .\templates\clubs\room_calendar.html:760
+#: .\templates\clubs\room_my_bookings.html:219
+msgid "我的预约"
+msgstr ""
+
+#: .\templates\clubs\base.html:310
+msgid "查看个人主页"
+msgstr ""
+
+#: .\templates\clubs\base.html:314
+#, fuzzy
+#| msgid "是否公开个人信息"
+msgid "管理个人信息"
+msgstr "Make profile public"
+
+#: .\templates\clubs\base.html:318
+#, fuzzy
+#| msgid "已登出"
+msgid "登出"
+msgstr "Logged out"
+
+#: .\templates\clubs\base.html:322 .\templates\clubs\base.html:324
+msgid "切换主题"
+msgstr "Toggle Theme"
+
+#: .\templates\clubs\base.html:390
+msgid "上海海洋大学社团管理服务中心 技术支持"
+msgstr ""
+
+#: .\templates\clubs\base.html:406
+#, fuzzy
+#| msgid "管理员"
+msgid "管理"
+msgstr "Administrator"
+
+#: .\templates\clubs\base.html:442
+msgid "我的"
+msgstr ""
+
+#: .\templates\clubs\base.html:451
+msgid "审批"
+msgstr ""
+
+#: .\templates\clubs\change_club_status.html:222
+msgid "改变社团状态"
+msgstr ""
+
+#: .\templates\clubs\change_club_status.html:228
+msgid "社团信息"
+msgstr ""
+
+#: .\templates\clubs\change_club_status.html:273
+msgid "选择新状态"
+msgstr ""
+
+#: .\templates\clubs\change_club_status.html:294
+msgid "状态说明"
+msgstr ""
+
+#: .\templates\clubs\change_club_status.html:296
+#, fuzzy
+#| msgid "活跃"
+msgid "活跃:"
+msgstr "Active"
+
+#: .\templates\clubs\change_club_status.html:296
+msgid "社团正常运营中，可以进行各项活动"
+msgstr ""
+
+#: .\templates\clubs\change_club_status.html:297
+msgid "不活跃:"
+msgstr ""
+
+#: .\templates\clubs\change_club_status.html:297
+msgid "社团暂时停止活动，但仍然存在"
+msgstr ""
+
+#: .\templates\clubs\change_club_status.html:298
+#, fuzzy
+#| msgid "停止"
+msgid "停止:"
+msgstr "Suspended"
+
+#: .\templates\clubs\change_club_status.html:298
+msgid "社团已停止运营，不再接受新活动"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:279
+msgid "社团详情"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:284
+msgid "返回管理"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:287
+msgid "返回工作台"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:301
+msgid "成员人数"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:326
+#: .\templates\clubs\club_detail.html:471
+#: .\templates\clubs\staff\review_club_registration.html:1011
+#: .\templates\clubs\staff\review_club_registration_submission.html:981
+msgid "社团简介"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:337
+msgid "现任干部"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:343
+#: .\templates\clubs\staff\manage_department.html:330
+#: .\templates\clubs\staff\manage_department.html:384
+msgid "姓名"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:347
+#: .\templates\clubs\user\user_detail.html:286
+msgid "联系方式"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:397
+msgid "未公开"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:413
+msgid "管理操作"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:420
+msgid "提交注册"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:422
+msgid "当前未开放注册"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:423
+msgid "注册未开放"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:427
+msgid "提交年审"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:439
+#: .\templates\clubs\club_detail.html:453
+msgid "修改简介"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:447
+msgid "变更状态"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:450
+msgid "编辑信息"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:456
+#: .\templates\clubs\delete_club.html:214
+msgid "删除社团"
+msgstr ""
+
+#: .\templates\clubs\club_detail.html:467
+msgid "修改社团简介"
+msgstr ""
+
+#: .\templates\clubs\components\_file_upload.html:35
+msgid "点击或拖拽文件至此"
+msgstr ""
+
+#: .\templates\clubs\components\_file_upload.html:36
+msgid "点击选择文件"
+msgstr ""
+
+#: .\templates\clubs\components\_file_upload.html:51
+msgid "移除文件"
+msgstr ""
+
+#: .\templates\clubs\components\_file_upload.html:80
+msgid "当前文件:"
+msgstr ""
+
+#: .\templates\clubs\components\_materials_display.html:251
+#: .\templates\clubs\staff\review_request.html:721
+#: .\templates\clubs\staff\review_request.html:725
+#: .\templates\clubs\staff\review_request.html:729
+msgid "打包所有材料为ZIP文件"
+msgstr ""
+
+#: .\templates\clubs\components\_materials_display.html:258
+msgid "暂无上传的材料"
+msgstr ""
+
+#: .\templates\clubs\components\_review_history.html:88
+#: .\templates\clubs\components\_review_history.html:154
+#: .\templates\clubs\staff\audit_center.html:1079
+#: .\templates\clubs\staff\audit_center.html:1103
+#: .\templates\clubs\staff\audit_center.html:1142
+msgid "系统管理员"
+msgstr ""
+
+#: .\templates\clubs\components\_review_history.html:101
+#: .\templates\clubs\components\_review_history.html:167
+msgid "被拒绝的材料"
+msgstr ""
+
+#: .\templates\clubs\components\_review_history.html:188
+#, fuzzy
+#| msgid "已批准"
+msgid "人批准"
+msgstr "Approved"
+
+#: .\templates\clubs\components\_review_history.html:191
+#, fuzzy
+#| msgid "已拒绝"
+msgid "人拒绝"
+msgstr "Rejected"
+
+#: .\templates\clubs\components\_review_history.html:198
+msgid "暂无审核记录"
+msgstr ""
+
+#: .\templates\clubs\components\_staff_review_form.html:45
+msgid "选择被拒绝的材料（可多选）"
+msgstr ""
+
+#: .\templates\clubs\components\_staff_review_form.html:59
+#: .\templates\clubs\user\edit_rejected_review.html:596
+#: .\templates\clubs\user\edit_rejected_review.html:633
+msgid "审核意见"
+msgstr ""
+
+#: .\templates\clubs\components\_staff_review_form.html:64
+msgid "请输入您的审核意见（拒绝时必填）"
+msgstr ""
+
+#: .\templates\clubs\components\_staff_review_form.html:77
+#: .\templates\clubs\user\submit_review.html:395
+msgid "提交审核"
+msgstr ""
+
+#: .\templates\clubs\components\language_switcher.html:3
+msgid "选择语言"
+msgstr ""
+
+# Language names (for language switcher)
+#: .\templates\clubs\components\language_switcher.html:15
+msgid "简体中文"
+msgstr "Simplified Chinese"
+
+#: .\templates\clubs\components\language_switcher.html:17
+msgid "English"
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:220
+msgid "危险操作！"
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:221
+msgid "删除社团是不可逆转的操作，将导致以下后果："
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:223
+msgid "的所有基本信息将被永久删除"
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:224
+msgid "与该社团相关的所有年审记录将被清除"
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:225
+msgid "该社团的成员信息将被移除"
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:226
+msgid "该社团的社长变更记录将被清除"
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:227
+msgid "该社团的所有相关数据将被完整清除"
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:228
+msgid "此操作不可恢复"
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:234
+#, fuzzy
+#| msgid "社团名称"
+msgid "请输入社团名称"
+msgstr "Club Name"
+
+#: .\templates\clubs\delete_club.html:234
+msgid "确认您要删除此社团："
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:241
+#, fuzzy
+#| msgid "社团名称"
+msgid "确认社团名称 *"
+msgstr "Club Name"
+
+#: .\templates\clubs\delete_club.html:247
+msgid "输入社团名称以确认删除"
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:253
+msgid "确认删除社团"
+msgstr ""
+
+#: .\templates\clubs\delete_club.html:261
+msgid "返回社团详情"
+msgstr ""
+
+#: .\templates\clubs\delete_room_booking.html:71
+#: .\templates\clubs\my_room_bookings.html:367
+msgid "取消预约"
+msgstr ""
+
+#: .\templates\clubs\delete_room_booking.html:77
+msgid "确认取消？操作不可撤销，时间段将立即释放给其他人。"
+msgstr ""
+
+#: .\templates\clubs\delete_room_booking.html:82
+msgid "房间"
+msgstr ""
+
+#: .\templates\clubs\delete_room_booking.html:86
+msgid "日期时间"
+msgstr ""
+
+#: .\templates\clubs\delete_room_booking.html:91
+msgid "预约社团"
+msgstr ""
+
+#: .\templates\clubs\delete_room_booking.html:96
+#: .\templates\clubs\edit_room_booking.html:275
+#: .\templates\clubs\room_calendar.html:1002
+msgid "使用目的"
+msgstr ""
+
+#: .\templates\clubs\delete_room_booking.html:100
+msgid "预计人数"
+msgstr ""
+
+#: .\templates\clubs\delete_room_booking.html:111
+msgid "确认取消"
+msgstr ""
+
+#: .\templates\clubs\direct_edit_club_info.html:222
+msgid "直接修改社团信息"
+msgstr ""
+
+#: .\templates\clubs\direct_edit_club_info.html:229
+msgid "操作失败"
+msgstr ""
+
+#: .\templates\clubs\direct_edit_club_info.html:241
+msgid "社团信息编辑"
+msgstr ""
+
+#: .\templates\clubs\direct_edit_club_info.html:249
+#, fuzzy
+#| msgid "社团名称"
+msgid "社团名称 *"
+msgstr "Club Name"
+
+#: .\templates\clubs\direct_edit_club_info.html:270
+msgid "成员数量"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:182
+msgid "编辑活动信息"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:187
+#: .\templates\clubs\user\submit_activity_application.html:251
+#: .\templates\clubs\user\submit_president_transition.html:281
+msgid "请修正以下错误："
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:201
+msgid "活动名称 *"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:215
+msgid "活动类型 *"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:217
+msgid "请选择活动类型"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:224
+#: .\templates\clubs\staff\review_detail.html:288
+#: .\templates\clubs\user\submit_activity_application.html:324
+msgid "预计参与人数"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:237
+msgid "活动描述 *"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:243
+msgid "请详细描述活动内容、目的和安排..."
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:249
+msgid "活动日期 *"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:260
+#: .\templates\clubs\user\submit_activity_application.html:328
+msgid "活动预算（元）"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:275
+msgid "开始时间 *"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:286
+msgid "结束时间 *"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:299
+msgid "活动地点 *"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:313
+msgid "联系人 *"
+msgstr ""
+
+#: .\templates\clubs\edit_activity_application.html:325
+#: .\templates\clubs\edit_room_booking.html:285
+#: .\templates\clubs\oobe_setup.html:145
+#: .\templates\clubs\room_calendar.html:995
+#: .\templates\clubs\submit_room_booking.html:343
+#: .\templates\clubs\user_detail.html:288
+msgid "联系电话"
+msgstr ""
+
+#: .\templates\clubs\edit_department_introduction.html:309
+msgid "编辑部门介绍"
+msgstr ""
+
+#: .\templates\clubs\edit_department_introduction.html:310
+msgid "管理各部门的介绍内容、重点工作和图标"
+msgstr ""
+
+#: .\templates\clubs\edit_department_introduction.html:343
+msgid "部门职责描述"
+msgstr ""
+
+#: .\templates\clubs\edit_department_introduction.html:348
+msgid "请输入部门的主要职责和介绍（最多500字）"
+msgstr ""
+
+#: .\templates\clubs\edit_department_introduction.html:351
+msgid "简洁清晰地描述该部门的主要职责和工作内容"
+msgstr ""
+
+#: .\templates\clubs\edit_department_introduction.html:361
+msgid "请输入部门的重点工作，多个重点工作用换行分隔"
+msgstr ""
+
+#: .\templates\clubs\edit_department_introduction.html:363
+msgid "每行一个重点工作，将按行分隔显示"
+msgstr ""
+
+#: .\templates\clubs\edit_department_introduction.html:368
+msgid "部门图标"
+msgstr ""
+
+#: .\templates\clubs\edit_department_introduction.html:382
+msgid "选择代表该部门特色的Material Icons图标"
+msgstr ""
+
+#: .\templates\clubs\edit_department_introduction.html:391
+#: .\templates\clubs\user\edit_profile.html:374
+msgid "保存更改"
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:202
+msgid "编辑预约"
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:203
+msgid "修改房间预约信息"
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:212
+msgid "修改预约时间时会自动检查冲突，若与其他预约重叠将无法保存。"
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:216
+#: .\templates\clubs\staff\review_activity_application.html:612
+#: .\templates\clubs\staff\review_club_registration.html:935
+#: .\templates\clubs\staff\review_club_registration_submission.html:867
+#: .\templates\clubs\staff\review_president_transition.html:410
+#: .\templates\clubs\staff\review_reimbursement.html:559
+#: .\templates\clubs\staff\review_submission.html:310
+#: .\templates\clubs\submit_room_booking.html:262
+#: .\templates\clubs\user\edit_profile.html:312
+msgid "基本信息"
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:220
+#: .\templates\clubs\room_calendar.html:842
+#: .\templates\clubs\submit_room_booking.html:267
+msgid "选择房间"
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:222
+#: .\templates\clubs\submit_room_booking.html:270
+msgid "请选择房间..."
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:242
+msgid "借用日期"
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:250
+msgid "请选择开始时间..."
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:261
+msgid "请选择结束时间..."
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:272
+msgid "使用详情"
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:276
+msgid "请简要说明房间使用目的..."
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:281
+msgid "预计使用人数"
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:291
+#: .\templates\clubs\room_calendar.html:1020
+#: .\templates\clubs\submit_room_booking.html:350
+msgid "特殊需求"
+msgstr ""
+
+#: .\templates\clubs\edit_room_booking.html:292
+msgid "如需要投影仪、音响等设备，请在此说明..."
+msgstr ""
+
+#: .\templates\clubs\index.html:858
+msgid "社团管理服务中心"
+msgstr ""
+
+#: .\templates\clubs\index.html:859
+msgid "致力于为社团提供全方位的管理与服务支持，促进社团健康发展"
+msgstr ""
+
+#: .\templates\clubs\index.html:910
+msgid "最新公告"
+msgstr ""
+
+#: .\templates\clubs\index.html:918
+msgid "公告"
+msgstr ""
+
+#: .\templates\clubs\index.html:951
+msgid "已有账号"
+msgstr ""
+
+#: .\templates\clubs\index.html:952
+msgid "登录后查看完整的部门信息、社团详情，管理您的社团事务"
+msgstr ""
+
+#: .\templates\clubs\index.html:960
+msgid "新用户？"
+msgstr ""
+
+#: .\templates\clubs\index.html:961
+msgid "注册账号后即可使用社团管理系统的全部功能"
+msgstr ""
+
+#: .\templates\clubs\index.html:963
+msgid "注册账号"
+msgstr ""
+
+#: .\templates\clubs\index.html:973 .\templates\clubs\index.html:1043
+msgid "部门介绍"
+msgstr ""
+
+#: .\templates\clubs\index.html:1012
+msgid "干事总数"
+msgstr ""
+
+#: .\templates\clubs\index.html:1021
+msgid "部长人数"
+msgstr ""
+
+#: .\templates\clubs\index.html:1030
+msgid "部员人数"
+msgstr ""
+
+#: .\templates\clubs\index.html:1076
+msgid "社团列表"
+msgstr ""
+
+#: .\templates\clubs\index.html:1091
+msgid "我是社长"
+msgstr ""
+
+#: .\templates\clubs\index.html:1107
+msgid "部门成员"
+msgstr ""
+
+#: .\templates\clubs\index.html:1223
+msgid "暂无成员"
+msgstr ""
+
+#: .\templates\clubs\index.html:1231
+msgid "加载失败，请稍后重试"
+msgstr ""
+
+#: .\templates\clubs\my_room_bookings.html:306
+msgid "查看和管理您的房间借用记录"
+msgstr ""
+
+#: .\templates\clubs\my_room_bookings.html:310
+#: .\templates\clubs\submit_room_booking.html:243
+msgid "返回日历"
+msgstr ""
+
+#: .\templates\clubs\my_room_bookings.html:333
+msgid "用途："
+msgstr ""
+
+#: .\templates\clubs\my_room_bookings.html:363
+msgid "有效"
+msgstr ""
+
+#: .\templates\clubs\my_room_bookings.html:373
+msgid "已取消"
+msgstr ""
+
+#: .\templates\clubs\my_room_bookings.html:382
+#: .\templates\clubs\room_my_bookings.html:275
+msgid "暂无预约记录"
+msgstr ""
+
+#: .\templates\clubs\my_room_bookings.html:383
+msgid "您还没有任何有效的房间借用记录"
+msgstr ""
+
+#: .\templates\clubs\my_room_bookings.html:385
+msgid "立即预约"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:93
+msgid "首次启动初始化向导"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:94
+msgid ""
+"按步骤完成管理员、数据库、缓存、品牌与邮箱配置。每一步确认后会自动进入下一"
+"步。"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:98
+msgid "数据库"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:99
+msgid "缓存"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:101
+msgid "邮箱 + 测试"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:111
+msgid "第 1 / 5 步"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:135
+msgid "第一步：管理员账户"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:136
+msgid "创建首个管理员账号并配置系统运行安全参数"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:139
+msgid "管理员用户名"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:140
+msgid "管理员真名"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:140
+msgid "建议填写真实姓名"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:141
+msgid "管理员邮箱（推荐）"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:142
+msgid "管理员学号"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:142 .\templates\clubs\oobe_setup.html:145
+#: .\templates\clubs\oobe_setup.html:146
+msgid "可选"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:143
+msgid "管理员密码"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:209 .\templates\clubs\oobe_setup.html:248
+#: .\templates\clubs\oobe_setup.html:279 .\templates\clubs\oobe_setup.html:304
+msgid "继续"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:216
+msgid "第二步：数据库"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:217
+msgid "开发建议 SQLite；生产建议 PostgreSQL/MySQL"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:220
+msgid "数据库类型"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:228
+msgid "sqlite 可留空，默认 db.sqlite3"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:255
+msgid "第三步：缓存"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:256
+msgid "完整缓存参数配置"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:286
+msgid "第四步：网站Logo"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:287
+msgid "可选上传，系统自动生成 favicon"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:290
+msgid "上传 Logo（可跳过）"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:298
+msgid "缩放"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:302
+msgid "支持 .ico/.png/.jpg/.jpeg/.webp，建议正方形图片。"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:311
+msgid "第五步：邮箱配置"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:312
+msgid "支持测试邮件，确认可用后完成初始化"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:316
+msgid "是否启用SMTP邮箱"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:318
+msgid "否（仅控制台）"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:319
+msgid "是（启用真实发信）"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:323
+msgid "邮箱服务商"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:334
+msgid "发送邮箱"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:337
+msgid "测试收件邮箱"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:343
+msgid "提示："
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:343
+msgid ""
+"点击“发送测试邮件”可先验证 SMTP；保存后请重启服务，系统会自动执行迁移与管理员"
+"初始化。"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:344
+msgid "保存目标："
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:344
+msgid "配置将写入 .env.local，Logo 将保存到 media/site。"
+msgstr ""
+
+#: .\templates\clubs\oobe_setup.html:349
+msgid "保存配置"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:589
+msgid "活动管理"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:590
+msgid "查看和管理社团活动"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:620
+msgid "输入社团名称或活动名称"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:632
+msgid "仅允许选择本社团"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:639
+msgid "无所属社团"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:643
+msgid "全部社团"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:656
+#: .\templates\clubs\staff\review_activity_application.html:717
+#: .\templates\clubs\staff\review_detail.html:272
+#: .\templates\clubs\user\submit_activity_application.html:287
+msgid "活动类型"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:658
+msgid "全部类型"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:670
+#: .\templates\clubs\staff\audit_center.html:901
+#: .\templates\clubs\staff\audit_center.html:1181
+#: .\templates\clubs\staff\audit_center.html:1496
+#: .\templates\clubs\staff\review_activity_application.html:721
+#: .\templates\clubs\staff\review_detail.html:276
+#: .\templates\clubs\user\approval_center.html:578
+#: .\templates\clubs\user\approval_center.html:867
+#: .\templates\clubs\user\approval_center.html:1125
+#: .\templates\clubs\user\approval_center.html:1238
+#: .\templates\clubs\user\submit_activity_application.html:302
+msgid "活动日期"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:688
+msgid "全选"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:690
+msgid "已选择 0 个活动"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:692
+msgid "导出为 Excel"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:701
+msgid "清除筛选"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:739
+#, fuzzy
+#| msgid "成立日期"
+msgid "日期"
+msgstr "Founded Date"
+
+#: .\templates\clubs\public_activities.html:746
+#, fuzzy
+#| msgid "创建时间"
+msgid "时间"
+msgstr "Created At"
+
+#: .\templates\clubs\public_activities.html:753
+msgid "地点"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:760
+msgid "人数"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:767
+msgid "活动简介"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:791
+msgid "登录参加"
+msgstr ""
+
+#: .\templates\clubs\public_activities.html:801
+msgid "暂无即将举办的活动"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:746
+msgid "今天"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:748
+msgid "日期切换"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:749
+msgid "前一天"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:753
+msgid "后一天"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:763
+msgid "导出周表"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:786
+msgid "预约此时段"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:807
+msgid "今日暂无预约，点击右上角立刻创建吧。"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:820
+msgid "预约详情"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:834
+msgid "导出预约周表"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:850
+msgid "选择周起始日期 (周一)"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:858
+#: .\templates\clubs\staff\audit_center.html:732
+msgid "确认导出"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:951
+msgid "预约日期"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:958
+msgid "时间段"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:965
+msgid "预约人"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:984
+#: .\templates\clubs\staff\review_club_registration.html:940
+#: .\templates\clubs\user\approval_center.html:1063
+msgid "申请社团"
+msgstr ""
+
+#: .\templates\clubs\room_calendar.html:1009
+#: .\templates\clubs\submit_room_booking.html:294
+msgid "参与人数"
+msgstr ""
+
+#: .\templates\clubs\room_my_bookings.html:220
+msgid "查看和管理您的房间预约记录"
+msgstr ""
+
+#: .\templates\clubs\room_my_bookings.html:223
+msgid "新建预约"
+msgstr ""
+
+#: .\templates\clubs\room_my_bookings.html:276
+msgid "您还没有预约任何房间，点击右上角"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:648
+#: .\templates\clubs\user\approval_center.html:364
+msgid "查看和管理社团年审提交记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:651
+#: .\templates\clubs\staff\audit_center.html:659
+#: .\templates\clubs\staff\audit_center.html:667
+#: .\templates\clubs\staff\audit_center.html:675
+#: .\templates\clubs\staff\audit_center.html:683
+#: .\templates\clubs\staff\audit_center.html:691
+msgid "导出Excel"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:656
+#: .\templates\clubs\user\approval_center.html:370
+msgid "查看社团注册申请和审核状态"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:664
+#: .\templates\clubs\user\approval_center.html:376
+msgid "查看新社团创建申请记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:672
+#: .\templates\clubs\user\approval_center.html:382
+msgid "查看社团费用报销申请"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:680
+#: .\templates\clubs\user\approval_center.html:388
+msgid "查看社团活动申请和审批"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:688
+#: .\templates\clubs\user\approval_center.html:394
+msgid "查看社长换届申请记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:699
+msgid "导出筛选"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:708
+msgid "留空表示全部社团"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:711
+msgid "开始日期"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:723
+#: .\templates\clubs\staff\audit_center.html:1051
+#: .\templates\clubs\staff\audit_center.html:1311
+msgid "已通过"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:742
+#: .\templates\clubs\user\approval_center.html:405
+msgid "当前活跃"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:799
+#: .\templates\clubs\user\approval_center.html:436
+#: .\templates\clubs\user\approval_center_mobile.html:522
+msgid "部分拒绝"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:806
+#: .\templates\clubs\staff\audit_center.html:1060
+#: .\templates\clubs\staff\audit_center.html:1320
+#: .\templates\clubs\staff\review_detail.html:246
+#: .\templates\clubs\user\approval_center.html:443
+#: .\templates\clubs\user\approval_center.html:732
+#: .\templates\clubs\user\approval_center.html:1001
+#: .\templates\clubs\user\approval_detail.html:274
+msgid "年份"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:810
+#: .\templates\clubs\staff\audit_center.html:874
+#: .\templates\clubs\staff\audit_center.html:905
+#: .\templates\clubs\staff\audit_center.html:953
+#: .\templates\clubs\staff\audit_center.html:1064
+#: .\templates\clubs\staff\audit_center.html:1088
+#: .\templates\clubs\staff\audit_center.html:1127
+#: .\templates\clubs\staff\audit_center.html:1155
+#: .\templates\clubs\staff\audit_center.html:1185
+#: .\templates\clubs\staff\audit_center.html:1230
+#: .\templates\clubs\staff\audit_center.html:1324
+#: .\templates\clubs\staff\audit_center.html:1354
+#: .\templates\clubs\staff\audit_center.html:1395
+#: .\templates\clubs\staff\audit_center.html:1440
+#: .\templates\clubs\staff\audit_center.html:1470
+#: .\templates\clubs\staff\audit_center.html:1500
+#: .\templates\clubs\user\approval_center.html:451
+#: .\templates\clubs\user\approval_center.html:478
+#: .\templates\clubs\user\approval_center.html:520
+#: .\templates\clubs\user\approval_center.html:551
+#: .\templates\clubs\user\approval_center.html:582
+#: .\templates\clubs\user\approval_center.html:628
+#: .\templates\clubs\user\approval_center.html:736
+#: .\templates\clubs\user\approval_center.html:767
+#: .\templates\clubs\user\approval_center.html:809
+#: .\templates\clubs\user\approval_center.html:840
+#: .\templates\clubs\user\approval_center.html:871
+#: .\templates\clubs\user\approval_center.html:917
+#: .\templates\clubs\user\approval_center.html:1005
+#: .\templates\clubs\user\approval_center.html:1036
+#: .\templates\clubs\user\approval_center.html:1067
+#: .\templates\clubs\user\approval_center.html:1098
+#: .\templates\clubs\user\approval_center.html:1129
+#: .\templates\clubs\user\approval_center.html:1175
+#, fuzzy
+#| msgid "待审核"
+msgid "审核者"
+msgstr "Pending"
+
+#: .\templates\clubs\staff\audit_center.html:831
+#: .\templates\clubs\staff\audit_center.html:841
+#: .\templates\clubs\staff\audit_center.html:864
+#: .\templates\clubs\staff\audit_center.html:895
+#: .\templates\clubs\staff\audit_center.html:926
+#: .\templates\clubs\staff\audit_center.html:974
+#: .\templates\clubs\staff\audit_center.html:1083
+#: .\templates\clubs\staff\audit_center.html:1107
+#: .\templates\clubs\staff\audit_center.html:1146
+#: .\templates\clubs\staff\audit_center.html:1176
+#: .\templates\clubs\staff\audit_center.html:1206
+#: .\templates\clubs\staff\audit_center.html:1251
+#: .\templates\clubs\staff\audit_center.html:1345
+#: .\templates\clubs\staff\audit_center.html:1375
+#: .\templates\clubs\staff\audit_center.html:1416
+#: .\templates\clubs\staff\audit_center.html:1461
+#: .\templates\clubs\staff\audit_center.html:1491
+#: .\templates\clubs\staff\audit_center.html:1521
+#: .\templates\clubs\staff\audit_center.html:1526
+#: .\templates\clubs\staff\review_activity_application.html:642
+#: .\templates\clubs\staff\review_detail.html:298
+#: .\templates\clubs\staff\review_request.html:605
+#: .\templates\clubs\staff\review_request.html:643
+#: .\templates\clubs\staff\review_submission.html:318
+#: .\templates\clubs\user\approval_center.html:447
+#: .\templates\clubs\user\approval_center.html:499
+#: .\templates\clubs\user\approval_center.html:541
+#: .\templates\clubs\user\approval_center.html:572
+#: .\templates\clubs\user\approval_center.html:603
+#: .\templates\clubs\user\approval_center.html:649
+#: .\templates\clubs\user\approval_center.html:757
+#: .\templates\clubs\user\approval_center.html:788
+#: .\templates\clubs\user\approval_center.html:830
+#: .\templates\clubs\user\approval_center.html:861
+#: .\templates\clubs\user\approval_center.html:892
+#: .\templates\clubs\user\approval_center.html:938
+#: .\templates\clubs\user\approval_center.html:1026
+#: .\templates\clubs\user\approval_center.html:1057
+#: .\templates\clubs\user\approval_center.html:1088
+#: .\templates\clubs\user\approval_center.html:1119
+#: .\templates\clubs\user\approval_center.html:1150
+#: .\templates\clubs\user\approval_center.html:1196
+#: .\templates\clubs\user\approval_center.html:1201
+#: .\templates\clubs\user\approval_center.html:1222
+#: .\templates\clubs\user\approval_center.html:1232
+#: .\templates\clubs\user\approval_center.html:1242
+#: .\templates\clubs\user\approval_center.html:1267
+#: .\templates\clubs\user\approval_detail.html:293
+#: .\templates\clubs\user\edit_rejected_review.html:575
+#: .\templates\clubs\user\edit_rejected_review.html:614
+msgid "提交时间"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:837
+#: .\templates\clubs\staff\audit_center.html:1350
+msgid "注册周期"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:847
+#: .\templates\clubs\staff\audit_center.html:1112
+#: .\templates\clubs\staff\audit_center.html:1380
+#: .\templates\clubs\staff\review_club_registration.html:944
+#: .\templates\clubs\staff\review_request.html:681
+#: .\templates\clubs\user\approval_center.html:505
+#: .\templates\clubs\user\approval_center.html:794
+#: .\templates\clubs\user\approval_center.html:1207
+#: .\templates\clubs\user\approval_history_by_type.html:613
+#: .\templates\clubs\user\approval_history_by_type.html:622
+msgid "申请人"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:870
+#: .\templates\clubs\staff\audit_center.html:1151
+#: .\templates\clubs\staff\audit_center.html:1466
+#: .\templates\clubs\staff\review_detail.html:261
+#: .\templates\clubs\staff\review_reimbursement.html:661
+#: .\templates\clubs\staff\review_request.html:685
+#: .\templates\clubs\user\approval_center.html:547
+#: .\templates\clubs\user\approval_center.html:836
+#: .\templates\clubs\user\approval_center.html:1094
+#: .\templates\clubs\user\approval_center.html:1228
+#: .\templates\clubs\user\approval_detail.html:281
+#: .\templates\clubs\user\approval_history_by_type.html:631
+#: .\templates\clubs\user\edit_rejected_review.html:737
+msgid "报销金额"
+msgstr ""
+
+# Model translations
+#: .\templates\clubs\staff\audit_center.html:932
+#: .\templates\clubs\staff\audit_center.html:1211
+#: .\templates\clubs\staff\audit_center.html:1421
+#: .\templates\clubs\staff\review_president_transition.html:534
+#: .\templates\clubs\user\approval_center.html:609
+#: .\templates\clubs\user\approval_center.html:898
+#: .\templates\clubs\user\approval_center.html:1156
+#: .\templates\clubs\user\approval_center.html:1248
+#: .\templates\clubs\user\approval_history_by_type.html:653
+#, fuzzy
+#| msgid "社长"
+msgid "新社长"
+msgstr "President"
+
+#: .\templates\clubs\staff\audit_center.html:1017
+#: .\templates\clubs\user\approval_center.html:692
+msgid "暂无活跃记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:1018
+#: .\templates\clubs\user\approval_center.html:693
+msgid "当前没有待处理或已拒绝的申请"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:1027
+#: .\templates\clubs\user\approval_center.html:702
+msgid "已通过记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:1263
+#: .\templates\clubs\user\approval_center.html:949
+msgid "查看更多历史记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:1272
+#: .\templates\clubs\user\approval_center.html:958
+msgid "暂无已通过记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:1273
+#: .\templates\clubs\user\approval_center.html:959
+msgid "还没有审批通过的申请"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center.html:1286
+#: .\templates\clubs\user\approval_center.html:970
+msgid "全部已通过记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:454
+#: .\templates\clubs\staff\audit_center_mobile.html:507
+#: .\templates\clubs\staff\audit_center_mobile.html:560
+#: .\templates\clubs\staff\audit_center_mobile.html:613
+#: .\templates\clubs\staff\audit_center_mobile.html:666
+#: .\templates\clubs\staff\audit_center_mobile.html:719
+#: .\templates\clubs\user\approval_center_mobile.html:364
+#: .\templates\clubs\user\approval_center_mobile.html:419
+#: .\templates\clubs\user\approval_center_mobile.html:474
+#: .\templates\clubs\user\approval_center_mobile.html:531
+#: .\templates\clubs\user\approval_center_mobile.html:586
+#: .\templates\clubs\user\approval_center_mobile.html:641
+msgid "修改"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:461
+#: .\templates\clubs\staff\audit_center_mobile.html:514
+#: .\templates\clubs\staff\audit_center_mobile.html:567
+#: .\templates\clubs\staff\audit_center_mobile.html:620
+#: .\templates\clubs\staff\audit_center_mobile.html:673
+#: .\templates\clubs\staff\audit_center_mobile.html:726
+#: .\templates\clubs\user\approval_center_mobile.html:373
+#: .\templates\clubs\user\approval_center_mobile.html:428
+#: .\templates\clubs\user\approval_center_mobile.html:483
+#: .\templates\clubs\user\approval_center_mobile.html:540
+#: .\templates\clubs\user\approval_center_mobile.html:595
+#: .\templates\clubs\user\approval_center_mobile.html:650
+#: .\templates\clubs\user\approval_history_by_type.html:503
+msgid "历史记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:467
+#: .\templates\clubs\user\approval_center_mobile.html:379
+msgid "暂无年审记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:477
+#: .\templates\clubs\user\approval_center_mobile.html:389
+msgid "社团注册记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:520
+#: .\templates\clubs\user\approval_center_mobile.html:434
+msgid "暂无社团注册记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:530
+#: .\templates\clubs\user\approval_center_mobile.html:444
+msgid "社团申请记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:573
+#: .\templates\clubs\user\approval_center_mobile.html:489
+msgid "暂无社团申请记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:626
+#: .\templates\clubs\user\approval_center_mobile.html:546
+msgid "暂无报销记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:636
+#: .\templates\clubs\user\approval_center_mobile.html:556
+msgid "活动申请记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:679
+#: .\templates\clubs\user\approval_center_mobile.html:601
+msgid "暂无活动申请记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:689
+#: .\templates\clubs\user\approval_center_mobile.html:611
+msgid "社长换届申请"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:732
+#: .\templates\clubs\user\approval_center_mobile.html:656
+msgid "暂无社长换届申请记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:744
+msgid "审核历史"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:751
+#: .\templates\clubs\staff\audit_center_mobile.html:766
+msgid "加载中..."
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:815
+#: .\templates\clubs\user\approval_history_by_type.html:688
+msgid "暂无历史记录"
+msgstr ""
+
+#: .\templates\clubs\staff\audit_center_mobile.html:822
+msgid "加载失败，请重试"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_clubs.html:316
+#: .\templates\clubs\staff\management.html:920
+msgid "管理负责社团"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_clubs.html:322
+msgid "选择负责的社团"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_clubs.html:324
+msgid "请选择您负责管理的社团（可多选）。选择后，相关审核任务将自动分配给您。"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_clubs.html:357
+#, fuzzy
+#| msgid "状态"
+msgid "状态:"
+msgstr "Status"
+
+#: .\templates\clubs\staff\manage_clubs.html:377
+msgid "保存设置"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_clubs.html:387
+msgid "使用说明"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_clubs.html:391
+msgid "选择您负责管理的社团后，相关审核任务将自动分配给您"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_clubs.html:395
+msgid "您可以随时修改负责的社团列表"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_clubs.html:399
+msgid "社长在查看社团信息时，可以看到负责他们社团的干事信息"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_clubs.html:403
+msgid "建议根据您的工作能力合理选择负责的社团数量"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_department.html:284
+msgid "管理部门人员"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_department.html:308
+msgid "部门部长管理功能"
+msgstr ""
+
+#: .\templates\clubs\staff\manage_department.html:429
+msgid "当前部门暂无成员"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:150
+msgid "管理社团功能、模板和用户信息"
+msgstr ""
+
+# Model translations
+#: .\templates\clubs\staff\management.html:171
+#: .\templates\clubs\staff\management.html:214
+#: .\templates\clubs\staff\management.html:258
+#: .\templates\clubs\staff\management.html:297
+#: .\templates\clubs\staff\management.html:355
+#: .\templates\clubs\staff\management.html:412
+#: .\templates\clubs\staff\management.html:476
+#: .\templates\clubs\staff\management.html:533
+#: .\templates\clubs\staff\management.html:610
+#: .\templates\clubs\staff\management.html:667
+#: .\templates\clubs\staff\management.html:731
+#: .\templates\clubs\staff\management.html:788
+#, fuzzy
+#| msgid "社长"
+msgid "社长:"
+msgstr "President"
+
+#: .\templates\clubs\staff\management.html:183
+#: .\templates\clubs\staff\management.html:222
+#: .\templates\clubs\staff\management.html:266
+#: .\templates\clubs\staff\management.html:305
+#: .\templates\clubs\staff\management.html:370
+#: .\templates\clubs\staff\management.html:427
+#: .\templates\clubs\staff\management.html:491
+#: .\templates\clubs\staff\management.html:548
+#: .\templates\clubs\staff\management.html:625
+#: .\templates\clubs\staff\management.html:682
+#: .\templates\clubs\staff\management.html:746
+#: .\templates\clubs\staff\management.html:803
+msgid "未设置"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:186
+#: .\templates\clubs\staff\management.html:225
+#: .\templates\clubs\staff\management.html:269
+#: .\templates\clubs\staff\management.html:308
+#: .\templates\clubs\staff\management.html:374
+#: .\templates\clubs\staff\management.html:431
+#: .\templates\clubs\staff\management.html:495
+#: .\templates\clubs\staff\management.html:552
+#: .\templates\clubs\staff\management.html:629
+#: .\templates\clubs\staff\management.html:686
+#: .\templates\clubs\staff\management.html:750
+#: .\templates\clubs\staff\management.html:807
+msgid "负责干事:"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:195
+#: .\templates\clubs\staff\management.html:234
+#: .\templates\clubs\staff\management.html:278
+#: .\templates\clubs\staff\management.html:317
+#: .\templates\clubs\staff\management.html:392
+#: .\templates\clubs\staff\management.html:449
+#: .\templates\clubs\staff\management.html:513
+#: .\templates\clubs\staff\management.html:570
+#: .\templates\clubs\staff\management.html:647
+#: .\templates\clubs\staff\management.html:704
+#: .\templates\clubs\staff\management.html:768
+#: .\templates\clubs\staff\management.html:825
+#: .\templates\clubs\user\dashboard.html:439
+msgid "暂未分配"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:243
+msgid "暂无你负责的成员不足社团"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:332
+#: .\templates\clubs\staff\management.html:587
+#: .\templates\clubs\staff\management.html:842
+msgid "复制我负责的"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:336
+#: .\templates\clubs\staff\management.html:591
+#: .\templates\clubs\staff\management.html:846
+msgid "复制所有"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:460
+#: .\templates\clubs\staff\management.html:715
+msgid "暂无你负责的未提交社团"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:856
+msgid "功能控制"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:859
+msgid "年审功能:"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:872
+msgid "社团注册:"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:892
+msgid "管理功能"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:900
+msgid "上传模板"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:901
+msgid "上传和管理社团材料提交使用的模板文件"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:903
+msgid "管理模板"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:910
+msgid "查看用户名单"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:911
+msgid "查看所有用户的详细信息和联系方式"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:913
+msgid "用户名单"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:921
+msgid "分配和管理干事负责的社团列表"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:923
+#: .\templates\clubs\user\user_detail.html:317
+msgid "负责社团"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:932
+msgid "社团名单"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:944
+msgid "搜索社团名称、社长或描述..."
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:966
+#: .\templates\clubs\staff\management.html:1029
+#: .\templates\clubs\user\dashboard.html:454
+msgid "年审"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:967
+#: .\templates\clubs\staff\management.html:1035
+#: .\templates\clubs\user\dashboard.html:466
+msgid "注册"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1024
+msgid "查看"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1048
+msgid "暂无社团记录"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1065
+#: .\templates\clubs\staff\management.html:1069
+msgid "上一页"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1074
+#: .\templates\clubs\staff\management.html:1078
+msgid "下一页"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1090
+msgid "快速链接"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1107
+msgid "下载社团模板、批量导入社团，或导出全部用户与社团数据。"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1110
+msgid "下载社团导入模板"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1118
+msgid "批量导入社团CSV"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1127
+msgid "删除社团确认"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1128
+msgid "您正在删除社团"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1128
+msgid "此操作无法撤销！所有相关数据将被永久删除。"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1129
+msgid "请输入社团全名以确认："
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1134
+msgid "输入社团全名"
+msgstr ""
+
+#: .\templates\clubs\staff\management.html:1138
+#: .\templates\clubs\user\edit_profile.html:523
+msgid "确认删除"
+msgstr ""
+
+#: .\templates\clubs\staff\review_activity_application.html:603
+msgid "审核活动申请"
+msgstr ""
+
+#: .\templates\clubs\staff\review_activity_application.html:646
+#: .\templates\clubs\staff\review_club_registration_submission.html:891
+#: .\templates\clubs\staff\review_detail.html:253
+#: .\templates\clubs\staff\review_president_transition.html:423
+#: .\templates\clubs\staff\review_reimbursement.html:593
+#: .\templates\clubs\staff\review_request.html:609
+#: .\templates\clubs\staff\review_request.html:647
+#: .\templates\clubs\staff\review_submission.html:322
+#: .\templates\clubs\user\approval_detail.html:286
+#: .\templates\clubs\user\edit_rejected_review.html:588
+#: .\templates\clubs\user\edit_rejected_review.html:625
+msgid "提交次数"
+msgstr ""
+
+#: .\templates\clubs\staff\review_activity_application.html:667
+#: .\templates\clubs\staff\review_club_registration_submission.html:898
+#: .\templates\clubs\staff\review_president_transition.html:446
+#: .\templates\clubs\staff\review_reimbursement.html:614
+#: .\templates\clubs\user\dashboard.html:408
+#: .\templates\clubs\user_detail.html:353
+msgid "负责干事"
+msgstr ""
+
+#: .\templates\clubs\staff\review_activity_application.html:708
+#: .\templates\clubs\submit_room_booking.html:331
+msgid "活动详情"
+msgstr ""
+
+#: .\templates\clubs\staff\review_activity_application.html:713
+#: .\templates\clubs\staff\review_detail.html:268
+#: .\templates\clubs\user\submit_activity_application.html:283
+msgid "活动名称"
+msgstr ""
+
+#: .\templates\clubs\staff\review_activity_application.html:725
+#: .\templates\clubs\staff\review_detail.html:284
+#: .\templates\clubs\user\submit_activity_application.html:313
+msgid "活动地点"
+msgstr ""
+
+#: .\templates\clubs\staff\review_activity_application.html:729
+#: .\templates\clubs\staff\review_detail.html:292
+msgid "联系人"
+msgstr ""
+
+#: .\templates\clubs\staff\review_activity_application.html:736
+#: .\templates\clubs\staff\review_detail.html:305
+#: .\templates\clubs\user\submit_activity_application.html:335
+msgid "活动描述"
+msgstr ""
+
+#: .\templates\clubs\staff\review_club_registration.html:928
+msgid "审核社团申请"
+msgstr ""
+
+#: .\templates\clubs\staff\review_club_registration.html:984
+#: .\templates\clubs\staff\review_club_registration_submission.html:939
+#: .\templates\clubs\user\register_club.html:417
+msgid "社团基本信息"
+msgstr ""
+
+#: .\templates\clubs\staff\review_club_registration.html:997
+msgid "社长姓名"
+msgstr ""
+
+#: .\templates\clubs\staff\review_club_registration.html:1001
+msgid "社长学号"
+msgstr ""
+
+#: .\templates\clubs\staff\review_club_registration.html:1005
+msgid "社长邮箱"
+msgstr ""
+
+#: .\templates\clubs\staff\review_club_registration.html:1032
+#: .\templates\clubs\staff\review_club_registration_submission.html:1007
+#: .\templates\clubs\staff\review_president_transition.html:586
+#: .\templates\clubs\staff\review_submission.html:387
+msgid "审核状态"
+msgstr ""
+
+#: .\templates\clubs\staff\review_club_registration.html:1036
+#: .\templates\clubs\staff\review_club_registration_submission.html:1011
+#: .\templates\clubs\staff\review_president_transition.html:590
+#, fuzzy
+#| msgid "状态"
+msgid "状态："
+msgstr "Status"
+
+#: .\templates\clubs\staff\review_club_registration.html:1045
+#: .\templates\clubs\staff\review_club_registration_submission.html:1020
+#: .\templates\clubs\staff\review_president_transition.html:599
+#: .\templates\clubs\staff\review_submission.html:401
+msgid "审核时间："
+msgstr ""
+
+#: .\templates\clubs\staff\review_club_registration.html:1048
+#: .\templates\clubs\staff\review_president_transition.html:619
+msgid "审核意见："
+msgstr ""
+
+#: .\templates\clubs\staff\review_club_registration.html:1057
+#: .\templates\clubs\staff\review_club_registration_submission.html:1026
+#: .\templates\clubs\staff\review_president_transition.html:625
+#: .\templates\clubs\staff\review_request.html:744
+#: .\templates\clubs\staff\review_submission.html:405
+msgid "返回列表"
+msgstr ""
+
+#: .\templates\clubs\staff\review_club_registration_submission.html:955
+msgid "申请社长"
+msgstr ""
+
+#: .\templates\clubs\staff\review_detail.html:195
+#: .\templates\clubs\user\approval_detail.html:223
+msgid "年审记录详情"
+msgstr ""
+
+#: .\templates\clubs\staff\review_detail.html:198
+#: .\templates\clubs\user\approval_detail.html:226
+msgid "社团注册详情"
+msgstr ""
+
+#: .\templates\clubs\staff\review_detail.html:201
+#: .\templates\clubs\user\approval_detail.html:229
+msgid "新社团申请详情"
+msgstr ""
+
+#: .\templates\clubs\staff\review_detail.html:204
+#: .\templates\clubs\user\approval_detail.html:232
+msgid "报销申请详情"
+msgstr ""
+
+#: .\templates\clubs\staff\review_detail.html:207
+#: .\templates\clubs\user\approval_detail.html:235
+msgid "活动申请详情"
+msgstr ""
+
+#: .\templates\clubs\staff\review_detail.html:210
+msgid "社长换届详情"
+msgstr ""
+
+#: .\templates\clubs\staff\review_detail.html:257
+#: .\templates\clubs\staff\review_reimbursement.html:666
+#: .\templates\clubs\user\edit_rejected_review.html:729
+msgid "报销日期"
+msgstr ""
+
+#: .\templates\clubs\staff\review_detail.html:280
+msgid "活动时间"
+msgstr ""
+
+#: .\templates\clubs\staff\review_detail.html:312
+#: .\templates\clubs\staff\review_reimbursement.html:673
+#: .\templates\clubs\user\edit_rejected_review.html:745
+msgid "报销说明"
+msgstr ""
+
+#: .\templates\clubs\staff\review_president_transition.html:403
+msgid "审核社长换届申请"
+msgstr ""
+
+#: .\templates\clubs\staff\review_president_transition.html:487
+msgid "社长换届信息"
+msgstr ""
+
+# Model translations
+#: .\templates\clubs\staff\review_president_transition.html:503
+#: .\templates\clubs\user\approval_history_by_type.html:649
+#, fuzzy
+#| msgid "社长"
+msgid "原社长"
+msgstr "President"
+
+#: .\templates\clubs\staff\review_president_transition.html:551
+msgid "新社长联系电话"
+msgstr ""
+
+#: .\templates\clubs\staff\review_president_transition.html:556
+msgid "当前职位"
+msgstr ""
+
+#: .\templates\clubs\staff\review_president_transition.html:561
+#: .\templates\clubs\user\submit_president_transition.html:359
+msgid "换届日期"
+msgstr ""
+
+#: .\templates\clubs\staff\review_president_transition.html:569
+#: .\templates\clubs\user\submit_president_transition.html:366
+msgid "换届原因"
+msgstr ""
+
+#: .\templates\clubs\staff\review_president_transition.html:603
+msgid "审核人："
+msgstr ""
+
+#: .\templates\clubs\staff\review_reimbursement.html:655
+msgid "报销详情"
+msgstr ""
+
+#: .\templates\clubs\staff\review_request.html:702
+msgid "提交的材料"
+msgstr ""
+
+#: .\templates\clubs\staff\review_request.html:711
+msgid "下载文件"
+msgstr ""
+
+#: .\templates\clubs\staff\review_request.html:711
+msgid "下载"
+msgstr ""
+
+#: .\templates\clubs\staff\review_request.html:712
+msgid "在线预览"
+msgstr ""
+
+#: .\templates\clubs\staff\review_submission.html:303
+msgid "审核年度审查材料"
+msgstr ""
+
+#: .\templates\clubs\staff\review_submission.html:390
+msgid "审核状态："
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:388
+msgid "材料模板管理"
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:389
+msgid "管理各业务流程所需的文档模板文件"
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:391
+msgid "返回控制台"
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:415
+msgid "暂无描述"
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:417
+msgid "修改描述"
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:425
+msgid "点击下载当前模板"
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:426
+msgid "已有模板"
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:429
+msgid "无模板"
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:449
+msgid "暂无启用的材料要求配置。请联系管理员添加材料要求。"
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:458
+msgid "修改描述 -"
+msgstr ""
+
+#: .\templates\clubs\staff\upload_template.html:469
+msgid "描述内容"
+msgstr ""
+
+#: .\templates\clubs\staff\view_users.html:14
+msgid "系统用户名单"
+msgstr ""
+
+#: .\templates\clubs\staff\view_users.html:15
+msgid "查看专用，无编辑权限"
+msgstr ""
+
+#: .\templates\clubs\staff\view_users.html:27
+msgid "关键词"
+msgstr ""
+
+#: .\templates\clubs\staff\view_users.html:33
+msgid "搜索用户名、邮箱"
+msgstr ""
+
+#: .\templates\clubs\staff\view_users.html:53
+msgid "筛选"
+msgstr ""
+
+#: .\templates\clubs\staff\view_users.html:55
+msgid "重置"
+msgstr ""
+
+#: .\templates\clubs\staff\view_users.html:141
+msgid "该页面为查看专用，不支持编辑。如需修改用户信息，请联系管理员。"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:238
+msgid "预约房间"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:239
+msgid "填写以下表单申请使用活动室，请提前规划时间"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:252
+msgid "使用须知"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:253
+msgid ""
+"无需审核，提交即预约成功。请确保预约时间不冲突，并在使用完毕后清理现场。"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:296
+msgid "例如：20"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:300
+msgid "时间安排"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:305
+msgid "使用日期"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:329
+msgid "该时间段已被占用"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:335
+msgid "活动主题/用途"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:337
+msgid "简要描述活动内容"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:345
+msgid "请输入11位有效的手机号码"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:351
+msgid "如：需使用投影仪、白板等"
+msgstr ""
+
+#: .\templates\clubs\submit_room_booking.html:358
+msgid "提交预约"
+msgstr ""
+
+#: .\templates\clubs\user\approval_center.html:474
+#: .\templates\clubs\user\approval_center.html:763
+#: .\templates\clubs\user\approval_center.html:1032
+msgid "注册期"
+msgstr ""
+
+#: .\templates\clubs\user\approval_detail.html:217
+msgid "返回审批中心"
+msgstr ""
+
+#: .\templates\clubs\user\approval_detail.html:238
+msgid "社长交接详情"
+msgstr ""
+
+#: .\templates\clubs\user\approval_history_by_type.html:479
+msgid "查看全部历史记录"
+msgstr ""
+
+#: .\templates\clubs\user\approval_history_by_type.html:562
+#, fuzzy
+#| msgid "干事"
+msgid "干事:"
+msgstr "Staff"
+
+#: .\templates\clubs\user\approval_history_by_type.html:574
+msgid "教师:"
+msgstr ""
+
+#: .\templates\clubs\user\approval_history_by_type.html:608
+#: .\templates\clubs\user\approval_history_by_type.html:617
+#: .\templates\clubs\user\approval_history_by_type.html:626
+#: .\templates\clubs\user\approval_history_by_type.html:635
+msgid "审核时间"
+msgstr ""
+
+#: .\templates\clubs\user\approval_history_by_type.html:644
+msgid "干事审核时间"
+msgstr ""
+
+#: .\templates\clubs\user\approval_history_by_type.html:689
+msgid "当前没有任何审批历史"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:349
+msgid "创建新社团"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:373
+msgid "年审状态"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:377
+#: .\templates\clubs\user\dashboard.html:395
+msgid "已提交"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:380
+#: .\templates\clubs\user\dashboard.html:398
+msgid "未提交"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:451
+msgid "年审已提交"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:457
+msgid "年审功能未开启"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:458
+msgid "年审未开启"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:463
+msgid "注册已提交"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:469
+msgid "注册功能未开启"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:470
+msgid "注册未开启"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:473
+msgid "报销"
+msgstr ""
+
+#: .\templates\clubs\user\dashboard.html:485
+msgid "您目前没有管理任何社团"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:307
+msgid "个人中心"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:313
+msgid "头像设置"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:314
+msgid "账号安全"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:321
+msgid "修改个人资料"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:336
+msgid "用于找回密码和接收通知"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:340
+#: .\templates\clubs\user\user_detail.html:298
+msgid "手机号码"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:357
+msgid "请选择"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:368
+msgid "向其他用户公开我的联系方式"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:383
+msgid "修改头像"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:394
+#: .\templates\clubs\user\edit_profile.html:395
+msgid "当前头像"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:409
+msgid "缩放图片"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:414
+msgid "支持 JPG, PNG 格式，建议使用正方形图片"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:418
+msgid "选择图片"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:425
+msgid "上传头像"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:434
+msgid "账号安全设置"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:451
+#: .\templates\clubs\user\edit_profile.html:472
+msgid "当前密码"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:452
+msgid "验证身份以修改用户名"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:466
+#: .\templates\clubs\user\edit_profile.html:489
+#, fuzzy
+#| msgid "是否需要修改密码"
+msgid "修改密码"
+msgstr "Must change password"
+
+#: .\templates\clubs\user\edit_profile.html:479
+msgid "密码长度至少需6位"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:499
+msgid "删除账户是不可逆的操作。所有相关数据将被永久删除。"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:502
+msgid "删除账户"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:513
+msgid "确认删除账户？"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:515
+msgid "此操作无法撤销。请输入您的用户名"
+msgstr ""
+
+#: .\templates\clubs\user\edit_profile.html:515
+msgid "以确认删除。"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:522
+msgid "修改被拒材料"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:555
+msgid "提交失败，请修正以下问题："
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:570
+#: .\templates\clubs\user\edit_rejected_review.html:609
+msgid "申请信息"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:579
+msgid "年审年份"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:644
+msgid "审核拒绝理由"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:663
+msgid "上传新材料"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:671
+msgid "可用模板下载"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:732
+msgid "选择报销发生的日期"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:739
+msgid "输入报销金额"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:740
+msgid "输入准确的报销金额（元）"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:747
+msgid "详细说明报销用途和事由"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:748
+msgid "请详细描述报销的用途和事由"
+msgstr ""
+
+#: .\templates\clubs\user\edit_rejected_review.html:757
+msgid "重新提交"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:386
+msgid "申请新社团"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:429
+#, fuzzy
+#| msgid "社团名称"
+msgid "输入社团名称"
+msgstr "Club Name"
+
+#: .\templates\clubs\user\register_club.html:447
+msgid "社团人数"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:455
+msgid "输入社团人数"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:467
+msgid "简要介绍社团的宗旨和活动"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:473
+msgid "申请材料"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:506
+msgid "下载模板"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:512
+msgid "无需上传任何材料"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:520
+msgid "社长信息"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:535
+msgid "选择其他社长"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:544
+msgid "选择其他社长时，申请将代表该用户提交"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:551
+msgid "申请人信息确认"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:553
+msgid "用户名:"
+msgstr ""
+
+#: .\templates\clubs\user\register_club.html:554
+#, fuzzy
+#| msgid "电话"
+msgid "电话:"
+msgstr "Phone"
+
+#: .\templates\clubs\user\register_club.html:555
+#, fuzzy
+#| msgid "微信"
+msgid "微信:"
+msgstr "WeChat"
+
+#: .\templates\clubs\user\register_club.html:563
+msgid "提交注册申请"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:243
+msgid "提交活动申请"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:266
+msgid "选择社团"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:268
+msgid "请选择要提交活动申请的社团"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:279
+msgid "活动基本信息"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:284
+msgid "例如：春季联谊会"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:290
+msgid "学术讲座"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:291
+msgid "社交活动"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:292
+msgid "志愿服务"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:293
+msgid "体育竞赛"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:294
+msgid "文化艺术"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:295
+msgid "其他"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:306
+msgid "活动开始时间"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:314
+msgid "例如：大学生活动中心205"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:317
+msgid "活动结束时间"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:325
+msgid "例如：50"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:329
+msgid "例如：1000.00"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:336
+msgid "详细描述活动内容、目的和意义..."
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:343
+msgid "联系信息"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:347
+msgid "联系人（自动填写）"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:348
+msgid "自动使用您的姓名"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:351
+msgid "联系电话（自动填写，如有）"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:352
+msgid "自动使用资料中的电话"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:359
+#: .\templates\clubs\user\submit_president_transition.html:374
+msgid "附件上传"
+msgstr ""
+
+#: .\templates\clubs\user\submit_activity_application.html:379
+#: .\templates\clubs\user\submit_club_registration.html:343
+#: .\templates\clubs\user\submit_president_transition.html:400
+msgid "提交申请"
+msgstr ""
+
+#: .\templates\clubs\user\submit_club_registration.html:292
+msgid "提交社团注册"
+msgstr ""
+
+#: .\templates\clubs\user\submit_club_registration.html:293
+msgid "请按照要求上传相关材料"
+msgstr ""
+
+#: .\templates\clubs\user\submit_club_registration.html:300
+#: .\templates\clubs\user\submit_review.html:331
+msgid "请下载相应模板并填写完整后上传。所有标记为"
+msgstr ""
+
+#: .\templates\clubs\user\submit_club_registration.html:300
+#: .\templates\clubs\user\submit_reimbursement.html:345
+#: .\templates\clubs\user\submit_review.html:331
+msgid "的字段为必填项。"
+msgstr ""
+
+#: .\templates\clubs\user\submit_club_registration.html:321
+msgid "上传材料"
+msgstr ""
+
+#: .\templates\clubs\user\submit_club_registration.html:334
+#: .\templates\clubs\user\submit_president_transition.html:387
+msgid "暂无材料要求"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:265
+msgid "提交社长换届申请"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:273
+msgid "社长换届申请说明："
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:274
+msgid ""
+"从社团现有成员中选择新社长，并提交详细申请表。申请通过后，新社长信息将在系统"
+"中更新。"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:296
+msgid "原社长信息"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:297
+msgid "系统自动填充，无需修改"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:300
+msgid "现任社长"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:315
+msgid "所属社团"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:323
+msgid "新社长信息"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:324
+msgid "从所有社长中选择"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:328
+msgid "选择新社长"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:336
+msgid "暂无可选的社长候选人"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:345
+msgid "姓名："
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:346
+#, fuzzy
+#| msgid "学号"
+msgid "学号："
+msgstr "Student ID"
+
+#: .\templates\clubs\user\submit_president_transition.html:348
+#, fuzzy
+#| msgid "职位"
+msgid "职位："
+msgstr "Position"
+
+#: .\templates\clubs\user\submit_president_transition.html:355
+msgid "换届信息"
+msgstr ""
+
+#: .\templates\clubs\user\submit_president_transition.html:367
+msgid "详细说明换届的原因和背景..."
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:326
+msgid "提交报销材料"
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:344
+#: .\templates\clubs\user\submit_review.html:330
+msgid "提交说明"
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:345
+msgid "请填写报销详情并上传相关凭证。所有标记为"
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:346
+#: .\templates\clubs\user\submit_review.html:332
+msgid "重要提醒："
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:346
+msgid "请确保上传的凭证清晰可见，支持图片(.jpg, .png)或PDF格式。"
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:352
+msgid "报销信息填写"
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:360
+msgid "报销日期 *"
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:366
+msgid "报销金额 (¥) *"
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:373
+msgid "报销说明 *"
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:375
+msgid "请详细说明报销事由和明细"
+msgstr ""
+
+#: .\templates\clubs\user\submit_reimbursement.html:393
+msgid "提交报销"
+msgstr ""
+
+#: .\templates\clubs\user\submit_review.html:292
+msgid "请检查以下错误："
+msgstr ""
+
+#: .\templates\clubs\user\submit_review.html:306
+msgid "重新提交说明"
+msgstr ""
+
+#: .\templates\clubs\user\submit_review.html:307
+msgid "您的年审材料中有部分内容需要修改，请重新上传以下被拒绝的材料："
+msgstr ""
+
+#: .\templates\clubs\user\submit_review.html:332
+msgid "所有文件必须为Word格式(.doc或.docx)。"
+msgstr ""
+
+#: .\templates\clubs\user\submit_review.html:339
+msgid "材料上传"
+msgstr ""
+
+#: .\templates\clubs\user\submit_review.html:346
+msgid "提交年份"
+msgstr ""
+
+#: .\templates\clubs\user\submit_review.html:349
+msgid "请选择要提交年审材料的年份"
+msgstr ""
+
+#: .\templates\clubs\user\user_detail.html:253
+#: .\templates\clubs\user_detail.html:229
+msgid "编辑资料"
+msgstr ""
+
+#: .\templates\clubs\user\user_detail.html:325
+msgid "负责干事："
+msgstr ""
+
+#: .\templates\clubs\user\user_detail.html:336
+msgid "暂无分配"
+msgstr ""
+
+#: .\templates\clubs\user\user_detail.html:349
+msgid "管理社团"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:222
+msgid "用户详情"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:223
+msgid "查看用户个人信息及相关联社团"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:232
+msgid "管理账户"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:267
+msgid "所属部门"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:276
+msgid "电子邮箱"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:280
+#: .\templates\clubs\user_detail.html:292
+#: .\templates\clubs\user_detail.html:304
+msgid "已隐藏"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:317
+msgid "负责管理的社团"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:330
+msgid "暂未分配负责的社团"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:339
+msgid "所属社团 (社长/负责人)"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:372
+msgid "暂未分配负责干事"
+msgstr ""
+
+#: .\templates\clubs\user_detail.html:393
+msgid "暂无所属社团记录"
+msgstr ""
+
+#~ msgid "切换语言"
+#~ msgstr "Change Language"

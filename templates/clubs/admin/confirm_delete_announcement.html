@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}删除公告{% endblock %}
 
@@ -12,18 +13,17 @@
         <div style="padding: 30px;">
             <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
                 <p style="margin: 0; color: #856404;">
-                    <strong>⚠️ 警告:</strong> 此操作不可撤销，公告删除后无法恢复。
-                </p>
+                    <strong>⚠️ 警告:</strong>{% trans "此操作不可撤销，公告删除后无法恢复。" %}</p>
             </div>
 
             <div style="background: #f9f9f9; padding: 20px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ddd;">
                 <div style="margin-bottom: 15px;">
-                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">公告标题</div>
+                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">{% trans "公告标题" %}</div>
                     <div style="font-weight: bold; color: #333; font-size: 1.1rem;">{{ announcement.title }}</div>
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">发布者</div>
+                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">{% trans "发布者" %}</div>
                     <div style="color: #333;">
                         <a href="{% url 'clubs:user_detail' announcement.created_by.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 4px;">
                             <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
@@ -41,19 +41,19 @@
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">发布时间</div>
+                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">{% trans "发布时间" %}</div>
                     <div style="color: #333;">{{ announcement.published_at|default:announcement.created_at }}</div>
                 </div>
                 
                 <div>
-                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">状态</div>
+                    <div style="color: #999; font-size: 0.9rem; margin-bottom: 5px;">{% trans "状态" %}</div>
                     <div>
                         {% if announcement.status == 'published' %}
-                            <span style="background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 3px;">已发布</span>
+                            <span style="background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 3px;">{% trans "已发布" %}</span>
                         {% elif announcement.status == 'draft' %}
-                            <span style="background: #e9ecef; color: #6c757d; padding: 3px 8px; border-radius: 3px;">草稿</span>
+                            <span style="background: #e9ecef; color: #6c757d; padding: 3px 8px; border-radius: 3px;">{% trans "草稿" %}</span>
                         {% else %}
-                            <span style="background: #f8d7da; color: #721c24; padding: 3px 8px; border-radius: 3px;">已归档</span>
+                            <span style="background: #f8d7da; color: #721c24; padding: 3px 8px; border-radius: 3px;">{% trans "已归档" %}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -73,8 +73,7 @@
 
             <div style="background: #e7f3ff; border-left: 4px solid #0066cc; padding: 15px; border-radius: 4px;">
                 <p style="margin: 0; color: #0066cc;">
-                    <strong>💡 提示:</strong> 如果您只是想隐藏此公告，可以将其状态改为"已归档"而不是删除。
-                </p>
+                    <strong>💡 提示:</strong>{% trans "如果您只是想隐藏此公告，可以将其状态改为"已归档"而不是删除。" %}</p>
             </div>
         </div>
     </div>

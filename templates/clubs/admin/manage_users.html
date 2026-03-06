@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}用户管理{% endblock %}
 
@@ -488,17 +489,13 @@
     <div class="page-header">
         <span class="material-icons">group</span>
         <div class="page-header-content">
-            <h1>系统用户管理</h1>
-            <p class="subtitle">管理所有用户账户和权限</p>
+            <h1>{% trans "系统用户管理" %}</h1>
+            <p class="subtitle">{% trans "管理所有用户账户和权限" %}</p>
         </div>
         <div style="display: flex; align-items: center; gap: var(--md3-spacing-md);">
-            <button type="button" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;" onclick="openBulkOpsModal()">
-                批量操作
-            </button>
+            <button type="button" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;" onclick="openBulkOpsModal()">{% trans "批量操作" %}</button>
             <a href="{% url 'clubs:create_user' %}" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;">
-                <span class="material-icons">person_add</span>
-                创建用户
-            </a>
+                <span class="material-icons">person_add</span>{% trans "创建用户" %}</a>
             <div class="stats-badge">
                 <span class="material-icons">person</span>
                 <span>{{ total_users }} 个用户</span>
@@ -515,20 +512,18 @@
                     type="text" 
                     name="search" 
                     class="form-input with-icon"
-                    placeholder="搜索用户名、邮箱、全名..." 
+                    placeholder="{% trans "搜索用户名、邮箱、全名..." %}" 
                     value="{{ search|default:'' }}"
                 >
             </div>
             <select name="role" class="form-select">
-                <option value="">所有角色</option>
-                <option value="president" {% if role == 'president' %}selected{% endif %}>社长</option>
-                <option value="staff" {% if role == 'staff' %}selected{% endif %}>干事</option>
-                <option value="admin" {% if role == 'admin' %}selected{% endif %}>管理员</option>
+                <option value="">{% trans "所有角色" %}</option>
+                <option value="president" {% if role == 'president' %}selected{% endif %}>{% trans "社长" %}</option>
+                <option value="staff" {% if role == 'staff' %}selected{% endif %}>{% trans "干事" %}</option>
+                <option value="admin" {% if role == 'admin' %}selected{% endif %}>{% trans "管理员" %}</option>
             </select>
             <button type="submit" class="btn-search">
-                <span class="material-icons">search</span>
-                搜索
-            </button>
+                <span class="material-icons">search</span>{% trans "搜索" %}</button>
         </form>
     </div>
     
@@ -538,17 +533,17 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>用户名</th>
-                    <th>邮箱</th>
-                    <th>全名</th>
-                    <th>电话</th>
-                    <th>微信</th>
-                    <th>政治面貌</th>
-                    <th>角色</th>
-                    <th>部门</th>
-                    <th>状态</th>
-                    <th>加入时间</th>
-                    <th>操作</th>
+                    <th>{% trans "用户名" %}</th>
+                    <th>{% trans "邮箱" %}</th>
+                    <th>{% trans "全名" %}</th>
+                    <th>{% trans "电话" %}</th>
+                    <th>{% trans "微信" %}</th>
+                    <th>{% trans "政治面貌" %}</th>
+                    <th>{% trans "角色" %}</th>
+                    <th>{% trans "部门" %}</th>
+                    <th>{% trans "状态" %}</th>
+                    <th>{% trans "加入时间" %}</th>
+                    <th>{% trans "操作" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -585,13 +580,13 @@
                     </td>
                     <td>
                         {% if user.profile.role == 'president' %}
-                            <span class="role-badge president">社长</span>
+                            <span class="role-badge president">{% trans "社长" %}</span>
                         {% elif user.profile.role == 'staff' %}
-                            <span class="role-badge staff">干事</span>
+                            <span class="role-badge staff">{% trans "干事" %}</span>
                         {% elif user.profile.role == 'admin' %}
-                            <span class="role-badge admin">管理员</span>
+                            <span class="role-badge admin">{% trans "管理员" %}</span>
                         {% else %}
-                            <span class="role-badge unknown">未设定</span>
+                            <span class="role-badge unknown">{% trans "未设定" %}</span>
                         {% endif %}
                     </td>
                     <td>
@@ -605,27 +600,19 @@
                         {% if user.profile.role == 'staff' %}
                             {% if user.profile.status == 'pending' %}
                                 <span class="status-badge pending">
-                                    <span class="material-icons">schedule</span>
-                                    待审核
-                                </span>
+                                    <span class="material-icons">schedule</span>{% trans "待审核" %}</span>
                             {% elif user.profile.status == 'approved' %}
                                 <span class="status-badge approved">
-                                    <span class="material-icons">check_circle</span>
-                                    已批准
-                                </span>
+                                    <span class="material-icons">check_circle</span>{% trans "已批准" %}</span>
                             {% elif user.profile.status == 'rejected' %}
                                 <span class="status-badge rejected">
-                                    <span class="material-icons">cancel</span>
-                                    已拒绝
-                                </span>
+                                    <span class="material-icons">cancel</span>{% trans "已拒绝" %}</span>
                             {% else %}
-                                <span class="status-badge unknown">未知</span>
+                                <span class="status-badge unknown">{% trans "未知" %}</span>
                             {% endif %}
                         {% else %}
                             <span class="status-badge approved">
-                                <span class="material-icons">check_circle</span>
-                                已激活
-                            </span>
+                                <span class="material-icons">check_circle</span>{% trans "已激活" %}</span>
                         {% endif %}
                     </td>
                     <td>{{ user.date_joined|date:"Y-m-d" }}</td>
@@ -633,33 +620,25 @@
                         <div class="action-buttons">
                             {% if user.profile.role == 'staff' and user.profile.status == 'pending' %}
                                 <a href="{% url 'clubs:admin_review' user.id %}?type=staff_registration" class="btn-action review">
-                                    <span class="material-icons">assignment</span>
-                                    审核
-                                </a>
+                                    <span class="material-icons">assignment</span>{% trans "审核" %}</a>
                             {% endif %}
 
                             {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
                                 <a href="{% url 'clubs:change_staff_attributes' user.id %}" class="btn-action detail">
-                                    <span class="material-icons">visibility</span>
-                                    属性
-                                </a>
+                                    <span class="material-icons">visibility</span>{% trans "属性" %}</a>
                             {% endif %}
 
                             {% if user.username in locked_usernames %}
                                 <form method="post" action="{% url 'clubs:unlock_account' user.username %}" style="display:inline">{% csrf_token %}
-                                    <button class="btn-action review" title="解锁">
-                                        <span class="material-icons">lock_open</span>
-                                        解锁
-                                    </button>
+                                    <button class="btn-action review" title="{% trans "解锁" %}">
+                                        <span class="material-icons">lock_open</span>{% trans "解锁" %}</button>
                                 </form>
                             {% endif %}
 
 
 
                             <a href="{% url 'clubs:admin_edit_user_account' user.id %}" class="btn-action detail">
-                                <span class="material-icons">visibility</span>
-                                详情
-                            </a>
+                                <span class="material-icons">visibility</span>{% trans "详情" %}</a>
                         </div>
                     </td>
                 </tr>
@@ -670,7 +649,7 @@
     {% else %}
     <div class="empty-state">
         <span class="material-icons">search_off</span>
-        <p>未找到匹配的用户</p>
+        <p>{% trans "未找到匹配的用户" %}</p>
     </div>
     {% endif %}
 </div>
@@ -678,34 +657,28 @@
 <div id="bulkOpsModal" class="bulk-modal-overlay">
     <div class="bulk-modal-card">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-            <h3 style="margin:0; font-size:1.2rem;">批量操作</h3>
-            <button type="button" class="btn-action detail" onclick="closeBulkOpsModal()">关闭</button>
+            <h3 style="margin:0; font-size:1.2rem;">{% trans "批量操作" %}</h3>
+            <button type="button" class="btn-action detail" onclick="closeBulkOpsModal()">{% trans "关闭" %}</button>
         </div>
-        <p style="margin:8px 0 0 0; color: var(--md3-on-surface-variant);">下载模板、批量导入用户，或导出全部用户与社团数据。</p>
+        <p style="margin:8px 0 0 0; color: var(--md3-on-surface-variant);">{% trans "下载模板、批量导入用户，或导出全部用户与社团数据。" %}</p>
         <div class="bulk-modal-actions">
             <a href="{% url 'clubs:download_user_import_template' %}" class="btn-action detail" style="justify-content:center;">
-                <span class="material-icons">download</span>
-                下载导入模板
-            </a>
+                <span class="material-icons">download</span>{% trans "下载导入模板" %}</a>
             <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn-action detail" style="justify-content:center;">
-                <span class="material-icons">file_download</span>
-                导出全部用户+社团
-            </a>
+                <span class="material-icons">file_download</span>{% trans "导出全部用户+社团" %}</a>
             <form id="bulkImportForm" method="post" action="{% url 'clubs:import_users_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <label class="bulk-modal-file-wrapper" for="csvFileInput">
-                    <span class="bulk-modal-file-label"><span class="material-icons" style="font-size:1rem;">folder_open</span>浏览</span>
-                    <span class="bulk-modal-file-name" id="csvFileName">未选择文件</span>
+                    <span class="bulk-modal-file-label"><span class="material-icons" style="font-size:1rem;">folder_open</span>{% trans "浏览" %}</span>
+                    <span class="bulk-modal-file-name" id="csvFileName">{% trans "未选择文件" %}</span>
                 </label>
                 <input type="file" id="csvFileInput" name="csv_file" accept=".csv,text/csv" required class="bulk-modal-file"
                     onchange="document.getElementById('csvFileName').textContent = this.files[0]?.name || '未选择文件'">
                 <button id="bulkImportSubmitBtn" type="submit" class="btn-action detail" style="justify-content:center;">
-                    <span class="material-icons">upload_file</span>
-                    批量导入CSV
-                </button>
+                    <span class="material-icons">upload_file</span>{% trans "批量导入CSV" %}</button>
                 <div id="importProgress" class="import-progress">
-                    <div id="importProgressText" class="import-progress-text">准备导入...</div>
+                    <div id="importProgressText" class="import-progress-text">{% trans "准备导入..." %}</div>
                     <div class="import-progress-track">
                         <div id="importProgressBar" class="import-progress-bar"></div>
                     </div>

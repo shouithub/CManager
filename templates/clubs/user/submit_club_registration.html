@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 
 {% block title %}提交社团注册{% endblock %}
@@ -288,15 +289,15 @@
     <div class="page-header">
         <span class="material-icons">folder_open</span>
         <div class="page-header-content">
-            <h1>提交社团注册</h1>
-            <p class="subtitle">请按照要求上传相关材料</p>
+            <h1>{% trans "提交社团注册" %}</h1>
+            <p class="subtitle">{% trans "请按照要求上传相关材料" %}</p>
         </div>
     </div>
 
     <!-- 提交说明 -->
     <div class="info-banner">
         <span class="material-icons">info</span>
-        <p>请下载相应模板并填写完整后上传。所有标记为 <span style="color: var(--md3-error); font-weight: 600;">*</span> 的字段为必填项。</p>
+        <p>{% trans "请下载相应模板并填写完整后上传。所有标记为" %}<span style="color: var(--md3-error); font-weight: 600;">*</span>{% trans "的字段为必填项。" %}</p>
     </div>
 
     {% if messages %}
@@ -317,9 +318,7 @@
         <!-- 动态材料部分 -->
         <div class="form-section">
             <h2>
-                <span class="material-icons">folder</span>
-                上传材料
-            </h2>
+                <span class="material-icons">folder</span>{% trans "上传材料" %}</h2>
             
             {% for req in requirements %}
             <div class="form-row">
@@ -332,20 +331,16 @@
                 </div>
             </div>
             {% empty %}
-            <p>暂无材料要求</p>
+            <p>{% trans "暂无材料要求" %}</p>
             {% endfor %}
         </div>
 
         <!-- 操作按钮 -->
         <div class="action-buttons">
             <a href="javascript:history.back()" class="btn-secondary">
-                <span class="material-icons">arrow_back</span>
-                返回
-            </a>
+                <span class="material-icons">arrow_back</span>{% trans "返回" %}</a>
             <button type="submit" class="btn-primary">
-                <span class="material-icons">check_circle</span>
-                提交申请
-            </button>
+                <span class="material-icons">check_circle</span>{% trans "提交申请" %}</button>
         </div>
     </form>
 </div>

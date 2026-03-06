@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load i18n %}
 
 {% block title %}时间段设置{% endblock %}
 
@@ -158,25 +159,23 @@
         <div class="header-left">
             <span class="material-icons">schedule</span>
             <div class="header-content">
-                <h1>时间段设置</h1>
-                <div class="subtitle">管理房间预约的可选时间段</div>
+                <h1>{% trans "时间段设置" %}</h1>
+                <div class="subtitle">{% trans "管理房间预约的可选时间段" %}</div>
             </div>
         </div>
         <a href="{% url 'clubs:admin_time_slot_add' %}" class="btn btn-primary">
-            <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">add</span>
-            添加时间段
-        </a>
+            <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">add</span>{% trans "添加时间段" %}</a>
     </div>
 
     <div class="table-container">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>显示名称</th>
-                    <th>开始时间</th>
-                    <th>结束时间</th>
-                    <th>状态</th>
-                    <th>操作</th>
+                    <th>{% trans "显示名称" %}</th>
+                    <th>{% trans "开始时间" %}</th>
+                    <th>{% trans "结束时间" %}</th>
+                    <th>{% trans "状态" %}</th>
+                    <th>{% trans "操作" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -187,19 +186,19 @@
                     <td>{{ slot.end_time|time:"H:i" }}</td>
                     <td>
                         {% if slot.is_active %}
-                        <span class="status-badge status-active">启用</span>
+                        <span class="status-badge status-active">{% trans "启用" %}</span>
                         {% else %}
-                        <span class="status-badge status-inactive">禁用</span>
+                        <span class="status-badge status-inactive">{% trans "禁用" %}</span>
                         {% endif %}
                     </td>
                     <td>
                         <div class="actions">
-                            <a href="{% url 'clubs:admin_time_slot_edit' slot.id %}" class="icon-btn" title="编辑">
+                            <a href="{% url 'clubs:admin_time_slot_edit' slot.id %}" class="icon-btn" title="{% trans "编辑" %}">
                                 <span class="material-icons" style="font-size: 1.25rem;">edit</span>
                             </a>
                             <form action="{% url 'clubs:admin_time_slot_delete' slot.id %}" method="POST" style="display: inline;" onsubmit="return confirm('确定要删除这个时间段吗？');">
                                 {% csrf_token %}
-                                <button type="submit" class="icon-btn delete" title="删除">
+                                <button type="submit" class="icon-btn delete" title="{% trans "删除" %}">
                                     <span class="material-icons" style="font-size: 1.25rem;">delete</span>
                                 </button>
                             </form>
@@ -210,7 +209,7 @@
                 <tr>
                     <td colspan="5" style="text-align: center; padding: var(--md3-spacing-xl);">
                         <span class="material-icons" style="font-size: 48px; color: var(--md3-outline-variant); margin-bottom: 16px; display: block;">schedule</span>
-                        <p style="color: var(--md3-on-surface-variant); margin: 0;">暂无时间段配置</p>
+                        <p style="color: var(--md3-on-surface-variant); margin: 0;">{% trans "暂无时间段配置" %}</p>
                     </td>
                 </tr>
                 {% endfor %}

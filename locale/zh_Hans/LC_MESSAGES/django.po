@@ -1,0 +1,316 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: CManager 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-06 15:12+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: zh-Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: .\clubs\auth_views.py:46
+msgid "用户名不能为空"
+msgstr ""
+
+#: .\clubs\auth_views.py:48
+msgid "用户名长度应在3-30个字符之间"
+msgstr ""
+
+#: .\clubs\auth_views.py:50
+msgid "用户名已存在"
+msgstr ""
+
+#: .\clubs\auth_views.py:53
+msgid "真实姓名不能为空"
+msgstr ""
+
+#: .\clubs\auth_views.py:56
+msgid "邮箱不能为空"
+msgstr ""
+
+#: .\clubs\auth_views.py:59
+msgid "密码不能为空"
+msgstr ""
+
+#: .\clubs\auth_views.py:61
+msgid "密码至少6个字符"
+msgstr ""
+
+#: .\clubs\auth_views.py:64
+msgid "两次密码不一致"
+msgstr ""
+
+#: .\clubs\auth_views.py:68
+msgid "学号不能为空"
+msgstr ""
+
+#: .\clubs\auth_views.py:70
+msgid "学号已被使用"
+msgstr ""
+
+#: .\clubs\auth_views.py:73
+msgid "电话不能为空"
+msgstr ""
+
+#: .\clubs\auth_views.py:75
+msgid "微信不能为空"
+msgstr ""
+
+#: .\clubs\auth_views.py:80
+msgid "无效的角色选择"
+msgstr ""
+
+#: .\clubs\auth_views.py:88
+msgid "干事必须选择部门"
+msgstr ""
+
+#: .\clubs\auth_views.py:95
+msgid "无效的部门选择"
+msgstr ""
+
+#: .\clubs\auth_views.py:100
+msgid "社长必须选择政治面貌"
+msgstr ""
+
+# 中文简体是默认语言，所以翻译保持原样
+# Simplified Chinese is the default language, so translations remain the same
+#: .\clubs\models.py:15 .\clubs\models.py:150
+msgid "社长"
+msgstr "社长"
+
+#: .\clubs\models.py:16
+msgid "干事"
+msgstr "干事"
+
+#: .\clubs\models.py:17
+msgid "管理员"
+msgstr "管理员"
+
+#: .\clubs\models.py:21
+msgid "待审核"
+msgstr ""
+
+#: .\clubs\models.py:22
+msgid "已批准"
+msgstr ""
+
+#: .\clubs\models.py:23
+msgid "已拒绝"
+msgstr ""
+
+#: .\clubs\models.py:27
+msgid "部员"
+msgstr ""
+
+#: .\clubs\models.py:28
+msgid "部长"
+msgstr ""
+
+#: .\clubs\models.py:32
+msgid "中共党员"
+msgstr ""
+
+#: .\clubs\models.py:33
+msgid "中共预备党员"
+msgstr ""
+
+#: .\clubs\models.py:34
+msgid "共青团员"
+msgstr ""
+
+#: .\clubs\models.py:35
+msgid "民革党员"
+msgstr ""
+
+#: .\clubs\models.py:36
+msgid "民盟盟员"
+msgstr ""
+
+#: .\clubs\models.py:37
+msgid "民建会员"
+msgstr ""
+
+#: .\clubs\models.py:38
+msgid "农工党党员"
+msgstr ""
+
+#: .\clubs\models.py:39
+msgid "致公党党员"
+msgstr ""
+
+#: .\clubs\models.py:40
+msgid "九三学社社员"
+msgstr ""
+
+#: .\clubs\models.py:41
+msgid "台盟盟员"
+msgstr ""
+
+#: .\clubs\models.py:42
+msgid "无党派人士"
+msgstr ""
+
+#: .\clubs\models.py:43
+msgid "入党积极分子"
+msgstr ""
+
+#: .\clubs\models.py:44
+msgid "群众"
+msgstr ""
+
+#: .\clubs\models.py:47
+msgid "用户"
+msgstr ""
+
+#: .\clubs\models.py:48
+msgid "角色"
+msgstr ""
+
+#: .\clubs\models.py:51 .\clubs\models.py:112
+msgid "状态"
+msgstr ""
+
+#: .\clubs\models.py:54
+msgid "部门"
+msgstr ""
+
+#: .\clubs\models.py:55
+msgid "关联部门"
+msgstr ""
+
+#: .\clubs\models.py:56
+msgid "部员/部长"
+msgstr ""
+
+#: .\clubs\models.py:56
+msgid "仅对干事有效"
+msgstr ""
+
+#: .\clubs\models.py:59
+msgid "真名"
+msgstr ""
+
+#: .\clubs\models.py:60
+msgid "学号"
+msgstr ""
+
+#: .\clubs\models.py:61
+msgid "电话"
+msgstr ""
+
+#: .\clubs\models.py:62
+msgid "微信"
+msgstr ""
+
+#: .\clubs\models.py:67
+msgid "政治面貌"
+msgstr ""
+
+#: .\clubs\models.py:71
+msgid "是否公开个人信息"
+msgstr ""
+
+#: .\clubs\models.py:74
+msgid "是否需要修改密码"
+msgstr ""
+
+#: .\clubs\models.py:77
+msgid "头像"
+msgstr ""
+
+#: .\clubs\models.py:79 .\clubs\models.py:116
+msgid "创建时间"
+msgstr ""
+
+#: .\clubs\models.py:80 .\clubs\models.py:117
+msgid "更新时间"
+msgstr ""
+
+#: .\clubs\models.py:97 .\clubs\models.py:98
+msgid "用户角色"
+msgstr ""
+
+#: .\clubs\models.py:104
+msgid "活跃"
+msgstr ""
+
+#: .\clubs\models.py:105
+msgid "不活跃"
+msgstr ""
+
+#: .\clubs\models.py:106
+msgid "停止"
+msgstr ""
+
+#: .\clubs\models.py:109
+msgid "社团名称"
+msgstr ""
+
+#: .\clubs\models.py:110
+msgid "社团介绍"
+msgstr ""
+
+#: .\clubs\models.py:111
+msgid "成立日期"
+msgstr ""
+
+#: .\clubs\models.py:113
+msgid "成员数"
+msgstr ""
+
+#: .\clubs\models.py:114
+msgid "是否开启年审"
+msgstr ""
+
+#: .\clubs\models.py:115
+msgid "是否开启注册"
+msgstr ""
+
+#: .\clubs\models.py:120 .\clubs\models.py:121 .\clubs\models.py:153
+msgid "社团"
+msgstr ""
+
+#: .\clubs\models.py:154
+msgid "用户信息"
+msgstr ""
+
+#: .\clubs\models.py:155
+msgid "职位"
+msgstr ""
+
+#: .\clubs\models.py:156
+msgid "任命日期"
+msgstr ""
+
+#: .\clubs\models.py:157
+msgid "结束日期"
+msgstr ""
+
+#: .\clubs\models.py:158
+msgid "是否现任"
+msgstr ""
+
+#: .\clubs\models.py:161 .\clubs\models.py:162
+msgid "社团干部"
+msgstr ""
+
+#: .\templates\clubs\base.html:10
+msgid "社团管理系统"
+msgstr ""
+
+#: .\templates\clubs\base.html:322 .\templates\clubs\base.html:324
+msgid "切换主题"
+msgstr ""
+
+#: .\templates\clubs\components\language_switcher.html:3
+msgid "切换语言"
+msgstr ""
