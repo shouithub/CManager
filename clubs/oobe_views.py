@@ -50,12 +50,33 @@ def _parse_int(raw_value, default=0):
         return default
 
 
-def _default_form_data():
+def _default_form_data(request=None):
+    default_allowed_hosts = ['localhost', '127.0.0.1']
+    default_csrf_origins = ['http://127.0.0.1', 'http://localhost']
+
+    if request is not None:
+        host = (request.get_host() or '').split(':', 1)[0].strip().lower()
+        forwarded_proto = request.META.get('HTTP_X_FORWARDED_PROTO', '').split(',')[0].strip().lower()
+        scheme = forwarded_proto or ('https' if request.is_secure() else 'http')
+
+        if host and host not in default_allowed_hosts:
+            default_allowed_hosts.append(host)
+
+            current_origin = f'{scheme}://{host}'
+            if current_origin not in default_csrf_origins:
+                default_csrf_origins.append(current_origin)
+
+            # In reverse-proxy misreport cases, keeping https origin prevents first-run CSRF pain.
+            if scheme != 'https':
+                https_origin = f'https://{host}'
+                if https_origin not in default_csrf_origins:
+                    default_csrf_origins.append(https_origin)
+
     return {
         'secret_key': secrets.token_urlsafe(48),
         'debug': 'no',
-        'allowed_hosts': 'localhost,127.0.0.1',
-        'csrf_trusted_origins': 'http://127.0.0.1,http://localhost',
+        'allowed_hosts': ','.join(default_allowed_hosts),
+        'csrf_trusted_origins': ','.join(default_csrf_origins),
         'secure_browser_xss_filter': 'yes',
         'secure_content_type_nosniff': 'yes',
         'session_cookie_secure': 'no',
@@ -111,7 +132,7 @@ def oobe_setup(request):
     ]
     political_status_choices = UserProfile.POLITICAL_STATUS_CHOICES
     political_status_values = {value for value, _label in political_status_choices}
-    base_form_data = _default_form_data()
+    base_form_data = _default_form_data(request)
 
     if request.method == 'POST':
         form_data = base_form_data.copy()
