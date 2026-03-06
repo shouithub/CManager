@@ -225,15 +225,11 @@ class Command(BaseCommand):
                     founded_date=timezone.localdate(),
                     members_count=members_count_value,
                     status='active',
-                    president=user,
                 )
                 result['created_clubs'] += 1
                 result['bound_clubs'] += 1
             else:
                 changed_fields = []
-                if club.president_id != user.id:
-                    club.president = user
-                    changed_fields.append('president')
                 if members_count and club.members_count != members_count_value:
                     club.members_count = members_count_value
                     changed_fields.append('members_count')

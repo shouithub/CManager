@@ -62,29 +62,29 @@
     /* 统计卡片网格 */
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: var(--md3-spacing-lg);
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--md3-spacing-md);
         margin-bottom: 0;
     }
     
     .stat-card {
         background: var(--md3-surface-container);
         border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
         border: 1px solid var(--md3-outline-variant);
         box-shadow: var(--md3-elevation-1);
     }
     
     .stat-value {
-        font-size: 2.5rem;
+        font-size: 1.75rem;
         font-weight: 700;
         color: var(--md3-on-surface);
         margin-bottom: var(--md3-spacing-xs);
-        line-height: 1;
+        line-height: 1.1;
     }
     
     .stat-label {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         font-weight: 500;
         color: var(--md3-on-surface-variant);
         text-transform: uppercase;
@@ -240,6 +240,55 @@
         color: var(--md3-error);
     }
     
+    /* 折线图容器 */
+    .chart-container {
+        position: relative;
+        height: 220px;
+        width: 100%;
+    }
+
+    /* Redis 信息 */
+    .redis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+    .redis-item {
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-md);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .redis-item-label {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    .redis-item-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+    }
+    .redis-bar-wrap {
+        height: 8px;
+        background: var(--md3-surface-container-highest);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: var(--md3-spacing-xs);
+    }
+    .redis-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: var(--md3-primary);
+        transition: width 0.4s ease;
+    }
+    .redis-bar-fill.warn { background: #f59e0b; }
+    .redis-bar-fill.danger { background: var(--md3-error); }
+
     /* 公告列表（MD3 UI） */
     .announcement-list {
         display: grid;
@@ -431,12 +480,16 @@
             gap: var(--md3-spacing-md);
         }
 
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
         .stat-card {
-            padding: var(--md3-spacing-lg);
+            padding: var(--md3-spacing-md) var(--md3-spacing-lg);
         }
 
         .stat-value {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
         }
 
         .stat-label {
@@ -505,6 +558,7 @@
     
     <div class="dashboard-layout">
         <div class="dashboard-main">
+            <!-- 一排四个数据卡 -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value">{{ total_users }}</div>
@@ -515,18 +569,87 @@
                     <div class="stat-label">已注册社团数</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">{{ published_announcements }}</div>
-                    <div class="stat-label">已发布公告数</div>
+                    <div class="stat-value">{{ pending_all }}</div>
+                    <div class="stat-label">待处理申请</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">{{ pending_registrations }}</div>
-                    <div class="stat-label">待审核社团注册</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">{{ pending_staff_count }}</div>
-                    <div class="stat-label">待审核干事申请</div>
+                    <div class="stat-value">{{ total_visits_14d }}</div>
+                    <div class="stat-label">近14天访问量</div>
                 </div>
             </div>
+
+            <!-- 申请通过率/拒绝率（含历史决策） -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--md3-spacing-md);">
+                <div class="stat-card" style="border-left:4px solid var(--md3-tertiary);">
+                    <div class="stat-value" style="color:var(--md3-tertiary);">{{ overall_approval_rate }}%</div>
+                    <div class="stat-label">历史总体通过率</div>
+                </div>
+                <div class="stat-card" style="border-left:4px solid var(--md3-error);">
+                    <div class="stat-value" style="color:var(--md3-error);">{{ overall_rejection_rate }}%</div>
+                    <div class="stat-label">历史总体拒绝率</div>
+                </div>
+            </div>
+
+            <!-- 各类申请分布图 -->
+            <div class="card">
+                <h3>
+                    <span class="material-icons">bar_chart</span>
+                    各类申请数量分布
+                </h3>
+                <div class="chart-container" style="height:260px;">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 访问量折线图 -->
+            <div class="card">
+                <h3>
+                    <span class="material-icons">show_chart</span>
+                    近14天访问量
+                </h3>
+                <div class="chart-container">
+                    <canvas id="visitChart"></canvas>
+                </div>
+            </div>
+
+            {% if redis_info %}
+            <!-- Redis 缓存信息 -->
+            <div class="card">
+                <h3>
+                    <span class="material-icons">memory</span>
+                    Redis 缓存状态
+                    <span style="margin-left:auto;font-size:0.75rem;font-weight:400;color:var(--md3-on-surface-variant);">v{{ redis_info.version }} &nbsp;·&nbsp; 在线 {{ redis_info.uptime_days }} 天</span>
+                </h3>
+                <div class="redis-grid">
+                    <div class="redis-item">
+                        <span class="redis-item-label">已用内存</span>
+                        <span class="redis-item-value">{{ redis_info.used_mb }} MB</span>
+                    </div>
+                    {% if redis_info.max_mb %}
+                    <div class="redis-item">
+                        <span class="redis-item-label">最大内存</span>
+                        <span class="redis-item-value">{{ redis_info.max_mb }} MB</span>
+                    </div>
+                    <div class="redis-item">
+                        <span class="redis-item-label">内存使用率</span>
+                        <span class="redis-item-value">{{ redis_info.usage_pct }}%</span>
+                        <div class="redis-bar-wrap">
+                            <div class="redis-bar-fill {% if redis_info.usage_pct > 85 %}danger{% elif redis_info.usage_pct > 65 %}warn{% endif %}"
+                                 style="width:{{ redis_info.usage_pct }}%"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="redis-item">
+                        <span class="redis-item-label">缓存键数</span>
+                        <span class="redis-item-value">{{ redis_info.keys }}</span>
+                    </div>
+                    <div class="redis-item">
+                        <span class="redis-item-label">连接数</span>
+                        <span class="redis-item-value">{{ redis_info.connected_clients }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
             
             {% if announcements %}
             <div class="card">
@@ -614,7 +737,11 @@
                     </a>
                     <a href="{% url 'clubs:manage_favicon' %}" class="action-btn">
                         <span class="material-icons">image</span>
-                        <span>网站图标</span>
+                        <span>图标&amp;字体</span>
+                    </a>
+                    <a href="{% url 'clubs:admin_assign_presidents' %}" class="action-btn">
+                        <span class="material-icons">manage_accounts</span>
+                        <span>指定社团社长</span>
                     </a>
                     <a href="{% url 'clubs:index' %}" class="action-btn">
                         <span class="material-icons">home</span>
@@ -643,8 +770,152 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const gridColor   = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)';
+    const labelColor  = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.70)';
+    const cs = getComputedStyle(document.documentElement);
+    const primaryColor   = cs.getPropertyValue('--md3-primary').trim()   || '#6750a4';
+    // 配色：待处理=蓝灰 / 已通过=绿 / 已拒绝=红，深浅模式下均清晰可辨
+    const colorPending  = isDark ? 'rgba(144,164,174,0.75)' : 'rgba(96,125,139,0.70)';
+    const colorApproved = isDark ? 'rgba( 76,175, 80,0.85)' : 'rgba( 46,125, 50,0.85)';
+    const colorRejected = isDark ? 'rgba(239, 83, 80,0.85)' : 'rgba(198, 40, 40,0.85)';
+    const borderPending  = isDark ? '#90a4ae' : '#607d8b';
+    const borderApproved = isDark ? '#4caf50' : '#2e7d32';
+    const borderRejected = isDark ? '#ef5350' : '#c62828';
+
+    // ── 访问量折线图 ──
+    const dates  = {{ visit_dates_json|safe }};
+    const counts = {{ visit_counts_json|safe }};
+    const dateLabels = dates.map(d => d.slice(5));
+
+    new Chart(document.getElementById('visitChart'), {
+        type: 'line',
+        data: {
+            labels: dateLabels,
+            datasets: [{
+                label: '每日访问量',
+                data: counts,
+                borderColor: primaryColor,
+                backgroundColor: primaryColor + '22',
+                borderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.35,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: ctx => '日期：' + dates[ctx[0].dataIndex],
+                        label: ctx => '访问量：' + ctx.parsed.y,
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { color: gridColor }, ticks: { color: labelColor, maxRotation: 0 } },
+                y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: labelColor, precision: 0 } }
+            }
+        }
+    });
+
+    // ── 申请类型分布柱状图 ──
+    const typeLabels   = {{ type_labels_json|safe }};
+    const typePending  = {{ type_pending_json|safe }};
+    const typeApproved = {{ type_approved_json|safe }};
+    const typeRejected = {{ type_rejected_json|safe }};
+
+    new Chart(document.getElementById('typeChart'), {
+        type: 'bar',
+        data: {
+            labels: typeLabels,
+            datasets: [
+                {
+                    label: '历史已通过',
+                    data: typeApproved,
+                    backgroundColor: colorApproved,
+                    borderColor: borderApproved,
+                    borderWidth: 1,
+                    borderRadius: 0,
+                    stack: 'decided',
+                },
+                {
+                    label: '历史已拒绝',
+                    data: typeRejected,
+                    backgroundColor: colorRejected,
+                    borderColor: borderRejected,
+                    borderWidth: 1,
+                    borderRadius: 0,
+                    stack: 'decided',
+                },
+                {
+                    label: '待处理',
+                    data: typePending,
+                    backgroundColor: colorPending,
+                    borderColor: borderPending,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    stack: 'pending',
+                },
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: { color: labelColor, boxWidth: 12, padding: 16 }
+                },
+                tooltip: {
+                    callbacks: {
+                        afterBody: ctx => {
+                            const i = ctx[0].dataIndex;
+                            const decided = typeApproved[i] + typeRejected[i];
+                            const pending = typePending[i];
+                            if (decided === 0) return ['历史决策：暂无', '待处理：' + pending];
+                            const apr = (typeApproved[i] / decided * 100).toFixed(1);
+                            const rej = (typeRejected[i] / decided * 100).toFixed(1);
+                            return [
+                                '历史决策：' + decided + ' 次',
+                                '  通过 ' + typeApproved[i] + ' (' + apr + '%)',
+                                '  拒绝 ' + typeRejected[i] + ' (' + rej + '%)',
+                                '当前待处理：' + pending,
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    grid: { color: gridColor },
+                    ticks: { color: labelColor }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    grid: { color: gridColor },
+                    ticks: { color: labelColor, precision: 0 }
+                }
+            }
+        }
+    });
+})();
+</script>
 {% endblock %}

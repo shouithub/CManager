@@ -23,7 +23,7 @@ def _get_president_club_ids(user):
 
 
 def site_settings(request):
-    """全局站点设置，如favicon"""
+    """全局站点设置，如favicon和字体"""
     base_media_url = f"/{settings.MEDIA_URL.lstrip('/')}"
     if not base_media_url.endswith('/'):
         base_media_url = f"{base_media_url}/"
@@ -39,9 +39,25 @@ def site_settings(request):
         site_favicon_preview_url = f"{base_media_url}site/favicon.png?v={cache_buster}"
     else:
         site_favicon_preview_url = None
+
+    # 字体设置
+    try:
+        from .models import SiteSettings
+        font_cfg = SiteSettings.get_settings()
+        font_icon_url = font_cfg.font_icon_url or 'https://fonts.font.im/icon?family=Material+Icons'
+        body_font_url = font_cfg.body_font_url or ''
+        body_font_family = font_cfg.body_font_family or ''
+    except Exception:
+        font_icon_url = 'https://fonts.font.im/icon?family=Material+Icons'
+        body_font_url = ''
+        body_font_family = ''
+
     return {
         'site_favicon_url': site_favicon_url,
-        'site_favicon_preview_url': site_favicon_preview_url
+        'site_favicon_preview_url': site_favicon_preview_url,
+        'font_icon_url': font_icon_url,
+        'body_font_url': body_font_url,
+        'body_font_family': body_font_family,
     }
 
 

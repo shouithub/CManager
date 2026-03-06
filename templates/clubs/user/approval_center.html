@@ -1308,3 +1308,30 @@ window.addEventListener('resize', checkLayout);
     });
 </script>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const tabKey = '{{ current_tab }}';
+    // approval_counts 使用不同的键名映射
+    const keyMap = { 'activity_application': 'activity', 'president_transition': 'transition' };
+    const apiKey = keyMap[tabKey] || tabKey;
+    let lastCount = null;
+
+    window.addEventListener('cmanager-counts-updated', function(e) {
+        const data = e.detail;
+        const approval = (data && data.approval_counts) || {};
+        const count = approval[apiKey];
+        if (count === undefined) return;
+        if (lastCount === null) {
+            lastCount = count;
+            return;
+        }
+        if (count !== lastCount) {
+            window.location.reload();
+        }
+        lastCount = count;
+    });
+})();
+</script>
+{% endblock %}

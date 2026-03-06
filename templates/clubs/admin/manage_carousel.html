@@ -6,43 +6,51 @@
 {% block extra_css %}
 <style>
     .dashboard-container {
-        max-width: 1400px;
+        max-width: 1100px;
         margin: 0 auto;
         padding: var(--md3-spacing-2xl);
-        padding-bottom: calc(var(--md3-spacing-2xl) + 120px); /* 预留底栏高度，防遮挡 */
+        padding-bottom: calc(var(--md3-spacing-2xl) + 120px);
         box-sizing: border-box;
     }
-    
+
+    /* MD3 页面标题 */
     .page-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: var(--md3-spacing-lg);
         margin-bottom: var(--md3-spacing-2xl);
-        padding: var(--md3-spacing-2xl);
-        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
-        border-radius: var(--md3-radius-xl);
-        box-shadow: var(--md3-elevation-2);
     }
-    
-    .page-title-group {
+    .page-header-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-primary-container);
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-lg);
-        flex: 1;
-    }
-    
-    .page-header .material-icons {
-        font-size: 3rem;
-        color: var(--md3-primary);
+        justify-content: center;
         flex-shrink: 0;
     }
-    
-    .page-header h1 {
-        margin: 0;
-        font-size: 2rem;
-        font-weight: 600;
+    .page-header-icon .material-icons {
+        font-size: 1.75rem;
+        color: var(--md3-on-primary-container);
+    }
+    .page-header-text h1 {
+        margin: 0 0 2px;
+        font-size: 1.75rem;
+        font-weight: 700;
         color: var(--md3-on-surface);
-        white-space: nowrap;
+        letter-spacing: -0.01em;
+    }
+    .page-header-text p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--md3-on-surface-variant);
+    }
+    .page-header-actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
     }
     
     .add-btn {
@@ -264,15 +272,10 @@
         }
         
         .page-header {
-            flex-direction: column;
-            gap: var(--md3-spacing-lg);
-            text-align: center;
+            flex-wrap: wrap;
+            gap: var(--md3-spacing-md);
         }
-        
-        .page-title-group {
-            flex-direction: column;
-        }
-        
+
         .carousel-grid {
             grid-template-columns: 1fr;
         }
@@ -283,14 +286,19 @@
 {% block content %}
 <div class="dashboard-container">
     <div class="page-header">
-        <div class="page-title-group">
+        <div class="page-header-icon">
             <span class="material-icons">view_carousel</span>
-            <h1>管理轮播图</h1>
         </div>
-        <a href="{% url 'clubs:add_carousel' %}" class="add-btn">
-            <span class="material-icons">add</span>
-            <span>添加轮播图</span>
-        </a>
+        <div class="page-header-text">
+            <h1>管理轮播图</h1>
+            <p>管理首页轮播展示的图片、链接与排列顺序</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="{% url 'clubs:add_carousel' %}" class="add-btn">
+                <span class="material-icons">add</span>
+                <span>添加轮播图</span>
+            </a>
+        </div>
     </div>
     
     {% if carousel_images %}

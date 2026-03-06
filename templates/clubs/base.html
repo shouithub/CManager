@@ -7,8 +7,6 @@
     <meta name="color-scheme" content="light dark">
     <meta name="format-detection" content="telephone=no">
     <title>{% block title %}社团管理系统{% endblock %}</title>
-    <link rel="preconnect" href="https://google-fonts.mirrors.sjtug.sjtu.edu.cn">
-    <link rel="dns-prefetch" href="//google-fonts.mirrors.sjtug.sjtu.edu.cn">
     {% if site_favicon_url %}
     <link rel="icon" type="image/x-icon" sizes="any" href="{{ site_favicon_url }}">
     {% endif %}
@@ -26,9 +24,17 @@
             document.documentElement.setAttribute('data-theme', theme);
         })();
     </script>
-    <link rel="preload" href="https://google-fonts.mirrors.sjtug.sjtu.edu.cn/icon?family=Material+Icons" as="style">
-    <link href="https://google-fonts.mirrors.sjtug.sjtu.edu.cn/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 字体导入 -->
+    <link rel="preload" href="{{ font_icon_url }}" as="style">
+    <link href="{{ font_icon_url }}" rel="stylesheet">
+    {% if body_font_url %}
+    <link rel="preload" href="{{ body_font_url }}" as="style">
+    <link href="{{ body_font_url }}" rel="stylesheet">
+    {% endif %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20251207">
+    {% if body_font_family %}
+    <style>body, html { font-family: {{ body_font_family }}; }</style>
+    {% endif %}
     <style>
         /* 防止移动设备自动缩放 */
         html, body {
@@ -42,6 +48,22 @@
     </style>
     {% block extra_css %}{% endblock %}
     <script src="{% static 'js/theme-toggle.js' %}"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function () {
+                    // 将当前配置的字体来源流通知 Service Worker
+                    var fontUrls = ['{{ font_icon_url|escapejs }}'{% if body_font_url %}, '{{ body_font_url|escapejs }}'{% endif %}];
+                    var origins = fontUrls.map(function(url) {
+                        try { return new URL(url).hostname; } catch(e) { return null; }
+                    }).filter(function(h, i, a) { return h && a.indexOf(h) === i; });
+                    navigator.serviceWorker.ready.then(function(reg) {
+                        if (reg.active) reg.active.postMessage({ type: 'FONT_ORIGINS', origins: origins });
+                    });
+                });
+            });
+        }
+    </script>
 </head>
 <body>
     <!-- 遮罩层 (移动端) -->
@@ -609,6 +631,7 @@
                             }
                             const data = await response.json();
                             applyCounts(data);
+                            window.dispatchEvent(new CustomEvent('cmanager-counts-updated', { detail: data }));
                             failureCount = 0;
                             scheduleNext(pollIntervalMs);
                         } catch (error) {

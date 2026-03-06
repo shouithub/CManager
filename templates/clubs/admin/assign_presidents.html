@@ -1,0 +1,331 @@
+{% extends 'clubs/base.html' %}
+{% load static %}
+
+{% block title %}批量指定社长{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 180px);
+        box-sizing: border-box;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .page-header .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+    }
+
+    .page-header-content { flex: 1; }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .page-header .subtitle {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+    }
+
+    .stats-badges {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        flex-wrap: wrap;
+    }
+
+    .stats-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .stats-badge.primary {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .stats-badge.warning {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-lg);
+        flex-wrap: wrap;
+    }
+
+    .filter-bar input[type="text"] {
+        flex: 1;
+        min-width: 200px;
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container);
+        color: var(--md3-on-surface);
+        font-size: 0.9rem;
+    }
+
+    .filter-bar input[type="text"]:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+    }
+
+    .table-card {
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+        overflow: hidden;
+    }
+
+    .assign-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .assign-table thead tr {
+        background: var(--md3-surface-container);
+    }
+
+    .assign-table th {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        text-align: left;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--md3-outline-variant);
+        white-space: nowrap;
+    }
+
+    .assign-table td {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        vertical-align: middle;
+        color: var(--md3-on-surface);
+        font-size: 0.9rem;
+    }
+
+    .assign-table tbody tr:last-child td { border-bottom: none; }
+
+    .assign-table tbody tr:hover {
+        background: var(--md3-surface-container);
+    }
+
+    .club-name {
+        font-weight: 500;
+    }
+
+    .current-president {
+        font-size: 0.85rem;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .current-president.assigned {
+        color: var(--md3-primary);
+        font-weight: 600;
+    }
+
+    .current-president.unassigned {
+        color: var(--md3-error);
+    }
+
+    .president-select {
+        width: 100%;
+        min-width: 180px;
+        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container);
+        color: var(--md3-on-surface);
+        font-size: 0.875rem;
+        cursor: pointer;
+    }
+
+    .president-select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+    }
+
+    .actions-bar {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-lg);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        border: none;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .btn-save:hover { opacity: 0.9; }
+
+    .no-data {
+        text-align: center;
+        padding: var(--md3-spacing-2xl);
+        color: var(--md3-on-surface-variant);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <div class="page-header">
+        <span class="material-icons">manage_accounts</span>
+        <div class="page-header-content">
+            <h1>批量指定社长</h1>
+            <p class="subtitle">为每个社团指定当前社长（Officer 记录），未选择表示该社团暂无社长</p>
+        </div>
+        <div class="stats-badges">
+            <span class="stats-badge primary">
+                <span class="material-icons" style="font-size:1rem;">groups</span>
+                共 {{ total_clubs }} 个社团
+            </span>
+            {% if unassigned_count %}
+            <span class="stats-badge warning">
+                <span class="material-icons" style="font-size:1rem;">warning</span>
+                {{ unassigned_count }} 个未绑定
+            </span>
+            {% endif %}
+            <span class="stats-badge primary">
+                <span class="material-icons" style="font-size:1rem;">check_circle</span>
+                已绑定 {{ assigned_count }} / {{ total_clubs }}
+            </span>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div style="margin-bottom: var(--md3-spacing-lg);">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" style="padding: var(--md3-spacing-md) var(--md3-spacing-lg); border-radius: var(--md3-radius-md); margin-bottom: var(--md3-spacing-sm); background: var(--md3-primary-container); color: var(--md3-on-primary-container);">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="filter-bar">
+        <span class="material-icons" style="color: var(--md3-on-surface-variant);">search</span>
+        <input type="text" id="club-search" placeholder="搜索社团名称..." oninput="filterTable()">
+    </div>
+
+    <form method="post" id="assign-form">
+        {% csrf_token %}
+
+        <div class="table-card">
+            {% if clubs_data %}
+            <table class="assign-table">
+                <thead>
+                    <tr>
+                        <th style="width:3rem;">#</th>
+                        <th>社团名称</th>
+                        <th>当前社长</th>
+                        <th>指定新社长</th>
+                    </tr>
+                </thead>
+                <tbody id="clubs-tbody">
+                    {% for item in clubs_data %}
+                    <tr data-club-name="{{ item.club.name|lower }}">
+                        <td style="color: var(--md3-on-surface-variant);">{{ forloop.counter }}</td>
+                        <td class="club-name">{{ item.club.name }}</td>
+                        <td>
+                            {% if item.current_president %}
+                            <span class="current-president assigned">
+                                <span class="material-icons" style="font-size:0.9rem; vertical-align:middle;">person</span>
+                                {{ item.current_president.profile.real_name|default:item.current_president.username }}
+                            </span>
+                            {% else %}
+                            <span class="current-president unassigned">
+                                <span class="material-icons" style="font-size:0.9rem; vertical-align:middle;">person_off</span>
+                                未绑定
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <select name="president_{{ item.club.id }}" class="president-select">
+                                <option value="">— 无社长 —</option>
+                                {% for pu in president_users %}
+                                <option value="{{ pu.id }}"
+                                    {% if item.current_president and item.current_president.id == pu.id %}selected{% endif %}>
+                                    {{ pu.profile.real_name|default:pu.username }}（{{ pu.username }}）
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-data">
+                <span class="material-icons" style="font-size:3rem; display:block; margin-bottom:1rem;">inbox</span>
+                暂无社团数据
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="actions-bar">
+            <a href="{% url 'clubs:admin_dashboard' %}" class="btn-save" style="background: var(--md3-surface-container); color: var(--md3-on-surface); text-decoration:none;">
+                <span class="material-icons">arrow_back</span>
+                返回仪表板
+            </a>
+            <button type="submit" class="btn-save">
+                <span class="material-icons">save</span>
+                保存所有指定
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterTable() {
+    const query = document.getElementById('club-search').value.toLowerCase();
+    document.querySelectorAll('#clubs-tbody tr').forEach(row => {
+        const name = row.getAttribute('data-club-name') || '';
+        row.style.display = name.includes(query) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

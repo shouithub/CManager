@@ -2363,7 +2363,6 @@ body {
     height: 100%;
     object-fit: contain;
     display: block;
-    filter: drop-shadow(0 0 1px rgba(0,0,0,0.25));
 }
 
 .sidebar-user-dropdown a span {

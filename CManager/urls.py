@@ -18,8 +18,25 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
+from django.contrib.staticfiles import finders
+
+def service_worker_view(request):
+    """以正确的 Service-Worker-Allowed 头提供 sw.js，使其作用域覆盖整个站点。"""
+    sw_path = finders.find('js/sw.js')
+    if sw_path:
+        with open(sw_path, 'rb') as f:
+            content = f.read()
+    else:
+        content = b''
+    response = HttpResponse(content, content_type='application/javascript')
+    response['Service-Worker-Allowed'] = '/'
+    response['Cache-Control'] = 'no-cache'
+    return response
+
 
 urlpatterns = [
+    path('sw.js', service_worker_view, name='service_worker'),
     path('', include('clubs.urls', namespace='clubs')),
     path('admin/', admin.site.urls),
 ]

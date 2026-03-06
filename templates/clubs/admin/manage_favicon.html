@@ -1,277 +1,1674 @@
 {% extends "clubs/base.html" %}
 
-{% block title %}网站图标管理 - 社团管理系统{% endblock %}
 
-{% block content %}
-<div class="page-header">
-    <span class="material-icons icon">image</span>
-    <div class="page-header-content">
-        <h1>网站图标管理</h1>
-        <div class="subtitle">上传并更新网站的 Favicon 图标</div>
-    </div>
-</div>
 
-<div class="main-content" style="max-width: 1200px; margin: 0 auto; padding: var(--md3-spacing-lg);">
-    <div class="grid-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: var(--md3-spacing-xl);">
-        
-        <!-- Current Icon Card -->
-        <div class="card card-outlined">
-            <div class="card-header">
-                <h3>当前图标</h3>
-            </div>
-            <div class="card-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px;">
-                {% if site_favicon_preview_url %}
-                    <img src="{{ site_favicon_preview_url }}" alt="Current Favicon" style="width: 64px; height: 64px; object-fit: contain; border-radius: var(--md3-radius-sm); box-shadow: var(--md3-elevation-1);">
-                    <p style="margin-top: var(--md3-spacing-lg); color: var(--md3-on-surface-variant); text-align: center;">
-                        当前使用的网站图标<br>
-                        <span style="font-size: 0.875rem; opacity: 0.7;">(将在浏览器标签页显示)</span>
-                    </p>
-                {% else %}
-                    <div style="width: 80px; height: 80px; border: 2px dashed var(--md3-outline-variant); border-radius: var(--md3-radius-md); display: flex; align-items: center; justify-content: center; background-color: var(--md3-surface-container-highest);">
-                        <span class="material-icons" style="color: var(--md3-outline); font-size: 32px;">image_not_supported</span>
-                    </div>
-                    <p style="margin-top: var(--md3-spacing-lg); color: var(--md3-on-surface-variant);">未设置自定义图标</p>
-                {% endif %}
-            </div>
-        </div>
 
-        <!-- Update Icon Card -->
-        <div class="card card-filled">
-            <div class="card-header">
-                <h3>更新图标</h3>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data" id="favicon-form">
-                    {% csrf_token %}
-                    
-                    <div class="form-group">
-                        <label for="favicon-input">选择新图标</label>
-                        <input type="file" name="favicon" accept=".ico,.png,.jpg,.jpeg" required id="favicon-input" class="form-control" style="background-color: var(--md3-surface);">
-                        <div class="helper-text" style="margin-top: var(--md3-spacing-xs); font-size: 0.875rem; color: var(--md3-on-surface-variant);">
-                            <span class="material-icons" style="font-size: 14px; vertical-align: middle;">info</span>
-                            支持格式: .ico, .png, .jpg (建议使用 .ico)
-                        </div>
-                    </div>
 
-                    <div class="form-group" id="cropper-wrapper" style="display: none;">
-                        <label>裁剪预览</label>
-                        <div class="cropper-container">
-                            <canvas id="cropper-canvas" width="256" height="256"></canvas>
-                        </div>
-                        <div class="cropper-controls" style="margin-top: var(--md3-spacing-md);">
-                            <div style="display: flex; align-items: center; gap: var(--md3-spacing-sm);">
-                                <span class="material-icons" style="font-size: 18px; color: var(--md3-on-surface-variant);">zoom_in</span>
-                                <input type="range" id="cropper-zoom" min="1" max="3" step="0.01" value="1" style="flex: 1;">
-                            </div>
-                            <div style="text-align: center; margin-top: 4px; font-size: 0.75rem; color: var(--md3-on-surface-variant);">拖动图片调整位置</div>
-                        </div>
-                    </div>
+{% block title %}图标与字体管理 - 社团管理系统{% endblock %}
 
-                    <div class="form-actions" style="margin-top: var(--md3-spacing-xl); display: flex; gap: var(--md3-spacing-md); justify-content: flex-end;">
-                        <a href="{% url 'clubs:index' %}" class="btn btn-text">
-                            返回首页
-                        </a>
-                        <button type="submit" class="btn btn-filled">
-                            <span class="material-icons">upload</span>
-                            上传更新
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+
+
+
+
+{% block extra_css %}
+
 
 <style>
-    .cropper-container {
-        width: 100%;
-        max-width: 260px;
-        height: 260px;
-        border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-md);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--md3-surface-container-low);
-        margin: var(--md3-spacing-sm) auto;
-        overflow: hidden;
-    }
-    
-    /* Range Slider Styling */
-    input[type=range] {
-        -webkit-appearance: none;
-        width: 100%;
-        background: transparent;
-    }
-    
-    input[type=range]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        height: 16px;
-        width: 16px;
-        border-radius: 50%;
-        background: var(--md3-primary);
-        cursor: pointer;
-        margin-top: -6px;
-    }
-    
-    input[type=range]::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 4px;
-        cursor: pointer;
-        background: var(--md3-secondary-container);
-        border-radius: 2px;
-    }
+
+
+.ia-container {
+
+
+    max-width: 1100px;
+
+
+    margin: 0 auto;
+
+
+    padding: var(--md3-spacing-2xl);
+
+
+    padding-bottom: calc(var(--md3-spacing-2xl) + 80px);
+
+
+}
+
+
+
+
+
+/* ── 页面标题 ── */
+
+
+.ia-page-header {
+
+
+    display: flex;
+
+
+    align-items: center;
+
+
+    gap: var(--md3-spacing-lg);
+
+
+    margin-bottom: var(--md3-spacing-2xl);
+
+
+}
+
+
+.ia-page-header .ia-header-icon {
+
+
+    width: 56px;
+
+
+    height: 56px;
+
+
+    border-radius: var(--md3-radius-full);
+
+
+    background: var(--md3-primary-container);
+
+
+    display: flex;
+
+
+    align-items: center;
+
+
+    justify-content: center;
+
+
+    flex-shrink: 0;
+
+
+}
+
+
+.ia-page-header .ia-header-icon .material-icons {
+
+
+    font-size: 1.75rem;
+
+
+    color: var(--md3-on-primary-container);
+
+
+}
+
+
+.ia-page-header h1 {
+
+
+    margin: 0 0 4px;
+
+
+    font-size: 1.75rem;
+
+
+    font-weight: 700;
+
+
+    color: var(--md3-on-surface);
+
+
+    letter-spacing: -0.01em;
+
+
+}
+
+
+.ia-page-header .ia-subtitle {
+
+
+    font-size: 0.875rem;
+
+
+    color: var(--md3-on-surface-variant);
+
+
+    margin: 0;
+
+
+}
+
+
+
+
+
+/* ── 区域标题 ── */
+
+
+.ia-section {
+
+
+    margin-bottom: var(--md3-spacing-2xl);
+
+
+}
+
+
+.ia-section-title {
+
+
+    display: flex;
+
+
+    align-items: center;
+
+
+    gap: var(--md3-spacing-sm);
+
+
+    font-size: 0.8125rem;
+
+
+    font-weight: 600;
+
+
+    text-transform: uppercase;
+
+
+    letter-spacing: 0.08em;
+
+
+    color: var(--md3-primary);
+
+
+    margin: 0 0 var(--md3-spacing-md);
+
+
+}
+
+
+.ia-section-title .material-icons {
+
+
+    font-size: 1rem;
+
+
+}
+
+
+
+
+
+/* ── MD3 卡片 ── */
+
+
+.ia-card {
+
+
+    background: var(--md3-surface-container);
+
+
+    border-radius: var(--md3-radius-xl);
+
+
+    border: 1px solid var(--md3-outline-variant);
+
+
+    overflow: hidden;
+
+
+}
+
+
+.ia-card-header {
+
+
+    background: var(--md3-surface-container-high);
+
+
+    padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+
+
+    border-bottom: 1px solid var(--md3-outline-variant);
+
+
+    display: flex;
+
+
+    align-items: center;
+
+
+    gap: var(--md3-spacing-md);
+
+
+}
+
+
+.ia-card-header .material-icons {
+
+
+    font-size: 1.5rem;
+
+
+    color: var(--md3-primary);
+
+
+}
+
+
+.ia-card-header h2 {
+
+
+    margin: 0;
+
+
+    font-size: 1rem;
+
+
+    font-weight: 600;
+
+
+    color: var(--md3-on-surface);
+
+
+}
+
+
+.ia-card-header .ia-badge {
+
+
+    margin-left: auto;
+
+
+    font-size: 0.75rem;
+
+
+    padding: 2px 10px;
+
+
+    border-radius: 99px;
+
+
+    background: var(--md3-secondary-container);
+
+
+    color: var(--md3-on-secondary-container);
+
+
+    font-weight: 600;
+
+
+}
+
+
+.ia-card-body {
+
+
+    padding: var(--md3-spacing-xl);
+
+
+}
+
+
+
+
+
+/* ── Favicon 区 ── */
+
+
+.ia-favicon-grid {
+
+
+    display: grid;
+
+
+    grid-template-columns: 220px 1fr;
+
+
+    gap: var(--md3-spacing-xl);
+
+
+    align-items: start;
+
+
+}
+
+
+@media (max-width: 640px) {
+
+
+    .ia-favicon-grid { grid-template-columns: 1fr; }
+
+
+}
+
+
+.ia-favicon-preview {
+
+
+    display: flex;
+
+
+    flex-direction: column;
+
+
+    align-items: center;
+
+
+    justify-content: center;
+
+
+    gap: var(--md3-spacing-md);
+
+
+    padding: var(--md3-spacing-2xl) var(--md3-spacing-lg);
+
+
+    background: var(--md3-surface-container-low);
+
+
+    border-radius: var(--md3-radius-lg);
+
+
+    border: 1px solid var(--md3-outline-variant);
+
+
+    min-height: 180px;
+
+
+    text-align: center;
+
+
+}
+
+
+.ia-favicon-preview img {
+
+
+    width: 64px;
+
+
+    height: 64px;
+
+
+    object-fit: contain;
+
+
+    border-radius: var(--md3-radius-sm);
+
+
+    box-shadow: var(--md3-elevation-2);
+
+
+}
+
+
+.ia-favicon-preview .ia-preview-placeholder {
+
+
+    width: 64px;
+
+
+    height: 64px;
+
+
+    border: 2px dashed var(--md3-outline-variant);
+
+
+    border-radius: var(--md3-radius-md);
+
+
+    display: flex;
+
+
+    align-items: center;
+
+
+    justify-content: center;
+
+
+    background: var(--md3-surface-container-highest);
+
+
+}
+
+
+.ia-favicon-preview .ia-preview-placeholder .material-icons {
+
+
+    font-size: 2rem;
+
+
+    color: var(--md3-outline);
+
+
+}
+
+
+.ia-favicon-preview p {
+
+
+    margin: 0;
+
+
+    font-size: 0.8125rem;
+
+
+    color: var(--md3-on-surface-variant);
+
+
+    line-height: 1.5;
+
+
+}
+
+
+.ia-upload-area {
+
+
+    display: flex;
+
+
+    flex-direction: column;
+
+
+    gap: var(--md3-spacing-lg);
+
+
+}
+
+
+
+
+
+/* 裁剪器 */
+
+
+.ia-cropper-wrap {
+
+
+    display: flex;
+
+
+    flex-direction: column;
+
+
+    align-items: center;
+
+
+    gap: var(--md3-spacing-md);
+
+
+    padding: var(--md3-spacing-lg);
+
+
+    background: var(--md3-surface-container-lowest);
+
+
+    border-radius: var(--md3-radius-lg);
+
+
+    border: 1px solid var(--md3-outline-variant);
+
+
+}
+
+
+.ia-cropper-canvas {
+
+
+    width: 200px;
+
+
+    height: 200px;
+
+
+    border-radius: var(--md3-radius-md);
+
+
+    overflow: hidden;
+
+
+    border: 1px solid var(--md3-outline-variant);
+
+
+}
+
+
+.ia-cropper-canvas canvas {
+
+
+    display: block;
+
+
+}
+
+
+.ia-range-wrap {
+
+
+    width: 100%;
+
+
+    display: flex;
+
+
+    align-items: center;
+
+
+    gap: var(--md3-spacing-sm);
+
+
+}
+
+
+.ia-range-wrap .material-icons {
+
+
+    font-size: 1rem;
+
+
+    color: var(--md3-on-surface-variant);
+
+
+}
+
+
+.ia-range-wrap input[type=range] {
+
+
+    flex: 1;
+
+
+    -webkit-appearance: none;
+
+
+    height: 4px;
+
+
+    border-radius: 2px;
+
+
+    background: var(--md3-secondary-container);
+
+
+    cursor: pointer;
+
+
+}
+
+
+.ia-range-wrap input[type=range]::-webkit-slider-thumb {
+
+
+    -webkit-appearance: none;
+
+
+    width: 16px; height: 16px;
+
+
+    border-radius: 50%;
+
+
+    background: var(--md3-primary);
+
+
+    cursor: pointer;
+
+
+    margin-top: -6px;
+
+
+}
+
+
+
+
+
+/* ── 字体区 ── */
+
+
+.ia-font-grid {
+
+
+    display: grid;
+
+
+    grid-template-columns: 1fr 1fr;
+
+
+    gap: var(--md3-spacing-xl);
+
+
+}
+
+
+@media (max-width: 720px) {
+
+
+    .ia-font-grid { grid-template-columns: 1fr; }
+
+
+}
+
+
+.ia-field {
+
+
+    margin-bottom: var(--md3-spacing-md);
+
+
+}
+
+
+.ia-field label {
+
+
+    display: block;
+
+
+    font-size: 0.8125rem;
+
+
+    font-weight: 500;
+
+
+    color: var(--md3-on-surface-variant);
+
+
+    margin-bottom: 6px;
+
+
+}
+
+
+.ia-field input.form-control {
+
+
+    background: var(--md3-surface);
+
+
+    font-size: 0.875rem;
+
+
+    width: 100%;
+
+
+    box-sizing: border-box;
+
+
+}
+
+
+.ia-preset-chips {
+
+
+    display: flex;
+
+
+    flex-wrap: wrap;
+
+
+    gap: 6px;
+
+
+    margin-top: var(--md3-spacing-sm);
+
+
+}
+
+
+.ia-chip {
+
+
+    font-size: 0.75rem;
+
+
+    padding: 4px 12px;
+
+
+    border-radius: 99px;
+
+
+    border: 1px solid var(--md3-outline-variant);
+
+
+    background: var(--md3-surface-container-low);
+
+
+    color: var(--md3-on-surface);
+
+
+    cursor: pointer;
+
+
+    transition: background var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+
+
+    white-space: nowrap;
+
+
+}
+
+
+.ia-chip:hover {
+
+
+    background: var(--md3-primary-container);
+
+
+    border-color: var(--md3-primary);
+
+
+    color: var(--md3-on-primary-container);
+
+
+}
+
+
+
+
+
+/* ── 图标预览 ── */
+
+
+.ia-icon-preview-grid {
+
+
+    display: flex;
+
+
+    flex-wrap: wrap;
+
+
+    gap: var(--md3-spacing-lg);
+
+
+    align-items: center;
+
+
+    padding: var(--md3-spacing-lg);
+
+
+    background: var(--md3-surface-container-low);
+
+
+    border-radius: var(--md3-radius-lg);
+
+
+    border: 1px solid var(--md3-outline-variant);
+
+
+    margin-top: var(--md3-spacing-lg);
+
+
+}
+
+
+.ia-icon-item {
+
+
+    display: flex;
+
+
+    flex-direction: column;
+
+
+    align-items: center;
+
+
+    gap: 4px;
+
+
+    min-width: 48px;
+
+
+}
+
+
+.ia-icon-item .material-icons {
+
+
+    font-size: 1.75rem;
+
+
+    color: var(--md3-primary);
+
+
+}
+
+
+.ia-icon-item span:last-child {
+
+
+    font-size: 0.5625rem;
+
+
+    color: var(--md3-on-surface-variant);
+
+
+    text-align: center;
+
+
+    line-height: 1.2;
+
+
+}
+
+
+
+
+
+/* ── 操作栏 ── */
+
+
+.ia-actions {
+
+
+    display: flex;
+
+
+    justify-content: flex-end;
+
+
+    align-items: center;
+
+
+    gap: var(--md3-spacing-md);
+
+
+    margin-top: var(--md3-spacing-xl);
+
+
+    padding-top: var(--md3-spacing-lg);
+
+
+    border-top: 1px solid var(--md3-outline-variant);
+
+
+}
+
+
+
+
+
+/* ── 消息 ── */
+
+
+.ia-helper {
+
+
+    font-size: 0.8125rem;
+
+
+    color: var(--md3-on-surface-variant);
+
+
+    display: flex;
+
+
+    align-items: center;
+
+
+    gap: 4px;
+
+
+    margin-top: 4px;
+
+
+}
+
+
+.ia-helper .material-icons {
+
+
+    font-size: 0.875rem;
+
+
+}
+
+
 </style>
 
-<script>
-    (function() {
-        var input = document.getElementById('favicon-input');
-        var wrapper = document.getElementById('cropper-wrapper');
-        var canvas = document.getElementById('cropper-canvas');
-        var zoom = document.getElementById('cropper-zoom');
-        var form = document.getElementById('favicon-form');
-        if (!input || !wrapper || !canvas || !zoom || !form) {
-            return;
-        }
-        var ctx = canvas.getContext('2d');
-        var img = new Image();
-        var imgReady = false;
-        var dragging = false;
-        var lastX = 0;
-        var lastY = 0;
-        var scale = 1;
-        var minScale = 1;
-        var offsetX = 0;
-        var offsetY = 0;
-        function clampOffsets() {
-            var maxX = 0;
-            var maxY = 0;
-            var minX = canvas.width - img.width * scale;
-            var minY = canvas.height - img.height * scale;
-            if (img.width * scale < canvas.width) {
-                minX = maxX = (canvas.width - img.width * scale) / 2;
-            }
-            if (img.height * scale < canvas.height) {
-                minY = maxY = (canvas.height - img.height * scale) / 2;
-            }
-            offsetX = Math.min(maxX, Math.max(minX, offsetX));
-            offsetY = Math.min(maxY, Math.max(minY, offsetY));
-        }
-        function draw() {
-            if (!imgReady) {
-                return;
-            }
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
-        }
-        function fitImage() {
-            minScale = Math.max(canvas.width / img.width, canvas.height / img.height);
-            scale = minScale;
-            offsetX = (canvas.width - img.width * scale) / 2;
-            offsetY = (canvas.height - img.height * scale) / 2;
-            zoom.min = minScale.toFixed(4);
-            zoom.max = (minScale * 3).toFixed(4);
-            zoom.value = scale.toFixed(4);
-            clampOffsets();
-            draw();
-        }
-        function setScale(newScale) {
-            var centerX = canvas.width / 2;
-            var centerY = canvas.height / 2;
-            var imgCenterX = (centerX - offsetX) / scale;
-            var imgCenterY = (centerY - offsetY) / scale;
-            scale = newScale;
-            offsetX = centerX - imgCenterX * scale;
-            offsetY = centerY - imgCenterY * scale;
-            clampOffsets();
-            draw();
-        }
-        input.addEventListener('change', function() {
-            var file = input.files && input.files[0];
-            if (!file) {
-                wrapper.style.display = 'none';
-                imgReady = false;
-                return;
-            }
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                img.onload = function() {
-                    imgReady = true;
-                    wrapper.style.display = 'block';
-                    fitImage();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-        zoom.addEventListener('input', function() {
-            if (!imgReady) {
-                return;
-            }
-            setScale(parseFloat(zoom.value));
-        });
-        canvas.addEventListener('pointerdown', function(e) {
-            if (!imgReady) {
-                return;
-            }
-            dragging = true;
-            lastX = e.clientX;
-            lastY = e.clientY;
-            canvas.setPointerCapture(e.pointerId);
-        });
-        canvas.addEventListener('pointermove', function(e) {
-            if (!dragging || !imgReady) {
-                return;
-            }
-            var dx = e.clientX - lastX;
-            var dy = e.clientY - lastY;
-            lastX = e.clientX;
-            lastY = e.clientY;
-            offsetX += dx;
-            offsetY += dy;
-            clampOffsets();
-            draw();
-        });
-        canvas.addEventListener('pointerup', function(e) {
-            dragging = false;
-            canvas.releasePointerCapture(e.pointerId);
-        });
-        canvas.addEventListener('pointerleave', function(e) {
-            dragging = false;
-        });
-        form.addEventListener('submit', function(e) {
-            if (!imgReady) {
-                return;
-            }
-            e.preventDefault();
-            canvas.toBlob(function(blob) {
-                if (!blob) {
-                    form.submit();
-                    return;
-                }
-                var data = new FormData();
-                var csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
-                if (csrf) {
-                    data.append('csrfmiddlewaretoken', csrf.value);
-                }
-                data.append('favicon', blob, 'favicon.png');
-                fetch(form.action || window.location.href, {
-                    method: 'POST',
-                    body: data,
-                    headers: {
-                        'X-CSRFToken': csrf ? csrf.value : ''
-                    }
-                }).then(function(res) {
-                    if (res.ok) {
-                        window.location.reload();
-                    } else {
-                        form.submit();
-                    }
-                }).catch(function() {
-                    form.submit();
-                });
-            }, 'image/png');
-        });
-    })();
-</script>
+
 {% endblock %}
+
+
+
+
+
+{% block content %}
+
+
+<div class="ia-container">
+
+
+
+
+
+<!-- 页面标题 -->
+
+
+<div class="ia-page-header">
+
+
+  <div class="ia-header-icon"><span class="material-icons">tune</span></div>
+
+
+  <div>
+
+
+    <h1>图标与字体管理</h1>
+
+
+    <p class="ia-subtitle">管理网站 Favicon 图标、图标字体镜像和正文字体配置</p>
+
+
+  </div>
+
+
+  <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-text" style="margin-left:auto;">
+
+
+    <span class="material-icons">arrow_back</span>返回仪表板
+
+
+  </a>
+
+
+</div>
+
+
+
+
+
+<!-- ① Favicon 区 -->
+
+
+<div class="ia-section">
+
+
+  <div class="ia-section-title">
+
+
+    <span class="material-icons">image</span>网站图标 Favicon
+
+
+  </div>
+
+
+  <div class="ia-card">
+
+
+    <div class="ia-card-header">
+
+
+      <span class="material-icons">bookmark</span>
+
+
+      <h2>当前图标与上传</h2>
+
+
+    </div>
+
+
+    <div class="ia-card-body">
+
+
+      <div class="ia-favicon-grid">
+
+
+        <!-- 预览 -->
+
+
+        <div class="ia-favicon-preview">
+
+
+          {% if site_favicon_preview_url %}
+
+
+            <img src="{{ site_favicon_preview_url }}" alt="当前 Favicon">
+
+
+            <p>当前网站图标<br><span style="opacity:.6;font-size:.75rem;">浏览器标签页显示</span></p>
+
+
+          {% else %}
+
+
+            <div class="ia-preview-placeholder">
+
+
+              <span class="material-icons">image_not_supported</span>
+
+
+            </div>
+
+
+            <p>未设置自定义图标</p>
+
+
+          {% endif %}
+
+
+        </div>
+
+
+        <!-- 上传 -->
+
+
+        <div class="ia-upload-area">
+
+
+          <form method="post" enctype="multipart/form-data" id="favicon-form">
+
+
+            {% csrf_token %}
+
+
+            <div class="ia-field">
+
+
+              <label for="favicon-input">选择新图标文件</label>
+
+
+              <input type="file" name="favicon" accept=".ico,.png,.jpg,.jpeg"
+
+
+                     id="favicon-input" class="form-control">
+
+
+              <div class="ia-helper">
+
+
+                <span class="material-icons">info</span>
+
+
+                支持 .ico / .png / .jpg，建议尺寸 64×64 或 128×128
+
+
+              </div>
+
+
+            </div>
+
+
+            <!-- 裁剪器 -->
+
+
+            <div id="ia-cropper-wrap" class="ia-cropper-wrap" style="display:none;">
+
+
+              <div class="ia-cropper-canvas">
+
+
+                <canvas id="ia-cropper-canvas" width="200" height="200"></canvas>
+
+
+              </div>
+
+
+              <div class="ia-range-wrap">
+
+
+                <span class="material-icons">zoom_out</span>
+
+
+                <input type="range" id="ia-cropper-zoom" min="1" max="3" step="0.01" value="1">
+
+
+                <span class="material-icons">zoom_in</span>
+
+
+              </div>
+
+
+              <div class="ia-helper">拖动图片调整位置，滑块调整缩放</div>
+
+
+            </div>
+
+
+            <div class="ia-actions" style="border-top:none;margin-top:var(--md3-spacing-md);padding-top:0;">
+
+
+              <button type="submit" class="btn btn-filled">
+
+
+                <span class="material-icons">upload</span>上传更新图标
+
+
+              </button>
+
+
+            </div>
+
+
+          </form>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+</div>
+
+
+
+
+
+<!-- ② 字体设置区 -->
+
+
+<div class="ia-section">
+
+
+  <div class="ia-section-title">
+
+
+    <span class="material-icons">font_download</span>字体配置
+
+
+  </div>
+
+
+  <form method="post" id="font-settings-form">
+
+
+    {% csrf_token %}
+
+
+    <input type="hidden" name="form_type" value="font_settings">
+
+
+
+
+
+    <!-- 图标字体卡片 -->
+
+
+    <div class="ia-card">
+
+
+      <div class="ia-card-header">
+
+
+        <span class="material-icons">language</span>
+
+
+        <h2>图标字体 Material Icons</h2>
+
+
+      </div>
+
+
+      <div class="ia-card-body">
+
+
+        <div class="ia-field">
+
+
+          <label for="font_icon_url">CSS 加载地址</label>
+
+
+          <input type="url" name="font_icon_url" id="font_icon_url"
+
+
+                 value="{{ cfg.font_icon_url }}" class="form-control"
+
+
+                 placeholder="https://fonts.font.im/icon?family=Material+Icons">
+
+
+        </div>
+
+
+        <div class="ia-helper" style="margin-bottom:var(--md3-spacing-sm);">
+
+
+          <span class="material-icons">tips_and_updates</span>
+
+
+          选择一个可用镜像以保证图标正常加载
+
+
+        </div>
+
+
+        <div class="ia-preset-chips">
+
+
+          {% for p in presets %}
+
+
+          <button type="button" class="ia-chip"
+
+
+                  onclick="document.getElementById('font_icon_url').value='{{ p.value }}'">
+
+
+            {{ p.label }}
+
+
+          </button>
+
+
+          {% endfor %}
+
+
+        </div>
+
+
+        <!-- 图标预览 -->
+
+
+        <div class="ia-icon-preview-grid" style="margin-top:var(--md3-spacing-lg);">
+
+
+          {% for icon in icon_preview_list %}
+
+
+          <div class="ia-icon-item">
+
+
+            <span class="material-icons">{{ icon }}</span>
+
+
+            <span>{{ icon }}</span>
+
+
+          </div>
+
+
+          {% endfor %}
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+
+
+
+    <!-- 正文字体卡片 -->
+
+
+    <div class="ia-card" style="margin-top:var(--md3-spacing-xl);">
+
+
+      <div class="ia-card-header">
+
+
+        <span class="material-icons">text_fields</span>
+
+
+        <h2>正文字体（可选）</h2>
+
+
+      </div>
+
+
+      <div class="ia-card-body">
+
+
+        <div class="ia-font-grid">
+
+
+          <div>
+
+
+            <div class="ia-field">
+
+
+              <label for="body_font_url">CSS @import URL</label>
+
+
+              <input type="url" name="body_font_url" id="body_font_url"
+
+
+                     value="{{ cfg.body_font_url }}" class="form-control"
+
+
+                     placeholder="留空则不加载外部字体">
+
+
+            </div>
+
+
+            <div class="ia-field">
+
+
+              <label for="body_font_family">font-family 值</label>
+
+
+              <input type="text" name="body_font_family" id="body_font_family"
+
+
+                     value="{{ cfg.body_font_family }}" class="form-control"
+
+
+                     placeholder="例如 'Noto Sans SC', sans-serif">
+
+
+            </div>
+
+
+          </div>
+
+
+          <div>
+
+
+            <div class="ia-helper" style="margin-bottom:var(--md3-spacing-md);">
+
+
+              <span class="material-icons">tips_and_updates</span>
+
+
+              选择预设后自动填入地址和字体族名称
+
+
+            </div>
+
+
+            <div class="ia-preset-chips">
+
+
+              {% for p in body_font_presets %}
+
+
+              <button type="button" class="ia-chip"
+
+
+                      onclick="document.getElementById('body_font_url').value='{{ p.url }}';document.getElementById('body_font_family').value='{{ p.family }}'">
+
+
+                {{ p.label }}
+
+
+              </button>
+
+
+              {% endfor %}
+
+
+            </div>
+
+
+          </div>
+
+
+        </div>
+
+
+
+
+
+        <div class="ia-actions">
+
+
+          <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-text">取消</a>
+
+
+          <button type="submit" class="btn btn-filled">
+
+
+            <span class="material-icons">save</span>保存字体设置
+
+
+          </button>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </form>
+
+
+</div>
+
+
+
+
+
+</div>{# /ia-container #}
+
+
+
+
+
+<script>
+
+
+(function () {
+
+
+  var input  = document.getElementById('favicon-input');
+
+
+  var wrap   = document.getElementById('ia-cropper-wrap');
+
+
+  var canvas = document.getElementById('ia-cropper-canvas');
+
+
+  var zoom   = document.getElementById('ia-cropper-zoom');
+
+
+  var form   = document.getElementById('favicon-form');
+
+
+  if (!input || !wrap || !canvas || !zoom || !form) return;
+
+
+  var ctx = canvas.getContext('2d');
+
+
+  var img = new Image();
+
+
+  var ready = false, dragging = false;
+
+
+  var lx = 0, ly = 0, scale = 1, minScale = 1, ox = 0, oy = 0;
+
+
+  function clamp() {
+
+
+    var maxX = 0, maxY = 0;
+
+
+    var minX = canvas.width  - img.width  * scale;
+
+
+    var minY = canvas.height - img.height * scale;
+
+
+    if (img.width  * scale < canvas.width)  { minX = maxX = (canvas.width  - img.width  * scale) / 2; }
+
+
+    if (img.height * scale < canvas.height) { minY = maxY = (canvas.height - img.height * scale) / 2; }
+
+
+    ox = Math.min(maxX, Math.max(minX, ox));
+
+
+    oy = Math.min(maxY, Math.max(minY, oy));
+
+
+  }
+
+
+  function draw() {
+
+
+    if (!ready) return;
+
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+    ctx.drawImage(img, ox, oy, img.width * scale, img.height * scale);
+
+
+  }
+
+
+  function fit() {
+
+
+    minScale = Math.max(canvas.width / img.width, canvas.height / img.height);
+
+
+    scale = minScale;
+
+
+    ox = (canvas.width  - img.width  * scale) / 2;
+
+
+    oy = (canvas.height - img.height * scale) / 2;
+
+
+    zoom.min = minScale.toFixed(4); zoom.max = (minScale * 3).toFixed(4); zoom.value = scale.toFixed(4);
+
+
+    clamp(); draw();
+
+
+  }
+
+
+  function setScale(s) {
+
+
+    var cx = canvas.width / 2, cy = canvas.height / 2;
+
+
+    var ix = (cx - ox) / scale, iy = (cy - oy) / scale;
+
+
+    scale = s; ox = cx - ix * scale; oy = cy - iy * scale; clamp(); draw();
+
+
+  }
+
+
+  input.addEventListener('change', function () {
+
+
+    var f = input.files && input.files[0]; if (!f) { wrap.style.display='none'; ready=false; return; }
+
+
+    var r = new FileReader();
+
+
+    r.onload = function (e) { img.onload = function () { ready=true; wrap.style.display='flex'; fit(); }; img.src = e.target.result; };
+
+
+    r.readAsDataURL(f);
+
+
+  });
+
+
+  zoom.addEventListener('input', function () { if (ready) setScale(parseFloat(zoom.value)); });
+
+
+  canvas.addEventListener('pointerdown', function (e) { if (!ready) return; dragging=true; lx=e.clientX; ly=e.clientY; canvas.setPointerCapture(e.pointerId); });
+
+
+  canvas.addEventListener('pointermove', function (e) {
+
+
+    if (!dragging || !ready) return;
+
+
+    ox += e.clientX - lx; oy += e.clientY - ly; lx=e.clientX; ly=e.clientY; clamp(); draw();
+
+
+  });
+
+
+  canvas.addEventListener('pointerup',    function (e) { dragging=false; canvas.releasePointerCapture(e.pointerId); });
+
+
+  canvas.addEventListener('pointerleave', function ()  { dragging=false; });
+
+
+  form.addEventListener('submit', function (e) {
+
+
+    if (!ready) return;
+
+
+    e.preventDefault();
+
+
+    canvas.toBlob(function (blob) {
+
+
+      if (!blob) { form.submit(); return; }
+
+
+      var fd = new FormData();
+
+
+      var csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
+
+
+      if (csrf) fd.append('csrfmiddlewaretoken', csrf.value);
+
+
+      fd.append('favicon', blob, 'favicon.png');
+
+
+      fetch(form.action || location.href, {
+
+
+        method: 'POST', body: fd,
+
+
+        headers: { 'X-CSRFToken': csrf ? csrf.value : '' }
+
+
+      }).then(function (r) { if (r.ok) location.reload(); else form.submit(); })
+
+
+        .catch(function () { form.submit(); });
+
+
+    }, 'image/png');
+
+
+  });
+
+
+})();
+
+
+</script>
+
+
+
+
+
+{% endblock %}
+
+

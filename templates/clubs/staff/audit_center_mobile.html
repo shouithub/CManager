@@ -861,30 +861,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemId = this.dataset.itemId;
             
             if (itemType && itemId) {
-                let url = '';
-                switch(itemType) {
-                    case 'annual_review':
-                        url = `/staff/review-submission/${itemId}/`;
-                        break;
-                    case 'registration':
-                        url = `/staff/review-club-registration-submission/${itemId}/`;
-                        break;
-                    case 'application':
-                        url = `/staff/application/${itemId}/`;
-                        break;
-                    case 'reimbursement':
-                        url = `/staff/review-reimbursement/${itemId}/`;
-                        break;
-                    case 'activity_application':
-                        url = `/staff/review-activity-application/${itemId}/`;
-                        break;
-                    case 'president_transition':
-                        url = `/staff/review-president-transition/${itemId}/`;
-                        break;
-                }
-                if (url) {
-                    window.location.href = url;
-                }
+                window.location.href = `/staff/review-detail/${itemType}/${itemId}/`;
             }
         });
     });

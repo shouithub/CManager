@@ -507,7 +507,12 @@ def staff_dashboard(request):
     ).values_list('club_id', flat=True)
     
     # 获取成员数少20人的社团，并预加载负责干事信息（排除停止状态的社团）
-    clubs_with_low_members = Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count').prefetch_related('responsible_staff', 'responsible_staff__staff')
+    _president_prefetch = Prefetch(
+        'officers',
+        queryset=Officer.objects.filter(position='president', is_current=True).select_related('user_profile__user', 'user_profile'),
+        to_attr='_president_list',
+    )
+    clubs_with_low_members = Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count').prefetch_related(_president_prefetch, 'responsible_staff', 'responsible_staff__staff')
     
     # 获取所有社团
     clubs = Club.objects.all().order_by('name')
@@ -867,7 +872,12 @@ def staff_management(request):
     ).values_list('club_id', flat=True)
     
     # 获取成员数少20人的社团（排除停止状态的社团）
-    clubs_with_low_members = Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count').prefetch_related('responsible_staff', 'responsible_staff__staff')
+    _president_prefetch = Prefetch(
+        'officers',
+        queryset=Officer.objects.filter(position='president', is_current=True).select_related('user_profile__user', 'user_profile'),
+        to_attr='_president_list',
+    )
+    clubs_with_low_members = Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count').prefetch_related(_president_prefetch, 'responsible_staff', 'responsible_staff__staff')
     clubs_with_low_members_my = clubs_with_low_members.filter(id__in=staff_club_ids)
     clubs_with_low_members_other = clubs_with_low_members.exclude(id__in=staff_club_ids)
     

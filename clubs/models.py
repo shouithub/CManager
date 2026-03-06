@@ -1173,3 +1173,49 @@ class SubmittedFile(models.Model):
         verbose_name = '提交文件'
         verbose_name_plural = '提交文件'
         ordering = ['uploaded_at']
+
+
+class SiteSettings(models.Model):
+    """站点全局外观设置（单例，pk=1）"""
+    font_icon_url = models.CharField(
+        max_length=500,
+        default='https://fonts.font.im/icon?family=Material+Icons',
+        verbose_name='图标字体 CSS 地址',
+        help_text='Material Icons CSS 的完整 URL，修改后刷新页面生效',
+    )
+    body_font_url = models.CharField(
+        max_length=500, blank=True, default='',
+        verbose_name='正文 Web 字体 CSS 地址',
+        help_text='Google Fonts / 镜像字体的 CSS URL（留空则不加载额外字体）',
+    )
+    body_font_family = models.CharField(
+        max_length=300, blank=True, default='',
+        verbose_name='正文字体族',
+        help_text='CSS font-family 值，例如：\'Noto Sans SC\', sans-serif（留空则使用系统字体）',
+    )
+
+    class Meta:
+        verbose_name = '站点设置'
+        verbose_name_plural = '站点设置'
+
+    def __str__(self):
+        return '站点全局设置'
+
+    @classmethod
+    def get_settings(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class DailyStat(models.Model):
+    """每日访问统计"""
+    date = models.DateField(unique=True, verbose_name='日期')
+    visits = models.PositiveIntegerField(default=0, verbose_name='访问次数')
+
+    class Meta:
+        verbose_name = '每日统计'
+        verbose_name_plural = '每日统计'
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.date} — {self.visits} 次访问"

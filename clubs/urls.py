@@ -138,6 +138,7 @@ urlpatterns = [
     
     # 管理员功能
     path('admin-panel/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin-panel/site-settings/', views.admin_site_settings, name='admin_site_settings'),
     path('admin-panel/carousel/', views.manage_carousel, name='manage_carousel'),
     path('admin-panel/carousel/add/', views.add_carousel, name='add_carousel'),
     path('admin-panel/carousel/edit/<int:carousel_id>/', views.edit_carousel, name='edit_carousel'),
@@ -152,6 +153,7 @@ urlpatterns = [
     path('admin-panel/publish-announcement/', views.publish_announcement, name='publish_announcement'),
     path('admin-panel/delete-announcement/<int:announcement_id>/', views.delete_announcement, name='delete_announcement'),
     path('admin-panel/edit-announcement/<int:announcement_id>/', views.edit_announcement, name='edit_announcement'),
+    path('admin-panel/assign-presidents/', views.admin_assign_presidents, name='admin_assign_presidents'),
     path('admin-panel/manage-users/', views.manage_users, name='manage_users'),
     path('admin-panel/manage-users/import-csv/', views.import_users_csv, name='import_users_csv'),
     path('admin-panel/manage-users/import-template/', views.download_user_import_template, name='download_user_import_template'),

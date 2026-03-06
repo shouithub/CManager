@@ -211,6 +211,31 @@
         color: var(--md3-on-primary-container);
     }
 
+    .status-badge.user-reviewed {
+        background: var(--md3-tertiary-container);
+        color: var(--md3-on-tertiary-container);
+    }
+
+    .status-badge.needs-review {
+        background: #fff3e0;
+        color: #e65100;
+        border: 1px solid #ffb300;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .status-badge.needs-review {
+            background: #3e2a00;
+            color: #ffcc80;
+            border-color: #ff8f00;
+        }
+    }
+
+    [data-theme="dark"] .status-badge.needs-review {
+        background: #3e2a00;
+        color: #ffcc80;
+        border-color: #ff8f00;
+    }
+
     .status-badge.partially-rejected {
         background: var(--md3-surface-container-highest);
         color: var(--md3-on-surface);
@@ -765,11 +790,17 @@ window.addEventListener('resize', checkLayout);
                         {% endif %}
 
                         {% if item.review_count %}
-                        <span class="status-badge reviewing">
-                            <span class="material-icons">rate_review</span> 
-                            {% if item.user_reviewed %}已审核{% else %}审核中{% endif %}
+                        {% if item.user_reviewed %}
+                        <span class="status-badge user-reviewed">
+                            <span class="material-icons">check_circle</span> 已提交审核
                             ({{ item.review_count }}/3)
                         </span>
+                        {% else %}
+                        <span class="status-badge needs-review">
+                            <span class="material-icons">pending_actions</span> 待我审核
+                            ({{ item.review_count }}/3)
+                        </span>
+                        {% endif %}
                         {% elif item.status == 'pending' %}
                         <span class="status-badge pending">
                             <span class="material-icons">schedule</span> 待审核
@@ -1547,5 +1578,30 @@ window.addEventListener('resize', checkLayout);
             closeHistoryModal();
         }
     });
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    // 当前标签对应的 notification_counts API 键名
+    const tabKey = '{{ current_tab }}';
+    let lastCount = null;
+
+    window.addEventListener('cmanager-counts-updated', function(e) {
+        const data = e.detail;
+        const audit = (data && data.audit_counts) || {};
+        const count = audit[tabKey];
+        if (count === undefined) return;
+        if (lastCount === null) {
+            lastCount = count;
+            return;
+        }
+        if (count !== lastCount) {
+            window.location.reload();
+        }
+        lastCount = count;
+    });
+})();
 </script>
 {% endblock %}

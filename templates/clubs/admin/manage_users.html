@@ -92,10 +92,43 @@
         margin-top: var(--md3-spacing-lg);
     }
 
-    .bulk-modal-file {
-        width: 100%;
+    .bulk-modal-file-wrapper {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        background: var(--md3-surface-container-high);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+    .bulk-modal-file-wrapper:hover {
+        border-color: var(--md3-primary);
+    }
+    .bulk-modal-file-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        border-radius: var(--md3-radius-full);
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    .bulk-modal-file-name {
         font-size: 0.875rem;
         color: var(--md3-on-surface-variant);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+    }
+    .bulk-modal-file {
+        display: none;
     }
 
     .import-progress {
@@ -415,6 +448,7 @@
     @media (max-width: 768px) {
         .users-container {
             padding: var(--md3-spacing-lg);
+            padding-bottom: calc(var(--md3-spacing-lg) + 80px);
         }
         
         .page-header {
@@ -660,7 +694,12 @@
             <form id="bulkImportForm" method="post" action="{% url 'clubs:import_users_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <input type="file" name="csv_file" accept=".csv,text/csv" required class="bulk-modal-file">
+                <label class="bulk-modal-file-wrapper" for="csvFileInput">
+                    <span class="bulk-modal-file-label"><span class="material-icons" style="font-size:1rem;">folder_open</span>浏览</span>
+                    <span class="bulk-modal-file-name" id="csvFileName">未选择文件</span>
+                </label>
+                <input type="file" id="csvFileInput" name="csv_file" accept=".csv,text/csv" required class="bulk-modal-file"
+                    onchange="document.getElementById('csvFileName').textContent = this.files[0]?.name || '未选择文件'">
                 <button id="bulkImportSubmitBtn" type="submit" class="btn-action detail" style="justify-content:center;">
                     <span class="material-icons">upload_file</span>
                     批量导入CSV
