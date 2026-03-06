@@ -382,29 +382,40 @@ def oobe_setup(request):
                 'DEFAULT_FROM_EMAIL': None,
             })
 
-        _write_env_local(updates)
-        write_pending_oobe_setup({
-            'admin': {
-                'username': admin_username,
-                'password': admin_password,
-                'email': admin_email,
-                'real_name': admin_real_name,
-                'student_id': admin_student_id,
-                'phone': admin_phone,
-                'wechat': admin_wechat,
-                'political_status': admin_political_status,
-                'is_info_public': admin_is_info_public,
-            },
-            'email': {
-                'enable_email': enable_email,
-                'provider': email_provider,
-                'smtp_host': smtp_host,
-                'smtp_port': smtp_port,
-                'sender_email': sender_email,
-                'sender_password': sender_password,
-                'smtp_use_tls': smtp_use_tls,
-            },
-        })
+        try:
+            _write_env_local(updates)
+            write_pending_oobe_setup({
+                'admin': {
+                    'username': admin_username,
+                    'password': admin_password,
+                    'email': admin_email,
+                    'real_name': admin_real_name,
+                    'student_id': admin_student_id,
+                    'phone': admin_phone,
+                    'wechat': admin_wechat,
+                    'political_status': admin_political_status,
+                    'is_info_public': admin_is_info_public,
+                },
+                'email': {
+                    'enable_email': enable_email,
+                    'provider': email_provider,
+                    'smtp_host': smtp_host,
+                    'smtp_port': smtp_port,
+                    'sender_email': sender_email,
+                    'sender_password': sender_password,
+                    'smtp_use_tls': smtp_use_tls,
+                },
+            })
+        except OSError as exc:
+            return render(request, 'clubs/oobe_setup.html', {
+                'errors': [f'写入配置文件失败：{exc}。请检查项目目录写权限。'],
+                'form_data': form_data,
+                'db_choices': db_choices,
+                'frame_option_choices': frame_option_choices,
+                'cache_backend_choices': cache_backend_choices,
+                'political_status_choices': political_status_choices,
+                'smtp_provider_choices': SMTPConfig.PROVIDER_CHOICES,
+            })
 
         messages.success(
             request,

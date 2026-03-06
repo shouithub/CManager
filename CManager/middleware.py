@@ -57,6 +57,34 @@ class InitialSetupMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
+    def _ensure_bootstrap_host_and_origin_trusted(self, request):
+        """During first-run OOBE, trust current host/origin to avoid CSRF bootstrap deadlock."""
+        raw_host = (request.META.get('HTTP_HOST') or '').strip()
+        host = raw_host.split(':', 1)[0].strip().lower()
+        if not host:
+            return
+
+        allowed_hosts = list(getattr(settings, 'ALLOWED_HOSTS', []))
+        if host not in allowed_hosts:
+            allowed_hosts.append(host)
+            settings.ALLOWED_HOSTS = allowed_hosts
+
+        trusted_origins = list(getattr(settings, 'CSRF_TRUSTED_ORIGINS', []))
+        forwarded_proto = (request.META.get('HTTP_X_FORWARDED_PROTO') or '').split(',')[0].strip().lower()
+        scheme = forwarded_proto or ('https' if request.is_secure() else 'http')
+
+        candidates = [f'{scheme}://{host}']
+        if scheme != 'https':
+            candidates.append(f'https://{host}')
+
+        changed = False
+        for origin in candidates:
+            if origin not in trusted_origins:
+                trusted_origins.append(origin)
+                changed = True
+        if changed:
+            settings.CSRF_TRUSTED_ORIGINS = trusted_origins
+
     def __call__(self, request):
         path = request.path or ''
         oobe_url = reverse('clubs:oobe_setup')
@@ -69,6 +97,8 @@ class InitialSetupMiddleware:
         )
 
         if path.startswith(exempt_prefixes):
+            if path.startswith('/oobe/'):
+                self._ensure_bootstrap_host_and_origin_trusted(request)
             return self.get_response(request)
 
         if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.dummy':
@@ -95,6 +125,7 @@ class InitialSetupMiddleware:
             has_admin = False
 
         if not has_admin:
+            self._ensure_bootstrap_host_and_origin_trusted(request)
             if path != oobe_url:
                 return redirect(oobe_url)
 
