@@ -72,6 +72,38 @@ def populate_requirements(apps, schema_editor):
 def reverse_func(apps, schema_editor):
     pass
 
+
+def ensure_userprofile_gender_column(apps, schema_editor):
+    """Ensure gender column exists in clubs_userprofile table (idempotent)."""
+    connection = schema_editor.connection
+    table_name = 'clubs_userprofile'
+    column_name = 'gender'
+
+    with connection.cursor() as cursor:
+        columns = [
+            col.name for col in connection.introspection.get_table_description(cursor, table_name)
+        ]
+
+    if column_name in columns:
+        return  # Already exists, no-op
+
+    vendor = connection.vendor
+    if vendor == 'mysql':
+        schema_editor.execute(
+            "ALTER TABLE `clubs_userprofile` ADD COLUMN `gender` VARCHAR(10) NOT NULL DEFAULT ''"
+        )
+    elif vendor == 'postgresql':
+        schema_editor.execute(
+            "ALTER TABLE clubs_userprofile ADD COLUMN gender VARCHAR(10) NOT NULL DEFAULT ''"
+        )
+    elif vendor == 'sqlite':
+        schema_editor.execute(
+            "ALTER TABLE clubs_userprofile ADD COLUMN gender VARCHAR(10) NOT NULL DEFAULT ''"
+        )
+    else:
+        raise RuntimeError(f'Unsupported database vendor for migration patch: {vendor}')
+
+
 class Migration(migrations.Migration):
 
     replaces = [('clubs', '0001_initial'), ('clubs', '0002_clubmember_inactiveextensionhistory_and_more'), ('clubs', '0003_registrationtoken_max_uses_and_more'), ('clubs', '0004_activityapplication_is_public_activityregistration')]
@@ -967,5 +999,9 @@ class Migration(migrations.Migration):
                 'verbose_name_plural': '活动报名',
                 'unique_together': {('activity', 'user_profile')},
             },
+        ),
+        migrations.RunPython(
+            code=ensure_userprofile_gender_column,
+            reverse_code=migrations.RunPython.noop,
         ),
     ]

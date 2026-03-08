@@ -146,6 +146,21 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
 
     Visit [http://127.0.0.1:8000](http://127.0.0.1:8000) to start using the system.
 
+8.  **Public Deployment (Nginx Static/Media Serving)**
+    In production, it is recommended to let Nginx serve static and media files directly:
+    ```nginx
+    location /static/ {
+        alias /path/to/CManager/staticfiles/;
+    }
+    location /media/ {
+        alias /path/to/CManager/media/;
+    }
+    ```
+    Also run the following during deployment:
+    ```bash
+    python manage.py collectstatic --noinput
+    ```
+
 ## 📖 Role Guide
 
 ### 👤 President

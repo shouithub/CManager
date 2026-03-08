@@ -312,6 +312,62 @@
 
         <hr class="form-sep">
 
+        <!-- QQ -->
+        <div class="form-block">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_qq">
+                <label class="f-label">QQ</label>
+                <div class="f-inline">
+                    <input class="f-input" name="qq" value="{{ target_user.profile.qq|default:'' }}" placeholder="例：1234567890">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <hr class="form-sep">
+
+        <!-- 微信 -->
+        <div class="form-block">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_wechat">
+                <label class="f-label">微信</label>
+                <div class="f-inline">
+                    <input class="f-input" name="wechat" value="{{ target_user.profile.wechat|default:'' }}" placeholder="请输入微信号或昵称">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <hr class="form-sep">
+
+        <!-- 性别 -->
+        <div class="form-block">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_gender">
+                <label class="f-label">性别</label>
+                <div class="f-inline">
+                    <select class="f-select" name="gender">
+                        <option value="">不设定</option>
+                        <option value="male" {% if target_user.profile.gender == 'male' %}selected{% endif %}>男</option>
+                        <option value="female" {% if target_user.profile.gender == 'female' %}selected{% endif %}>女</option>
+                        <option value="other" {% if target_user.profile.gender == 'other' %}selected{% endif %}>其他</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <hr class="form-sep">
+
         <!-- 角色 -->
         <div class="form-block">
             <form method="post">

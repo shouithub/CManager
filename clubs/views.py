@@ -4957,6 +4957,71 @@ def admin_edit_user_account(request, user_id):
                 )
                 success_messages.append(f'已为用户 {target_user.username} 设置电话：{phone}')
         
+        # 修改QQ
+        elif action == 'change_qq':
+            qq = request.POST.get('qq', '').strip()
+            
+            try:
+                profile = target_user.profile
+                profile.qq = qq
+                profile.save()
+                success_messages.append(f'已更新用户 {target_user.username} 的QQ：{qq or "（已清空）"}')
+            except UserProfile.DoesNotExist:
+                import uuid
+                unique_student_id = f"USER_{target_user.username}_{str(uuid.uuid4())[:8]}"
+                profile = UserProfile.objects.create(
+                    user=target_user,
+                    role='member',
+                    qq=qq,
+                    student_id=unique_student_id
+                )
+                success_messages.append(f'已为用户 {target_user.username} 设置QQ：{qq}')
+        
+        # 修改微信
+        elif action == 'change_wechat':
+            wechat = request.POST.get('wechat', '').strip()
+            
+            try:
+                profile = target_user.profile
+                profile.wechat = wechat
+                profile.save()
+                success_messages.append(f'已更新用户 {target_user.username} 的微信：{wechat or "（已清空）"}')
+            except UserProfile.DoesNotExist:
+                import uuid
+                unique_student_id = f"USER_{target_user.username}_{str(uuid.uuid4())[:8]}"
+                profile = UserProfile.objects.create(
+                    user=target_user,
+                    role='member',
+                    wechat=wechat,
+                    student_id=unique_student_id
+                )
+                success_messages.append(f'已为用户 {target_user.username} 设置微信：{wechat}')
+        
+        # 修改性别
+        elif action == 'change_gender':
+            gender = request.POST.get('gender', '').strip()
+            
+            if gender and gender not in ['male', 'female', 'other']:
+                errors.append('性别选项不合法')
+            else:
+                try:
+                    profile = target_user.profile
+                    profile.gender = gender
+                    profile.save()
+                    gender_display = dict(UserProfile.GENDER_CHOICES).get(gender, '不设定') if gender else '不设定'
+                    success_messages.append(f'已更新用户 {target_user.username} 的性别：{gender_display}')
+                except UserProfile.DoesNotExist:
+                    import uuid
+                    unique_student_id = f"USER_{target_user.username}_{str(uuid.uuid4())[:8]}"
+                    profile = UserProfile.objects.create(
+                        user=target_user,
+                        role='member',
+                        gender=gender,
+                        student_id=unique_student_id
+                    )
+                    gender_display = dict(UserProfile.GENDER_CHOICES).get(gender, '不设定') if gender else '不设定'
+                    success_messages.append(f'已为用户 {target_user.username} 设置性别：{gender_display}')
+        
         # 修改用户详细信息
         elif action == 'change_user_info':
             real_name = request.POST.get('real_name', '').strip()

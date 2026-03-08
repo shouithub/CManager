@@ -146,6 +146,21 @@
 
     访问 [http://127.0.0.1:8000](http://127.0.0.1:8000) 即可开始使用系统。
 
+8.  **公网部署（Nginx 静态/媒体资源）**
+    生产环境建议由 Nginx 直接托管静态和媒体文件。可在 Nginx 配置中加入：
+    ```nginx
+    location /static/ {
+        alias /path/to/CManager/staticfiles/;
+    }
+    location /media/ {
+        alias /path/to/CManager/media/;
+    }
+    ```
+    同时请在部署时执行：
+    ```bash
+    python manage.py collectstatic --noinput
+    ```
+
 ## 📖 角色使用指南
 
 ### 👤 社长
