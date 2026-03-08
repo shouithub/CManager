@@ -12,6 +12,7 @@ class UserProfile(models.Model):
     """用户角色扩展模型"""
     ROLE_CHOICES = [
         ('president', '社长'),
+        ('member', '社员'),
         ('staff', '干事'),
         ('admin', '管理员'),
     ]
@@ -20,6 +21,18 @@ class UserProfile(models.Model):
         ('pending', '待审核'),
         ('approved', '已批准'),
         ('rejected', '已拒绝'),
+        ('inactive', '不活跃'),
+    ]
+
+    ACCOUNT_STATUS_CHOICES = [
+        ('active', '活跃'),
+        ('inactive', '不活跃'),
+    ]
+
+    GENDER_CHOICES = [
+        ('male', '男'),
+        ('female', '女'),
+        ('other', '其他'),
     ]
     
     STAFF_LEVEL_CHOICES = [
@@ -57,7 +70,11 @@ class UserProfile(models.Model):
     # 实名信息字段
     real_name = models.CharField(max_length=100, verbose_name='真名', blank=True)
     student_id = models.CharField(max_length=50, verbose_name='学号', blank=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True, verbose_name='性别')
+    college = models.CharField(max_length=100, blank=True, verbose_name='学院')
+    class_name = models.CharField(max_length=100, blank=True, verbose_name='班级')
     phone = models.CharField(max_length=20, verbose_name='电话', blank=True)
+    qq = models.CharField(max_length=30, verbose_name='QQ', blank=True)
     wechat = models.CharField(max_length=100, verbose_name='微信', blank=True)
     political_status = models.CharField(
         max_length=40, 
@@ -71,6 +88,16 @@ class UserProfile(models.Model):
 
     # 首次登录强制改密
     must_change_password = models.BooleanField(default=False, verbose_name='是否需要修改密码')
+
+    # 账号生命周期状态（与审核状态分离）
+    account_status = models.CharField(
+        max_length=20,
+        choices=ACCOUNT_STATUS_CHOICES,
+        default='active',
+        verbose_name='账号活跃状态'
+    )
+    inactive_since = models.DateTimeField(null=True, blank=True, verbose_name='不活跃起始时间')
+    active_until = models.DateTimeField(null=True, blank=True, verbose_name='活跃有效期至')
     
     # 头像
     avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True, verbose_name='头像')
@@ -98,7 +125,135 @@ class UserProfile(models.Model):
         indexes = [
             models.Index(fields=['role', 'status'], name='up_role_status_idx'),
             models.Index(fields=['role', 'staff_level'], name='up_role_staff_lvl_idx'),
+            models.Index(fields=['account_status', 'inactive_since'], name='up_acc_inactive_idx'),
         ]
+
+
+class ClubMember(models.Model):
+    """社团成员关系（支持一个账户加入多个社团）。"""
+
+    STATUS_CHOICES = [
+        ('active', '活跃'),
+        ('inactive', '不活跃'),
+    ]
+
+    club = models.ForeignKey('Club', on_delete=models.CASCADE, related_name='memberships', verbose_name='社团')
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='club_memberships', verbose_name='成员')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='成员状态')
+    joined_at = models.DateTimeField(auto_now_add=True, verbose_name='加入时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
+    class Meta:
+        verbose_name = '社团成员'
+        verbose_name_plural = '社团成员'
+        unique_together = [('club', 'user_profile')]
+        indexes = [
+            models.Index(fields=['club', 'status'], name='cm_club_status_idx'),
+            models.Index(fields=['user_profile', 'status'], name='cm_user_status_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.club.name} - {self.user_profile.get_full_name()}"
+
+
+class RegistrationToken(models.Model):
+    """社员扫码注册令牌，支持可配置有效期和使用次数。"""
+
+    code = models.CharField(max_length=64, unique=True, verbose_name='一次性校验码')
+    club = models.ForeignKey('Club', on_delete=models.CASCADE, related_name='registration_tokens', verbose_name='社团')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_registration_tokens', verbose_name='创建人')
+    expires_at = models.DateTimeField(verbose_name='过期时间')
+    max_uses = models.IntegerField(null=True, blank=True, verbose_name='最大使用次数（null表示不限次数）')
+    used_count = models.IntegerField(default=0, verbose_name='已使用次数')
+    is_used = models.BooleanField(default=False, verbose_name='是否已使用')
+    used_at = models.DateTimeField(null=True, blank=True, verbose_name='使用时间')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+
+    class Meta:
+        verbose_name = '社员注册令牌'
+        verbose_name_plural = '社员注册令牌'
+        indexes = [
+            models.Index(fields=['club', 'expires_at', 'is_used'], name='rt_club_exp_used_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.club.name} - {self.code[:8]}..."
+
+    @staticmethod
+    def generate_code(length=32):
+        alphabet = string.ascii_letters + string.digits
+        return ''.join(random.choices(alphabet, k=length))
+
+    @classmethod
+    def create_for_club(cls, club, created_by, minutes=10, max_uses=1):
+        """
+        创建社团招新令牌。
+        
+        :param club: 社团对象
+        :param created_by: 创建人（User对象）
+        :param minutes: 有效时长（分钟），不限次数时最多1440分钟（1天）
+        :param max_uses: 最大使用次数，None表示不限次数
+        """
+        # 业务规则：不限次数时，有效期最多1天
+        if max_uses is None and minutes > 1440:
+            raise ValueError('不限次数的令牌有效期不得超过1天（1440分钟）')
+
+        for _ in range(5):
+            code = cls.generate_code()
+            if not cls.objects.filter(code=code).exists():
+                return cls.objects.create(
+                    code=code,
+                    club=club,
+                    created_by=created_by,
+                    expires_at=timezone.now() + timedelta(minutes=minutes),
+                    max_uses=max_uses,
+                )
+        # 极低概率碰撞时，退化为带时间戳的随机串
+        return cls.objects.create(
+            code=f"{timezone.now().strftime('%Y%m%d%H%M%S')}{cls.generate_code(12)}",
+            club=club,
+            created_by=created_by,
+            expires_at=timezone.now() + timedelta(minutes=minutes),
+            max_uses=max_uses,
+        )
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def can_use(self):
+        """检查令牌是否可用：未过期且未达到使用次数上限。"""
+        if self.is_expired():
+            return False
+        if self.max_uses is None:
+            # 不限次数
+            return True
+        return self.used_count < self.max_uses
+
+    def mark_used(self):
+        """标记令牌已使用，增加使用计数。"""
+        self.used_count += 1
+        if self.max_uses is not None and self.used_count >= self.max_uses:
+            self.is_used = True
+            self.used_at = timezone.now()
+        self.save()
+
+
+class InactiveExtensionHistory(models.Model):
+    """不活跃账号延期记录。"""
+
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='inactive_extensions', verbose_name='用户')
+    extended_at = models.DateTimeField(auto_now_add=True, verbose_name='延期时间')
+    previous_active_until = models.DateTimeField(null=True, blank=True, verbose_name='延期前有效期')
+    new_active_until = models.DateTimeField(verbose_name='延期后有效期')
+    reason = models.CharField(max_length=100, blank=True, verbose_name='延期原因')
+
+    class Meta:
+        verbose_name = '不活跃延期记录'
+        verbose_name_plural = '不活跃延期记录'
+        ordering = ['-extended_at']
+
+    def __str__(self):
+        return f"{self.user_profile.user.username} 延期至 {self.new_active_until.strftime('%Y-%m-%d')}"
 
 
 class Club(models.Model):
@@ -856,6 +1011,8 @@ class ActivityApplication(models.Model):
     is_read = models.BooleanField(default=False, verbose_name='社长是否已读')
     # 重新提交追踪 - 表示这是第几次提交（1为初始提交，2+ 为重新提交）
     resubmission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
+    # 是否公开（审核通过后，社员可在活动页面看到）
+    is_public = models.BooleanField(default=False, verbose_name='是否公开')
     
     class Meta:
         verbose_name = '活动申请'
@@ -911,6 +1068,21 @@ class ActivityApplicationHistory(models.Model):
         verbose_name = '活动申请审核历史'
         verbose_name_plural = '活动申请审核历史'
         ordering = ['-attempt_number']
+
+
+class ActivityRegistration(models.Model):
+    """活动报名记录"""
+    activity = models.ForeignKey('ActivityApplication', on_delete=models.CASCADE, related_name='registrations', verbose_name='活动')
+    user_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE, related_name='activity_registrations', verbose_name='报名用户')
+    registered_at = models.DateTimeField(auto_now_add=True, verbose_name='报名时间')
+
+    class Meta:
+        verbose_name = '活动报名'
+        verbose_name_plural = '活动报名'
+        unique_together = [('activity', 'user_profile')]
+
+    def __str__(self):
+        return f"{self.user_profile} 报名 {self.activity.activity_name}"
 
 
 class EmailVerificationCode(models.Model):

@@ -213,6 +213,10 @@
     .role-item.admin {
         border-left-color: var(--md3-error);
     }
+
+    .role-item.member {
+        border-left-color: var(--md3-secondary, #7c5cbf);
+    }
     
     .role-label {
         font-size: 0.875rem;
@@ -238,6 +242,10 @@
     
     .role-item.admin .role-value {
         color: var(--md3-error);
+    }
+
+    .role-item.member .role-value {
+        color: var(--md3-secondary, #7c5cbf);
     }
     
     /* 折线图容器 */
@@ -743,6 +751,10 @@
                         <span class="material-icons">manage_accounts</span>
                         <span>指定社团社长</span>
                     </a>
+                    <a href="{% url 'clubs:locked_accounts' %}" class="action-btn" style="border-color:var(--md3-error-container);">
+                        <span class="material-icons" style="color:var(--md3-error);">lock</span>
+                        <span>被锁定账号</span>
+                    </a>
                     <a href="{% url 'clubs:index' %}" class="action-btn">
                         <span class="material-icons">home</span>
                         <span>返回首页</span>
@@ -767,6 +779,10 @@
                     <div class="role-item admin">
                         <span class="role-label">管理员</span>
                         <span class="role-value">{{ admins_count }}</span>
+                    </div>
+                    <div class="role-item member">
+                        <span class="role-label">社员</span>
+                        <span class="role-value">{{ members_count }}</span>
                     </div>
                 </div>
             </div>

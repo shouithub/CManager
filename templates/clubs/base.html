@@ -140,6 +140,10 @@
                                 <span class="icon"><span class="material-icons">folder</span></span>
                                 <span>我的社团</span>
                             </a>
+                            <a href="{% url 'clubs:president_member_management' %}" class="sidebar-menu-item">
+                                <span class="icon"><span class="material-icons">groups</span></span>
+                                <span>社员管理</span>
+                            </a>
                         {% endif %}
                     </div>
                 </div>
@@ -378,6 +382,43 @@
                 </div>
                 {% endfor %}
             </div>
+            {% endif %}
+
+            {% if user.is_authenticated and user.profile.account_status == 'inactive' %}
+            <div id="inactivePromptCard" class="message warning" style="display:none; margin-bottom: 12px;">
+                <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap;">
+                    <span class="material-icons" style="font-size:18px;">warning</span>
+                    <div style="flex:1; min-width: 220px;">
+                        账号当前为不活跃状态。可选择“延期注销”恢复活跃1年（支持多次延期）。
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <form method="post" action="{% url 'clubs:extend_inactive_period' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn" style="padding:6px 10px;">延期注销</button>
+                        </form>
+                        <button type="button" class="btn btn-outline" style="padding:6px 10px;" onclick="dismissInactivePrompt()">稍后处理</button>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function() {
+                    var key = 'inactive-prompt-hidden-{{ user.id }}';
+                    if (!sessionStorage.getItem(key)) {
+                        var card = document.getElementById('inactivePromptCard');
+                        if (card) {
+                            card.style.display = 'block';
+                        }
+                    }
+                })();
+                function dismissInactivePrompt() {
+                    var key = 'inactive-prompt-hidden-{{ user.id }}';
+                    sessionStorage.setItem(key, '1');
+                    var card = document.getElementById('inactivePromptCard');
+                    if (card) {
+                        card.style.display = 'none';
+                    }
+                }
+            </script>
             {% endif %}
 
             {% block content %}{% endblock %}

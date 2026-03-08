@@ -421,6 +421,17 @@
         color: var(--md3-on-primary);
         box-shadow: var(--md3-elevation-1);
     }
+
+    .btn-action.danger {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .btn-action.danger:hover {
+        background: var(--md3-error);
+        color: var(--md3-on-error);
+        box-shadow: var(--md3-elevation-1);
+    }
     
     /* 空状态 */
     .empty-state {
@@ -524,6 +535,7 @@
                 <option value="president" {% if role == 'president' %}selected{% endif %}>社长</option>
                 <option value="staff" {% if role == 'staff' %}selected{% endif %}>干事</option>
                 <option value="admin" {% if role == 'admin' %}selected{% endif %}>管理员</option>
+                <option value="member" {% if role == 'member' %}selected{% endif %}>社员</option>
             </select>
             <button type="submit" class="btn-search">
                 <span class="material-icons">search</span>
@@ -547,6 +559,7 @@
                     <th>角色</th>
                     <th>部门</th>
                     <th>状态</th>
+                    <th>账户活跃</th>
                     <th>加入时间</th>
                     <th>操作</th>
                 </tr>
@@ -590,6 +603,8 @@
                             <span class="role-badge staff">干事</span>
                         {% elif user.profile.role == 'admin' %}
                             <span class="role-badge admin">管理员</span>
+                        {% elif user.profile.role == 'member' %}
+                            <span class="role-badge" style="background:var(--md3-secondary-container);color:var(--md3-on-secondary-container);">社员</span>
                         {% else %}
                             <span class="role-badge unknown">未设定</span>
                         {% endif %}
@@ -628,6 +643,19 @@
                             </span>
                         {% endif %}
                     </td>
+                    <td>
+                        {% if user.is_active %}
+                            <span class="status-badge approved">
+                                <span class="material-icons">check_circle</span>
+                                活跃
+                            </span>
+                        {% else %}
+                            <span class="status-badge rejected">
+                                <span class="material-icons">block</span>
+                                已禁用
+                            </span>
+                        {% endif %}
+                    </td>
                     <td>{{ user.date_joined|date:"Y-m-d" }}</td>
                     <td>
                         <div class="action-buttons">
@@ -660,6 +688,19 @@
                                 <span class="material-icons">visibility</span>
                                 详情
                             </a>
+
+                            {% if user != request.user and not user.is_superuser %}
+                                <form method="post" style="display:inline;"
+                                      onsubmit="return confirmDeleteUser('{{ user.username|escapejs }}')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_user">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <button type="submit" class="btn-action danger" title="删除账号">
+                                        <span class="material-icons">delete</span>
+                                        删除
+                                    </button>
+                                </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -723,6 +764,24 @@ function openBulkOpsModal() {
 
 function closeBulkOpsModal() {
     document.getElementById('bulkOpsModal').style.display = 'none';
+}
+
+function confirmDeleteUser(username) {
+    if (!confirm(`确定删除账号 ${username} 吗？此操作不可恢复。`)) {
+        return false;
+    }
+
+    const typed = prompt(`二次确认：请输入用户名 ${username} 以继续删除`);
+    if (typed === null) {
+        return false;
+    }
+
+    if (typed !== username) {
+        alert('用户名不匹配，已取消删除。');
+        return false;
+    }
+
+    return true;
 }
 
 document.getElementById('bulkOpsModal').addEventListener('click', function(e) {

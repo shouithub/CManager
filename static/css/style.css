@@ -407,12 +407,14 @@ a {
 }
 
 a:hover {
-    text-decoration: underline;
     color: var(--md3-on-primary-container);
 }
 
-a.action-card:hover {
-    text-decoration: none;
+/* 文本内嵌链接保持下划线以提升可访问性 */
+p a:hover,
+li a:hover,
+.text-content a:hover {
+    text-decoration: underline;
 }
 
 a:focus-visible {
@@ -2279,7 +2281,6 @@ input[type="file"] + small,
 
 .template-download-box a:hover {
     color: var(--md3-on-primary-container);
-    text-decoration: underline;
 }
 
 /* ============================================================================

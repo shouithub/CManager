@@ -142,3 +142,60 @@ CManager系统
         html_body=html,
         success_message='验证码已发送到邮箱，请查收'
     )
+
+
+def send_inactive_account_notice(user, inactive_since, auto_delete_at, reason='system'):
+    """账号转为不活跃时发送邮件提醒。未配置SMTP或用户无邮箱时返回False且不中断流程。"""
+    from .models import SMTPConfig
+
+    to_email = (getattr(user, 'email', '') or '').strip()
+    if not to_email:
+        logger.info('跳过不活跃提醒邮件：用户 %s 未配置邮箱', getattr(user, 'username', 'unknown'))
+        return False, '用户未配置邮箱'
+
+    config = SMTPConfig.get_active_config()
+    if not config:
+        logger.info('跳过不活跃提醒邮件：未配置激活的SMTP')
+        return False, 'SMTP未配置'
+
+    username = getattr(user, 'username', '')
+    reason_text = '系统生命周期策略' if reason == 'system' else '业务流程变更'
+    inactive_str = inactive_since.strftime('%Y-%m-%d %H:%M') if inactive_since else '-'
+    delete_str = auto_delete_at.strftime('%Y-%m-%d %H:%M') if auto_delete_at else '-'
+
+    text = f"""您好，{username}：
+
+您的账号已被设置为不活跃状态。
+
+变更原因：{reason_text}
+不活跃开始时间：{inactive_str}
+预计自动删除时间：{delete_str}
+
+您仍可登录系统，并在登录后选择“延期注销”来延长1年活跃期（支持多次延期）。
+
+此邮件由系统自动发送，请勿直接回复。
+"""
+
+    html = f"""
+    <html>
+      <body>
+        <p>您好，<strong>{username}</strong>：</p>
+        <p>您的账号已被设置为<strong>不活跃状态</strong>。</p>
+        <p>变更原因：{reason_text}</p>
+        <p>不活跃开始时间：{inactive_str}</p>
+        <p>预计自动删除时间：{delete_str}</p>
+        <p>您仍可登录系统，并在登录后选择“延期注销”来延长1年活跃期（支持多次延期）。</p>
+        <hr>
+        <p>此邮件由系统自动发送，请勿直接回复。</p>
+      </body>
+    </html>
+    """
+
+    return send_email_with_config(
+        config=config,
+        to_email=to_email,
+        subject='CManager 账号状态提醒：账号已转为不活跃',
+        text_body=text,
+        html_body=html,
+        success_message=f'不活跃提醒邮件已发送至 {to_email}',
+    )

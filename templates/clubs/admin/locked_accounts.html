@@ -1,42 +1,153 @@
 {% extends 'clubs/admin/base.html' %}
 
-{% block title %}被锁定账号管理{% endblock %}
+{% block title %}被锁定账号 - 管理中心{% endblock %}
 
-{% block content %}
-<h1>被锁定账号</h1>
-{% if locked %}
-<table class="table">
-    <thead>
-        <tr><th>用户名</th><th>邮箱</th><th>操作</th></tr>
-    </thead>
-    <tbody>
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex; align-items: center; gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl); padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl); border: 1px solid var(--md3-outline-variant);
+    }
+    .page-header > .material-icons { font-size: 2.2rem; color: var(--md3-error); }
+    .page-header-content { flex: 1; }
+    .page-header h1 { margin: 0 0 2px 0; font-size: 1.6rem; font-weight: 600; color: var(--md3-on-surface); }
+    .page-header .subtitle { color: var(--md3-on-surface-variant); font-size: 0.875rem; margin: 0; }
+    .btn-back {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 40px; height: 40px; border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-high); color: var(--md3-on-surface);
+        text-decoration: none; border: 1px solid var(--md3-outline-variant);
+        transition: all 0.2s; flex-shrink: 0;
+    }
+    .btn-back:hover { background: var(--md3-primary-container); color: var(--md3-on-primary-container); border-color: var(--md3-primary); }
+
+    .content-card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+        overflow: hidden;
+    }
+    .card-heading {
+        display: flex; align-items: center; gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-xl) var(--md3-spacing-2xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container-low);
+    }
+    .card-heading .material-icons { color: var(--md3-error); font-size: 1.4rem; }
+    .card-heading span:not(.material-icons) { font-size: 1rem; font-weight: 600; color: var(--md3-on-surface); }
+    .locked-count {
+        margin-left: auto;
+        padding: 2px 12px;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.8rem; font-weight: 700;
+        background: var(--md3-error-container); color: var(--md3-on-error-container);
+    }
+
+    .empty-state {
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; padding: 60px 24px; gap: 12px;
+        color: var(--md3-on-surface-variant);
+    }
+    .empty-state .material-icons { font-size: 3rem; color: var(--md3-outline); }
+    .empty-state p { font-size: 1rem; margin: 0; }
+
+    .user-row {
+        display: flex; align-items: center; gap: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-2xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        transition: background 0.15s;
+    }
+    .user-row:last-child { border-bottom: none; }
+    .user-row:hover { background: var(--md3-surface-container-high); }
+
+    .user-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        background: var(--md3-error-container); color: var(--md3-on-error-container);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
+        text-decoration: none; overflow: hidden;
+    }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .user-name {
+        font-weight: 600; font-size: 0.975rem; color: var(--md3-on-surface);
+        text-decoration: none;
+    }
+    .user-name:hover { color: var(--md3-primary); text-decoration: underline; }
+    .user-email { font-size: 0.8rem; color: var(--md3-on-surface-variant); }
+    .lock-badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 2px 10px; border-radius: var(--md3-radius-full);
+        font-size: 0.75rem; font-weight: 600;
+        background: var(--md3-error-container); color: var(--md3-on-error-container);
+    }
+    .lock-badge .material-icons { font-size: 0.85rem; }
+
+    .btn-unlock {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 8px 18px; border: none; border-radius: var(--md3-radius-md);
+        background: var(--md3-primary); color: var(--md3-on-primary);
+        font-weight: 600; font-size: 0.875rem; cursor: pointer;
+        transition: all 0.2s; font-family: inherit; white-space: nowrap;
+        box-shadow: var(--md3-elevation-1);
+    }
+    .btn-unlock .material-icons { font-size: 1rem; }
+    .btn-unlock:hover { box-shadow: var(--md3-elevation-3); transform: translateY(-1px); }
+</style>
+{% endblock %}
+
+{% block admin_main %}
+
+<div class="page-header">
+    <a href="{% url 'clubs:admin_dashboard' %}" class="btn-back" title="返回仪表板">
+        <span class="material-icons">arrow_back</span>
+    </a>
+    <span class="material-icons">lock</span>
+    <div class="page-header-content">
+        <h1>被锁定账号</h1>
+        <p class="subtitle">查看并解锁因多次登录失败而被锁定的用户账号</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-heading">
+        <span class="material-icons">warning</span>
+        <span>锁定账号列表</span>
+        <span class="locked-count">{{ locked|length }} 个</span>
+    </div>
+
+    {% if locked %}
         {% for u in locked %}
-        <tr>
-            <td>
-                <a href="{% url 'clubs:user_detail' u.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                        {% if u.profile.avatar %}
-                            <img src="{{ u.profile.avatar.url }}" alt="{{ u.username }}" style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                            <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
-                                {{ u.profile.get_full_name|slice:":1"|default:u.username|slice:":1"|upper }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    <span>{{ u.username }}</span>
-                </a>
-            </td>
-            <td>{{ u.email }}</td>
-            <td>
-                <form method="post" action="{% url 'clubs:unlock_account' u.username %}" style="display:inline">{% csrf_token %}
-                    <button class="btn">解锁</button>
-                </form>
-            </td>
-        </tr>
+        <div class="user-row">
+            <a href="{% url 'clubs:user_detail' u.id %}" class="user-avatar">
+                {% if u.profile.avatar %}
+                    <img src="{{ u.profile.avatar.url }}" alt="{{ u.username }}">
+                {% else %}
+                    {{ u.profile.get_full_name|slice:":1"|default:u.username|slice:":1"|upper }}
+                {% endif %}
+            </a>
+            <div class="user-info">
+                <a href="{% url 'clubs:user_detail' u.id %}" class="user-name">{{ u.username }}{% if u.profile.get_full_name %}（{{ u.profile.get_full_name }}）{% endif %}</a>
+                <span class="user-email">{{ u.email|default:"未设置邮箱" }}</span>
+            </div>
+            <span class="lock-badge"><span class="material-icons">lock</span>已锁定</span>
+            <form method="post" action="{% url 'clubs:unlock_account' u.username %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-unlock">
+                    <span class="material-icons">lock_open</span>解锁账号
+                </button>
+            </form>
+        </div>
         {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>当前没有被锁定的账号。</p>
-{% endif %}
+    {% else %}
+        <div class="empty-state">
+            <span class="material-icons">check_circle</span>
+            <p>当前没有被锁定的账号，一切正常。</p>
+        </div>
+    {% endif %}
+</div>
+
 {% endblock %}

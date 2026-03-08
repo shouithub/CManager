@@ -1,0 +1,490 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}社员管理{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mm-wrap { max-width: 1200px; margin: 0 auto; padding: 20px 20px 72px; }
+    .mm-card { background: var(--md3-surface-container-low); border: 1px solid var(--md3-outline-variant); border-radius: 20px; box-shadow: var(--md3-elevation-1); padding: 18px; margin-bottom: 16px; }
+    .mm-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .mm-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .mm-tab { padding: 8px 12px; border-radius: 999px; border: 1px solid var(--md3-outline-variant); text-decoration: none; color: var(--md3-on-surface); }
+    .mm-tab:hover { text-decoration: none; }
+    .mm-tab.active { background: var(--md3-primary-container); color: var(--md3-on-primary-container); border-color: var(--md3-primary); }
+    .mm-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .mm-table { width: 100%; border-collapse: collapse; min-width: 640px; }
+    .mm-table th, .mm-table td { border-bottom: 1px solid var(--md3-outline-variant); padding: 10px 8px; text-align: left; vertical-align: middle; }
+    .mm-table th { color: var(--md3-on-surface-variant); font-size: 0.88rem; }
+    .chip { display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; font-size:0.82rem; }
+    .chip.active { background: var(--md3-success-container); color: var(--md3-on-success-container); }
+    .chip.inactive { background: var(--md3-warning-container); color: var(--md3-on-warning-container); }
+    .mini-form { display: grid; gap: 6px; }
+    .mini-actions { display:flex; gap:6px; flex-wrap:wrap; }
+    .mini-input, .mini-select { width: 100%; border: 1px solid var(--md3-outline-variant); border-radius: 10px; background: var(--md3-surface); color: var(--md3-on-surface); padding: 8px 10px; font-size: 0.95rem; box-sizing: border-box; height: 38px; }
+    .mini-select { height: 38px; }
+    .mini-btn { border: 1px solid var(--md3-outline-variant); background: var(--md3-surface); color: var(--md3-on-surface); border-radius: 999px; padding: 5px 14px; cursor: pointer; text-decoration: none; display: inline-flex; align-items:center; gap:4px; font-size:0.9rem; }
+    .mini-btn:hover { text-decoration: none; }
+    .mini-btn.primary { background: var(--md3-primary); color: var(--md3-on-primary); border-color: var(--md3-primary); }
+    .mini-btn.danger { background: var(--md3-error-container); color: var(--md3-on-error-container); border-color: transparent; }
+    /* 成员头像 */
+    .mem-avatar { width:40px; height:40px; border-radius:50%; background:var(--md3-primary-container); color:var(--md3-on-primary-container); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1rem; flex-shrink:0; text-decoration:none; transition:box-shadow .15s; }
+    .mem-avatar:hover { box-shadow:0 0 0 3px var(--md3-primary); }
+    .mem-info { display:flex; align-items:center; gap:10px; }
+    .mem-info a { text-decoration:none; color:var(--md3-on-surface); }
+    .mem-info a:hover .mem-name { text-decoration:underline; }
+    .qr-box { display:flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; margin-top: 10px; }
+    .qr-img { width: 180px; height: 180px; border: 1px solid var(--md3-outline-variant); border-radius: 12px; object-fit: contain; background: #fff; display:none; }
+
+    /* 弹窗通用 */
+    .mm-modal-overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; }
+    .mm-modal-overlay.open { display:flex; }
+    .mm-modal { background:var(--md3-surface); border-radius:20px; box-shadow:0 4px 24px rgba(0,0,0,.22); width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
+    .mm-modal-header { display:flex; align-items:center; justify-content:space-between; padding:18px 20px 14px; border-bottom:1px solid var(--md3-outline-variant); }
+    .mm-modal-header h3 { margin:0; font-size:1.1rem; font-weight:600; color:var(--md3-on-surface); display:flex; align-items:center; gap:8px; }
+    .mm-modal-close { background:none; border:none; cursor:pointer; color:var(--md3-on-surface-variant); display:flex; align-items:center; padding:6px; border-radius:50%; }
+    .mm-modal-close:hover { background:var(--md3-surface-container-high); }
+    /* 编辑资料弹窗 body */
+    .edit-modal-body { padding:16px 20px 4px; display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; }
+    .edit-modal-body .full-row { grid-column:1/-1; }
+    .edit-modal-body label { display:block; font-size:0.82rem; color:var(--md3-on-surface-variant); margin-bottom:4px; }
+    .edit-modal-footer { padding:12px 20px 18px; display:flex; justify-content:space-between; align-items:center; gap:8px; border-top:1px solid var(--md3-outline-variant); margin-top:8px; }
+    .edit-modal-footer .right { display:flex; gap:8px; }
+    @media (max-width:480px) { .edit-modal-body { grid-template-columns:1fr; } .edit-modal-body .full-row { grid-column:1; } }
+    /* 令牌列表条目 */
+    .token-item { display:flex; align-items:flex-start; gap:10px; justify-content:space-between; padding:10px 8px; border-bottom:1px solid var(--md3-outline-variant); }
+    .token-item:last-child { border-bottom:none; }
+    .token-item-info { flex:1; min-width:0; }
+
+    @media (max-width: 768px) {
+        .mm-wrap { padding: 14px 12px 120px; }
+        .mm-card { padding: 14px; border-radius: 16px; }
+        .mm-tabs { gap: 6px; }
+        .mm-tab { padding: 6px 10px; font-size: 0.9rem; }
+        .mm-table { min-width: 850px; font-size: 0.88rem; }
+        .mm-table th, .mm-table td { padding: 8px 6px; }
+        .qr-box { flex-direction: column; align-items: center; }
+        .qr-img { width: 200px; height: 200px; display: block !important; margin: 0 auto; }
+        .mini-btn { font-size: 0.88rem; padding: 6px 10px; }
+    }
+
+    @media (max-width: 480px) {
+        .mm-wrap { padding: 10px 8px 100px; }
+        .mm-card { padding: 12px; }
+        .mm-table { font-size: 0.82rem; }
+        .page-header h1 { font-size: 1.4rem; }
+        .page-header .subtitle { font-size: 0.85rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mm-wrap">
+    <div class="page-header">
+        <span class="material-icons">groups</span>
+        <div class="page-header-content">
+            <h1>社员管理</h1>
+            <div class="subtitle">社长可管理本社社员资料、状态与移除操作</div>
+        </div>
+    </div>
+
+    <div class="mm-card">
+        <div style="font-weight:600;">选择社团</div>
+        <div class="mm-tabs">
+            {% for c in clubs %}
+            <a class="mm-tab {% if c.id == club.id %}active{% endif %}" href="{% url 'clubs:president_member_management' %}?club_id={{ c.id }}">{{ c.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="mm-card">
+        <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+            <div style="font-weight:600;">招新二维码设置</div>
+            <button class="mini-btn" type="button" onclick="openTokenManagerModal({{ club.id }})">
+                <span class="material-icons" style="font-size:1rem;">manage_history</span> 管理二维码
+            </button>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap; align-items:end;">
+            <div style="flex:1; min-width:150px;">
+                <label style="display:block; font-size:0.9rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">有效时长（分钟）</label>
+                <input type="number" id="qrMinutes" value="10" min="1" max="43200" style="width:100%; padding:8px; border:1px solid var(--md3-outline); border-radius:8px;" oninput="validateQrConfig()">
+            </div>
+            <div style="flex:1; min-width:150px;">
+                <label style="display:block; font-size:0.9rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">使用次数</label>
+                <select id="qrMaxUses" style="width:100%; padding:8px; border:1px solid var(--md3-outline); border-radius:8px;" onchange="validateQrConfig()">
+                    <option value="1">1次（一次性）</option>
+                    <option value="5">5次</option>
+                    <option value="10">10次</option>
+                    <option value="20">20次</option>
+                    <option value="50">50次</option>
+                    <option value="unlimited">不限次数</option>
+                </select>
+            </div>
+            <button class="mini-btn primary" type="button" onclick="generateMemberJoinQRCode({{ club.id }})" style="white-space:nowrap;">生成二维码</button>
+        </div>
+        <div id="qrConfigError" style="display:none; margin-top:8px; padding:8px; background:var(--md3-error-container); color:var(--md3-on-error-container); border-radius:8px; font-size:0.9rem;"></div>
+        <div id="memberQrPanel" style="display:none; margin-top: 12px; border:1px dashed var(--md3-outline); border-radius:12px; padding:12px;">
+            <div class="qr-box">
+                <img id="memberQrImage" class="qr-img" alt="招新二维码">
+                <div style="flex:1; min-width:220px;">
+                    <div id="memberQrUrl" style="word-break:break-all;"></div>
+                    <div id="memberQrExpires" style="margin-top: 6px; color: var(--md3-on-surface-variant);"></div>
+                    <div id="memberQrUses" style="margin-top: 4px; color: var(--md3-on-surface-variant);"></div>
+                    <div class="mm-toolbar">
+                        <button class="mini-btn" type="button" onclick="copyMemberQrLink()">复制链接</button>
+                        <a id="memberJoinOpen" class="mini-btn" href="#" target="_blank" rel="noopener">打开链接</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mm-card">
+        <div style="font-weight:600; margin-bottom:10px;">成员列表（{{ memberships|length }}）</div>
+        <div class="mm-table-wrap">
+            <table class="mm-table">
+                <thead>
+                    <tr>
+                        <th>成员</th>
+                        <th>状态</th>
+                        <th>手机</th>
+                        <th>状态操作</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in memberships %}
+                    <tr>
+                        <td>
+                            <div class="mem-info">
+                                <a class="mem-avatar" href="{% url 'clubs:user_detail' m.user_profile.user.id %}" title="查看用户详情">
+                                    {{ m.user_profile.real_name|default:m.user_profile.user.username|slice:':1'|upper }}
+                                </a>
+                                <a href="{% url 'clubs:user_detail' m.user_profile.user.id %}">
+                                    <div class="mem-name" style="font-weight:600;">{{ m.user_profile.get_full_name }}</div>
+                                    <div style="font-size:0.82rem; color:var(--md3-on-surface-variant);">{{ m.user_profile.user.username }}</div>
+                                    <div style="font-size:0.78rem; color:var(--md3-on-surface-variant);">加入：{{ m.joined_at|date:'Y-m-d' }}</div>
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="chip {% if m.status == 'active' %}active{% else %}inactive{% endif %}">{{ m.get_status_display }}</span>
+                        </td>
+                        <td style="font-size:0.9rem;">{{ m.user_profile.phone|default:'--' }}</td>
+                        <td>
+                            <form method="post" class="mini-form" style="display:flex; gap:6px; align-items:center;">
+                                {% csrf_token %}
+                                <input type="hidden" name="club_id" value="{{ club.id }}">
+                                <input type="hidden" name="membership_id" value="{{ m.id }}">
+                                <input type="hidden" name="action" value="set_status">
+                                <select name="status" class="mini-select" style="width:auto; min-width:80px;">
+                                    <option value="active" {% if m.status == 'active' %}selected{% endif %}>活跃</option>
+                                    <option value="inactive" {% if m.status == 'inactive' %}selected{% endif %}>不活跃</option>
+                                </select>
+                                <button class="mini-btn" type="submit">保存</button>
+                            </form>
+                        </td>
+                        <td>
+                            <button class="mini-btn" type="button" onclick="openEditModal(this)"
+                                data-membership="{{ m.id }}"
+                                data-club="{{ club.id }}"
+                                data-name="{{ m.user_profile.real_name|default:''|escapejs }}"
+                                data-student="{{ m.user_profile.student_id|default:''|escapejs }}"
+                                data-phone="{{ m.user_profile.phone|default:''|escapejs }}"
+                                data-wechat="{{ m.user_profile.wechat|default:''|escapejs }}"
+                                data-qq="{{ m.user_profile.qq|default:''|escapejs }}"
+                                data-email="{{ m.user_profile.user.email|default:''|escapejs }}"
+                                data-gender="{{ m.user_profile.gender|default:'' }}"
+                                data-college="{{ m.user_profile.college|default:''|escapejs }}"
+                                data-classname="{{ m.user_profile.class_name|default:''|escapejs }}"
+                                data-username="{{ m.user_profile.get_full_name|escapejs }}">
+                                <span class="material-icons" style="font-size:1rem;">edit</span> 编辑
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align:center; color: var(--md3-on-surface-variant); padding: 18px;">暂无成员，先生成二维码邀请成员加入</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑资料弹窗 -->
+<div class="mm-modal-overlay" id="editModalOverlay" onclick="closeEditModalOnBg(event)">
+    <div class="mm-modal">
+        <div class="mm-modal-header">
+            <h3><span class="material-icons" style="color:var(--md3-primary);">edit</span><span id="editModalTitle">编辑成员资料</span></h3>
+            <button class="mm-modal-close" type="button" onclick="closeEditModal()">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <form method="post" id="editProfileForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_profile">
+            <input type="hidden" name="club_id" id="editClubId">
+            <input type="hidden" name="membership_id" id="editMembershipId">
+            <div class="edit-modal-body">
+                <div>
+                    <label for="editRealName">姓名</label>
+                    <input class="mini-input" id="editRealName" name="real_name" placeholder="姓名">
+                </div>
+                <div>
+                    <label for="editStudentId">学号</label>
+                    <input class="mini-input" id="editStudentId" name="student_id" placeholder="学号">
+                </div>
+                <div>
+                    <label for="editPhone">手机号</label>
+                    <input class="mini-input" id="editPhone" name="phone" placeholder="手机号">
+                </div>
+                <div>
+                    <label for="editWechat">微信号</label>
+                    <input class="mini-input" id="editWechat" name="wechat" placeholder="微信号">
+                </div>
+                <div>
+                    <label for="editQq">QQ（可选）</label>
+                    <input class="mini-input" id="editQq" name="qq" placeholder="QQ">
+                </div>
+                <div>
+                    <label for="editEmail">邮箱</label>
+                    <input class="mini-input" id="editEmail" name="email" type="email" placeholder="邮箱">
+                </div>
+                <div>
+                    <label for="editGender">性别</label>
+                    <select class="mini-select" id="editGender" name="gender">
+                        <option value="">不填</option>
+                        <option value="male">男</option>
+                        <option value="female">女</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editCollege">学院</label>
+                    <input class="mini-input" id="editCollege" name="college" placeholder="学院">
+                </div>
+                <div class="full-row">
+                    <label for="editClassName">班级</label>
+                    <input class="mini-input" id="editClassName" name="class_name" placeholder="班级">
+                </div>
+            </div>
+            <div class="edit-modal-footer">
+                <div>
+                    <button class="mini-btn danger" type="button" id="editModalRemoveBtn" onclick="confirmRemove()">移除成员</button>
+                </div>
+                <div class="right">
+                    <button class="mini-btn" type="button" onclick="closeEditModal()">取消</button>
+                    <button class="mini-btn primary" type="submit">保存资料</button>
+                </div>
+            </div>
+        </form>
+        <!-- 隐藏的移除表单 -->
+        <form method="post" id="removeForm" style="display:none;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="remove_member">
+            <input type="hidden" name="club_id" id="removeClubId">
+            <input type="hidden" name="membership_id" id="removeMembershipId">
+        </form>
+    </div>
+</div>
+
+<script>
+async function generateMemberJoinQRCode(clubId) {
+    const panel = document.getElementById('memberQrPanel');
+    const urlEl = document.getElementById('memberQrUrl');
+    const expEl = document.getElementById('memberQrExpires');
+    const usesEl = document.getElementById('memberQrUses');
+    const imgEl = document.getElementById('memberQrImage');
+    const openEl = document.getElementById('memberJoinOpen');
+
+    try {
+        const minutes = document.getElementById('qrMinutes').value;
+        const maxUses = document.getElementById('qrMaxUses').value;
+        
+        const res = await fetch(`/club/${clubId}/member-token/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: `minutes=${minutes}&max_uses=${maxUses}`
+        });
+        const data = await res.json();
+        if (!data.success) {
+            throw new Error(data.message || '生成失败');
+        }
+
+        panel.style.display = 'block';
+        urlEl.textContent = data.join_url;
+        expEl.textContent = `过期时间：${data.expires_at}`;
+        usesEl.textContent = `使用次数：${data.uses_info}`;
+        openEl.href = data.join_url;
+        if (data.qr_data_uri) {
+            imgEl.src = data.qr_data_uri;
+            imgEl.style.display = 'block';
+        } else {
+            imgEl.style.display = 'none';
+        }
+    } catch (err) {
+        alert(err.message || '二维码生成失败');
+    }
+}
+
+function validateQrConfig() {
+    const minutes = parseInt(document.getElementById('qrMinutes').value);
+    const maxUses = document.getElementById('qrMaxUses').value;
+    const errorEl = document.getElementById('qrConfigError');
+    
+    if (maxUses === 'unlimited' && minutes > 1440) {
+        errorEl.textContent = '⚠️ 不限次数的令牌有效期不得超过1天（1440分钟）';
+        errorEl.style.display = 'block';
+        return false;
+    } else {
+        errorEl.style.display = 'none';
+        return true;
+    }
+}
+
+function copyMemberQrLink() {
+    const url = document.getElementById('memberQrUrl').textContent || '';
+    if (!url) {
+        return;
+    }
+    navigator.clipboard.writeText(url).then(function() {
+        alert('链接已复制');
+    }).catch(function() {
+        alert('复制失败，请手动复制');
+    });
+}
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+}
+
+// 编辑资料弹窗
+function openEditModal(btn) {
+    document.getElementById('editModalTitle').textContent = '编辑成员资料 — ' + (btn.dataset.username || '');
+    document.getElementById('editClubId').value = btn.dataset.club;
+    document.getElementById('editMembershipId').value = btn.dataset.membership;
+    document.getElementById('removeClubId').value = btn.dataset.club;
+    document.getElementById('removeMembershipId').value = btn.dataset.membership;
+    document.getElementById('editRealName').value = btn.dataset.name;
+    document.getElementById('editStudentId').value = btn.dataset.student;
+    document.getElementById('editPhone').value = btn.dataset.phone;
+    document.getElementById('editWechat').value = btn.dataset.wechat;
+    document.getElementById('editQq').value = btn.dataset.qq;
+    document.getElementById('editEmail').value = btn.dataset.email;
+    document.getElementById('editGender').value = btn.dataset.gender;
+    document.getElementById('editCollege').value = btn.dataset.college;
+    document.getElementById('editClassName').value = btn.dataset.classname;
+    document.getElementById('editModalOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeEditModal() {
+    document.getElementById('editModalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+function closeEditModalOnBg(e) {
+    if (e.target === document.getElementById('editModalOverlay')) closeEditModal();
+}
+function confirmRemove() {
+    const name = document.getElementById('editModalTitle').textContent.split('—').slice(1).join('—').trim();
+    if (confirm('确认移除成员 ' + (name || '该成员') + '？此操作不可恢复。')) {
+        document.getElementById('removeForm').submit();
+    }
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeEditModal(); closeTokenManagerModal(); }
+});
+
+// ─── 二维码管理弹窗 ────────────────────────────────────────
+let _tokenClubId = null;
+function openTokenManagerModal(clubId) {
+    _tokenClubId = clubId;
+    document.getElementById('tokenManagerOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    loadTokenList(clubId);
+}
+function closeTokenManagerModal() {
+    document.getElementById('tokenManagerOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+async function loadTokenList(clubId) {
+    const list = document.getElementById('tokenList');
+    list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">加载中…</div>';
+    try {
+        const res = await fetch(`/club/${clubId}/member-tokens/`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        if (data.tokens.length === 0) {
+            list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">暂无有效的二维码链接</div>';
+            return;
+        }
+        list.innerHTML = data.tokens.map(t => `
+            <div class="token-item" id="titem-${t.id}">
+                <div class="token-item-info">
+                    <div style="font-size:0.82rem;word-break:break-all;color:var(--md3-on-surface-variant);">${t.join_url}</div>
+                    <div style="font-size:0.78rem;margin-top:3px;color:var(--md3-on-surface-variant);">过期：${t.expires_at} &nbsp;|&nbsp; 使用：${t.uses_info} &nbsp;|&nbsp; 创建：${t.created_at}</div>
+                </div>
+                <div style="display:flex;gap:6px;flex-shrink:0;">
+                    <button class="mini-btn" type="button" onclick="copyText('${t.join_url}')">复制</button>
+                    <button class="mini-btn danger" type="button" onclick="deleteToken(${clubId}, ${t.id})">删除</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        list.innerHTML = `<div style="padding:16px;color:var(--md3-error);">加载失败：${e.message}</div>`;
+    }
+}
+async function deleteToken(clubId, tokenId) {
+    if (!confirm('确认删除此二维码链接？删除后该链接立即失效。')) return;
+    try {
+        const res = await fetch(`/club/${clubId}/member-token/${tokenId}/delete/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const data = await res.json();
+        if (data.success) {
+            const el = document.getElementById(`titem-${tokenId}`);
+            if (el) el.remove();
+            const list = document.getElementById('tokenList');
+            if (!list.querySelector('.token-item')) {
+                list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">暂无有效的二维码链接</div>';
+            }
+        } else {
+            alert(data.message || '删除失败');
+        }
+    } catch (e) {
+        alert('网络错误，请重试');
+    }
+}
+function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => alert('链接已复制')).catch(() => alert('复制失败，请手动复制'));
+}
+</script>
+
+<!-- 二维码管理弹窗 -->
+<div class="mm-modal-overlay" id="tokenManagerOverlay" onclick="if(event.target===this)closeTokenManagerModal()">
+    <div class="mm-modal" style="max-width:580px;">
+        <div class="mm-modal-header">
+            <h3><span class="material-icons" style="color:var(--md3-primary);">qr_code</span>招新二维码管理</h3>
+            <button class="mm-modal-close" type="button" onclick="closeTokenManagerModal()">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div style="padding:12px 20px 6px; font-size:0.85rem; color:var(--md3-on-surface-variant);">当前社团有效的招新链接列表（已过期或已耗尽次数的不显示）</div>
+        <div id="tokenList" style="padding:0 12px 8px; max-height:400px; overflow-y:auto;"></div>
+        <div style="padding:12px 20px 18px; display:flex; justify-content:flex-end;">
+            <button class="mini-btn" type="button" onclick="closeTokenManagerModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

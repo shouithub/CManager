@@ -18,7 +18,13 @@ urlpatterns = [
     # 公共页面
     path('', views.index, name='index'),
     path('club/<int:club_id>/', views.club_detail, name='club_detail'),
+    path('club/<int:club_id>/member-token/', views.generate_member_join_token, name='generate_member_join_token'),
+    path('club/<int:club_id>/member-tokens/', views.list_member_tokens, name='list_member_tokens'),
+    path('club/<int:club_id>/member-token/<int:token_id>/delete/', views.delete_member_token, name='delete_member_token'),
+    path('member/join/<str:token_code>/', views.member_join_by_token, name='member_join_by_token'),
     path('activities/', views.public_activities, name='public_activities'),  # 活动管理页面（仅管理员干事可见）
+    path('activities/<int:activity_id>/register/', views.register_activity, name='register_activity'),
+    path('activities/<int:activity_id>/unregister/', views.unregister_activity, name='unregister_activity'),
     path('admin-panel/departments/', views.manage_departments, name='manage_departments'),  # 部门管理
     path('admin-panel/departments/add/', views.add_department, name='add_department'),
     path('admin-panel/departments/edit/<int:dept_id>/', views.edit_department, name='edit_department'),
@@ -29,12 +35,14 @@ urlpatterns = [
     path('register/', auth_views.register, name='register'),
     path('logout/', auth_views.user_logout, name='logout'),
     path('change-account-settings/', auth_views.change_account_settings, name='change_account_settings'),
+    path('extend-inactive-period/', auth_views.extend_inactive_period, name='extend_inactive_period'),
     path('edit-profile/', auth_views.edit_profile, name='edit_profile'),
     path('user/<int:user_id>/', views.user_detail, name='user_detail'),
     path('delete-account/', auth_views.delete_account, name='delete_account'),
     
     # 用户/社长操作
     path('dashboard/', auth_views.user_dashboard, name='user_dashboard'),
+    path('president/members/', views.president_member_management, name='president_member_management'),
     path('register-club/', views.register_club, name='register_club'),  # 社团申请
     path('club/<int:club_id>/submit-registration/', views.submit_club_registration, name='submit_club_registration'),  # 社团注册
     path('club/<int:club_id>/submit-review/', views.submit_review, name='submit_review'),

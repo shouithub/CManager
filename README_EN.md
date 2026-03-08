@@ -1,8 +1,8 @@
 # CManager - Club Management System
 
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.13%2B-blue)](https://www.python.org/)
-[![Django](https://img.shields.io/badge/django-5.0%2B-green)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/django-5.2%2B-green)](https://www.djangoproject.com/)
 
 [中文](README.md) | [English](README_EN.md)
 
@@ -15,10 +15,16 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
 ## ✨ Core Features
 
 ### 👥 User & Permission System
-- **Multi-Role Support**: President, Staff, Admin, Teacher (v1 branch), Regular User (v1 branch).
+- **Multi-Role Support**: President, Staff, Admin, Member (main branch); Teacher and Regular User (v1 branch).
 - **Fine-Grained Permissions**: RBAC-based permission control with dedicated dashboards for different roles.
 - **Personal Center**: Supports avatar upload (auto-cropping), personal information management, and political status registration.
 - **Privacy Protection**: Users can set contact information visibility; supports "Staff-President" association visibility logic (Presidents can view contact details of Staff responsible for their clubs).
+
+### ♻️ Account Lifecycle
+- **Auto Inactivation**: Non-admin accounts are automatically marked inactive after lifecycle expiry.
+- **Extension Mechanism**: Inactive users can extend and restore active status for another year.
+- **Auto Deletion Policy**: Inactive accounts are automatically deleted after 1 year (admins excluded).
+- **Admin Controls**: Admins can enable/disable accounts and delete accounts with double confirmation.
 
 ### 🏢 Club Lifecycle Management
 - **Club Application**: Full-process application and material submission for new club establishment.
@@ -49,7 +55,7 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Django 5.x (Python 3.13+)
+- **Backend**: Django 5.2+ (Python 3.12+)
 - **Database**: SQLite (Development) / PostgreSQL (Production)
 - **Frontend**: Django Templates + Material Design 3 (MD3) + Bootstrap 5 (Partial components)
 - **Static Resources**: Google Material Icons
@@ -59,7 +65,7 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
 
 ### Requirements
 
-- Python 3.13+
+- Python 3.12+
 - pip
 
 ### Steps
@@ -127,6 +133,8 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
     python manage.py migrate
     ```
 
+    > The `clubs` app uses a squashed migration now; for a fresh environment, the command above is sufficient.
+
 6.  **First-Run Setup (Recommended)**
     On first visit, the app enters OOBE setup to create an admin account and write local settings safely (not committed to Git).
     If needed, you can still create users manually from CLI.
@@ -153,7 +161,7 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
 
 ### ⚙️ Admin
 - **System Config**: Manage carousels, department settings, SMTP email services.
-- **User Management**: Create users, assign roles, reset passwords.
+- **User Management**: Create users, assign roles, reset passwords, enable/disable accounts, and delete accounts with double confirmation.
 - **Global Control**: Open/close registration periods, annual review channels, etc.
 
 ## 🌿 Branch Info (v1)

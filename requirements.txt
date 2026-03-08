@@ -3,3 +3,4 @@ openpyxl
 pillow
 django-redis
 pymysql
+qrcode[pil]

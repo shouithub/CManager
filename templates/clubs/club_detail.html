@@ -23,7 +23,7 @@
         color: var(--md3-on-surface);
         border: 1px solid var(--md3-outline);
         border-radius: var(--md3-radius-full);
-        text-decoration: none;
+        text-decoration: none !important;
         font-weight: 500;
         font-size: 0.875rem;
         transition: all 0.2s ease;
@@ -34,6 +34,7 @@
         background: var(--md3-surface-container-highest);
         box-shadow: var(--md3-elevation-2);
         transform: translateY(-1px);
+        text-decoration: none !important;
     }
 
     .back-btn .material-icons {
@@ -166,10 +167,14 @@
         padding: var(--md3-spacing-md) var(--md3-spacing-lg);
         border-radius: var(--md3-radius-full);
         font-weight: 500;
-        text-decoration: none;
+        text-decoration: none !important;
         transition: all 0.2s ease;
         border: none;
         cursor: pointer;
+    }
+    
+    .action-btn:hover {
+        text-decoration: none !important;
     }
 
     .btn-primary {
@@ -259,10 +264,47 @@
         .officers-table-wrapper {
             margin: 0 calc(var(--md3-spacing-lg) * -1);
             padding: 0 var(--md3-spacing-lg);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .action-grid {
             grid-template-columns: 1fr;
+        }
+        
+        .action-btn {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+        }
+        
+        .qr-box {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .qr-img {
+            width: 220px !important;
+            height: 220px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .club-detail-page {
+            padding: var(--md3-spacing-sm);
+            padding-bottom: 150px;
+        }
+        
+        .detail-card {
+            padding: var(--md3-spacing-md);
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .action-btn {
+            padding: 8px 12px;
+            font-size: 0.85rem;
         }
     }
 </style>
@@ -338,21 +380,75 @@
     </div>
     {% endif %}
 
-    <!-- 干部列表 -->
-    {% if officers %}
+    <!-- 成员列表 -->
+    {% if officers or memberships %}
     <div class="detail-card">
-        <div class="detail-card-header">
+        <div class="detail-card-header" style="justify-content: space-between;">
+            <div style="display:flex; align-items:center; gap: 12px;">
             <span class="material-icons">badge</span>
-            <h2>现任干部</h2>
+            <h2>成员列表</h2>
+            </div>
+            {% if is_president %}
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" class="action-btn" style="padding: 6px 12px;" onclick="window.location.href='{% url 'clubs:president_member_management' %}?club_id={{ club.id }}'">
+                    <span class="material-icons">manage_accounts</span>
+                    社员管理
+                </button>
+            </div>
+            {% endif %}
         </div>
+
+        {% if is_president %}
+        <div style="margin-bottom:12px; padding:12px; border:1px solid var(--md3-outline); border-radius:12px;">
+            <div style="font-weight:600; margin-bottom:8px;">二维码生成设置</div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+                <div style="flex:1; min-width:140px;">
+                    <label style="display:block; font-size:0.88rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">有效时长（分钟）</label>
+                    <input type="number" id="qrMinutes" value="10" min="1" max="43200" style="width:100%; padding:8px; border:1px solid var(--md3-outline); border-radius:8px;" oninput="validateQrConfig()">
+                </div>
+                <div style="flex:1; min-width:140px;">
+                    <label style="display:block; font-size:0.88rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">使用次数</label>
+                    <select id="qrMaxUses" style="width:100%; padding:8px; border:1px solid var(--md3-outline); border-radius:8px;" onchange="validateQrConfig()">
+                        <option value="1">1次（一次性）</option>
+                        <option value="5">5次</option>
+                        <option value="10">10次</option>
+                        <option value="20">20次</option>
+                        <option value="50">50次</option>
+                        <option value="unlimited">不限次数</option>
+                    </select>
+                </div>
+                <button type="button" class="action-btn btn-outline" style="padding:8px 14px; white-space:nowrap;" onclick="generateMemberJoinQRCode({{ club.id }})">
+                    <span class="material-icons">qr_code_2</span>
+                    生成二维码
+                </button>
+            </div>
+            <div id="qrConfigError" style="display:none; margin-top:8px; padding:8px; background:var(--md3-error-container); color:var(--md3-on-error-container); border-radius:8px; font-size:0.88rem;"></div>
+        </div>
+        <div id="memberQrPanel" style="display:none; margin-bottom:16px; padding:12px; border:1px dashed var(--md3-outline); border-radius:12px;">
+            <div style="font-weight:600; margin-bottom:8px;">招新二维码已生成</div>
+            <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+                <img id="memberQrImage" alt="招新二维码" style="width:180px; height:180px; border:1px solid var(--md3-outline-variant); border-radius:12px; background:#fff; object-fit:contain; display:none;">
+                <div style="flex:1; min-width:220px;">
+            <div id="memberQrUrl" style="word-break:break-all; font-size:0.92rem; color: var(--md3-on-surface-variant);"></div>
+            <div id="memberQrExpires" style="margin-top:6px; font-size:0.85rem; color: var(--md3-on-surface-variant);"></div>
+            <div id="memberQrUses" style="margin-top:4px; font-size:0.85rem; color: var(--md3-on-surface-variant);"></div>
+                    <button type="button" class="action-btn btn-outline" style="margin-top:10px; padding:6px 10px;" onclick="copyMemberQrLink()">
+                        <span class="material-icons">content_copy</span>
+                        复制链接
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="officers-table-wrapper">
             <table class="officers-table">
                 <thead>
                     <tr>
                         <th>姓名</th>
                         <th>学号</th>
-                        <th>职位</th>
-                        <th>任命日期</th>
+                        <th>身份</th>
+                        <th>加入/任命日期</th>
                         <th>联系方式</th>
                     </tr>
                 </thead>
@@ -387,15 +483,15 @@
                         <td>
                             {% if officer.user_profile and officer.user_profile.user_id %}
                                 <a href="{% url 'clubs:user_detail' officer.user_profile.user_id %}" style="text-decoration: none; color: inherit;">
-                                    {{ officer.user_profile.user.username }}
+                                    {{ officer.user_profile.student_id|default:"--" }}
                                 </a>
                             {% else %}
-                                {{ officer.user_profile.user.username|default:"--" }}
+                                {{ officer.user_profile.student_id|default:"--" }}
                             {% endif %}
                         </td>
                         <td>
                             <span style="font-weight: 500; color: var(--md3-primary);">
-                                {{ officer.get_position_display }}
+                                干部（{{ officer.get_position_display }}）
                             </span>
                         </td>
                         <td>{{ officer.appointed_date|date:"Y-m-d" }}</td>
@@ -408,10 +504,121 @@
                         </td>
                     </tr>
                     {% endfor %}
+
+                    {% for m in memberships %}
+                    {% if not m.user_profile.role == 'president' %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'clubs:user_detail' m.user_profile.user_id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                    {% if m.user_profile.avatar %}
+                                        <img src="{{ m.user_profile.avatar.url }}" alt="{{ m.user_profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                            {{ m.user_profile.get_full_name|slice:":1"|default:m.user_profile.user.username|slice:":1"|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {{ m.user_profile.get_full_name }}
+                            </a>
+                        </td>
+                        <td>{{ m.user_profile.student_id|default:"--" }}</td>
+                        <td>
+                            <span style="font-weight: 500; color: var(--md3-secondary);">社员</span>
+                        </td>
+                        <td>{{ m.joined_at|date:"Y-m-d" }}</td>
+                        <td>
+                            {% if is_president or is_staff or user.is_superuser or m.user_profile.is_info_public %}
+                                {{ m.user_profile.phone|default:"--" }}
+                            {% else %}
+                                <span style="color: var(--md3-on-surface-variant); font-size: 0.8em;">未公开</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+    {% endif %}
+
+    {% if is_president %}
+    <script>
+    async function generateMemberJoinQRCode(clubId) {
+        const panel = document.getElementById('memberQrPanel');
+        const urlEl = document.getElementById('memberQrUrl');
+        const expEl = document.getElementById('memberQrExpires');
+        const usesEl = document.getElementById('memberQrUses');
+        const imgEl = document.getElementById('memberQrImage');
+
+        try {
+            const minutes = document.getElementById('qrMinutes').value;
+            const maxUses = document.getElementById('qrMaxUses').value;
+
+            const res = await fetch(`/club/${clubId}/member-token/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `minutes=${minutes}&max_uses=${maxUses}`
+            });
+            const data = await res.json();
+            if (!data.success) {
+                throw new Error(data.message || '生成失败');
+            }
+
+            panel.style.display = 'block';
+            urlEl.textContent = data.join_url;
+            expEl.textContent = `过期时间：${data.expires_at}`;
+            usesEl.textContent = `使用次数：${data.uses_info}`;
+            if (data.qr_data_uri) {
+                imgEl.src = data.qr_data_uri;
+                imgEl.style.display = 'block';
+            } else {
+                imgEl.style.display = 'none';
+            }
+        } catch (err) {
+            alert(err.message || '二维码生成失败');
+        }
+    }
+
+    function validateQrConfig() {
+        const minutes = parseInt(document.getElementById('qrMinutes').value);
+        const maxUses = document.getElementById('qrMaxUses').value;
+        const errorEl = document.getElementById('qrConfigError');
+        
+        if (maxUses === 'unlimited' && minutes > 1440) {
+            errorEl.textContent = '⚠️ 不限次数的令牌有效期不得超过1天（1440分钟）';
+            errorEl.style.display = 'block';
+            return false;
+        } else {
+            errorEl.style.display = 'none';
+            return true;
+        }
+    }
+
+    function copyMemberQrLink() {
+        const url = document.getElementById('memberQrUrl').textContent || '';
+        if (!url) {
+            return;
+        }
+        navigator.clipboard.writeText(url).then(function() {
+            alert('链接已复制');
+        }).catch(function() {
+            alert('复制失败，请手动复制');
+        });
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+    </script>
     {% endif %}
 
     <!-- 快速操作 -->
@@ -448,6 +655,10 @@
                 
                 <a href="{% url 'clubs:submit_president_transition' club.id %}" class="action-btn btn-secondary">
                     <span class="material-icons">manage_accounts</span> 社长换届
+                </a>
+
+                <a href="{% url 'clubs:president_member_management' %}?club_id={{ club.id }}" class="action-btn btn-secondary">
+                    <span class="material-icons">groups</span> 社员管理
                 </a>
                 
                 <button onclick="openDescriptionModal()" class="action-btn btn-secondary" style="font-family: inherit; font-size: 1rem; cursor: pointer;">

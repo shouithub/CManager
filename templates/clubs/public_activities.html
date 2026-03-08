@@ -804,6 +804,26 @@
                                         编辑
                                     </a>
                                 {% endif %}
+                                <!-- 报名按钮：社员可见 -->
+                                {% if user.profile.role == 'member' %}
+                                    {% if activity.id in user_registered_ids %}
+                                        <button class="btn-join-activity" style="background:var(--md3-secondary-container);color:var(--md3-on-secondary-container);"
+                                                onclick="toggleRegistration({{ activity.id }}, true, this)"
+                                                data-register-url="{% url 'clubs:register_activity' activity.id %}"
+                                                data-unregister-url="{% url 'clubs:unregister_activity' activity.id %}">
+                                            <span class="material-icons" style="font-size:1rem;">check_circle</span>
+                                            已报名 / 取消
+                                        </button>
+                                    {% else %}
+                                        <button class="btn-join-activity"
+                                                onclick="toggleRegistration({{ activity.id }}, false, this)"
+                                                data-register-url="{% url 'clubs:register_activity' activity.id %}"
+                                                data-unregister-url="{% url 'clubs:unregister_activity' activity.id %}">
+                                            <span class="material-icons" style="font-size:1rem;">how_to_reg</span>
+                                            报名参加
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
                             {% else %}
                                 <a href="{% url 'clubs:login' %}" class="btn-join-activity btn-join-activity-disabled">
                                     登录参加
@@ -890,4 +910,37 @@ function exportActivities() {
 document.addEventListener('DOMContentLoaded', function() {
     updateSelectedCount();
 });
+
+// 活动报名 / 取消报名（社员）
+function toggleRegistration(activityId, isRegistered, btn) {
+    const url = isRegistered ? btn.dataset.unregisterUrl : btn.dataset.registerUrl;
+    btn.disabled = true;
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            if (data.registered) {
+                btn.innerHTML = '<span class="material-icons" style="font-size:1rem;">check_circle</span> 已报名 / 取消';
+                btn.style.background = 'var(--md3-secondary-container)';
+                btn.style.color = 'var(--md3-on-secondary-container)';
+                btn.onclick = () => toggleRegistration(activityId, true, btn);
+            } else {
+                btn.innerHTML = '<span class="material-icons" style="font-size:1rem;">how_to_reg</span> 报名参加';
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.onclick = () => toggleRegistration(activityId, false, btn);
+            }
+        } else {
+            alert(data.error || '操作失败，请重试');
+        }
+    })
+    .catch(() => alert('网络错误，请刷新页面重试'))
+    .finally(() => { btn.disabled = false; });
+}
 </script>{% endblock %}

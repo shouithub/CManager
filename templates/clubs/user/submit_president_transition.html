@@ -320,19 +320,19 @@
         <!-- 新社长信息 -->
         <div class="form-section">
             <h2><span class="material-icons">person_add</span> 新社长信息</h2>
-            <p style="color: var(--md3-on-surface-variant); margin-bottom: 1rem;">从所有社长中选择</p>
+            <p style="color: var(--md3-on-surface-variant); margin-bottom: 1rem;">从本社成员中选择</p>
             
             <div class="form-row">
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    <label for="new_president_officer_id">选择新社长 <span class="required">*</span></label>
-                    <select id="new_president_officer_id" name="new_president_officer_id" required onchange="updateOfficerInfo()">
+                    <label for="new_president_profile_id">选择新社长 <span class="required">*</span></label>
+                    <select id="new_president_profile_id" name="new_president_profile_id" required onchange="updatePresidentInfo()">
                         <option value="">-- 请选择 --</option>
-                        {% for officer in available_presidents %} 
-                        <option value="{{ officer.user_profile.user.id }}" data-name="{{ officer.user_profile.real_name|default:officer.user_profile.user.username }}" data-username="{{ officer.user_profile.user.username }}" data-student-id="{{ officer.user_profile.student_id }}" data-phone="{{ officer.user_profile.phone }}"> 
-                            {% if officer.user_profile.real_name %}{{ officer.user_profile.real_name }}{% else %}{{ officer.user_profile.user.username }}{% endif %} ({{ officer.user_profile.student_id|default:"无学号" }}) 
+                        {% for profile in candidate_profiles %}
+                        <option value="{{ profile.id }}" data-name="{{ profile.real_name|default:profile.user.username }}" data-username="{{ profile.user.username }}" data-student-id="{{ profile.student_id }}" data-phone="{{ profile.phone }}">
+                            {% if profile.real_name %}{{ profile.real_name }}{% else %}{{ profile.user.username }}{% endif %} ({{ profile.student_id|default:"无学号" }})
                         </option> 
                         {% empty %}
-                        <option value="" disabled>暂无可选的社长候选人</option>
+                        <option value="" disabled>暂无可选的成员候选人</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -407,7 +407,7 @@
 
 <script>
 function updatePresidentInfo() {
-    const select = document.getElementById('new_president_user_id');
+    const select = document.getElementById('new_president_profile_id');
     const container = document.getElementById('president-info-container');
     
     if (select.value === '') {
@@ -420,5 +420,7 @@ function updatePresidentInfo() {
         container.style.display = 'block';
     }
 }
+
+updatePresidentInfo();
 </script>
 {% endblock %}

@@ -1,8 +1,8 @@
 # CManager - 社团管理系统
 
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.13%2B-blue)](https://www.python.org/)
-[![Django](https://img.shields.io/badge/django-5.0%2B-green)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/django-5.2%2B-green)](https://www.djangoproject.com/)
 
 [中文](README.md) | [English](README_EN.md)
 
@@ -15,10 +15,16 @@
 ## ✨ 核心功能
 
 ### 👥 用户与权限体系
-- **多角色支持**：社长、干事、管理员、老师（v1分支）、普通用户（v1分支）。
+- **多角色支持**：社长、干事、管理员、社员（主分支）；老师、普通用户（v1分支）。
 - **精细化权限**：基于 RBAC 的权限控制，不同角色拥有专属工作台。
 - **个人中心**：支持头像上传（自动裁剪）、个人信息管理、政治面貌登记。
 - **隐私保护**：用户可设置联系方式公开状态；支持“干事-社长”关联可见性逻辑（即社长可查看其负责社团对应干事的联系方式）。
+
+### ♻️ 账号生命周期
+- **自动转不活跃**：非管理员账号在生命周期到期后自动转为不活跃状态。
+- **延期机制**：不活跃账号可由用户主动延期，恢复活跃并顺延 1 年。
+- **自动删除策略**：不活跃满 1 年后自动删除账号（管理员除外）。
+- **管理员控制**：管理员可在用户管理中启用/禁用账号，并可二次确认后删除账号。
 
 ### 🏢 社团全生命周期管理
 - **社团申请**：新社团成立的全流程申请与材料提交。
@@ -49,7 +55,7 @@
 
 ## 🛠️ 技术栈
 
-- **后端**：Django 5.x (Python 3.13+)
+- **后端**：Django 5.2+ (Python 3.12+)
 - **数据库**：SQLite (开发环境) / PostgreSQL (生产环境)
 - **前端**：Django Templates + Material Design 3 (MD3) + Bootstrap 5 (部分组件)
 - **静态资源**：Google Material Icons
@@ -59,7 +65,7 @@
 
 ### 环境要求
 
-- Python 3.13+
+- Python 3.12+
 - pip
 
 ### 安装步骤
@@ -127,6 +133,8 @@
     python manage.py migrate
     ```
 
+    > `clubs` 应用已使用合并迁移（squashed migration），新环境仅需执行上述迁移命令即可。
+
 6.  **首次启动初始化（推荐）**
     首次访问系统会进入 OOBE 初始化页面，用于创建管理员账户并写入本地配置（不会提交到 Git）。
     如需命令行方式，也可自行创建管理员用户并赋予 `admin` 角色。
@@ -153,7 +161,7 @@
 
 ### ⚙️ 管理员
 - **系统配置**：管理轮播图、部门设置、SMTP邮件服务。
-- **用户管理**：创建用户、分配角色、重置密码。
+- **用户管理**：创建用户、分配角色、重置密码、启用/禁用账号、删除账号（二次确认）。
 - **全局管控**：开启/关闭注册周期、年审通道等。
 
 ## 🌿 分支说明 (v1)

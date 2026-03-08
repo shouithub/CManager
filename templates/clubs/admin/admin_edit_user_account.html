@@ -3,512 +3,436 @@
 {% block title %}编辑用户账户 - {{ target_user.username }}{% endblock %}
 
 {% block extra_css %}
-{{ block.super }}
 <style>
-    .account-container {
-        max-width: 1000px;
-        margin: 0;
-        padding: 0;
+    /* == 主容器 == */
+    .page-wrapper { width: 100%; display: block; padding: 0; }
+    .content-center { width: 100%; max-width: 820px; margin: 0 auto; }
+
+    /* == 页面标题栏（与 dashboard 风格一致）== */
+    .page-header {
+        display: flex; align-items: center; justify-content: space-between; gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-2xl); padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl); border: 1px solid var(--md3-outline-variant);
+        width: 100%;
         box-sizing: border-box;
     }
+    .page-header-left { display: flex; align-items: center; gap: var(--md3-spacing-md); flex: 1; }
+    .page-header-left > .material-icons { font-size: 1.8rem; color: var(--md3-primary); }
+    .page-header-content { flex: 1; }
+    .page-header h1 { margin: 0 0 2px 0; font-size: 1.6rem; font-weight: 600; color: var(--md3-on-surface); }
+    .page-header .subtitle { color: var(--md3-on-surface-variant); font-size: 0.875rem; margin: 0; }
+    .page-header-desc { font-size: 0.8rem; color: var(--md3-on-surface-variant); margin-top: 4px; }
+    .btn-back {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-high); color: var(--md3-on-surface);
+        text-decoration: none; border: 1px solid var(--md3-outline-variant);
+        transition: all 0.2s; flex-shrink: 0;
+    }
+    .btn-back > .material-icons { font-size: 1.2rem; }
+    .btn-back:hover { background: var(--md3-primary-container); color: var(--md3-on-primary-container); border-color: var(--md3-primary); }
 
-    /* 页面头部 */
-    .account-header {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-xl);
-        margin-bottom: var(--md3-spacing-2xl);
+    /* == 用户信息横幅 == */
+    .user-banner {
+        display: flex; align-items: center; gap: var(--md3-spacing-xl);
         padding: var(--md3-spacing-2xl);
         background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
-        border-radius: var(--md3-radius-xl);
-        box-shadow: var(--md3-elevation-1);
-    }
-
-    .user-avatar-large {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-        font-weight: 700;
-        flex-shrink: 0;
-        box-shadow: var(--md3-elevation-2);
-    }
-
-    .account-header-info h1 {
-        margin: 0 0 var(--md3-spacing-sm) 0;
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-    }
-
-    .account-info-row {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-        padding: var(--md3-spacing-xs) 0;
-        font-size: 0.95rem;
-        color: var(--md3-on-surface-variant);
-    }
-
-    .account-info-label {
-        font-weight: 600;
-        min-width: 60px;
-    }
-
-    .account-info-value {
-        color: var(--md3-on-surface);
-    }
-
-    /* 消息提示 */
-    .alert-message {
-        margin-bottom: var(--md3-spacing-xl);
-        padding: var(--md3-spacing-lg) var(--md3-spacing-2xl);
-        border-radius: var(--md3-radius-md);
-        border-left: 4px solid;
-        display: flex;
-        gap: var(--md3-spacing-md);
-        align-items: flex-start;
-    }
-
-    .alert-message.error {
-        background: var(--md3-error-container);
-        color: var(--md3-on-error-container);
-        border-left-color: var(--md3-error);
-    }
-
-    .alert-message.success {
-        background: var(--md3-success-container);
-        color: var(--md3-on-success-container);
-        border-left-color: var(--md3-success);
-    }
-
-    .alert-message .material-icons {
-        flex-shrink: 0;
-        font-size: 1.25rem;
-    }
-
-    .alert-content {
-        flex: 1;
-    }
-
-    .alert-content div {
-        margin: var(--md3-spacing-xs) 0;
-        line-height: 1.5;
-    }
-
-    /* 卡片布局 */
-    .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: var(--md3-spacing-xl);
-        margin-bottom: var(--md3-spacing-xl);
-    }
-
-    .edit-card {
-        background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl); margin-bottom: var(--md3-spacing-xl);
         border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-2xl);
+    }
+    .user-avatar-xl {
+        width: 72px; height: 72px; border-radius: 50%;
+        background: var(--md3-primary); color: var(--md3-on-primary);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; font-weight: 700; flex-shrink: 0;
+        box-shadow: var(--md3-elevation-2); text-decoration: none; overflow: hidden;
+    }
+    .user-avatar-xl img { width: 100%; height: 100%; object-fit: cover; }
+    .user-banner-info { flex: 1; }
+    .user-banner-name {
+        font-size: 1.5rem; font-weight: 700; color: var(--md3-on-surface);
+        text-decoration: none; display: inline-block; margin-bottom: 6px;
+    }
+    .user-banner-name:hover { text-decoration: underline; color: var(--md3-primary); }
+    .user-banner-meta { display: flex; flex-wrap: wrap; gap: var(--md3-spacing-lg); margin-top: 6px; }
+    .meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--md3-on-surface-variant); }
+    .meta-item .material-icons { font-size: 1rem; }
+    .role-chip {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 12px; border-radius: var(--md3-radius-full);
+        font-size: 0.8rem; font-weight: 600;
+    }
+    .role-chip.president { background: var(--md3-primary-container); color: var(--md3-on-primary-container); }
+    .role-chip.staff     { background: #ede7f6; color: #4527a0; }
+    .role-chip.admin     { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+    .role-chip.member    { background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); }
+    .active-chip {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 10px; border-radius: var(--md3-radius-full);
+        font-size: 0.78rem; font-weight: 600;
+    }
+    .active-chip.on  { background: #d4edda; color: #155724; }
+    .active-chip.off { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+
+    /* == 消息提示 == */
+    .alert-msg {
+        display: flex; gap: var(--md3-spacing-md); align-items: flex-start;
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        border-radius: var(--md3-radius-lg); border-left: 4px solid;
+        margin-bottom: var(--md3-spacing-xl);
+    }
+    .alert-msg.error { background: var(--md3-error-container); color: var(--md3-on-error-container); border-left-color: var(--md3-error); }
+    .alert-msg.success { background: #d4edda; color: #155724; border-left-color: #28a745; }
+    .alert-msg .material-icons { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+    .alert-body { flex: 1; line-height: 1.6; }
+
+    /* == 编辑区域 == */
+    .edit-grid { display: grid; grid-template-columns: 1fr; gap: var(--md3-spacing-xl); }
+    .edit-card {
+        background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl); padding: var(--md3-spacing-2xl);
         box-shadow: var(--md3-elevation-1);
     }
-
-    .edit-card h3 {
-        margin: 0 0 var(--md3-spacing-xl) 0;
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-md);
-    }
-
-    .edit-card h3 .material-icons {
-        font-size: 1.5rem;
-        color: var(--md3-primary);
-    }
-
-    .form-section {
-        margin-bottom: var(--md3-spacing-xl);
-        padding-bottom: var(--md3-spacing-xl);
+    .edit-card-title {
+        display: flex; align-items: center; gap: var(--md3-spacing-md);
+        margin: 0 0 var(--md3-spacing-xl) 0; font-size: 1.1rem; font-weight: 600;
+        color: var(--md3-on-surface); padding-bottom: var(--md3-spacing-md);
         border-bottom: 1px solid var(--md3-outline-variant);
     }
-
-    .form-section:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
+    .edit-card-title .material-icons { font-size: 1.4rem; color: var(--md3-primary); }
+    .form-block { margin-bottom: var(--md3-spacing-xl); }
+    .form-block:last-child { margin-bottom: 0; }
+    .form-sep { border: none; border-top: 1px solid var(--md3-outline-variant); margin: var(--md3-spacing-xl) 0; }
+    .f-label {
+        display: block; font-size: 0.8rem; font-weight: 600;
+        color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-sm);
+        text-transform: uppercase; letter-spacing: 0.4px;
     }
-
-    .form-group {
-        margin-bottom: var(--md3-spacing-lg);
+    .f-label .req { color: var(--md3-error); margin-left: 2px; }
+    .f-input, .f-select {
+        width: 100%; padding: 10px 14px; border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md); background: var(--md3-surface-container-highest);
+        font-family: inherit; font-size: 0.975rem; color: var(--md3-on-surface);
+        transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box;
     }
-
-    .form-label {
-        display: block;
-        margin-bottom: var(--md3-spacing-sm);
-        font-weight: 600;
-        color: var(--md3-on-surface);
-        font-size: 0.95rem;
-    }
-
-    .form-label .required {
-        color: var(--md3-error);
-        margin-left: 2px;
-    }
-
-    .form-input,
-    .form-select {
-        width: 100%;
-        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
-        border: 1px solid var(--md3-outline);
-        border-radius: var(--md3-radius-md);
-        background: var(--md3-surface-container-highest);
-        font-family: inherit;
-        font-size: 1rem;
-        color: var(--md3-on-surface);
-        transition: all 0.2s ease;
-        box-sizing: border-box;
-    }
-
-    .form-input:focus,
-    .form-select:focus {
-        outline: none;
-        border-color: var(--md3-primary);
+    .f-input:focus, .f-select:focus {
+        outline: none; border-color: var(--md3-primary);
         box-shadow: 0 0 0 3px var(--md3-primary-container);
     }
-
-    .form-input::placeholder {
-        color: var(--md3-on-surface-variant);
+    .f-input::placeholder { color: var(--md3-on-surface-variant); opacity: 0.7; }
+    .pw-group { position: relative; }
+    .pw-toggle {
+        position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+        background: transparent; border: none; color: var(--md3-primary);
+        cursor: pointer; font-size: 0.8rem; font-weight: 600; padding: 4px 8px;
     }
+    .f-inline { display: flex; gap: var(--md3-spacing-md); align-items: center; }
+    .f-inline .f-input, .f-inline .f-select { flex: 1; }
 
-    .form-row {
-        display: flex;
-        gap: var(--md3-spacing-md);
-        align-items: flex-end;
-    }
-
-    .form-row .form-input,
-    .form-row .form-select {
-        flex: 1;
-    }
-
-    .password-input-group {
-        position: relative;
-    }
-
-    .password-toggle-btn {
-        position: absolute;
-        right: var(--md3-spacing-md);
-        top: 50%;
-        transform: translateY(-50%);
-        background: transparent;
-        border: none;
-        color: var(--md3-primary);
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.85rem;
-        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
-        transition: all 0.2s ease;
-    }
-
-    .password-toggle-btn:hover {
-        color: var(--md3-on-primary-container);
-    }
-
-    /* 按钮 */
+    /* == 按钮 == */
     .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--md3-spacing-sm);
-        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
-        border: none;
-        border-radius: var(--md3-radius-md);
-        font-weight: 600;
-        font-size: 0.95rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        font-family: inherit;
+        display: inline-flex; align-items: center; justify-content: center;
+        gap: 6px; padding: 10px 20px; border: none; border-radius: var(--md3-radius-md);
+        font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+        text-decoration: none; font-family: inherit; white-space: nowrap;
     }
+    .btn .material-icons { font-size: 1.1rem; }
+    .btn-primary { background: var(--md3-primary); color: var(--md3-on-primary); box-shadow: var(--md3-elevation-1); }
+    .btn-primary:hover { box-shadow: var(--md3-elevation-3); transform: translateY(-1px); }
+    .btn-secondary { background: var(--md3-surface-container-high); color: var(--md3-primary); border: 1px solid var(--md3-outline); }
+    .btn-secondary:hover { background: var(--md3-surface-container-highest); }
+    .btn-danger { background: var(--md3-error-container); color: var(--md3-on-error-container); border: 1px solid var(--md3-error); }
+    .btn-danger:hover { background: var(--md3-error); color: var(--md3-on-error); }
+    .btn-ok { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+    .btn-ok:hover { background: #28a745; color: #fff; }
+    .btn-wide { width: 100%; justify-content: center; }
 
-    .btn-primary {
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
-        box-shadow: var(--md3-elevation-2);
+    /* == 状态信息块 == */
+    .status-bloc {
+        background: var(--md3-surface-container-highest); border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-lg);
+        display: flex; align-items: center; justify-content: space-between;
+        gap: var(--md3-spacing-md); flex-wrap: wrap;
     }
+    .status-bloc-info { display: flex; flex-direction: column; gap: 4px; }
+    .status-bloc-lbl { font-size: 0.78rem; color: var(--md3-on-surface-variant); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .status-bloc-desc { font-size: 0.875rem; color: var(--md3-on-surface); }
 
-    .btn-primary:hover {
-        background: var(--md3-primary);
-        box-shadow: var(--md3-elevation-3);
-        transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-        background: var(--md3-surface-container);
-        color: var(--md3-primary);
-        border: 1px solid var(--md3-outline);
-    }
-
-    .btn-secondary:hover {
-        background: var(--md3-surface-container-highest);
-        border-color: var(--md3-primary);
-    }
-
-    .form-actions {
-        display: flex;
-        gap: var(--md3-spacing-md);
-        margin-top: var(--md3-spacing-xl);
-    }
-
-    .form-actions .btn {
-        flex: 1;
-    }
-
-    /* 响应式 */
-    @media (max-width: 768px) {
-        .account-header {
-            flex-direction: column;
-            text-align: center;
-            gap: var(--md3-spacing-lg);
-        }
-
-        .cards-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .form-row {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .form-actions {
-            flex-direction: column;
-        }
-
-        .form-actions .btn {
-            width: 100%;
-        }
+    @media (max-width: 800px) {
+        .user-banner { flex-direction: column; text-align: center; }
+        .user-banner-meta { justify-content: center; }
     }
 </style>
 {% endblock %}
 
 {% block admin_main %}
-    <div class="account-header">
-        <a href="{% url 'clubs:user_detail' target_user.id %}" style="text-decoration: none; color: inherit;">
-            {% if target_user.profile.avatar %}
-                <img src="{{ target_user.profile.avatar.url }}" class="user-avatar-large" style="object-fit: cover; display: block; background: none;">
+<div class="page-wrapper">
+<!-- 页面标题栏 -->
+<div class="page-header">
+    <div class="page-header-left">
+        <span class="material-icons">manage_accounts</span>
+        <div class="page-header-content">
+            <h1>编辑用户账户</h1>
+            <p class="subtitle">{{ target_user.username }}{% if target_user.profile.get_full_name %} - {{ target_user.profile.get_full_name }}{% endif %}</p>
+            <p class="page-header-desc">修改此用户的个人信息、账号权限和安全设置</p>
+        </div>
+    </div>
+    <a href="{% url 'clubs:manage_users' %}" class="btn-back" title="返回用户列表">
+        <span class="material-icons">arrow_back</span>
+    </a>
+</div>
+
+<div class="content-center">
+
+<!-- 消息提示 -->
+{% if errors %}
+<div class="alert-msg error">
+    <span class="material-icons">error_outline</span>
+    <div class="alert-body">{% for e in errors %}<div>{{ e }}</div>{% endfor %}</div>
+</div>
+{% endif %}
+{% if success_messages %}
+<div class="alert-msg success">
+    <span class="material-icons">check_circle</span>
+    <div class="alert-body">{% for m in success_messages %}<div>{{ m }}</div>{% endfor %}</div>
+</div>
+{% endif %}
+
+<!-- 用户信息横幅 -->
+<div class="user-banner">
+    <a href="{% url 'clubs:user_detail' target_user.id %}" class="user-avatar-xl">
+        {% if target_user.profile.avatar %}
+            <img src="{{ target_user.profile.avatar.url }}" alt="{{ target_user.username }}">
+        {% else %}
+            {{ target_user.profile.get_full_name|slice:":1"|default:target_user.username|slice:":1"|upper }}
+        {% endif %}
+    </a>
+    <div class="user-banner-info">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
+            <a href="{% url 'clubs:user_detail' target_user.id %}" class="user-banner-name">
+                {{ target_user.profile.get_full_name|default:target_user.username }}
+            </a>
+            <span class="role-chip {{ target_user.profile.role }}">
+                {% if target_user.profile.role == 'president' %}社长
+                {% elif target_user.profile.role == 'staff' %}干事
+                {% elif target_user.profile.role == 'admin' %}管理员
+                {% elif target_user.profile.role == 'member' %}社员
+                {% else %}未设定{% endif %}
+            </span>
+            {% if target_user.is_active %}
+                <span class="active-chip on"><span class="material-icons" style="font-size:0.85rem;">check_circle</span>账号启用</span>
             {% else %}
-                <div class="user-avatar-large">{{ target_user.profile.get_full_name|slice:":1"|default:target_user.username|slice:":1"|upper }}</div>
+                <span class="active-chip off"><span class="material-icons" style="font-size:0.85rem;">block</span>账号禁用</span>
             {% endif %}
-        </a>
-        <div class="account-header-info">
-            <h1><a href="{% url 'clubs:user_detail' target_user.id %}" style="text-decoration: none; color: inherit;">{{ target_user.username }}</a></h1>
-            <div class="account-info-row">
-                <span class="account-info-label">全名：</span>
-                <span class="account-info-value">{{ target_user.profile.get_full_name|default:"未设置" }}</span>
-            </div>
-            <div class="account-info-row">
-                <span class="account-info-label">邮箱：</span>
-                <span class="account-info-value">{{ target_user.email|default:"—" }}</span>
-            </div>
-            <div class="account-info-row">
-                <span class="account-info-label">电话：</span>
-                <span class="account-info-value">{{ target_user.profile.phone|default:"—" }}</span>
-            </div>
         </div>
-    </div>
-
-    <!-- 错误消息 -->
-    {% if errors %}
-    <div class="alert-message error">
-        <span class="material-icons">error</span>
-        <div class="alert-content">
-            {% for error in errors %}
-            <div>{{ error }}</div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- 成功消息 -->
-    {% if success_messages %}
-    <div class="alert-message success">
-        <span class="material-icons">check_circle</span>
-        <div class="alert-content">
-            {% for message in success_messages %}
-            <div>{{ message }}</div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- 编辑卡片 -->
-    <div class="cards-grid">
-        <!-- 账号信息卡片 -->
-        <div class="edit-card">
-            <h3>
-                <span class="material-icons">account_circle</span>
-                账号信息
-            </h3>
-
-            <!-- 用户名部分 -->
-            <div class="form-section">
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="change_username">
-                    
-                    <div class="form-group">
-                        <label class="form-label">用户名</label>
-                        <div class="form-row">
-                            <input class="form-input" name="new_username" value="{{ target_user.username }}" required>
-                            <button type="submit" class="btn btn-primary">
-                                <span class="material-icons">save</span>
-                                <span>保存</span>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- 角色部分 -->
-            <div class="form-section">
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="change_role">
-                    
-                    <div class="form-group">
-                        <label class="form-label">角色</label>
-                        <div class="form-row">
-                            <select class="form-select" name="new_role">
-                                <option value="president" {% if target_user.profile.role == 'president' %}selected{% endif %}>社长</option>
-                                <option value="staff" {% if target_user.profile.role == 'staff' %}selected{% endif %}>干事</option>
-                                <option value="admin" {% if target_user.profile.role == 'admin' %}selected{% endif %}>管理员</option>
-                            </select>
-                            <button type="submit" class="btn btn-primary">
-                                <span class="material-icons">save</span>
-                                <span>保存</span>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 密码与安全卡片 -->
-        <div class="edit-card">
-            <h3>
-                <span class="material-icons">security</span>
-                密码与安全
-            </h3>
-
-            <!-- 密码修改部分 -->
-            <div class="form-section">
-                <form method="post" id="password-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="change_password">
-                    
-                    <div class="form-group">
-                        <label class="form-label">新密码 <span class="required">*</span></label>
-                        <div class="password-input-group">
-                            <input 
-                                class="form-input" 
-                                type="password" 
-                                id="new_password" 
-                                name="new_password" 
-                                placeholder="至少6个字符" 
-                                minlength="6" 
-                                required
-                            >
-                            <button 
-                                type="button" 
-                                class="password-toggle-btn" 
-                                id="toggle-pw"
-                                title="显示/隐藏密码"
-                            >显示</button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">确认新密码 <span class="required">*</span></label>
-                        <input 
-                            class="form-input" 
-                            type="password" 
-                            id="confirm_password" 
-                            name="confirm_password" 
-                            placeholder="再次输入新密码" 
-                            minlength="6" 
-                            required
-                        >
-                    </div>
-
-                    <div class="form-actions">
-                        <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
-                            <span class="material-icons">close</span>
-                            <span>取消</span>
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <span class="material-icons">check</span>
-                            <span>设置新密码</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- 账号锁定部分 -->
-            <div class="form-section">
-                <div class="form-group">
-                    <label class="form-label">账号状态</label>
-                    <p style="color: var(--md3-on-surface-variant); font-size: 0.9rem; margin: var(--md3-spacing-sm) 0;">
-                        如果用户由于多次登录失败而被锁定，可以在此解锁账号。
-                    </p>
-                    <form method="post" action="{% url 'clubs:unlock_account' target_user.username %}" style="display:inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-secondary">
-                            <span class="material-icons">lock_open</span>
-                            <span>解锁账号</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
+        <div class="user-banner-meta">
+            <span class="meta-item"><span class="material-icons">alternate_email</span>{{ target_user.email|default:"—" }}</span>
+            <span class="meta-item"><span class="material-icons">phone</span>{{ target_user.profile.phone|default:"—" }}</span>
+            <span class="meta-item"><span class="material-icons">calendar_today</span>加入于 {{ target_user.date_joined|date:"Y-m-d" }}</span>
         </div>
     </div>
 </div>
 
-<script>
-    // 密码显示/隐藏切换
-    document.getElementById('toggle-pw').addEventListener('click', function(e) {
-        e.preventDefault();
-        const newPwInput = document.getElementById('new_password');
-        const confirmPwInput = document.getElementById('confirm_password');
-        const isPassword = newPwInput.type === 'password';
-        
-        newPwInput.type = isPassword ? 'text' : 'password';
-        confirmPwInput.type = isPassword ? 'text' : 'password';
-        this.textContent = isPassword ? '隐藏' : '显示';
-    });
+<!-- 编辑卡片 -->
+<div class="edit-grid">
 
-    // 表单验证
-    document.getElementById('password-form').addEventListener('submit', function(e) {
-        const newPassword = document.getElementById('new_password').value.trim();
-        const confirmPassword = document.getElementById('confirm_password').value.trim();
-        
-        if (newPassword.length < 6) {
-            alert('新密码至少需要 6 个字符');
-            e.preventDefault();
-            return;
-        }
-        
-        if (newPassword !== confirmPassword) {
-            alert('两次输入的密码不一致，请检查');
-            e.preventDefault();
-            return;
-        }
+    <!-- 账号信息 -->
+    <div class="edit-card">
+        <h3 class="edit-card-title">
+            <span class="material-icons">account_circle</span>
+            账号信息
+        </h3>
+
+        <!-- 用户名 -->
+        <div class="form-block">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_username">
+                <label class="f-label">用户名</label>
+                <div class="f-inline">
+                    <input class="f-input" name="new_username" value="{{ target_user.username }}" required>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <hr class="form-sep">
+
+        <!-- 全名 -->
+        <div class="form-block">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_full_name">
+                <label class="f-label">全名</label>
+                <div class="f-inline">
+                    <input class="f-input" name="full_name" value="{{ target_user.profile.get_full_name|default:'' }}" placeholder="输入用户全名">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <hr class="form-sep">
+
+        <!-- 邮箱 -->
+        <div class="form-block">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_email">
+                <label class="f-label">邮箱</label>
+                <div class="f-inline">
+                    <input class="f-input" type="email" name="email" value="{{ target_user.email }}" required>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <hr class="form-sep">
+
+        <!-- 电话 -->
+        <div class="form-block">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_phone">
+                <label class="f-label">电话</label>
+                <div class="f-inline">
+                    <input class="f-input" name="phone" value="{{ target_user.profile.phone|default:'' }}" placeholder="例：13800138000">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <hr class="form-sep">
+
+        <!-- 角色 -->
+        <div class="form-block">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_role">
+                <label class="f-label">角色</label>
+                <div class="f-inline">
+                    <select class="f-select" name="new_role">
+                        <option value="president" {% if target_user.profile.role == 'president' %}selected{% endif %}>社长</option>
+                        <option value="staff"     {% if target_user.profile.role == 'staff'     %}selected{% endif %}>干事</option>
+                        <option value="admin"     {% if target_user.profile.role == 'admin'     %}selected{% endif %}>管理员</option>
+                        <option value="member"    {% if target_user.profile.role == 'member'    %}selected{% endif %}>社员</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <hr class="form-sep">
+
+        <!-- 账户启用/禁用 -->
+        <div class="form-block">
+            <label class="f-label">账户启用状态</label>
+            <div class="status-bloc">
+                <div class="status-bloc-info">
+                    <span class="status-bloc-lbl">当前状态</span>
+                    <span class="status-bloc-desc">
+                        {% if target_user.is_active %}
+                            <span style="color:#28a745;font-weight:600;">✓ 已启用</span>
+                        {% else %}
+                            <span style="color:var(--md3-error);font-weight:600;">✗ 已禁用</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="toggle_active">
+                    {% if target_user.is_active %}
+                        <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('确定禁用该用户账号？禁用后该用户将无法登录。')">
+                            <span class="material-icons">block</span>禁用账号
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-ok">
+                            <span class="material-icons">check_circle</span>启用账号
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 密码与安全 -->
+    <div class="edit-card">
+        <h3 class="edit-card-title">
+            <span class="material-icons">security</span>
+            密码与安全
+        </h3>
+
+        <!-- 修改密码 -->
+        <div class="form-block">
+            <form method="post" id="password-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_password">
+                <div style="margin-bottom:16px;">
+                    <label class="f-label">新密码 <span class="req">*</span></label>
+                    <div class="pw-group">
+                        <input class="f-input" type="password" id="new_password" name="new_password"
+                               placeholder="至少 6 个字符" minlength="6" required>
+                        <button type="button" class="pw-toggle" id="toggle-pw">显示</button>
+                    </div>
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label class="f-label">确认新密码 <span class="req">*</span></label>
+                    <input class="f-input" type="password" id="confirm_password" name="confirm_password"
+                           placeholder="再次输入新密码" minlength="6" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-wide">
+                    <span class="material-icons">lock_reset</span>设置新密码
+                </button>
+            </form>
+        </div>
+
+        <hr class="form-sep">
+
+        <!-- 解锁账号 -->
+        <div class="form-block">
+            <label class="f-label">账号锁定</label>
+            <div class="status-bloc">
+                <div class="status-bloc-info">
+                    <span class="status-bloc-lbl">登录锁定</span>
+                    <span class="status-bloc-desc">若用户多次登录失败被锁定，可在此解锁</span>
+                </div>
+                <form method="post" action="{% url 'clubs:unlock_account' target_user.username %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary">
+                        <span class="material-icons">lock_open</span>解锁账号
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div> <!-- content-center -->
+</div> <!-- page-wrapper -->
+
+<script>
+    document.getElementById('toggle-pw').addEventListener('click', function () {
+        var pw1 = document.getElementById('new_password');
+        var pw2 = document.getElementById('confirm_password');
+        var show = pw1.type === 'password';
+        pw1.type = pw2.type = show ? 'text' : 'password';
+        this.textContent = show ? '隐藏' : '显示';
+    });
+    document.getElementById('password-form').addEventListener('submit', function (e) {
+        var pw  = document.getElementById('new_password').value.trim();
+        var cpw = document.getElementById('confirm_password').value.trim();
+        if (pw.length < 6) { alert('新密码至少需要 6 个字符'); e.preventDefault(); return; }
+        if (pw !== cpw)    { alert('两次输入的密码不一致，请检查'); e.preventDefault(); }
     });
 </script>
 

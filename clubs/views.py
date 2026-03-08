@@ -8,8 +8,9 @@ Django 社团管理系统视图模块
 """
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
@@ -23,15 +24,17 @@ import os
 import re
 import urllib.parse
 import os
+import base64
 import tempfile
 import csv
 import io
-from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, ReimbursementHistory, ClubRegistrationRequest, ClubApplicationReview, ClubRegistration, Template, Announcement, StaffClubRelation, SubmissionReview, ClubRegistrationReview, RegistrationPeriod, PresidentTransition, ActivityApplication, SMTPConfig, CarouselImage, ActivityApplicationHistory, MaterialRequirement, SubmittedFile, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat
+from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, ReimbursementHistory, ClubRegistrationRequest, ClubApplicationReview, ClubRegistration, Template, Announcement, StaffClubRelation, SubmissionReview, ClubRegistrationReview, RegistrationPeriod, PresidentTransition, ActivityApplication, SMTPConfig, CarouselImage, ActivityApplicationHistory, MaterialRequirement, SubmittedFile, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken, ActivityRegistration
 from django.contrib.contenttypes.models import ContentType
 import shutil
 from PIL import Image
 from .context_processors import audit_center_counts as get_audit_center_counts
 from .site_assets import process_site_logo
+from .lifecycle_utils import mark_profile_inactive
 
 
 def rename_uploaded_file(file, club_name, request_type, material_type):
@@ -608,6 +611,7 @@ def club_detail(request, club_id):
     """社团详情页"""
     club = get_object_or_404(Club, pk=club_id)
     officers = Officer.objects.filter(club=club, is_current=True)
+    memberships = ClubMember.objects.filter(club=club).select_related('user_profile__user').order_by('-joined_at')
     
     # 检查当前用户是否为该社团的社长
     is_president = False
@@ -630,10 +634,261 @@ def club_detail(request, club_id):
     context = {
         'club': club,
         'officers': officers,
+        'memberships': memberships,
         'is_president': is_president,
         'is_staff': is_staff,
     }
     return render(request, 'clubs/club_detail.html', context)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['POST'])
+def generate_member_join_token(request, club_id):
+    """社长生成社员入会二维码令牌，支持可配置有效期和使用次数。"""
+    club = get_object_or_404(Club, pk=club_id)
+
+    is_club_president = Officer.objects.filter(
+        user_profile__user=request.user,
+        club=club,
+        position='president',
+        is_current=True,
+    ).exists()
+    if not is_club_president:
+        return JsonResponse({'success': False, 'message': '仅该社团社长可生成入会二维码'}, status=403)
+
+    # 获取参数：有效时长（分钟）和最大使用次数
+    try:
+        minutes = int(request.POST.get('minutes', 10))
+        max_uses_str = request.POST.get('max_uses', '1')
+        
+        # 验证有效时长范围
+        if minutes < 1 or minutes > 43200:  # 最多30天
+            return JsonResponse({'success': False, 'message': '有效时长必须在1-43200分钟之间'}, status=400)
+        
+        # 解析使用次数
+        if max_uses_str == 'unlimited':
+            max_uses = None
+            # 业务规则：不限次数时，有效期最多1天
+            if minutes > 1440:
+                return JsonResponse({'success': False, 'message': '不限次数的令牌有效期不得超过1天（1440分钟）'}, status=400)
+        else:
+            max_uses = int(max_uses_str)
+            if max_uses < 1:
+                return JsonResponse({'success': False, 'message': '使用次数必须大于0'}, status=400)
+    except (ValueError, TypeError):
+        return JsonResponse({'success': False, 'message': '参数格式错误'}, status=400)
+
+    token = RegistrationToken.create_for_club(club=club, created_by=request.user, minutes=minutes, max_uses=max_uses)
+    join_url = request.build_absolute_uri(reverse('clubs:member_join_by_token', args=[token.code]))
+
+    qr_data_uri = ''
+    try:
+        import qrcode  # type: ignore
+        qr = qrcode.QRCode(version=1, box_size=8, border=2)
+        qr.add_data(join_url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color='black', back_color='white')
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        qr_data_uri = 'data:image/png;base64,' + base64.b64encode(buffer.getvalue()).decode('ascii')
+    except Exception:
+        qr_data_uri = ''
+
+    uses_info = '不限次数' if max_uses is None else f'{max_uses}次'
+    return JsonResponse({
+        'success': True,
+        'token': token.code,
+        'expires_at': token.expires_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'join_url': join_url,
+        'qr_payload': join_url,
+        'qr_data_uri': qr_data_uri,
+        'uses_info': uses_info,
+    })
+
+
+@login_required
+@require_POST
+def delete_member_token(request, club_id, token_id):
+    """社长删除指定招新令牌。"""
+    club = get_object_or_404(Club, pk=club_id)
+    is_club_president = Officer.objects.filter(
+        user_profile__user=request.user,
+        club=club,
+        position='president',
+        is_current=True,
+    ).exists()
+    if not is_club_president:
+        return JsonResponse({'success': False, 'message': '仅该社团社长可删除令牌'}, status=403)
+    deleted, _ = RegistrationToken.objects.filter(pk=token_id, club=club).delete()
+    if deleted:
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'message': '令牌不存在'}, status=404)
+
+
+@login_required
+def list_member_tokens(request, club_id):
+    """社长查看当前有效的招新令牌列表（GET JSON）。"""
+    club = get_object_or_404(Club, pk=club_id)
+    is_club_president = Officer.objects.filter(
+        user_profile__user=request.user,
+        club=club,
+        position='president',
+        is_current=True,
+    ).exists()
+    if not is_club_president:
+        return JsonResponse({'success': False, 'message': '仅该社团社长可查看令牌'}, status=403)
+    now = timezone.now()
+    tokens = RegistrationToken.objects.filter(
+        club=club,
+        expires_at__gt=now,
+    ).exclude(
+        # 排除一次性且已使用完的令牌
+        max_uses=1,
+        used_count__gte=1,
+    ).order_by('-created_at')
+    data = []
+    for t in tokens:
+        join_url = request.build_absolute_uri(reverse('clubs:member_join_by_token', args=[t.code]))
+        uses_info = '不限次数' if t.max_uses is None else f'{t.used_count}/{t.max_uses}次'
+        data.append({
+            'id': t.id,
+            'join_url': join_url,
+            'expires_at': t.expires_at.strftime('%Y-%m-%d %H:%M'),
+            'uses_info': uses_info,
+            'created_at': t.created_at.strftime('%Y-%m-%d %H:%M'),
+        })
+    return JsonResponse({'success': True, 'tokens': data})
+
+
+@require_http_methods(['GET', 'POST'])
+def member_join_by_token(request, token_code):
+    """扫码加入社团：支持新建member账号或已有账号绑定，学号必填。"""
+    token = get_object_or_404(RegistrationToken, code=token_code)
+
+    if not token.can_use():
+        messages.error(request, '注册链接已失效（已使用或已过期），请联系社长重新生成二维码')
+        return redirect('clubs:index')
+
+    if request.method == 'POST':
+        existing_account = request.POST.get('existing_account', 'no') == 'yes'
+
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+        email = request.POST.get('email', '').strip()
+        real_name = request.POST.get('real_name', '').strip()
+        student_id = request.POST.get('student_id', '').strip()
+        gender = request.POST.get('gender', '').strip()
+        college = request.POST.get('college', '').strip()
+        class_name = request.POST.get('class_name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        qq = request.POST.get('qq', '').strip()
+        wechat = request.POST.get('wechat', '').strip()
+
+        errors = []
+
+        user = None
+        if existing_account:
+            if not username or not password:
+                errors.append('已有账户绑定需要填写用户名和密码')
+            else:
+                user = authenticate(request, username=username, password=password)
+                if user is None:
+                    errors.append('用户名或密码不正确')
+        else:
+            if not real_name:
+                errors.append('姓名不能为空')
+            if not student_id:
+                errors.append('学号不能为空')
+            if not gender:
+                errors.append('性别不能为空')
+            if not college:
+                errors.append('学院不能为空')
+            if not class_name:
+                errors.append('班级不能为空')
+            if not phone:
+                errors.append('手机号不能为空')
+            if not wechat:
+                errors.append('微信号不能为空')
+            if not email:
+                errors.append('邮箱不能为空')
+            if not username:
+                errors.append('用户名不能为空')
+            if not password or len(password) < 6:
+                errors.append('密码至少6位')
+            if User.objects.filter(username=username).exists():
+                errors.append('用户名已存在')
+            if User.objects.filter(email=email).exists():
+                errors.append('邮箱已被使用')
+
+        if student_id and not existing_account:
+            qs = UserProfile.objects.filter(student_id=student_id)
+            if user is not None:
+                qs = qs.exclude(user=user)
+            if qs.exists():
+                errors.append('学号已被使用')
+
+        if errors:
+            return render(request, 'clubs/member_join_form.html', {
+                'token': token,
+                'club': token.club,
+                'errors': errors,
+                'form_data': request.POST,
+            })
+
+        if user is None:
+            user = User.objects.create_user(username=username, email=email, password=password, first_name=real_name)
+
+        profile, _created = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                'role': 'member',
+                'status': 'approved',
+                'account_status': 'active',
+                'real_name': real_name,
+                'student_id': student_id,
+                'gender': gender,
+                'college': college,
+                'class_name': class_name,
+                'phone': phone,
+                'qq': qq,
+                'wechat': wechat,
+            },
+        )
+
+        if not existing_account:
+            profile.role = 'member'
+            profile.status = 'approved'
+            profile.account_status = 'active'
+            profile.real_name = real_name
+            profile.student_id = student_id
+            profile.gender = gender
+            profile.college = college
+            profile.class_name = class_name
+            profile.phone = phone
+            profile.qq = qq
+            profile.wechat = wechat
+            profile.save()
+
+            user.email = email
+            user.first_name = real_name
+            user.save(update_fields=['email', 'first_name'])
+
+        ClubMember.objects.get_or_create(
+            club=token.club,
+            user_profile=profile,
+            defaults={'status': 'active'},
+        )
+
+        # 标记令牌已使用，智能处理使用次数
+        token.mark_used()
+
+        messages.success(request, f'已成功加入社团「{token.club.name}」，请使用账户登录系统')
+        return redirect('clubs:login')
+
+    return render(request, 'clubs/member_join_form.html', {
+        'token': token,
+        'club': token.club,
+    })
 
 
 @login_required(login_url='clubs:login')
@@ -3178,6 +3433,7 @@ def admin_dashboard(request):
     presidents_count = UserProfile.objects.filter(role='president').count()
     staff_count = UserProfile.objects.filter(role='staff').count()
     admins_count = UserProfile.objects.filter(role='admin').count()
+    members_count = UserProfile.objects.filter(role='member').count()
     
     # 最近发布的公告
     recent_announcements = Announcement.objects.all().order_by('-created_at')[:5]
@@ -3312,6 +3568,7 @@ def admin_dashboard(request):
         'presidents_count': presidents_count,
         'staff_count': staff_count,
         'admins_count': admins_count,
+        'members_count': members_count,
         'announcements': recent_announcements,
         'total_applications': total_applications,
         'pending_all': pending_all,
@@ -4377,6 +4634,21 @@ def manage_users(request):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以管理用户')
         return redirect('clubs:index')
+
+    if request.method == 'POST' and request.POST.get('action') == 'delete_user':
+        user_id = request.POST.get('user_id', '').strip()
+        target_user = get_object_or_404(User, pk=user_id)
+
+        if target_user == request.user:
+            messages.error(request, '不能删除当前登录管理员账号')
+        elif target_user.is_superuser:
+            messages.error(request, '不能删除超级管理员账号')
+        else:
+            username = target_user.username
+            target_user.delete()
+            messages.success(request, f'已删除用户账号：{username}')
+
+        return redirect('clubs:manage_users')
     
     # 获取所有用户，使用select_related加载关联的UserProfile以包含状态信息
     # 便于管理员审核待审核的干事账号
@@ -4607,7 +4879,7 @@ def admin_edit_user_account(request, user_id):
         elif action == 'change_role':
             new_role = request.POST.get('new_role', '')
             
-            if new_role not in ['president', 'staff', 'admin']:
+            if new_role not in ['president', 'staff', 'admin', 'member']:
                 errors.append('角色不合法')
             else:
                 try:
@@ -4629,6 +4901,61 @@ def admin_edit_user_account(request, user_id):
                     )
                     role_display = dict(UserProfile.ROLE_CHOICES).get(new_role, new_role)
                     success_messages.append(f'已为用户 {target_user.username} 创建角色：「{role_display}」')
+        
+        # 修改全名
+        elif action == 'change_full_name':
+            full_name = request.POST.get('full_name', '').strip()
+            
+            try:
+                profile = target_user.profile
+                profile.real_name = full_name
+                profile.save()
+                success_messages.append(f'已更新用户 {target_user.username} 的全名：{full_name or "（已清空）"}')
+            except UserProfile.DoesNotExist:
+                import uuid
+                unique_student_id = f"USER_{target_user.username}_{str(uuid.uuid4())[:8]}"
+                profile = UserProfile.objects.create(
+                    user=target_user,
+                    role='member',
+                    real_name=full_name,
+                    student_id=unique_student_id
+                )
+                success_messages.append(f'已为用户 {target_user.username} 设置全名：{full_name}')
+        
+        # 修改邮箱
+        elif action == 'change_email':
+            email = request.POST.get('email', '').strip()
+            
+            if not email:
+                errors.append('邮箱不能为空')
+            elif not email.count('@'):
+                errors.append('请输入有效的邮箱地址')
+            elif User.objects.exclude(id=target_user.id).filter(email=email).exists():
+                errors.append('此邮箱已被其他用户使用')
+            else:
+                target_user.email = email
+                target_user.save()
+                success_messages.append(f'已更新用户 {target_user.username} 的邮箱：{email}')
+        
+        # 修改电话
+        elif action == 'change_phone':
+            phone = request.POST.get('phone', '').strip()
+            
+            try:
+                profile = target_user.profile
+                profile.phone = phone
+                profile.save()
+                success_messages.append(f'已更新用户 {target_user.username} 的电话：{phone or "（已清空）"}')
+            except UserProfile.DoesNotExist:
+                import uuid
+                unique_student_id = f"USER_{target_user.username}_{str(uuid.uuid4())[:8]}"
+                profile = UserProfile.objects.create(
+                    user=target_user,
+                    role='member',
+                    phone=phone,
+                    student_id=unique_student_id
+                )
+                success_messages.append(f'已为用户 {target_user.username} 设置电话：{phone}')
         
         # 修改用户详细信息
         elif action == 'change_user_info':
@@ -4695,6 +5022,32 @@ def admin_edit_user_account(request, user_id):
                 except Exception as e:
                     errors.append(f'删除失败：{str(e)}')
         
+        # 切换账户启用状态
+        elif action == 'toggle_active':
+            if target_user.is_superuser:
+                errors.append('不能禁用超级管理员账户')
+            else:
+                old_state = '启用' if target_user.is_active else '禁用'
+                target_user.is_active = not target_user.is_active
+                target_user.save(update_fields=['is_active'])
+
+                # 同步生命周期状态：禁用即进入不活跃计时，启用则恢复活跃。
+                try:
+                    profile = target_user.profile
+                    if target_user.is_active:
+                        profile.account_status = 'active'
+                        profile.inactive_since = None
+                        if profile.status == 'inactive':
+                            profile.status = 'approved'
+                        profile.save(update_fields=['account_status', 'inactive_since', 'status', 'updated_at'])
+                    else:
+                        mark_profile_inactive(profile, reason='admin_disable')
+                except UserProfile.DoesNotExist:
+                    pass
+
+                new_state = '启用' if target_user.is_active else '禁用'
+                success_messages.append(f'已将用户 {target_user.username} 的账户状态从「{old_state}」更改为「{new_state}」')
+        
 
     # 获取用户角色信息
     try:
@@ -4707,12 +5060,12 @@ def admin_edit_user_account(request, user_id):
         'profile': profile,
         'errors': errors,
         'success_messages': success_messages,
-        'is_admin_view': True,  # 标记为管理员视图
+        'is_admin_view': True,
         'ROLE_CHOICES': UserProfile.ROLE_CHOICES,
         'POLITICAL_STATUS_CHOICES': UserProfile.POLITICAL_STATUS_CHOICES,
     }
     
-    return render(request, 'clubs/auth/change_account_settings.html', context)
+    return render(request, 'clubs/admin/admin_edit_user_account.html', context)
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -5520,6 +5873,117 @@ def view_president_transitions(request, club_id):
     return render(request, 'clubs/user/view_president_transitions.html', context)
 
 
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['GET', 'POST'])
+def president_member_management(request):
+    """社长端社员管理：编辑资料、调整状态、移除社员。"""
+    if not _is_president(request.user):
+        messages.error(request, '仅社长可访问社员管理')
+        return redirect('clubs:index')
+
+    club_ids = _get_president_club_ids(request.user)
+    clubs = Club.objects.filter(id__in=club_ids).order_by('name')
+    if not clubs.exists():
+        messages.error(request, '您当前没有可管理的社团')
+        return redirect('clubs:user_dashboard')
+
+    selected_club_id = request.GET.get('club_id') or request.POST.get('club_id')
+    if selected_club_id:
+        try:
+            selected_club_id = int(selected_club_id)
+        except ValueError:
+            selected_club_id = clubs.first().id
+    else:
+        selected_club_id = clubs.first().id
+
+    if selected_club_id not in club_ids:
+        messages.error(request, '无权限管理该社团社员')
+        return redirect('clubs:president_member_management')
+
+    club = get_object_or_404(Club, id=selected_club_id)
+
+    if request.method == 'POST':
+        action = request.POST.get('action', '').strip()
+        membership_id = request.POST.get('membership_id', '').strip()
+        membership = get_object_or_404(ClubMember, id=membership_id, club=club) if membership_id else None
+
+        if action == 'remove_member' and membership:
+            if membership.user_profile.role == 'admin':
+                messages.error(request, '管理员账号不允许从此处移除')
+            else:
+                name = membership.user_profile.get_full_name()
+                membership.delete()
+                messages.success(request, f'已移除社员：{name}')
+
+        elif action == 'set_status' and membership:
+            status = request.POST.get('status', 'active').strip()
+            if status not in ['active', 'inactive']:
+                messages.error(request, '无效的成员状态')
+            else:
+                membership.status = status
+                membership.save(update_fields=['status', 'updated_at'])
+                messages.success(request, '成员状态已更新')
+
+        elif action == 'update_profile' and membership:
+            profile = membership.user_profile
+            email = request.POST.get('email', '').strip()
+            real_name = request.POST.get('real_name', '').strip()
+            student_id = request.POST.get('student_id', '').strip()
+            gender = request.POST.get('gender', '').strip()
+            college = request.POST.get('college', '').strip()
+            class_name = request.POST.get('class_name', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            qq = request.POST.get('qq', '').strip()
+            wechat = request.POST.get('wechat', '').strip()
+
+            errors = []
+            if not real_name:
+                errors.append('姓名不能为空')
+            if not student_id:
+                errors.append('学号不能为空')
+            if not phone:
+                errors.append('手机号不能为空')
+            if not wechat:
+                errors.append('微信号不能为空')
+            if not email:
+                errors.append('邮箱不能为空')
+
+            if student_id and UserProfile.objects.exclude(user=profile.user).filter(student_id=student_id).exists():
+                errors.append('学号已被使用')
+            if email and User.objects.exclude(id=profile.user_id).filter(email=email).exists():
+                errors.append('邮箱已被使用')
+
+            if errors:
+                for err in errors:
+                    messages.error(request, err)
+            else:
+                profile.real_name = real_name
+                profile.student_id = student_id
+                profile.gender = gender
+                profile.college = college
+                profile.class_name = class_name
+                profile.phone = phone
+                profile.qq = qq
+                profile.wechat = wechat
+                profile.save(update_fields=['real_name', 'student_id', 'gender', 'college', 'class_name', 'phone', 'qq', 'wechat', 'updated_at'])
+
+                profile.user.email = email
+                profile.user.first_name = real_name
+                profile.user.save(update_fields=['email', 'first_name'])
+                messages.success(request, '社员信息已更新')
+
+        return redirect(f"{reverse('clubs:president_member_management')}?club_id={club.id}")
+
+    memberships = ClubMember.objects.filter(club=club).select_related('user_profile__user').order_by('status', '-joined_at')
+
+    context = {
+        'clubs': clubs,
+        'club': club,
+        'memberships': memberships,
+    }
+    return render(request, 'clubs/user/member_management.html', context)
+
+
 
 
 
@@ -5915,6 +6379,7 @@ def submit_activity_application(request, club_id):
         activity_location = request.POST.get('activity_location', '').strip()
         expected_participants = request.POST.get('expected_participants', '0').strip()
         budget = request.POST.get('budget', '0').strip()
+        is_public = request.POST.get('is_public') == 'on'
         
         # 收集上传的文件
         uploaded_files = {}
@@ -6011,7 +6476,8 @@ def submit_activity_application(request, club_id):
                 application_form=application_form_file,
                 contact_person=contact_person,
                 contact_phone=contact_phone or '无',
-                status='pending'
+                status='pending',
+                is_public=is_public,
             )
             
             # 保存 SubmittedFile
@@ -6100,13 +6566,18 @@ def submit_president_transition(request, club_id):
         
         return None
 
+    # 候选人来源改为本社成员（排除当前社长）
+    candidate_profiles = UserProfile.objects.filter(
+        club_memberships__club=club,
+    ).exclude(user=request.user).select_related('user').distinct()
+
     if request.method == 'POST':
-        new_president_officer_id = request.POST.get('new_president_officer_id', '')
+        new_president_profile_id = request.POST.get('new_president_profile_id', '')
         transition_date = request.POST.get('transition_date', '')
         transition_reason = request.POST.get('transition_reason', '').strip()
         
         errors = []
-        if not new_president_officer_id:
+        if not new_president_profile_id:
             errors.append('新社长不能为空')
         if not transition_date:
             errors.append('换届日期不能为空')
@@ -6129,34 +6600,43 @@ def submit_president_transition(request, club_id):
                 if err:
                     errors.append(err)
 
-        # 验证新社长是否存在且不是当前社长
+        new_president_profile = None
+        new_president_officer = None
+
+        # 验证新社长是否来自本社成员，且不是当前社长
         try:
-            new_president_officer = Officer.objects.get(
-                pk=new_president_officer_id,
-                position='president',
-                is_current=True
+            new_president_profile = candidate_profiles.get(
+                pk=new_president_profile_id,
             )
-            if new_president_officer.user_profile.user == request.user:
+            if new_president_profile.user == request.user:
                 errors.append('新社长不能是当前社长')
-        except Officer.DoesNotExist:
-            errors.append('选择的社长不存在或不符合条件')
+        except UserProfile.DoesNotExist:
+            errors.append('选择的新社长必须来自本社成员')
         
         if errors:
-            club_officers = Officer.objects.filter(position='president', is_current=True).exclude(user_profile__user=request.user)
             context = {
                 'club': club,
                 'errors': errors,
-                'club_officers': club_officers, # Fix: Use club_officers not Officer.objects.filter(...) directly again to match GET
                 'transition_date': transition_date,
                 'transition_reason': transition_reason,
                 'requirements': requirements,
-                'available_presidents': Officer.objects.filter(position='president', is_current=True).exclude(user_profile__user=request.user) # Keeping this for template compatibility if it uses available_presidents
+                'candidate_profiles': candidate_profiles,
             }
-            # Note: The template uses available_presidents loop, let's double check GET context
             return render(request, 'clubs/user/submit_president_transition.html', context)
         
         # 创建社长换届申请
         try:
+            new_president_officer, _created = Officer.objects.get_or_create(
+                club=club,
+                user_profile=new_president_profile,
+                position='president',
+                defaults={
+                    'is_current': False,
+                    'appointed_date': timezone.now().date(),
+                    'end_date': None,
+                },
+            )
+
             transition = PresidentTransition.objects.create(
                 club=club,
                 old_president=request.user,
@@ -6188,16 +6668,9 @@ def submit_president_transition(request, club_id):
             return redirect('clubs:submit_president_transition', club_id=club_id)
     
     # GET请求 - 显示表单
-    club_officers = Officer.objects.filter(position='president', is_current=True).exclude(user_profile__user=request.user)
-    
-    # Check for existing pending transition to show files if needed (usually resubmission logic handles this, but here it's a new submission)
-    # If we want to support editing a rejected one, we might need more logic, but for now this is a fresh submission page or resubmission of rejected.
-    # The current view logic doesn't seem to load a previous rejected one explicitly unless passed via ID, but here it is club_id based.
-    # So it is creating a NEW transition.
-    
     context = {
         'club': club,
-        'available_presidents': club_officers, # Template uses available_presidents
+        'candidate_profiles': candidate_profiles,
         'requirements': requirements,
     }
     return render(request, 'clubs/user/submit_president_transition.html', context)
@@ -6311,6 +6784,13 @@ def review_president_transition(request, transition_id):
                 old_officer.is_current = False
                 old_officer.end_date = timezone.now().date()
                 old_officer.save()
+
+                # 老社长转为社员并置为不活跃（触发邮件提醒）
+                old_profile = old_officer.user_profile
+                if old_profile:
+                    old_profile.role = 'member'
+                    old_profile.save(update_fields=['role', 'updated_at'])
+                    mark_profile_inactive(old_profile, reason='transition')
             
             # 新社长Officer已存在，直接设置其为现任
             try:
@@ -6318,6 +6798,15 @@ def review_president_transition(request, transition_id):
                 new_officer.is_current = True
                 new_officer.appointed_date = transition.transition_date
                 new_officer.save()
+
+                if new_officer.user_profile:
+                    new_officer.user_profile.role = 'president'
+                    new_officer.user_profile.account_status = 'active'
+                    new_officer.user_profile.status = 'approved'
+                    new_officer.user_profile.inactive_since = None
+                    new_officer.user_profile.save(
+                        update_fields=['role', 'account_status', 'status', 'inactive_since', 'updated_at']
+                    )
                 
             except Exception as e:
                 messages.warning(request, f'社长换届已批准，但更新社长信息时出错: {str(e)}')
@@ -6489,13 +6978,14 @@ def staff_review_detail(request, item_type, item_id):
 @login_required
 def public_activities(request):
     """
-    活动列表页面 - 干事、管理员和社长可见
+    活动列表页面 - 干事、管理员、社长和社员可见
     社长只能看到本社团的活动，干事和管理员可以看到所有社团的活动
+    社员可以看到：本社团的所有活动 + 其他社团公开的活动
     支持筛选和搜索功能
     """
-    # 权限检查：干事、管理员和社长可以访问
+    # 权限检查：干事、管理员、社长和社员可以访问
     user_role = getattr(request.user.profile, 'role', None) if hasattr(request.user, 'profile') else None
-    if user_role not in ['staff', 'admin', 'president']:
+    if user_role not in ['staff', 'admin', 'president', 'member']:
         messages.error(request, '您没有权限访问此页面。')
         return redirect('clubs:user_dashboard')
     
@@ -6526,6 +7016,21 @@ def public_activities(request):
         else:
             # 如果找不到社长职位，显示空列表
             approved_activities = approved_activities.none()
+    elif user_role == 'member':
+        # 社员：本社团的全部活动 + 其他社团中 is_public=True 的活动
+        user_club_ids = list(
+            ClubMember.objects.filter(
+                user_profile__user=request.user,
+                status='active'
+            ).values_list('club_id', flat=True)
+        )
+        if user_club_ids:
+            approved_activities = approved_activities.filter(
+                Q(club__in=user_club_ids) | Q(is_public=True)
+            )
+        else:
+            # 未加入任何社团，只能看公开活动
+            approved_activities = approved_activities.filter(is_public=True)
     
     # 应用筛选条件
     if club_filter:
@@ -6566,12 +7071,32 @@ def public_activities(request):
             all_clubs = Club.objects.filter(id__in=user_club_ids)
         else:
             all_clubs = Club.objects.none()
+    elif user_role == 'member':
+        # 社员可以看到自己所在的社团 + 有公开活动的社团
+        member_club_ids = list(
+            ClubMember.objects.filter(
+                user_profile__user=request.user,
+                status='active'
+            ).values_list('club_id', flat=True)
+        )
+        all_clubs = Club.objects.filter(
+            Q(id__in=member_club_ids) | Q(activity_applications__status='approved', activity_applications__is_public=True)
+        ).distinct().order_by('name')
     else:
         # 干事和管理员可以看到所有社团
         all_clubs = Club.objects.filter(activity_applications__status='approved').distinct().order_by('name')
-    
+
     activity_type_choices = ActivityApplication.ACTIVITY_TYPE_CHOICES
-    
+
+    # 获取当前用户已报名的活动 ID 集合（社员使用）
+    user_registered_ids: set = set()
+    if user_role == 'member':
+        user_registered_ids = set(
+            ActivityRegistration.objects.filter(
+                user_profile__user=request.user
+            ).values_list('activity_id', flat=True)
+        )
+
     context = {
         'approved_activities': approved_activities,
         'activities_by_type': activities_by_type,
@@ -6582,8 +7107,62 @@ def public_activities(request):
         'activity_type_filter': activity_type_filter,
         'date_filter': date_filter,
         'search_query': search_query,
+        'user_registered_ids': user_registered_ids,
     }
     return render(request, 'clubs/public_activities.html', context)
+
+
+@login_required
+@require_POST
+def register_activity(request, activity_id):
+    """社员报名活动"""
+    user_role = getattr(request.user.profile, 'role', None) if hasattr(request.user, 'profile') else None
+    if user_role != 'member':
+        return JsonResponse({'success': False, 'error': '仅社员可以报名活动'}, status=403)
+
+    activity = get_object_or_404(ActivityApplication, pk=activity_id, status='approved')
+
+    # 检查社员是否有权限看到该活动（本社活动或公开活动）
+    user_club_ids = list(
+        ClubMember.objects.filter(
+            user_profile__user=request.user, status='active'
+        ).values_list('club_id', flat=True)
+    )
+    if activity.club_id not in user_club_ids and not activity.is_public:
+        return JsonResponse({'success': False, 'error': '无权报名该活动'}, status=403)
+
+    profile = getattr(request.user, 'profile', None)
+    if not profile:
+        return JsonResponse({'success': False, 'error': '用户资料不存在'}, status=400)
+
+    _, created = ActivityRegistration.objects.get_or_create(
+        activity=activity,
+        user_profile=profile,
+    )
+    if created:
+        return JsonResponse({'success': True, 'registered': True})
+    else:
+        return JsonResponse({'success': False, 'error': '您已报名该活动'})
+
+
+@login_required
+@require_POST
+def unregister_activity(request, activity_id):
+    """社员取消报名活动"""
+    user_role = getattr(request.user.profile, 'role', None) if hasattr(request.user, 'profile') else None
+    if user_role != 'member':
+        return JsonResponse({'success': False, 'error': '仅社员可以取消报名'}, status=403)
+
+    activity = get_object_or_404(ActivityApplication, pk=activity_id)
+    profile = getattr(request.user, 'profile', None)
+    if not profile:
+        return JsonResponse({'success': False, 'error': '用户资料不存在'}, status=400)
+
+    deleted, _ = ActivityRegistration.objects.filter(activity=activity, user_profile=profile).delete()
+    if deleted:
+        return JsonResponse({'success': True, 'registered': False})
+    else:
+        return JsonResponse({'success': False, 'error': '您尚未报名该活动'})
 
 
 

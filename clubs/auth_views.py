@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib import messages
-from .models import UserProfile, Club, ReviewSubmission, Reimbursement, ClubRegistrationRequest, RegistrationPeriod, ClubRegistration, StaffClubRelation, Officer
+from .models import UserProfile, Club, ReviewSubmission, Reimbursement, ClubRegistrationRequest, RegistrationPeriod, ClubRegistration, StaffClubRelation, Officer, SubmissionReview
 from datetime import datetime
 from django.utils import timezone
 from django.db.models import Q, Prefetch
@@ -15,6 +15,7 @@ import time
 from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
+from .lifecycle_utils import extend_inactive_account
 
 # 登录限制配置
 MAX_LOGIN_ATTEMPTS = 5
@@ -189,6 +190,13 @@ def user_login(request):
                 login(request, user)
                 messages.success(request, f'欢迎回来，{username}！')
 
+                if getattr(profile, 'account_status', 'active') == 'inactive' and profile.role != 'admin':
+                    request.session['show_inactive_prompt'] = True
+                    messages.warning(
+                        request,
+                        '您的账号当前为不活跃状态。您可以在“账户设置”中选择延期注销，延期后可继续保持1年活跃（支持多次延期）。'
+                    )
+
                 # 首次登录/重置后强制改密
                 if getattr(user.profile, 'must_change_password', False):
                     messages.warning(request, '为了账户安全，请先修改密码后再继续使用系统。')
@@ -246,6 +254,30 @@ def user_login(request):
     return render(request, 'clubs/auth/login.html')
 
 
+@login_required(login_url='clubs:login')
+@require_http_methods(['POST'])
+def extend_inactive_period(request):
+    """用户主动延期注销：恢复活跃状态并顺延1年。"""
+    try:
+        profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        messages.error(request, '用户档案不存在，无法延期')
+        return redirect('clubs:index')
+
+    if profile.role == 'admin':
+        messages.info(request, '管理员账号不受自动注销策略影响，无需延期')
+        return redirect('clubs:change_account_settings')
+
+    if getattr(profile, 'account_status', 'active') != 'inactive':
+        messages.info(request, '当前账号不是不活跃状态，无需延期')
+        return redirect('clubs:change_account_settings')
+
+    new_until = extend_inactive_account(profile, days=365, reason='user_extend')
+    request.session['show_inactive_prompt'] = False
+    messages.success(request, f'延期成功，账号已恢复活跃状态，有效期至 {new_until.strftime("%Y-%m-%d")}。')
+    return redirect('clubs:change_account_settings')
+
+
 def user_logout(request):
     """用户登出"""
     logout(request)
@@ -290,8 +322,6 @@ def delete_account(request):
             elif user.profile.role == 'staff':
                 # 干事账户删除逻辑 - 完整清除所有数据
                 # 1. 先删除干事在所有社团中的角色关系
-                from .models import Officer, SubmissionReview
-                
                 # 删除干事在社团中的干部记录
                 Officer.objects.filter(user_profile=user.profile).delete()
                 

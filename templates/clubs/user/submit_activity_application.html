@@ -328,6 +328,16 @@
                     <input type="number" id="budget" name="budget" min="0" step="0.01" value="{{ budget }}" placeholder="例如：1000.00" required>
                 </div>
             </div>
+
+            <div class="form-row">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;">
+                        <input type="checkbox" id="is_public" name="is_public" style="width:18px; height:18px; accent-color:var(--md3-primary, #6750a4);">
+                        <span>审核通过后向全体社员公开（未加入本社团的社员也可在活动页看到）</span>
+                    </label>
+                    <div style="margin-top:4px; font-size:0.85rem; color:var(--md3-on-surface-variant, #49454f);">不勾选则仅本社团成员可见</div>
+                </div>
+            </div>
             
             <div class="form-row">
                 <div class="form-group" style="grid-column: 1 / -1;">
