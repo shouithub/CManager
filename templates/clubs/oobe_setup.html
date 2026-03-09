@@ -581,7 +581,19 @@
             const nextBtn = section.querySelector('[data-next-step]');
             nextBtn.dataset.customNext = '1';
             nextBtn.addEventListener('click', async (e) => {
-                if (!(logoInput.files && logoInput.files[0]) || !imgReady) return;
+                // Logo 可选：未选文件时直接跳过本步
+                if (!(logoInput.files && logoInput.files[0])) {
+                    if (!validateStep(section)) return;
+                    e.preventDefault();
+                    retainCurrentStepInputs(section);
+                    section.remove();
+                    currentStep = Number(nextBtn.getAttribute('data-next-step'));
+                    renderStep(currentStep);
+                    return;
+                }
+
+                // 文件已选但图片尚未加载完成，等待
+                if (!imgReady) return;
                 e.preventDefault();
 
                 const croppedBlob = await new Promise((resolve) => {

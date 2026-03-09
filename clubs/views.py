@@ -8,7 +8,7 @@ Django 社团管理系统视图模块
 """
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -679,20 +679,8 @@ def generate_member_join_token(request, club_id):
         return JsonResponse({'success': False, 'message': '参数格式错误'}, status=400)
 
     token = RegistrationToken.create_for_club(club=club, created_by=request.user, minutes=minutes, max_uses=max_uses)
-    join_url = request.build_absolute_uri(reverse('clubs:member_join_by_token', args=[token.code]))
-
-    qr_data_uri = ''
-    try:
-        import qrcode  # type: ignore
-        qr = qrcode.QRCode(version=1, box_size=8, border=2)
-        qr.add_data(join_url)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color='black', back_color='white')
-        buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
-        qr_data_uri = 'data:image/png;base64,' + base64.b64encode(buffer.getvalue()).decode('ascii')
-    except Exception:
-        qr_data_uri = ''
+    join_path = reverse('clubs:member_join_by_token', args=[token.code])
+    join_url = request.build_absolute_uri(join_path)
 
     uses_info = '不限次数' if max_uses is None else f'{max_uses}次'
     return JsonResponse({
@@ -700,10 +688,42 @@ def generate_member_join_token(request, club_id):
         'token': token.code,
         'expires_at': token.expires_at.strftime('%Y-%m-%d %H:%M:%S'),
         'join_url': join_url,
+        'join_path': join_path,
         'qr_payload': join_url,
-        'qr_data_uri': qr_data_uri,
         'uses_info': uses_info,
     })
+
+
+@login_required
+@require_GET
+def generate_qrcode_for_url(request):
+    """为招新加入链接生成二维码图片（仅允许本站 /member/join/ 路径，防止 SSRF）。"""
+    url = request.GET.get('url', '').strip()
+    if not url:
+        return JsonResponse({'error': '缺少 url 参数'}, status=400)
+
+    # 安全验证：只允许本站的会员入会路径
+    join_path_prefix = reverse('clubs:member_join_by_token', args=['_TOKEN_']).rsplit('_TOKEN_', 1)[0]
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        if not parsed.path.startswith(join_path_prefix):
+            return JsonResponse({'error': '不允许的 URL'}, status=400)
+    except Exception:
+        return JsonResponse({'error': 'URL 格式错误'}, status=400)
+
+    try:
+        import qrcode  # type: ignore
+        qr = qrcode.QRCode(version=1, box_size=8, border=2)
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color='black', back_color='white')
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        qr_data_uri = 'data:image/png;base64,' + base64.b64encode(buffer.getvalue()).decode('ascii')
+        return JsonResponse({'success': True, 'qr_data_uri': qr_data_uri})
+    except Exception:
+        return JsonResponse({'success': False, 'qr_data_uri': ''})
 
 
 @login_required
@@ -748,11 +768,13 @@ def list_member_tokens(request, club_id):
     ).order_by('-created_at')
     data = []
     for t in tokens:
-        join_url = request.build_absolute_uri(reverse('clubs:member_join_by_token', args=[t.code]))
+        join_path = reverse('clubs:member_join_by_token', args=[t.code])
+        join_url = request.build_absolute_uri(join_path)
         uses_info = '不限次数' if t.max_uses is None else f'{t.used_count}/{t.max_uses}次'
         data.append({
             'id': t.id,
             'join_url': join_url,
+            'join_path': join_path,
             'expires_at': t.expires_at.strftime('%Y-%m-%d %H:%M'),
             'uses_info': uses_info,
             'created_at': t.created_at.strftime('%Y-%m-%d %H:%M'),

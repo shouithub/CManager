@@ -690,19 +690,6 @@
     {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=False cancel_url='clubs:staff_audit_center' cancel_url_args='reimbursement' title="干事审核" approve_text="批准报销" reject_text="拒绝报销" %}
 </div>
 
-<script>
-function previewFile(fileUrl, fileName) {
-    const currentDomain = window.location.origin;
-    let fullUrl = fileUrl;
-    if (fileUrl.startsWith('/')) {
-        fullUrl = currentDomain + fileUrl;
-    } else if (!fileUrl.startsWith('http')) {
-        fullUrl = currentDomain + '/' + fileUrl;
-    }
-    const encodedUrl = encodeURIComponent(fullUrl);
-    const previewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
-    window.open(previewUrl, '_blank');
-}
-</script>
+
 
 {% endblock %}

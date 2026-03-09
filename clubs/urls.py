@@ -22,6 +22,7 @@ urlpatterns = [
     path('club/<int:club_id>/member-tokens/', views.list_member_tokens, name='list_member_tokens'),
     path('club/<int:club_id>/member-token/<int:token_id>/delete/', views.delete_member_token, name='delete_member_token'),
     path('member/join/<str:token_code>/', views.member_join_by_token, name='member_join_by_token'),
+    path('qrcode/', views.generate_qrcode_for_url, name='generate_qrcode_for_url'),
     path('activities/', views.public_activities, name='public_activities'),  # 活动管理页面（仅管理员干事可见）
     path('activities/<int:activity_id>/register/', views.register_activity, name='register_activity'),
     path('activities/<int:activity_id>/unregister/', views.unregister_activity, name='unregister_activity'),

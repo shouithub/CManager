@@ -761,23 +761,31 @@
 
 <script>
 function previewFile(fileUrl, fileName) {
-    // 获取当前域名
     const currentDomain = window.location.origin;
-    
-    // 如果文件URL是相对路径，转换为完整URL
     let fullUrl = fileUrl;
     if (fileUrl.startsWith('/')) {
         fullUrl = currentDomain + fileUrl;
     } else if (!fileUrl.startsWith('http')) {
         fullUrl = currentDomain + '/' + fileUrl;
     }
-    
-    // 使用 Office 365 Online 预览服务
-    const encodedUrl = encodeURIComponent(fullUrl);
-    const previewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
-    
-    // 在新标签页打开
-    window.open(previewUrl, '_blank');
+
+    const ext = (fullUrl.toLowerCase().match(/\.([^.?#]+)(?:[?#]|$)/) || [])[0] || '';
+    const officeExtensions = ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'];
+
+    if (ext === '.pdf') {
+        window.open(fullUrl, '_blank');
+    } else if (officeExtensions.includes(ext)) {
+        if (window.location.protocol === 'https:') {
+            const officePreviewUrl = 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(fullUrl);
+            window.open(officePreviewUrl, '_blank');
+        } else {
+            if (confirm('在线预览需要 HTTPS 环境\n（Office Online 无法访问 HTTP 地址的文件）\n\n是否直接在新标签页打开文件？')) {
+                window.open(fullUrl, '_blank');
+            }
+        }
+    } else {
+        window.open(fullUrl, '_blank');
+    }
 }
 </script>
 

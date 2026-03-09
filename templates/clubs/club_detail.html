@@ -570,15 +570,28 @@
                 throw new Error(data.message || '生成失败');
             }
 
+            // 用当前页面域名重建链接，避免服务端反代环境返回错误域名
+            const joinPath = data.join_path || '';
+            const correctedUrl = joinPath ? (window.location.origin + joinPath) : data.join_url;
+
             panel.style.display = 'block';
-            urlEl.textContent = data.join_url;
+            urlEl.textContent = correctedUrl;
             expEl.textContent = `过期时间：${data.expires_at}`;
             usesEl.textContent = `使用次数：${data.uses_info}`;
-            if (data.qr_data_uri) {
-                imgEl.src = data.qr_data_uri;
-                imgEl.style.display = 'block';
-            } else {
-                imgEl.style.display = 'none';
+
+            // 用正确的 URL 请求二维码图片
+            imgEl.style.display = 'none';
+            try {
+                const qrRes = await fetch('/qrcode/?url=' + encodeURIComponent(correctedUrl), {
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                });
+                const qrData = await qrRes.json();
+                if (qrData.success && qrData.qr_data_uri) {
+                    imgEl.src = qrData.qr_data_uri;
+                    imgEl.style.display = 'block';
+                }
+            } catch (_) {
+                // QR 生成失败不影响链接展示
             }
         } catch (err) {
             alert(err.message || '二维码生成失败');

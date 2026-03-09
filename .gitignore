@@ -57,6 +57,7 @@ all_users_and_clubs_export.zip
 *.sqlite3
 *.sqlite3-shm
 *.sqlite3-wal
+.oobe_pending.json
 
 uwsgi.ini
 uwsgi.pid

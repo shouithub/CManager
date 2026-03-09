@@ -275,15 +275,25 @@ if (typeof previewFile === 'undefined') {
         } else if (!fileUrl.startsWith('http')) {
             fullUrl = currentDomain + '/' + fileUrl;
         }
-        
+
+        const ext = (fullUrl.toLowerCase().match(/\.([^.?#]+)(?:[?#]|$)/) || [])[0] || '';
         const officeExtensions = ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'];
-        const fileExtension = fullUrl.toLowerCase().substring(fullUrl.lastIndexOf('.'));
-        
-        if (officeExtensions.includes(fileExtension)) {
-            const officePreviewUrl = 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(fullUrl);
-            window.open(officePreviewUrl, '_blank');
-        } else if (fileExtension === '.pdf') {
+
+        if (ext === '.pdf') {
+            // PDF：直接在新标签页用浏览器原生查看器打开
             window.open(fullUrl, '_blank');
+        } else if (officeExtensions.includes(ext)) {
+            if (window.location.protocol === 'https:') {
+                // HTTPS 环境：使用 Office Online 在线预览
+                const officePreviewUrl = 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(fullUrl);
+                window.open(officePreviewUrl, '_blank');
+            } else {
+                // HTTP 环境：Office Online 需要 HTTPS，直接下载/打开文件
+                // 提示用户并提供直接访问链接
+                if (confirm('在线预览需要 HTTPS 环境\n（Office Online 无法访问 HTTP 地址的文件）\n\n是否直接在新标签页打开文件？')) {
+                    window.open(fullUrl, '_blank');
+                }
+            }
         } else {
             window.open(fullUrl, '_blank');
         }
