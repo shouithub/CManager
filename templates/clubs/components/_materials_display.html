@@ -220,6 +220,21 @@
         <h2>{{ title|default:"附件材料" }}</h2>
     </div>
 {% endif %}
+
+    {% if missing_materials %}
+    <div style="margin-bottom: var(--md3-spacing-lg); padding: var(--md3-spacing-md); border: 1px solid var(--md3-error); border-radius: var(--md3-radius-md); background: var(--md3-error-container); color: var(--md3-on-error-container);">
+        <div style="display:flex; align-items:center; gap:8px; font-weight:600; margin-bottom:6px;">
+            <span class="material-icons" style="font-size:1.1rem;">warning</span>
+            <span>检测到缺失文件</span>
+        </div>
+        <div style="font-size:0.88rem; line-height:1.6;">
+            以下材料的数据库记录仍在，但原始文件已丢失，无法预览或下载：
+            {% for item in missing_materials %}
+                {% if forloop.first %}<span>{% endif %}{{ item.name }}{% if not forloop.last %}、{% endif %}{% if forloop.last %}</span>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
     
     {% if materials %}
     <div class="component-materials-grid">

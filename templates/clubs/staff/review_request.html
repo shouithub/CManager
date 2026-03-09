@@ -695,6 +695,23 @@
     </div>
 
     <!-- 提交材料区域 -->
+    {% if missing_materials %}
+    <div class="materials-section" style="border: 1px solid var(--md3-error); background: var(--md3-error-container);">
+        <h2 class="section-title" style="border-bottom-color: var(--md3-error); color: var(--md3-on-error-container);">
+            <span class="material-icons" style="color: var(--md3-error);">warning</span>
+            检测到缺失文件
+        </h2>
+        <div style="color: var(--md3-on-error-container); font-size: 0.95rem; line-height: 1.7;">
+            以下材料的数据库记录仍存在，但原始文件已被删除，无法预览或下载：
+            <ul style="margin: 8px 0 0 20px;">
+                {% for item in missing_materials %}
+                <li>{{ item.name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
     {% if submission_files %}
     <div class="materials-section">
         <h2 class="section-title">

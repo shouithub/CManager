@@ -109,6 +109,46 @@ def _get_president_club_ids(user):
     ).values_list('club_id', flat=True))
 
 
+def _build_external_url(request, path: str) -> str:
+    """Build a public URL for client-facing links behind reverse proxies."""
+    forwarded_proto = (request.headers.get('X-Forwarded-Proto') or '').split(',')[0].strip()
+    forwarded_host = (request.headers.get('X-Forwarded-Host') or '').split(',')[0].strip()
+
+    scheme = forwarded_proto or request.scheme
+    host = forwarded_host or request.get_host()
+
+    # Some proxy setups still expose loopback host to Django; fallback to browser origin.
+    loopback_hosts = {'127.0.0.1', 'localhost', '[::1]'}
+    host_without_port = host.split(':', 1)[0].strip().lower()
+    if host_without_port in loopback_hosts:
+        for header_name in ('Origin', 'Referer'):
+            header_value = request.headers.get(header_name, '').strip()
+            if not header_value:
+                continue
+            parsed = urllib.parse.urlparse(header_value)
+            if parsed.netloc:
+                scheme = parsed.scheme or scheme
+                host = parsed.netloc
+                break
+
+    return f'{scheme}://{host}{path}'
+
+
+def _make_qr_data_uri(payload: str) -> str:
+    """Generate a PNG QR code and return as data URI; return empty string on failure."""
+    try:
+        import qrcode  # type: ignore
+        qr = qrcode.QRCode(version=1, box_size=8, border=2)
+        qr.add_data(payload)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color='black', back_color='white')
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        return 'data:image/png;base64,' + base64.b64encode(buffer.getvalue()).decode('ascii')
+    except Exception:
+        return ''
+
+
 def is_staff_or_admin(user):
     """返回用户是否为干事或管理员（布尔）。超级用户也视为管理员。"""
     try:
@@ -200,7 +240,21 @@ def get_dynamic_materials_list(target_obj, db_req_type):
     return materials
 
 
-def get_dynamic_materials_payload(target_obj, db_req_type):
+def _stored_file_exists(file_obj):
+    """Safely check whether a storage-backed file currently exists on backend storage."""
+    if not file_obj:
+        return False
+    try:
+        file_name = getattr(file_obj, 'name', '')
+        storage = getattr(file_obj, 'storage', None)
+        if not file_name or storage is None:
+            return False
+        return storage.exists(file_name)
+    except Exception:
+        return False
+
+
+def get_dynamic_materials_payload(target_obj, db_req_type, include_missing=False):
     """统一构建动态材料数据。
 
     Returns:
@@ -209,6 +263,7 @@ def get_dynamic_materials_payload(target_obj, db_req_type):
     requirements = MaterialRequirement.objects.filter(request_type=db_req_type, is_active=True).order_by('order')
     m_list = []
     s_files = []
+    missing_files = []
 
     try:
         content_type = ContentType.objects.get_for_model(target_obj)
@@ -232,6 +287,13 @@ def get_dynamic_materials_payload(target_obj, db_req_type):
         if not file_obj:
             continue
 
+        if not _stored_file_exists(file_obj):
+            missing_files.append({
+                'name': req.name,
+                'stored_path': getattr(file_obj, 'name', ''),
+            })
+            continue
+
         field_identifier = f"req_{req.id}"
         icon_name = req.icon or 'description'
         m_list.append({
@@ -252,6 +314,8 @@ def get_dynamic_materials_payload(target_obj, db_req_type):
             'icon': icon_name,
         })
 
+    if include_missing:
+        return m_list, s_files, missing_files
     return m_list, s_files
 
 
@@ -680,7 +744,8 @@ def generate_member_join_token(request, club_id):
 
     token = RegistrationToken.create_for_club(club=club, created_by=request.user, minutes=minutes, max_uses=max_uses)
     join_path = reverse('clubs:member_join_by_token', args=[token.code])
-    join_url = request.build_absolute_uri(join_path)
+    join_url = _build_external_url(request, join_path)
+    qr_data_uri = _make_qr_data_uri(join_url)
 
     uses_info = '不限次数' if max_uses is None else f'{max_uses}次'
     return JsonResponse({
@@ -690,40 +755,9 @@ def generate_member_join_token(request, club_id):
         'join_url': join_url,
         'join_path': join_path,
         'qr_payload': join_url,
+        'qr_data_uri': qr_data_uri,
         'uses_info': uses_info,
     })
-
-
-@login_required
-@require_GET
-def generate_qrcode_for_url(request):
-    """为招新加入链接生成二维码图片（仅允许本站 /member/join/ 路径，防止 SSRF）。"""
-    url = request.GET.get('url', '').strip()
-    if not url:
-        return JsonResponse({'error': '缺少 url 参数'}, status=400)
-
-    # 安全验证：只允许本站的会员入会路径
-    join_path_prefix = reverse('clubs:member_join_by_token', args=['_TOKEN_']).rsplit('_TOKEN_', 1)[0]
-    try:
-        from urllib.parse import urlparse
-        parsed = urlparse(url)
-        if not parsed.path.startswith(join_path_prefix):
-            return JsonResponse({'error': '不允许的 URL'}, status=400)
-    except Exception:
-        return JsonResponse({'error': 'URL 格式错误'}, status=400)
-
-    try:
-        import qrcode  # type: ignore
-        qr = qrcode.QRCode(version=1, box_size=8, border=2)
-        qr.add_data(url)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color='black', back_color='white')
-        buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
-        qr_data_uri = 'data:image/png;base64,' + base64.b64encode(buffer.getvalue()).decode('ascii')
-        return JsonResponse({'success': True, 'qr_data_uri': qr_data_uri})
-    except Exception:
-        return JsonResponse({'success': False, 'qr_data_uri': ''})
 
 
 @login_required
@@ -2390,8 +2424,12 @@ def review_submission(request, submission_id):
         # 重定向到审核中心的年审标签页
         return redirect('clubs:staff_audit_center', 'annual_review')
     
-    # 获取动态材料列表
-    materials = get_dynamic_materials_list(submission, 'annual_review')
+    # 获取动态材料列表（过滤丢失文件并回传丢失项）
+    materials, _, missing_materials = get_dynamic_materials_payload(
+        submission,
+        'annual_review',
+        include_missing=True,
+    )
     
     # 获取审核记录
     existing_reviews = SubmissionReview.objects.filter(submission=submission).order_by('-reviewed_at')
@@ -2406,6 +2444,7 @@ def review_submission(request, submission_id):
         'existing_reviews': existing_reviews,
         'submission_materials': materials,
         'materials': materials,
+        'missing_materials': missing_materials,
         'approved_count': approved_count,
         'rejected_count': rejected_count,
     }
@@ -2692,12 +2731,17 @@ def review_reimbursement(request, reimbursement_id):
     # 检查当前用户是否已经审核过（通过检查reimbursement的reviewer字段）
     user_has_reviewed = reimbursement.reviewer == request.user if reimbursement.reviewer else False
     
-    # 获取动态材料列表
-    materials = get_dynamic_materials_list(reimbursement, 'reimbursement')
+    # 获取动态材料列表（过滤丢失文件并回传丢失项）
+    materials, _, missing_materials = get_dynamic_materials_payload(
+        reimbursement,
+        'reimbursement',
+        include_missing=True,
+    )
 
     context = {
         'reimbursement': reimbursement,
         'materials': materials,
+        'missing_materials': missing_materials,
         'user_has_reviewed': user_has_reviewed,
         'approved_count': 1 if reimbursement.status == 'approved' else 0,
         'rejected_count': 1 if reimbursement.status == 'rejected' else 0,
@@ -2803,8 +2847,12 @@ def review_club_registration(request, registration_id):
 
     requirements = MaterialRequirement.objects.filter(request_type='club_registration', is_active=True).order_by('order')
 
-    # 使用统一函数获取材料列表
-    materials_list = get_dynamic_materials_list(registration, 'club_registration')
+    # 使用统一函数获取材料列表（过滤丢失文件并回传丢失项）
+    materials_list, _, missing_materials = get_dynamic_materials_payload(
+        registration,
+        'club_registration',
+        include_missing=True,
+    )
     
     # 获取现有审核记录
     existing_reviews = registration.reviews.all().order_by('-reviewed_at')
@@ -2824,6 +2872,7 @@ def review_club_registration(request, registration_id):
         'approved_count': approved_count,
         'rejected_count': rejected_count,
         'has_reviewed': user_has_reviewed,
+        'missing_materials': missing_materials,
     }
     return render(request, 'clubs/staff/review_club_registration.html', context)
 
@@ -3006,7 +3055,11 @@ def review_request(request, club_id):
             return redirect('clubs:staff_dashboard')
         
         # 使用动态函数获取材料列表
-        materials_list, submission_files = get_dynamic_materials_payload(obj, req_type_db)
+        materials_list, submission_files, missing_materials = get_dynamic_materials_payload(
+            obj,
+            req_type_db,
+            include_missing=True,
+        )
         
         # 获取现有的审核记录
         existing_reviews = SubmissionReview.objects.filter(submission=obj).order_by('reviewed_at')
@@ -3025,6 +3078,7 @@ def review_request(request, club_id):
             'user_review': existing_review,
             'approved_count': approved_count,
             'rejected_count': rejected_count,
+            'missing_materials': missing_materials,
         }
     
     elif request_type == 'registration':
@@ -3120,12 +3174,17 @@ def review_request(request, club_id):
             return redirect('clubs:staff_dashboard')
         
         # 使用动态函数获取材料列表
-        materials_list, submission_files = get_dynamic_materials_payload(obj, req_type_db)
+        materials_list, submission_files, missing_materials = get_dynamic_materials_payload(
+            obj,
+            req_type_db,
+            include_missing=True,
+        )
         
         context = {
             'registration': obj,
             'materials_list': materials_list,
             'submission_files': submission_files,
+            'missing_materials': missing_materials,
         }
     
 
@@ -3195,12 +3254,17 @@ def review_request(request, club_id):
             return redirect('clubs:staff_dashboard')
         
         # 使用动态函数获取材料列表
-        materials_list, submission_files = get_dynamic_materials_payload(obj, req_type_db)
+        materials_list, submission_files, missing_materials = get_dynamic_materials_payload(
+            obj,
+            req_type_db,
+            include_missing=True,
+        )
         
         context = {
             'reimbursement': obj,
             'materials_list': materials_list,
             'submission_files': submission_files,
+            'missing_materials': missing_materials,
         }
     
     elif request_type == 'staff_registration':
@@ -3366,7 +3430,11 @@ def review_request(request, club_id):
         existing_reviews = obj.reviews.all().order_by('reviewed_at')
         
         # 使用动态函数获取材料列表
-        materials_list, submission_files = get_dynamic_materials_payload(obj, req_type_db)
+        materials_list, submission_files, missing_materials = get_dynamic_materials_payload(
+            obj,
+            req_type_db,
+            include_missing=True,
+        )
         
         context = {
             'registration': obj,
@@ -3377,6 +3445,7 @@ def review_request(request, club_id):
             'materials_list': materials_list,
             'submission_files': submission_files,
             'existing_reviews': existing_reviews,
+            'missing_materials': missing_materials,
         }   
     
     else:
@@ -4070,8 +4139,12 @@ def review_club_registration_submission(request, registration_id):
             approved_count = current_attempt_reviews.filter(status='approved').count()
             rejected_count = current_attempt_reviews.filter(status='rejected').count()
             
-            # 获取动态材料列表
-            materials = get_dynamic_materials_list(registration, 'club_registration')
+            # 获取动态材料列表，并识别文件已被删除的异常记录
+            materials, _, missing_materials = get_dynamic_materials_payload(
+                registration,
+                'club_registration',
+                include_missing=True,
+            )
             
             context = {
                 'registration': registration,
@@ -4081,6 +4154,7 @@ def review_club_registration_submission(request, registration_id):
                 'has_reviewed': has_reviewed,
                 'materials': materials,
                 'materials_list': materials,
+                'missing_materials': missing_materials,
             }
             
             return render(request, 'clubs/staff/review_club_registration_submission.html', context)
@@ -5474,20 +5548,40 @@ def zip_materials(request, obj, materials, zip_filename, check_permission_func):
         # 创建zip文件
         zip_path = os.path.join(temp_dir, zip_filename)
         
+        added_count = 0
+        missing_titles = []
+
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             # 处理每个材料文件
             for file_field, title in materials:
-                if file_field and hasattr(file_field, 'path'):
-                    file_path = file_field.path
-                    # 获取原始文件名和扩展名
-                    original_filename = os.path.basename(file_path)
-                    file_ext = os.path.splitext(original_filename)[1]
-                    
-                    # 创建新的文件名，添加序号和标题
-                    new_filename = f"{title}{file_ext}"
-                    
-                    # 将文件添加到zip中
-                    zipf.write(file_path, new_filename)
+                if not file_field or not hasattr(file_field, 'path'):
+                    continue
+
+                if not _stored_file_exists(file_field):
+                    missing_titles.append(str(title))
+                    continue
+
+                file_path = file_field.path
+                # 获取原始文件名和扩展名
+                original_filename = os.path.basename(file_path)
+                file_ext = os.path.splitext(original_filename)[1]
+
+                # 创建新的文件名，添加序号和标题
+                new_filename = f"{title}{file_ext}"
+
+                # 将文件添加到zip中
+                zipf.write(file_path, new_filename)
+                added_count += 1
+
+        if added_count == 0:
+            messages.error(request, '没有可下载的有效文件，可能原文件已被删除，请联系提交人重新上传。')
+            return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:index'))
+
+        if missing_titles:
+            messages.warning(
+                request,
+                f"部分文件已丢失，已跳过：{', '.join(missing_titles[:3])}{' ...' if len(missing_titles) > 3 else ''}"
+            )
         
         # 创建HTTP响应
         response = FileResponse(open(zip_path, 'rb'), content_type='application/zip')
@@ -6826,10 +6920,17 @@ def review_activity_application(request, activity_id):
         
         return redirect('clubs:staff_audit_center', 'activity_application')
     
+    activity_materials, _, missing_materials = get_dynamic_materials_payload(
+        activity,
+        'activity_application',
+        include_missing=True,
+    )
+
     context = {
         'activity': activity,
         'club': activity.club,
-        'materials': get_dynamic_materials_list(activity, 'activity_application'),
+        'materials': activity_materials,
+        'missing_materials': missing_materials,
         'existing_reviews': ActivityApplicationHistory.objects.filter(activity_application=activity).order_by('-attempt_number'),
     }
     return render(request, 'clubs/staff/review_activity_application.html', context)
@@ -6901,14 +7002,19 @@ def review_president_transition(request, transition_id):
         messages.success(request, f'社长换届申请已{'批准' if status == 'approved' else '拒绝'}')
         return redirect('clubs:staff_dashboard')
     
-    # 构建材料列表给组件使用
-    transition_materials = get_dynamic_materials_list(transition, 'president_transition')
+    # 构建材料列表给组件使用（过滤丢失文件并回传丢失项）
+    transition_materials, _, missing_materials = get_dynamic_materials_payload(
+        transition,
+        'president_transition',
+        include_missing=True,
+    )
     
     context = {
         'transition': transition,
         'club': transition.club,
         'transition_materials': transition_materials,
         'materials': transition_materials,
+        'missing_materials': missing_materials,
         'zip_url': f"{reverse('clubs:zip_download')}?type=president_transition&id={transition.id}" if transition_materials else None,
     }
     return render(request, 'clubs/staff/review_president_transition.html', context)

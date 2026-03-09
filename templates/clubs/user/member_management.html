@@ -316,16 +316,20 @@ async function generateMemberJoinQRCode(clubId) {
             throw new Error(data.message || '生成失败');
         }
 
+        // 统一使用当前页面域名拼接路径，避免反代和本地环境域名偏差
+        const joinPath = data.join_path || '';
+        const correctedUrl = joinPath ? (window.location.origin + joinPath) : data.join_url;
+
         panel.style.display = 'block';
-        urlEl.textContent = data.join_url;
+        urlEl.textContent = correctedUrl;
         expEl.textContent = `过期时间：${data.expires_at}`;
         usesEl.textContent = `使用次数：${data.uses_info}`;
-        openEl.href = data.join_url;
+        openEl.href = correctedUrl;
         if (data.qr_data_uri) {
             imgEl.src = data.qr_data_uri;
             imgEl.style.display = 'block';
         } else {
-            imgEl.style.display = 'none';
+            throw new Error('二维码生成失败，请稍后重试');
         }
     } catch (err) {
         alert(err.message || '二维码生成失败');
