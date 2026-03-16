@@ -2,11 +2,12 @@
 
 ## 概述
 
-本项目提供了三个可复用的审核相关组件：
+本项目提供了四个可复用的审核/表单相关组件：
 
 1. **`_materials_display.html`** - 附件材料展示组件
 2. **`_review_history.html`** - 审核记录时间轴组件
 3. **`_staff_review_form.html`** - 干事审核表单组件
+4. **`_file_upload.html`** - 通用文件上传组件
 
 所有组件位于 `templates/clubs/components/` 目录下。
 
@@ -194,11 +195,51 @@ def review_xxx(request, id):
 
 ---
 
+## 4. 通用文件上传组件 (`_file_upload.html`)
+
+### 使用方式
+
+```django
+{% include 'clubs/components/_file_upload.html' with 
+    field_name="application_form" 
+    label="申请表" 
+    is_required=True 
+    allowed_extensions=".doc,.docx,.pdf" 
+    description="请上传盖章版申请表" 
+    existing_file=obj.application_form 
+    icon="upload_file" 
+    max_size_mb=10
+%}
+```
+
+### 参数说明
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `field_name` | String | 是 | - | 表单字段名（input 的 `name`） |
+| `label` | String | 是 | - | 显示名称 |
+| `is_required` | Boolean | 否 | False | 是否必填（存在 `existing_file` 时不会加 `required`） |
+| `allowed_extensions` | String | 否 | - | 允许的文件扩展名（用于 `accept` 和提示） |
+| `description` | String | 否 | - | 帮助说明 |
+| `existing_file` | File | 否 | - | 当前已上传文件对象（需有 `url`/`name`） |
+| `icon` | String | 否 | `cloud_upload` | Material Icons 图标名 |
+| `max_size_mb` | Number | 否 | - | 最大文件大小提示（仅展示） |
+| `field_id` | String | 否 | `field_name` | 输入框 `id`（用于避免重复 id） |
+| `template_url` | String | 否 | - | 模板下载地址 |
+| `template_name` | String | 否 | - | 模板显示名称 |
+
+### 使用说明
+
+- 组件内置 CSS 与 JS，用于拖拽上传、预览和移除文件。
+- 页面中多次使用时请保证 `field_name` 或 `field_id` 唯一，避免 DOM ID 冲突。
+
+---
+
 ## 完整页面示例
 
 ```django
 {% extends 'clubs/base.html' %}
-{% load custom_filters %}
+{% load common_tags %}
 
 {% block title %}审核XXX{% endblock %}
 
@@ -219,6 +260,9 @@ def review_xxx(request, id):
     {% if obj.status == 'pending' and not has_reviewed %}
     {% include 'clubs/components/_staff_review_form.html' with show_rejected_materials=True materials_list=rejected_materials_options cancel_url='clubs:staff_audit_center' cancel_url_args='xxx' %}
     {% endif %}
+
+    <!-- 文件上传组件（示例） -->
+    {% include 'clubs/components/_file_upload.html' with field_name="application_form" label="申请表" is_required=True allowed_extensions=".pdf" description="请上传 PDF 格式" existing_file=obj.application_form %}
 </div>
 {% endblock %}
 ```
@@ -247,6 +291,7 @@ def review_xxx(request, id):
 ## 注意事项
 
 1. 组件已包含完整的 CSS 样式，无需在父页面重复定义
-2. 组件使用了 `custom_filters` 模板标签库，需要在页面顶部加载
+2. 组件使用了 `common_tags` 模板标签库，需要在页面顶部加载
 3. `_materials_display.html` 组件自带文件预览功能
 4. 表单组件会自动验证必填项（拒绝时必须填写意见和选择被拒绝材料）
+5. 文件上传组件内置脚本与样式，重复引用时注意字段 ID 唯一

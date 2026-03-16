@@ -8,6 +8,7 @@
         max-width: 1400px;
         margin: 0 auto;
         padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 120px);
     }
 
     .page-header {
@@ -43,60 +44,148 @@
         margin-top: 4px;
     }
 
-    .action-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: var(--md3-spacing-lg);
-        margin-top: var(--md3-spacing-xl);
-    }
-
-    .action-card {
-        background: var(--md3-surface-container);
+    .section-card {
+        background: var(--md3-surface-container-low);
         border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-xl);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        text-decoration: none;
-        color: var(--md3-on-surface);
         border: 1px solid var(--md3-outline-variant);
-        transition: all 0.3s ease;
+        margin-bottom: var(--md3-spacing-xl);
+        overflow: hidden;
     }
 
-    .action-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--md3-elevation-3);
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-xl);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container);
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin: 0;
+        font-size: 1.125rem;
+        color: var(--md3-on-surface);
+    }
+
+    .section-title .material-icons {
+        color: var(--md3-primary);
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .md3-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .md3-table th {
         background: var(--md3-surface-container-high);
+        padding: var(--md3-spacing-lg);
+        text-align: left;
+        font-weight: 500;
+        color: var(--md3-on-surface-variant);
+        white-space: nowrap;
     }
 
-    .action-card .icon-wrapper {
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
+    .md3-table td {
+        padding: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+        color: var(--md3-on-surface);
+        vertical-align: middle;
+    }
+
+    .md3-table tr:hover td {
+        background: var(--md3-surface-container-highest);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .status-available {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .status-maintenance {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+
+    .status-closed {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .status-active {
         background: var(--md3-primary-container);
         color: var(--md3-on-primary-container);
-        display: flex;
+    }
+
+    .status-inactive {
+        background: var(--md3-surface-variant);
+        color: var(--md3-on-surface-variant);
+    }
+
+    .status-cancelled {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .empty-state {
+        padding: 40px;
+        text-align: center;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .icon-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: var(--md3-spacing-lg);
-    }
-
-    .action-card .icon-wrapper .material-icons {
-        font-size: 32px;
-    }
-
-    .action-card h3 {
-        margin: 0 0 var(--md3-spacing-xs);
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
-
-    .action-card p {
-        margin: 0;
         color: var(--md3-on-surface-variant);
-        font-size: 0.875rem;
-        line-height: 1.5;
+        text-decoration: none;
+        transition: all 0.2s;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+    }
+
+    .icon-btn:hover {
+        background: var(--md3-surface-variant);
+        color: var(--md3-primary);
+    }
+
+    .icon-btn.delete:hover {
+        color: var(--md3-error);
+        background: var(--md3-error-container);
+    }
+
+    @media (max-width: 768px) {
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
     }
 </style>
 {% endblock %}
@@ -107,26 +196,184 @@
         <span class="material-icons">calendar_today</span>
         <div class="page-header-content">
             <h1>预约管理</h1>
-            <div class="subtitle">管理房间和时间段设置</div>
+            <div class="subtitle">管理预约记录、房间资源与时间段设置</div>
         </div>
     </div>
 
-    <div class="action-grid">
-        <a href="{% url 'clubs:admin_room_list' %}" class="action-card">
-            <div class="icon-wrapper">
-                <span class="material-icons">meeting_room</span>
-            </div>
-            <h3>房间管理</h3>
-            <p>管理可预约的房间信息，包括房间名称、容量和设备等</p>
-        </a>
+    <section class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span class="material-icons">event_note</span>
+                预约记录
+            </h2>
+        </div>
+        {% if bookings %}
+        <div class="table-responsive">
+            <table class="md3-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>时间</th>
+                        <th>房间</th>
+                        <th>借用人</th>
+                        <th>社团</th>
+                        <th>用途</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td>{{ booking.booking_date|date:"Y-m-d" }}</td>
+                        <td>{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</td>
+                        <td>{{ booking.room.name }}</td>
+                        <td>{{ booking.user.profile.get_full_name|default:booking.user.username }}</td>
+                        <td>{{ booking.club.name|default:'-' }}</td>
+                        <td>{{ booking.purpose|truncatechars:24 }}</td>
+                        <td>
+                            {% if booking.status == 'active' %}
+                            <span class="status-badge status-active">有效</span>
+                            {% else %}
+                            <span class="status-badge status-cancelled">已取消</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">暂无预约记录</div>
+        {% endif %}
+    </section>
 
-        <a href="{% url 'clubs:admin_time_slots' %}" class="action-card">
-            <div class="icon-wrapper">
+    <section class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span class="material-icons">meeting_room</span>
+                房间管理
+            </h2>
+            <a href="{% url 'clubs:admin_room_add' %}" class="btn btn-primary">
+                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">add</span>
+                增加房间
+            </a>
+        </div>
+        {% if rooms %}
+        <div class="table-responsive">
+            <table class="md3-table">
+                <thead>
+                    <tr>
+                        <th>房间名称</th>
+                        <th>容量</th>
+                        <th>位置</th>
+                        <th>状态</th>
+                        <th style="text-align:right;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for room in rooms %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:500;">{{ room.name }}</div>
+                            <div class="body-small" style="color:var(--md3-on-surface-variant);">{{ room.description|truncatechars:20 }}</div>
+                        </td>
+                        <td>{{ room.capacity }}</td>
+                        <td>{{ room.location|default:'-' }}</td>
+                        <td>
+                            {% if room.status == 'available' %}
+                            <span class="status-badge status-available">
+                                <span class="material-icons" style="font-size:16px;">check_circle</span> 可用
+                            </span>
+                            {% elif room.status == 'maintenance' %}
+                            <span class="status-badge status-maintenance">
+                                <span class="material-icons" style="font-size:16px;">build</span> 维护中
+                            </span>
+                            {% else %}
+                            <span class="status-badge status-closed">
+                                <span class="material-icons" style="font-size:16px;">block</span> 关闭
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:right;">
+                            <div class="actions">
+                                <a href="{% url 'clubs:admin_room_edit' room.id %}" class="icon-btn" title="编辑">
+                                    <span class="material-icons" style="font-size:20px;">edit</span>
+                                </a>
+                                <form action="{% url 'clubs:admin_room_delete' room.id %}" method="POST" style="display: inline;" onsubmit="return confirm('确定要删除这个房间吗？');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="icon-btn delete" title="删除">
+                                        <span class="material-icons" style="font-size:20px;">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">暂无房间配置</div>
+        {% endif %}
+    </section>
+
+    <section class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
                 <span class="material-icons">schedule</span>
-            </div>
-            <h3>时间段设置</h3>
-            <p>设置房间预约的可选时间段，管理课程和休息时间</p>
-        </a>
-    </div>
+                时间段设置
+            </h2>
+            <a href="{% url 'clubs:admin_time_slot_add' %}" class="btn btn-primary">
+                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">add</span>
+                添加时间段
+            </a>
+        </div>
+        {% if time_slots %}
+        <div class="table-responsive">
+            <table class="md3-table">
+                <thead>
+                    <tr>
+                        <th>显示名称</th>
+                        <th>开始时间</th>
+                        <th>结束时间</th>
+                        <th>状态</th>
+                        <th style="text-align:right;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slot in time_slots %}
+                    <tr>
+                        <td>{{ slot.label }}</td>
+                        <td>{{ slot.start_time|time:"H:i" }}</td>
+                        <td>{{ slot.end_time|time:"H:i" }}</td>
+                        <td>
+                            {% if slot.is_active %}
+                            <span class="status-badge status-active">启用</span>
+                            {% else %}
+                            <span class="status-badge status-inactive">禁用</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:right;">
+                            <div class="actions">
+                                <a href="{% url 'clubs:admin_time_slot_edit' slot.id %}" class="icon-btn" title="编辑">
+                                    <span class="material-icons" style="font-size:20px;">edit</span>
+                                </a>
+                                <form action="{% url 'clubs:admin_time_slot_delete' slot.id %}" method="POST" style="display: inline;" onsubmit="return confirm('确定要删除这个时间段吗？');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="icon-btn delete" title="删除">
+                                        <span class="material-icons" style="font-size:20px;">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">暂无时间段配置</div>
+        {% endif %}
+    </section>
 </div>
 {% endblock %}

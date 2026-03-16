@@ -125,18 +125,14 @@ urlpatterns = [
     path('room/delete-booking/<int:booking_id>/', views.delete_room_booking, name='delete_room_booking'),
     path('room/export-weekly/', export_views.export_room_bookings_weekly, name='export_room_bookings_weekly'),
     
-    # 房间管理 (管理员)
-    path('admin-panel/rooms/', views.admin_room_list, name='admin_room_list'),
-    path('admin-panel/rooms/add/', views.admin_room_add, name='admin_room_add'),
-    path('admin-panel/rooms/edit/<int:room_id>/', views.admin_room_edit, name='admin_room_edit'),
-    path('admin-panel/rooms/delete/<int:room_id>/', views.admin_room_delete, name='admin_room_delete'),
-    
     # 预约管理 (管理员)
     path('admin-panel/bookings/', views.admin_booking_management, name='admin_booking_management'),
-    path('admin-panel/time-slots/', views.admin_time_slots, name='admin_time_slots'),
-    path('admin-panel/time-slots/add/', views.admin_time_slot_add, name='admin_time_slot_add'),
-    path('admin-panel/time-slots/edit/<int:slot_id>/', views.admin_time_slot_edit, name='admin_time_slot_edit'),
-    path('admin-panel/time-slots/delete/<int:slot_id>/', views.admin_time_slot_delete, name='admin_time_slot_delete'),
+    path('admin-panel/bookings/rooms/add/', views.admin_room_add, name='admin_room_add'),
+    path('admin-panel/bookings/rooms/edit/<int:room_id>/', views.admin_room_edit, name='admin_room_edit'),
+    path('admin-panel/bookings/rooms/delete/<int:room_id>/', views.admin_room_delete, name='admin_room_delete'),
+    path('admin-panel/bookings/time-slots/add/', views.admin_time_slot_add, name='admin_time_slot_add'),
+    path('admin-panel/bookings/time-slots/edit/<int:slot_id>/', views.admin_time_slot_edit, name='admin_time_slot_edit'),
+    path('admin-panel/bookings/time-slots/delete/<int:slot_id>/', views.admin_time_slot_delete, name='admin_time_slot_delete'),
 
     # 活动导出
     path('activities/export/', export_views.export_activities, name='export_activities'),

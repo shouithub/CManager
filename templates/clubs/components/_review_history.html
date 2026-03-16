@@ -11,7 +11,7 @@
 - show_card_wrapper: 是否显示外围卡片容器 (默认: True)
 - current_attempt: 当前提交版本 (可选，用于显示"当前版本"标识)
 {% endcomment %}
-{% load custom_filters %}
+{% load common_tags %}
 
 {% if show_card_wrapper|default:True %}
 <div class="card">

@@ -8220,15 +8220,6 @@ def delete_room_booking(request, booking_id):
 
 
 @login_required
-def admin_room_list(request):
-    """管理员-房间列表"""
-    if not is_staff_or_admin(request.user):
-        return redirect('clubs:index')
-    rooms = Room.objects.all()
-    return render(request, 'clubs/admin/room_list.html', {'rooms': rooms})
-
-
-@login_required
 def admin_room_add(request):
     """管理员-添加房间"""
     if not is_staff_or_admin(request.user):
@@ -8241,7 +8232,7 @@ def admin_room_add(request):
             description=request.POST.get('description'),
             status=request.POST.get('status')
         )
-        return redirect('clubs:admin_room_list')
+        return redirect('clubs:admin_booking_management')
     return render(request, 'clubs/admin/room_form.html')
 
 
@@ -8258,7 +8249,7 @@ def admin_room_edit(request, room_id):
         room.description = request.POST.get('description')
         room.status = request.POST.get('status')
         room.save()
-        return redirect('clubs:admin_room_list')
+        return redirect('clubs:admin_booking_management')
     return render(request, 'clubs/admin/room_form.html', {'room': room})
 
 
@@ -8270,7 +8261,7 @@ def admin_room_delete(request, room_id):
     room = get_object_or_404(Room, pk=room_id)
     if request.method == 'POST':
         room.delete()
-    return redirect('clubs:admin_room_list')
+    return redirect('clubs:admin_booking_management')
 
 
 @login_required
@@ -8278,17 +8269,18 @@ def admin_booking_management(request):
     """管理员-预约管理"""
     if not is_staff_or_admin(request.user):
         return redirect('clubs:index')
-    bookings = RoomBooking.objects.all().order_by('-booking_date')
-    return render(request, 'clubs/admin/booking_management.html', {'bookings': bookings})
-
-
-@login_required
-def admin_time_slots(request):
-    """管理员-时间段管理"""
-    if not is_staff_or_admin(request.user):
-        return redirect('clubs:index')
+    bookings = RoomBooking.objects.select_related('room', 'user', 'club').order_by('-booking_date', '-start_time')
+    rooms = Room.objects.all().order_by('name')
     slots = TimeSlot.objects.all().order_by('start_time')
-    return render(request, 'clubs/admin/time_slots.html', {'time_slots': slots})
+    return render(
+        request,
+        'clubs/admin/booking_management.html',
+        {
+            'bookings': bookings,
+            'rooms': rooms,
+            'time_slots': slots,
+        },
+    )
 
 
 @login_required
@@ -8303,7 +8295,7 @@ def admin_time_slot_add(request):
             label=request.POST.get('label'),
             is_active=request.POST.get('is_active') == 'on'
         )
-        return redirect('clubs:admin_time_slots')
+        return redirect('clubs:admin_booking_management')
     return render(request, 'clubs/admin/time_slot_form.html')
 
 
@@ -8319,7 +8311,7 @@ def admin_time_slot_edit(request, slot_id):
         slot.label = request.POST.get('label')
         slot.is_active = request.POST.get('is_active') == 'on'
         slot.save()
-        return redirect('clubs:admin_time_slots')
+        return redirect('clubs:admin_booking_management')
     return render(request, 'clubs/admin/time_slot_form.html', {'slot': slot})
 
 
@@ -8331,7 +8323,7 @@ def admin_time_slot_delete(request, slot_id):
     slot = get_object_or_404(TimeSlot, pk=slot_id)
     if request.method == 'POST':
         slot.delete()
-    return redirect('clubs:admin_time_slots')
+    return redirect('clubs:admin_booking_management')
 
 
 @login_required(login_url=settings.LOGIN_URL)
