@@ -5,6 +5,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
+from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.db.models import Q
 from datetime import datetime, timedelta, time
@@ -45,7 +46,7 @@ def export_room_bookings_weekly(request):
     """
     # 检查权限
     if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限导出日程安排')
+        messages.error(request, _('您没有权限导出日程安排'))
         return redirect('clubs:room_calendar')
     
     # 获取房间
@@ -56,7 +57,7 @@ def export_room_bookings_weekly(request):
         # 默认使用第一个房间
         room = Room.objects.first()
         if not room:
-            messages.error(request, '系统中没有房间')
+            messages.error(request, _('系统中没有房间'))
             return redirect('clubs:room_calendar')
 
     # 获取周开始日期
@@ -65,7 +66,7 @@ def export_room_bookings_weekly(request):
         try:
             week_start = datetime.strptime(week_start_str, '%Y-%m-%d').date()
         except ValueError:
-            messages.error(request, '无效的日期格式')
+            messages.error(request, _('无效的日期格式'))
             return redirect('clubs:room_calendar')
     else:
         # 默认为当前周
@@ -239,7 +240,7 @@ def export_activities(request):
     # 检查权限 - 干事、管理员或社长
     user_role = getattr(request.user.profile, 'role', None) if hasattr(request.user, 'profile') else None
     if user_role not in ['staff', 'admin', 'president']:
-        messages.error(request, '您没有权限导出活动数据')
+        messages.error(request, _('您没有权限导出活动数据'))
         return redirect('clubs:public_activities')
     
     # 获取筛选参数
@@ -439,7 +440,7 @@ def export_audit_center_data(request, tab):
     """
     # 检查权限
     if not _is_staff(request.user) and not _is_admin(request.user):
-        messages.error(request, '您没有权限导出数据')
+        messages.error(request, _('您没有权限导出数据'))
         return redirect('clubs:staff_audit_center', tab=tab)
     
     from .models import (
@@ -845,7 +846,7 @@ def export_audit_center_data(request, tab):
         filename = f"社长换届-{timezone.now().strftime('%Y%m%d%H%M%S')}.xlsx"
     
     else:
-        messages.error(request, '无效的数据类型，无法导出')
+        messages.error(request, _('无效的数据类型，无法导出'))
         return redirect('clubs:staff_audit_center', tab=tab)
     
     # 设置列宽

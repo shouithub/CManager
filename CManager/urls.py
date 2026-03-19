@@ -37,6 +37,7 @@ def service_worker_view(request):
 
 urlpatterns = [
     path('sw.js', service_worker_view, name='service_worker'),
+    path('i18n/', include('django.conf.urls.i18n')),
     path('', include('clubs.urls', namespace='clubs')),
     path('admin/', admin.site.urls),
 ]

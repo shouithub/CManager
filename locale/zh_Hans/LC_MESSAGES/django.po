@@ -1,0 +1,1004 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-16 14:25+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: CManager/settings.py:328
+msgid "简体中文"
+msgstr "简体中文"
+
+#: CManager/settings.py:329
+msgid "English"
+msgstr "English"
+
+#: clubs/auth_views.py:160
+msgid "用户名和密码不能为空"
+msgstr "用户名和密码不能为空"
+
+#: clubs/auth_views.py:167 clubs/auth_views.py:242
+msgid "登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！"
+msgstr "登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！"
+
+#: clubs/auth_views.py:186
+msgid "您的账号正在审核中，请等待管理员批准！"
+msgstr "您的账号正在审核中，请等待管理员批准！"
+
+#: clubs/auth_views.py:203
+msgid "为了账户安全，请先修改密码后再继续使用系统。"
+msgstr "为了账户安全，请先修改密码后再继续使用系统。"
+
+#: clubs/auth_views.py:250
+msgid "用户名或密码错误"
+msgstr "用户名或密码错误"
+
+#: clubs/auth_views.py:265
+msgid "用户档案不存在，无法延期"
+msgstr "用户档案不存在，无法延期"
+
+#: clubs/auth_views.py:269
+msgid "管理员账号不受自动注销策略影响，无需延期"
+msgstr "管理员账号不受自动注销策略影响，无需延期"
+
+#: clubs/auth_views.py:273
+msgid "当前账号不是不活跃状态，无需延期"
+msgstr "当前账号不是不活跃状态，无需延期"
+
+#: clubs/auth_views.py:285
+msgid "已登出"
+msgstr "已登出"
+
+#: clubs/auth_views.py:345
+msgid "用户名输入错误，账户删除失败。"
+msgstr "用户名输入错误，账户删除失败。"
+
+#: clubs/auth_views.py:480 clubs/auth_views.py:638 clubs/auth_views.py:855
+msgid "您没有权限访问此页面"
+msgstr "您没有权限访问此页面"
+
+#: clubs/auth_views.py:483 clubs/auth_views.py:641 clubs/auth_views.py:858
+#: clubs/auth_views.py:1065
+msgid "用户角色未配置"
+msgstr "用户角色未配置"
+
+#: clubs/auth_views.py:669
+msgid "负责社团设置成功"
+msgstr "负责社团设置成功"
+
+#: clubs/auth_views.py:742
+msgid "个人信息已成功更新"
+msgstr "个人信息已成功更新"
+
+#: clubs/auth_views.py:749
+msgid "新用户名不能为空"
+msgstr "新用户名不能为空"
+
+#: clubs/auth_views.py:751
+msgid "用户名至少3个字符"
+msgstr "用户名至少3个字符"
+
+#: clubs/auth_views.py:753
+msgid "用户名已被使用"
+msgstr "用户名已被使用"
+
+#: clubs/auth_views.py:755
+msgid "密码不能为空"
+msgstr "密码不能为空"
+
+#: clubs/auth_views.py:759
+msgid "密码错误"
+msgstr "密码错误"
+
+#: clubs/auth_views.py:772
+msgid "原密码错误"
+msgstr "原密码错误"
+
+#: clubs/auth_views.py:774
+msgid "两次输入的新密码不一致"
+msgstr "两次输入的新密码不一致"
+
+#: clubs/auth_views.py:776
+msgid "新密码长度至少为6位"
+msgstr "新密码长度至少为6位"
+
+#: clubs/auth_views.py:785
+msgid "密码已修改"
+msgstr "密码已修改"
+
+#: clubs/auth_views.py:801 clubs/auth_views.py:830
+msgid "头像已更新"
+msgstr "头像已更新"
+
+#: clubs/auth_views.py:834
+msgid "请选择图片文件"
+msgstr "请选择图片文件"
+
+#: clubs/auth_views.py:981 clubs/auth_views.py:1029
+msgid "邮箱验证记录不存在"
+msgstr "邮箱验证记录不存在"
+
+#: clubs/auth_views.py:985
+msgid "邮箱已验证"
+msgstr "邮箱已验证"
+
+#: clubs/auth_views.py:992
+msgid "验证码不能为空"
+msgstr "验证码不能为空"
+
+#: clubs/auth_views.py:1005
+msgid "邮箱验证成功！"
+msgstr "邮箱验证成功！"
+
+#: clubs/auth_views.py:1033
+msgid "邮箱已验证，无需重新发送"
+msgstr "邮箱已验证，无需重新发送"
+
+#: clubs/auth_views.py:1062
+msgid "您没有权限访问此页面，仅部长可以管理本部门人员"
+msgstr "您没有权限访问此页面，仅部长可以管理本部门人员"
+
+#: clubs/auth_views.py:1072
+msgid "您的部门信息未配置，无法管理部门人员"
+msgstr "您的部门信息未配置，无法管理部门人员"
+
+#: clubs/export_views.py:49
+msgid "您没有权限导出日程安排"
+msgstr "您没有权限导出日程安排"
+
+#: clubs/export_views.py:60
+msgid "系统中没有房间"
+msgstr "系统中没有房间"
+
+#: clubs/export_views.py:69
+msgid "无效的日期格式"
+msgstr "无效的日期格式"
+
+#: clubs/export_views.py:243
+msgid "您没有权限导出活动数据"
+msgstr "您没有权限导出活动数据"
+
+#: clubs/export_views.py:443
+msgid "您没有权限导出数据"
+msgstr "您没有权限导出数据"
+
+#: clubs/export_views.py:849
+msgid "无效的数据类型，无法导出"
+msgstr "无效的数据类型，无法导出"
+
+#: clubs/views.py:826
+msgid "注册链接已失效（已使用或已过期），请联系社长重新生成二维码"
+msgstr "注册链接已失效（已使用或已过期），请联系社长重新生成二维码"
+
+#: clubs/views.py:956
+msgid "仅社长可以注册社团"
+msgstr "仅社长可以注册社团"
+
+#: clubs/views.py:963
+msgid "用户实名信息未配置，请联系管理员"
+msgstr "用户实名信息未配置，请联系管理员"
+
+#: clubs/views.py:1100
+msgid "缺少请求ID参数"
+msgstr "缺少请求ID参数"
+
+#: clubs/views.py:1168
+msgid "您没有权限修改此申请"
+msgstr "您没有权限修改此申请"
+
+#: clubs/views.py:1173
+msgid "仅社长可以修改被拒绝的申请材料"
+msgstr "仅社长可以修改被拒绝的申请材料"
+
+#: clubs/views.py:1187
+msgid "您没有权限修改此社团的申请材料"
+msgstr "您没有权限修改此社团的申请材料"
+
+#: clubs/views.py:1200 clubs/views.py:1253
+msgid "只有被拒绝的申请才能重新提交"
+msgstr "只有被拒绝的申请才能重新提交"
+
+#: clubs/views.py:1211 clubs/views.py:1264 clubs/views.py:1321
+msgid "该申请已被修改提交，不允许再次修改之前的请求"
+msgstr "该申请已被修改提交，不允许再次修改之前的请求"
+
+#: clubs/views.py:1373
+msgid "只有被拒绝的报销申请才能重新提交"
+msgstr "只有被拒绝的报销申请才能重新提交"
+
+#: clubs/views.py:1410
+msgid "只有被拒绝的活动申请才能重新提交"
+msgstr "只有被拒绝的活动申请才能重新提交"
+
+#: clubs/views.py:1452
+msgid "只有被拒绝的换届申请才能重新提交"
+msgstr "只有被拒绝的换届申请才能重新提交"
+
+#: clubs/views.py:1623
+msgid "仅社长可以提交年审材料"
+msgstr "仅社长可以提交年审材料"
+
+#: clubs/views.py:1630
+msgid "您没有权限提交此社团的年审材料"
+msgstr "您没有权限提交此社团的年审材料"
+
+#: clubs/views.py:1827 clubs/views.py:1913
+msgid "仅社团社长可以访问审批中心"
+msgstr "仅社团社长可以访问审批中心"
+
+#: clubs/views.py:2005 clubs/views.py:2100
+msgid "仅社团社长可以访问此页面"
+msgstr "仅社团社长可以访问此页面"
+
+#: clubs/views.py:2085
+msgid "无效的审批类型"
+msgstr "无效的审批类型"
+
+#: clubs/views.py:2127 clubs/views.py:2154 clubs/views.py:2165
+#: clubs/views.py:2190 clubs/views.py:2209 clubs/views.py:2228
+msgid "您没有权限查看此项目"
+msgstr "您没有权限查看此项目"
+
+#: clubs/views.py:2254 clubs/views.py:7148
+msgid "无效的项目类型"
+msgstr "无效的项目类型"
+
+#: clubs/views.py:2281
+msgid "仅社长可以取消年审请求"
+msgstr "仅社长可以取消年审请求"
+
+#: clubs/views.py:2288
+msgid "您没有权限取消此社团的年审请求"
+msgstr "您没有权限取消此社团的年审请求"
+
+#: clubs/views.py:2293
+msgid "只有待审核的请求可以取消"
+msgstr "只有待审核的请求可以取消"
+
+#: clubs/views.py:2324
+msgid "年审请求已成功取消，所有上传的文件已删除"
+msgstr "年审请求已成功取消，所有上传的文件已删除"
+
+#: clubs/views.py:2338
+msgid "仅干事和管理员可以审核年审材料"
+msgstr "仅干事和管理员可以审核年审材料"
+
+#: clubs/views.py:2347
+msgid "您已经审核过该材料，无法再次查看审核页面"
+msgstr "您已经审核过该材料，无法再次查看审核页面"
+
+#: clubs/views.py:2356 clubs/views.py:2997 clubs/views.py:6955
+msgid "无效的审核状态"
+msgstr "无效的审核状态"
+
+#: clubs/views.py:2467
+msgid "您没有权限查看此页面"
+msgstr "您没有权限查看此页面"
+
+#: clubs/views.py:2474
+msgid "您没有权限查看此社团的报销历史"
+msgstr "您没有权限查看此社团的报销历史"
+
+#: clubs/views.py:2492
+msgid "仅社长可以提交报销材料"
+msgstr "仅社长可以提交报销材料"
+
+#: clubs/views.py:2498
+msgid "您没有权限为此社团提交报销"
+msgstr "您没有权限为此社团提交报销"
+
+#: clubs/views.py:2608
+msgid "报销材料已提交，等待审核！"
+msgstr "报销材料已提交，等待审核！"
+
+#: clubs/views.py:2641
+msgid "仅干事和管理员可以上传模板"
+msgstr "仅干事和管理员可以上传模板"
+
+#: clubs/views.py:2649
+msgid "参数缺失"
+msgstr "参数缺失"
+
+#: clubs/views.py:2665
+msgid "未检测到有效操作"
+msgstr "未检测到有效操作"
+
+#: clubs/views.py:2668
+msgid "未找到指定的材料要求配置"
+msgstr "未找到指定的材料要求配置"
+
+#: clubs/views.py:2695
+msgid "仅干事和管理员可以审核报销"
+msgstr "仅干事和管理员可以审核报销"
+
+#: clubs/views.py:2705 clubs/views.py:2780 clubs/views.py:3117
+#: clubs/views.py:3243 clubs/views.py:3294 clubs/views.py:3382
+#: clubs/views.py:4085
+msgid "状态不合法"
+msgstr "状态不合法"
+
+#: clubs/views.py:2759 clubs/views.py:4164
+msgid "仅干事和管理员可以审核社团注册"
+msgstr "仅干事和管理员可以审核社团注册"
+
+#: clubs/views.py:2770 clubs/views.py:3097 clubs/views.py:3362
+#: clubs/views.py:4074
+msgid "您已经审核过该社团注册申请，无法再次审核"
+msgstr "您已经审核过该社团注册申请，无法再次审核"
+
+#: clubs/views.py:2785 clubs/views.py:4090
+msgid "拒绝必须选择至少一个被拒绝的材料"
+msgstr "拒绝必须选择至少一个被拒绝的材料"
+
+#: clubs/views.py:2896
+msgid "您没有权限进行审核操作"
+msgstr "您没有权限进行审核操作"
+
+#: clubs/views.py:2904 clubs/views.py:3453
+msgid "无效的审核请求类型"
+msgstr "无效的审核请求类型"
+
+#: clubs/views.py:2923
+msgid "无效的申请次数"
+msgstr "无效的申请次数"
+
+#: clubs/views.py:2933
+msgid "无效的申请次数格式"
+msgstr "无效的申请次数格式"
+
+#: clubs/views.py:2971 clubs/views.py:2977
+msgid "该社团没有这么多次的申请记录"
+msgstr "该社团没有这么多次的申请记录"
+
+#: clubs/views.py:2990
+msgid "您已经审核过该材料，无法重复提交"
+msgstr "您已经审核过该材料，无法重复提交"
+
+#: clubs/views.py:3212 clubs/views.py:3218
+msgid "该社团没有这么多次的报销申请记录"
+msgstr "该社团没有这么多次的报销申请记录"
+
+#: clubs/views.py:3274 clubs/views.py:3470
+msgid "仅管理员可以审核干事注册申请"
+msgstr "仅管理员可以审核干事注册申请"
+
+#: clubs/views.py:3282
+msgid "该干事账号不是待审核状态，无需重复审核"
+msgstr "该干事账号不是待审核状态，无需重复审核"
+
+#: clubs/views.py:3334 clubs/views.py:3340
+msgid "该社团没有这么多次的注册申请记录"
+msgstr "该社团没有这么多次的注册申请记录"
+
+#: clubs/views.py:3348 clubs/views.py:4068
+msgid "该申请已完成审核，无法再查看审核页面"
+msgstr "该申请已完成审核，无法再查看审核页面"
+
+#: clubs/views.py:3355
+msgid "您已经审核过该申请，无法再次查看审核页面"
+msgstr "您已经审核过该申请，无法再次查看审核页面"
+
+#: clubs/views.py:3479
+msgid "只能审核待审核状态的干事账号"
+msgstr "只能审核待审核状态的干事账号"
+
+#: clubs/views.py:3482 clubs/views.py:5306
+msgid "用户角色信息不存在"
+msgstr "用户角色信息不存在"
+
+#: clubs/views.py:3490
+msgid "审核结果不合法"
+msgstr "审核结果不合法"
+
+#: clubs/views.py:3514 clubs/views.py:3692 clubs/views.py:3705
+#: clubs/views.py:3739 clubs/views.py:3777 clubs/views.py:8430
+msgid "仅管理员可以访问此页面"
+msgstr "仅管理员可以访问此页面"
+
+#: clubs/views.py:3717
+msgid "请选择要上传的图片"
+msgstr "请选择要上传的图片"
+
+#: clubs/views.py:3729
+msgid "轮播图添加成功"
+msgstr "轮播图添加成功"
+
+#: clubs/views.py:3765
+msgid "轮播图更新成功"
+msgstr "轮播图更新成功"
+
+#: clubs/views.py:3793
+msgid "轮播图删除成功"
+msgstr "轮播图删除成功"
+
+#: clubs/views.py:3802
+msgid "仅管理员可访问此页面"
+msgstr "仅管理员可访问此页面"
+
+#: clubs/views.py:3819 clubs/views.py:3850
+msgid "仅管理员可以发布公告"
+msgstr "仅管理员可以发布公告"
+
+#: clubs/views.py:3833
+msgid "仅管理员可执行此操作"
+msgstr "仅管理员可执行此操作"
+
+#: clubs/views.py:3886
+msgid "公告发布成功！"
+msgstr "公告发布成功！"
+
+#: clubs/views.py:3901
+msgid "仅管理员可以删除公告"
+msgstr "仅管理员可以删除公告"
+
+#: clubs/views.py:3925 clubs/views.py:6713
+msgid "社团不存在"
+msgstr "社团不存在"
+
+#: clubs/views.py:3937
+msgid "仅社团社长可以提交社团注册"
+msgstr "仅社团社长可以提交社团注册"
+
+#: clubs/views.py:3943 clubs/views.py:4042
+msgid "当前社团注册功能未开启，无法提交注册申请"
+msgstr "当前社团注册功能未开启，无法提交注册申请"
+
+#: clubs/views.py:4024
+msgid "社团注册已提交，等待审核"
+msgstr "社团注册已提交，等待审核"
+
+#: clubs/views.py:4167
+msgid "用户配置文件不存在"
+msgstr "用户配置文件不存在"
+
+#: clubs/views.py:4176
+msgid "仅管理员可以编辑公告"
+msgstr "仅管理员可以编辑公告"
+
+#: clubs/views.py:4218
+msgid "公告修改成功！"
+msgstr "公告修改成功！"
+
+#: clubs/views.py:4233
+msgid "仅干事和管理员可以下载导入模板"
+msgstr "仅干事和管理员可以下载导入模板"
+
+#: clubs/views.py:4252
+msgid "仅干事和管理员可以导出数据"
+msgstr "仅干事和管理员可以导出数据"
+
+#: clubs/views.py:4341
+msgid "仅管理员可以批量导入用户"
+msgstr "仅管理员可以批量导入用户"
+
+#: clubs/views.py:4349 clubs/views.py:4603
+msgid "请选择CSV文件后再导入"
+msgstr "请选择CSV文件后再导入"
+
+#: clubs/views.py:4355 clubs/views.py:4607
+msgid "仅支持CSV文件导入"
+msgstr "仅支持CSV文件导入"
+
+#: clubs/views.py:4370 clubs/views.py:4620
+msgid "CSV文件编码无法识别，请使用UTF-8编码"
+msgstr "CSV文件编码无法识别，请使用UTF-8编码"
+
+#: clubs/views.py:4377 clubs/views.py:4625
+msgid "CSV表头无效"
+msgstr "CSV表头无效"
+
+#: clubs/views.py:4569 clubs/views.py:4723
+msgid "部分数据有问题：；"
+msgstr "部分数据有问题：；"
+
+#: clubs/views.py:4597
+msgid "仅干事和管理员可以批量导入社团"
+msgstr "仅干事和管理员可以批量导入社团"
+
+#: clubs/views.py:4740
+msgid "不能删除当前登录管理员账号"
+msgstr "不能删除当前登录管理员账号"
+
+#: clubs/views.py:4742
+msgid "不能删除超级管理员账号"
+msgstr "不能删除超级管理员账号"
+
+#: clubs/views.py:4787
+msgid "仅干事可以查看用户列表"
+msgstr "仅干事可以查看用户列表"
+
+#: clubs/views.py:4819
+msgid "仅管理员可以创建用户账户"
+msgstr "仅管理员可以创建用户账户"
+
+#: clubs/views.py:4926
+msgid "仅管理员可以编辑用户账户信息"
+msgstr "仅管理员可以编辑用户账户信息"
+
+#: clubs/views.py:4934
+msgid "请使用您自己的账户设置页面编辑个人信息"
+msgstr "请使用您自己的账户设置页面编辑个人信息"
+
+#: clubs/views.py:5238
+msgid "仅管理员可以修改用户角色"
+msgstr "仅管理员可以修改用户角色"
+
+#: clubs/views.py:5247
+msgid "角色不合法"
+msgstr "角色不合法"
+
+#: clubs/views.py:5294
+msgid "仅管理员可以修改干事属性"
+msgstr "仅管理员可以修改干事属性"
+
+#: clubs/views.py:5303
+msgid "仅干事或管理员支持修改部门/职级属性"
+msgstr "仅干事或管理员支持修改部门/职级属性"
+
+#: clubs/views.py:5321
+msgid "部门选择无效"
+msgstr "部门选择无效"
+
+#: clubs/views.py:5325
+msgid "职级选择无效"
+msgstr "职级选择无效"
+
+#: clubs/views.py:5361
+msgid "仅管理员可以管理SMTP配置"
+msgstr "仅管理员可以管理SMTP配置"
+
+#: clubs/views.py:5417
+msgid "SMTP配置创建成功"
+msgstr "SMTP配置创建成功"
+
+#: clubs/views.py:5423
+msgid "SMTP配置已删除"
+msgstr "SMTP配置已删除"
+
+#: clubs/views.py:5479
+msgid "SMTP配置更新成功"
+msgstr "SMTP配置更新成功"
+
+#: clubs/views.py:5486
+msgid "请输入测试邮箱地址"
+msgstr "请输入测试邮箱地址"
+
+#: clubs/views.py:5543
+msgid "您没有权限下载此材料"
+msgstr "您没有权限下载此材料"
+
+#: clubs/views.py:5578
+msgid "没有可下载的有效文件，可能原文件已被删除，请联系提交人重新上传。"
+msgstr "没有可下载的有效文件，可能原文件已被删除，请联系提交人重新上传。"
+
+#: clubs/views.py:5605
+msgid "缺少下载参数，请提供 type 与 id"
+msgstr "缺少下载参数，请提供 type 与 id"
+
+#: clubs/views.py:5611
+msgid "下载参数 id 必须为整数"
+msgstr "下载参数 id 必须为整数"
+
+#: clubs/views.py:5625
+msgid "不支持的下载类型"
+msgstr "不支持的下载类型"
+
+#: clubs/views.py:5743
+msgid "该报销记录没有附件"
+msgstr "该报销记录没有附件"
+
+#: clubs/views.py:5775
+msgid "该社长变更记录没有附件"
+msgstr "该社长变更记录没有附件"
+
+#: clubs/views.py:5798
+msgid "暂无社团，无需操作"
+msgstr "暂无社团，无需操作"
+
+#: clubs/views.py:5857
+msgid "检测到年审开关被意外联动，已自动恢复为原状态"
+msgstr "检测到年审开关被意外联动，已自动恢复为原状态"
+
+#: clubs/views.py:5885 clubs/views.py:5946 clubs/views.py:6008
+#: clubs/views.py:7667 clubs/views.py:7696 clubs/views.py:7735
+#: clubs/views.py:7772 clubs/views.py:7788 clubs/views.py:7799
+#: clubs/views.py:7839 clubs/views.py:8013 clubs/views.py:8039
+msgid "您没有权限执行此操作"
+msgstr "您没有权限执行此操作"
+
+#: clubs/views.py:5896
+msgid "无效的社团状态"
+msgstr "无效的社团状态"
+
+#: clubs/views.py:5930
+msgid "社团简介已更新"
+msgstr "社团简介已更新"
+
+#: clubs/views.py:5992
+msgid "社团信息已成功更新！"
+msgstr "社团信息已成功更新！"
+
+#: clubs/views.py:6025
+msgid "社团名称输入错误，删除失败！"
+msgstr "社团名称输入错误，删除失败！"
+
+#: clubs/views.py:6046
+msgid "只有社团社长可以查看换届申请记录"
+msgstr "只有社团社长可以查看换届申请记录"
+
+#: clubs/views.py:6063
+msgid "仅社长可访问社员管理"
+msgstr "仅社长可访问社员管理"
+
+#: clubs/views.py:6069
+msgid "您当前没有可管理的社团"
+msgstr "您当前没有可管理的社团"
+
+#: clubs/views.py:6082
+msgid "无权限管理该社团社员"
+msgstr "无权限管理该社团社员"
+
+#: clubs/views.py:6094
+msgid "管理员账号不允许从此处移除"
+msgstr "管理员账号不允许从此处移除"
+
+#: clubs/views.py:6103
+msgid "无效的成员状态"
+msgstr "无效的成员状态"
+
+#: clubs/views.py:6107
+msgid "成员状态已更新"
+msgstr "成员状态已更新"
+
+#: clubs/views.py:6155
+msgid "社员信息已更新"
+msgstr "社员信息已更新"
+
+#: clubs/views.py:6184
+msgid "只有社团社长可以查看活动申请记录"
+msgstr "只有社团社长可以查看活动申请记录"
+
+#: clubs/views.py:6330 clubs/views.py:6459
+msgid "请填写所有必填字段"
+msgstr "请填写所有必填字段"
+
+#: clubs/views.py:6340
+msgid "时间格式不正确"
+msgstr "时间格式不正确"
+
+#: clubs/views.py:6349
+msgid "您不是该社团的社长"
+msgstr "您不是该社团的社长"
+
+#: clubs/views.py:6368
+msgid "该时间段已被预订，请选择其他时间"
+msgstr "该时间段已被预订，请选择其他时间"
+
+#: clubs/views.py:6372
+msgid "222房间预约成功！"
+msgstr "222房间预约成功！"
+
+#: clubs/views.py:6442 clubs/views.py:8198
+msgid "您没有权限编辑此预约"
+msgstr "您没有权限编辑此预约"
+
+#: clubs/views.py:6479
+msgid "该时间段已被其他预订占用，请选择其他时间"
+msgstr "该时间段已被其他预订占用，请选择其他时间"
+
+#: clubs/views.py:6483
+msgid "预约已成功更新"
+msgstr "预约已成功更新"
+
+#: clubs/views.py:6508
+msgid "您没有权限删除此预约"
+msgstr "您没有权限删除此预约"
+
+#: clubs/views.py:6537
+msgid "您目前没有负责的社团，无法提交活动申请"
+msgstr "您目前没有负责的社团，无法提交活动申请"
+
+#: clubs/views.py:6545
+msgid "仅能为自己负责的社团提交活动申请"
+msgstr "仅能为自己负责的社团提交活动申请"
+
+#: clubs/views.py:6682
+msgid "活动申请已提交，等待审核"
+msgstr "活动申请已提交，等待审核"
+
+#: clubs/views.py:6725
+msgid "仅社团社长可以提交社长换届申请"
+msgstr "仅社团社长可以提交社长换届申请"
+
+#: clubs/views.py:6846
+msgid "社长换届申请已提交，等待审核"
+msgstr "社长换届申请已提交，等待审核"
+
+#: clubs/views.py:6868
+msgid "仅干事和管理员可以审核活动申请"
+msgstr "仅干事和管理员可以审核活动申请"
+
+#: clubs/views.py:6897
+msgid "活动申请已批准"
+msgstr "活动申请已批准"
+
+#: clubs/views.py:6918
+msgid "活动申请已拒绝"
+msgstr "活动申请已拒绝"
+
+#: clubs/views.py:6920
+msgid "无效的审核操作"
+msgstr "无效的审核操作"
+
+#: clubs/views.py:6945
+msgid "仅干事和管理员可以审核社长换届申请"
+msgstr "仅干事和管理员可以审核社长换届申请"
+
+#: clubs/views.py:7028 clubs/views.py:7088
+msgid "仅干事和管理员可以访问此页面"
+msgstr "仅干事和管理员可以访问此页面"
+
+#: clubs/views.py:7077
+msgid "无效的审核类型"
+msgstr "无效的审核类型"
+
+#: clubs/views.py:7183
+msgid "您没有权限访问此页面。"
+msgstr "您没有权限访问此页面。"
+
+#: clubs/views.py:7382
+msgid "您没有权限编辑此活动"
+msgstr "您没有权限编辑此活动"
+
+#: clubs/views.py:7468
+msgid "活动信息已更新"
+msgstr "活动信息已更新"
+
+#: clubs/views.py:7485 clubs/views.py:7583
+msgid "仅干事和管理员可以访问审核中心"
+msgstr "仅干事和管理员可以访问审核中心"
+
+#: clubs/views.py:7620
+msgid "您没有权限编辑部门介绍"
+msgstr "您没有权限编辑部门介绍"
+
+#: clubs/views.py:7645
+msgid "所有部门介绍已成功更新"
+msgstr "所有部门介绍已成功更新"
+
+#: clubs/views.py:7724
+msgid "添加成功"
+msgstr "添加成功"
+
+#: clubs/views.py:7761
+msgid "修改成功"
+msgstr "修改成功"
+
+#: clubs/views.py:7779
+msgid "删除成功"
+msgstr "删除成功"
+
+#: clubs/views.py:7817
+msgid "部门添加成功"
+msgstr "部门添加成功"
+
+#: clubs/views.py:7853
+msgid "没有可下载的文件"
+msgstr "没有可下载的文件"
+
+#: clubs/views.py:7904
+msgid "暂时没有可用的房间"
+msgstr "暂时没有可用的房间"
+
+#: clubs/views.py:8026
+msgid "部门更新成功"
+msgstr "部门更新成功"
+
+#: clubs/views.py:8045
+msgid "部门删除成功"
+msgstr "部门删除成功"
+
+#: clubs/views.py:8102
+msgid "请填写所有必填项"
+msgstr "请填写所有必填项"
+
+#: clubs/views.py:8107
+msgid "请输入有效的11位手机号码"
+msgstr "请输入有效的11位手机号码"
+
+#: clubs/views.py:8119
+msgid "结束时间必须晚于开始时间"
+msgstr "结束时间必须晚于开始时间"
+
+#: clubs/views.py:8130
+msgid "请选择有效的固定时间段"
+msgstr "请选择有效的固定时间段"
+
+#: clubs/views.py:8140
+msgid "您不是该社团的社长，无法代表申请"
+msgstr "您不是该社团的社长，无法代表申请"
+
+#: clubs/views.py:8145
+msgid "普通用户必须选择社团进行申请"
+msgstr "普通用户必须选择社团进行申请"
+
+#: clubs/views.py:8159
+msgid "该时间段已被预约，请选择其他时间"
+msgstr "该时间段已被预约，请选择其他时间"
+
+#: clubs/views.py:8177
+msgid "预约提交成功"
+msgstr "预约提交成功"
+
+#: clubs/views.py:8205
+msgid "预约已更新"
+msgstr "预约已更新"
+
+#: clubs/views.py:8216
+msgid "您没有权限取消此预约"
+msgstr "您没有权限取消此预约"
+
+#: clubs/views.py:8219
+msgid "预约已取消"
+msgstr "预约已取消"
+
+#: clubs/views.py:8334
+msgid "权限不足"
+msgstr "权限不足"
+
+#: clubs/views.py:8348
+msgid "站点字体设置已保存，刷新页面后生效"
+msgstr "站点字体设置已保存，刷新页面后生效"
+
+#: templates/clubs/base.html:9 templates/clubs/base.html:83
+msgid "社团管理系统"
+msgstr "社团管理系统"
+
+#: templates/clubs/base.html:92
+msgid "主要功能"
+msgstr "主要功能"
+
+#: templates/clubs/base.html:98
+msgid "首页"
+msgstr "首页"
+
+#: templates/clubs/base.html:102
+msgid "活动"
+msgstr "活动"
+
+#: templates/clubs/base.html:108
+msgid "管理后台"
+msgstr "管理后台"
+
+#: templates/clubs/base.html:112
+msgid "用户管理"
+msgstr "用户管理"
+
+#: templates/clubs/base.html:116 templates/clubs/base.html:121
+#, fuzzy
+#| msgid "社团管理系统"
+msgid "社团管理"
+msgstr "社团管理系统"
+
+#: templates/clubs/base.html:126
+msgid "部门管理"
+msgstr "部门管理"
+
+#: templates/clubs/base.html:134
+msgid "预约管理"
+msgstr "预约管理"
+
+#: templates/clubs/base.html:141
+msgid "我的社团"
+msgstr "我的社团"
+
+#: templates/clubs/base.html:145
+msgid "社员管理"
+msgstr "社员管理"
+
+#: templates/clubs/base.html:156
+msgid "审核中心"
+msgstr "审核中心"
+
+#: templates/clubs/base.html:162
+msgid "年审材料"
+msgstr "年审材料"
+
+#: templates/clubs/base.html:169 templates/clubs/base.html:223
+msgid "社团注册"
+msgstr "社团注册"
+
+#: templates/clubs/base.html:176
+msgid "新社团申请"
+msgstr "新社团申请"
+
+#: templates/clubs/base.html:183
+msgid "报销申请"
+msgstr "报销申请"
+
+#: templates/clubs/base.html:190 templates/clubs/base.html:244
+#, fuzzy
+#| msgid "活动申请已批准"
+msgid "活动申请"
+msgstr "活动申请已批准"
+
+#: templates/clubs/base.html:197 templates/clubs/base.html:251
+msgid "社长换届"
+msgstr "社长换届"
+
+#: templates/clubs/base.html:210
+msgid "审批中心"
+msgstr "审批中心"
+
+#: templates/clubs/base.html:216
+msgid "年审记录"
+msgstr "年审记录"
+
+#: templates/clubs/base.html:230
+msgid "社团申请"
+msgstr "社团申请"
+
+#: templates/clubs/base.html:237
+#, fuzzy
+#| msgid "该报销记录没有附件"
+msgid "报销记录"
+msgstr "该报销记录没有附件"
+
+#: templates/clubs/base.html:264
+msgid "房间管理"
+msgstr "房间管理"
+
+#: templates/clubs/base.html:270
+msgid "房间日历"
+msgstr "房间日历"
+
+#: templates/clubs/base.html:274
+msgid "我的预约"
+msgstr "我的预约"
+
+#: templates/clubs/base.html:299
+msgid "管理员"
+msgstr "管理员"
+
+#: templates/clubs/base.html:301
+msgid "干事"
+msgstr "干事"
+
+#: templates/clubs/base.html:303
+msgid "社长"
+msgstr "社长"
+
+#: templates/clubs/base.html:313
+msgid "查看个人主页"
+msgstr "查看个人主页"
+
+#: templates/clubs/base.html:317
+msgid "管理个人信息"
+msgstr "管理个人信息"
+
+#: templates/clubs/base.html:321
+#, fuzzy
+#| msgid "已登出"
+msgid "登出"
+msgstr "已登出"
+
+#: templates/clubs/base.html:325 templates/clubs/base.html:327
+msgid "切换主题"
+msgstr "切换主题"
+
+#: templates/clubs/base.html:334
+msgid "语言"
+msgstr "语言"
