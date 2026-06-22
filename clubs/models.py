@@ -269,8 +269,6 @@ class Club(models.Model):
     founded_date = models.DateField(verbose_name='成立日期')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='状态')
     members_count = models.IntegerField(default=0, verbose_name='成员数')
-    review_enabled = models.BooleanField(default=False, verbose_name='是否开启年审')
-    registration_enabled = models.BooleanField(default=False, verbose_name='是否开启注册')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     
@@ -343,6 +341,20 @@ class FormChannel(models.Model):
         ('president_transition', '社长换届'),
     ]
 
+    SUBMISSION_POLICY_CHOICES = [
+        ('repeatable', '可重复提交'),
+        ('once_total', '仅提交一次'),
+        ('once_per_cycle', '每周期提交一次'),
+    ]
+
+    CYCLE_TYPE_CHOICES = [
+        ('none', 'No cycle'),
+        ('count', 'Round count'),
+        ('year', 'Year'),
+        ('month', 'Month'),
+        ('day', 'Day'),
+    ]
+
     name = models.CharField(max_length=100, verbose_name='通道名称')
     slug = models.SlugField(max_length=80, unique=True, verbose_name='通道标识')
     icon = models.CharField(max_length=50, default='description', verbose_name='图标')
@@ -351,6 +363,10 @@ class FormChannel(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='启用')
     is_builtin = models.BooleanField(default=False, verbose_name='内置通道')
     builtin_action = models.CharField(max_length=50, choices=BUILTIN_ACTION_CHOICES, default='none', verbose_name='内置动作')
+    submission_policy = models.CharField(max_length=20, choices=SUBMISSION_POLICY_CHOICES, default='repeatable', verbose_name='提交策略')
+    show_unsubmitted_status = models.BooleanField(default=False, verbose_name='show unsubmitted status')
+    allow_staff_toggle = models.BooleanField(default=False, verbose_name='allow staff toggle')
+    cycle_type = models.CharField(max_length=20, choices=CYCLE_TYPE_CHOICES, default='none', verbose_name='cycle type')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
@@ -361,6 +377,50 @@ class FormChannel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class FormCycle(models.Model):
+    """动态表单通道的提交周期。"""
+
+    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='cycles', verbose_name='通道')
+    name = models.CharField(max_length=120, verbose_name='周期名称')
+    sequence = models.PositiveIntegerField(default=1, verbose_name='周期序号')
+    is_active = models.BooleanField(default=True, verbose_name='启用')
+    starts_at = models.DateTimeField(default=timezone.now, verbose_name='开始时间')
+    ends_at = models.DateTimeField(null=True, blank=True, verbose_name='结束时间')
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_form_cycles', verbose_name='创建人')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+
+    class Meta:
+        verbose_name = '表单周期'
+        verbose_name_plural = '表单周期'
+        ordering = ['channel', '-sequence', '-starts_at']
+        unique_together = [('channel', 'sequence')]
+
+    @property
+    def period_number(self):
+        return self.sequence
+
+    def __str__(self):
+        return f'{self.channel.name} - {self.name}'
+
+
+class FormChannelClubState(models.Model):
+    """按社团控制动态通道是否开放。"""
+
+    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='club_states', verbose_name='通道')
+    club = models.ForeignKey('Club', on_delete=models.CASCADE, related_name='form_channel_states', verbose_name='社团')
+    is_enabled = models.BooleanField(default=True, verbose_name='启用')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    updated_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='updated_form_channel_states', verbose_name='更新人')
+
+    class Meta:
+        verbose_name = '社团通道状态'
+        verbose_name_plural = '社团通道状态'
+        unique_together = [('channel', 'club')]
+
+    def __str__(self):
+        return f'{self.club.name} - {self.channel.name} - {"启用" if self.is_enabled else "停用"}'
 
 
 class FormField(models.Model):
@@ -432,6 +492,7 @@ class FormSubmission(models.Model):
     channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='submissions', verbose_name='通道')
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='form_submissions', verbose_name='社团')
     submitter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='form_submissions', verbose_name='提交人')
+    cycle = models.ForeignKey(FormCycle, on_delete=models.SET_NULL, null=True, blank=True, related_name='submissions', verbose_name='周期')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='状态')
     reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_form_submissions', verbose_name='审核人')
     review_comment = models.TextField(blank=True, verbose_name='审核意见')
@@ -448,6 +509,7 @@ class FormSubmission(models.Model):
         indexes = [
             models.Index(fields=['channel', 'status', '-submitted_at'], name='fs_channel_status_idx'),
             models.Index(fields=['club', 'status', '-submitted_at'], name='fs_club_status_idx'),
+            models.Index(fields=['channel', 'club', 'cycle', 'status'], name='fs_policy_scope_idx'),
         ]
 
     def __str__(self):
@@ -468,25 +530,6 @@ class FormSubmission(models.Model):
             if value:
                 return value
         return self.club.name
-
-    @property
-    def activity_date(self):
-        return self.field_value('activity_date')
-
-    @property
-    def activity_time_start(self):
-        return self.field_value('activity_time_start')
-
-    @property
-    def activity_time_end(self):
-        return self.field_value('activity_time_end')
-
-    @property
-    def is_public_activity(self):
-        value = self.field_value('is_public')
-        if isinstance(value, str):
-            return value in ['是', 'true', 'True', '1', 'yes']
-        return bool(value)
 
 
 class FormFieldValue(models.Model):
@@ -638,26 +681,47 @@ class StaffClubRelation(models.Model):
         return f"{self.staff.real_name} - {self.club.name}"
 
 
-class RegistrationPeriod(models.Model):
-    """社团注册周期模型 - 用于跟踪每次开启社团注册功能的周期"""
-    period_number = models.AutoField(primary_key=True, verbose_name='周期编号')
-    is_active = models.BooleanField(default=True, verbose_name='是否活跃')
-    start_date = models.DateTimeField(auto_now_add=True, verbose_name='开始时间')
-    end_date = models.DateTimeField(null=True, blank=True, verbose_name='结束时间')
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='创建人')
-    
+class PublishedActivity(models.Model):
+    """活动申请通过后生成的活动页投影。"""
+
+    ACTIVITY_TYPE_CHOICES = [
+        ('讲座', '讲座'),
+        ('比赛', '比赛'),
+        ('演出', '演出'),
+        ('培训', '培训'),
+        ('志愿服务', '志愿服务'),
+        ('其他', '其他'),
+    ]
+
+    source_submission = models.OneToOneField(FormSubmission, on_delete=models.CASCADE, related_name='published_activity', verbose_name='来源提交')
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='published_activities', verbose_name='社团')
+    activity_name = models.CharField(max_length=200, verbose_name='活动名称')
+    activity_type = models.CharField(max_length=40, choices=ACTIVITY_TYPE_CHOICES, default='其他', verbose_name='活动类型')
+    activity_description = models.TextField(verbose_name='活动描述')
+    activity_date = models.DateField(verbose_name='活动日期')
+    activity_time_start = models.TimeField(verbose_name='活动开始时间')
+    activity_time_end = models.TimeField(verbose_name='活动结束时间')
+    activity_location = models.CharField(max_length=200, verbose_name='活动地点')
+    expected_participants = models.IntegerField(default=0, verbose_name='预计参与人数')
+    budget = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='活动预算')
+    contact_person = models.CharField(max_length=100, verbose_name='联系人')
+    contact_phone = models.CharField(max_length=20, blank=True, verbose_name='联系电话')
+    is_public = models.BooleanField(default=False, verbose_name='是否公开报名')
+    published_at = models.DateTimeField(default=timezone.now, verbose_name='发布时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
     class Meta:
-        verbose_name = '社团注册周期'
-        verbose_name_plural = '社团注册周期'
-        ordering = ['-period_number']
-    
+        verbose_name = '已发布活动'
+        verbose_name_plural = '已发布活动'
+        ordering = ['-activity_date', '-published_at']
+
     def __str__(self):
-        return f"第{self.period_number}次社团注册周期 ({'活跃' if self.is_active else '已结束'})"
+        return f'{self.activity_name} - {self.club.name}'
 
 
 class ActivityRegistration(models.Model):
-    """活动报名记录。活动本身来自通过审核的动态活动申请提交。"""
-    activity = models.ForeignKey('FormSubmission', on_delete=models.CASCADE, related_name='registrations', verbose_name='活动')
+    """活动报名记录。"""
+    activity = models.ForeignKey('PublishedActivity', on_delete=models.CASCADE, related_name='registrations', verbose_name='活动')
     user_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE, related_name='activity_registrations', verbose_name='报名用户')
     registered_at = models.DateTimeField(auto_now_add=True, verbose_name='报名时间')
 
@@ -667,7 +731,7 @@ class ActivityRegistration(models.Model):
         unique_together = [('activity', 'user_profile')]
 
     def __str__(self):
-        return f"{self.user_profile} 报名 {self.activity.display_title}"
+        return f"{self.user_profile} 报名 {self.activity.activity_name}"
 
 
 class EmailVerificationCode(models.Model):

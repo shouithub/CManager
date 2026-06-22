@@ -641,13 +641,11 @@
         <div class="action-grid">
             {% if is_president %}
                 <!-- 社长操作 -->
-                {% if club.registration_enabled %}
                 {% for channel in active_form_channels %}
                 <a href="{% url 'clubs:submit_dynamic_form' channel.slug club.id %}" class="action-btn btn-primary">
                     <span class="material-icons">{{ channel.icon }}</span>{{ channel.name }}
                 </a>
                 {% endfor %}
-                {% endif %}
             {% endif %}
 
         </div>

@@ -862,34 +862,27 @@
         <div class="control-card">
             <h3><span class="material-icons">settings</span> 功能控制</h3>
             
+            {% for channel in toggle_channels %}
             <div class="control-group">
-                <span class="control-label">年审功能:</span>
+                <span class="control-label">{{ channel.name }}:</span>
                 <div class="control-button-group">
-                    <form method="post" action="{% url 'clubs:toggle_all_review_enabled' %}" style="margin: 0;">
+                    <form method="post" action="{% url 'clubs:toggle_form_channel_cycle' channel.id %}" style="margin: 0;">
                         {% csrf_token %}
-                        <button type="submit" class="btn {% if all_review_enabled %}btn-secondary{% else %}btn-primary{% endif %}">
-                            <span class="material-icons">{% if all_review_enabled %}lock{% else %}lock_open{% endif %}</span>
-                            {% if all_review_enabled %}关闭{% else %}开启{% endif %}
+                        <button type="submit" class="btn {% if channel.global_enabled %}btn-secondary{% else %}btn-primary{% endif %}">
+                            <span class="material-icons">{% if channel.global_enabled %}lock{% else %}lock_open{% endif %}</span>
+                            {% if channel.global_enabled %}关闭{% else %}开启{% endif %}
                         </button>
                     </form>
                 </div>
-            </div>
-            
-            <div class="control-group">
-                <span class="control-label">社团注册:</span>
-                <div class="control-button-group">
-                    <form method="post" action="{% url 'clubs:toggle_registration_enabled' %}" style="margin: 0;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn {% if all_registration_enabled %}btn-secondary{% else %}btn-primary{% endif %}">
-                            <span class="material-icons">{% if all_registration_enabled %}lock{% else %}lock_open{% endif %}</span>
-                            {% if all_registration_enabled %}关闭{% else %}开启{% endif %}
-                        </button>
-                    </form>
-                </div>
-                {% if active_registration_period %}
-                <span style="font-size: 13px; color: var(--md3-on-surface-variant);">注册周期: 第{{ active_registration_period.period_number }}次</span>
+                {% if channel.active_cycle %}
+                <span style="font-size: 13px; color: var(--md3-on-surface-variant);">当前周期：{{ channel.active_cycle.name }}</span>
+                {% elif channel.needs_cycle %}
+                <span style="font-size: 13px; color: var(--md3-on-surface-variant);">当前未开启收集周期</span>
                 {% endif %}
             </div>
+            {% empty %}
+            <div style="color: var(--md3-on-surface-variant);">暂无允许在本页开关的提交通道。</div>
+            {% endfor %}
         </div>
     </div>
 
@@ -900,16 +893,6 @@
         </div>
         <div class="section-body">
             <div class="action-grid">
-                <div class="action-card">
-                    <div class="action-card-icon">
-                        <span class="material-icons" style="font-size: 28px;">note</span>
-                    </div>
-                    <div class="action-card-title">上传模板</div>
-                    <div class="action-card-desc">上传和管理社团材料提交使用的模板文件</div>
-                    <a href="{% url 'clubs:upload_template' %}" class="btn btn-primary action-card-btn">
-                        <span class="material-icons">flag</span> 管理模板
-                    </a>
-                </div>
 
                 <div class="action-card">
                     <div class="action-card-icon">
@@ -973,8 +956,9 @@
                             <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">社团名称</th>
                             <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">社长</th>
                             <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">状态</th>
-                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">年审</th>
-                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">注册</th>
+                            {% for channel in toggle_channels %}
+                            <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">{{ channel.name }}</th>
+                            {% endfor %}
                             <th style="padding: var(--md3-spacing-lg); text-align: left; font-weight: 600; color: var(--md3-on-surface-variant); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">操作</th>
                         </tr>
                     </thead>
@@ -1013,45 +997,32 @@
                                     </span>
                                 {% endif %}
                             </td>
+                            {% for state in club.dynamic_channel_states %}
                             <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
-                                {% if club.review_enabled %}
+                                {% if state.is_enabled %}
                                     <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span> 启用
+                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span> 开启
                                     </span>
                                 {% else %}
                                     <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">block</span> 禁用
+                                        <span class="material-icons" style="font-size: 1rem;">block</span> 关闭
                                     </span>
                                 {% endif %}
                             </td>
-                            <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
-                                {% if club.registration_enabled %}
-                                    <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">check_circle</span> 启用
-                                    </span>
-                                {% else %}
-                                    <span style="display: inline-flex; align-items: center; gap: var(--md3-spacing-xs); padding: var(--md3-spacing-xs) var(--md3-spacing-md); background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); border-radius: var(--md3-radius-full); font-size: 0.8rem; font-weight: 600;">
-                                        <span class="material-icons" style="font-size: 1rem;">block</span> 禁用
-                                    </span>
-                                {% endif %}
-                            </td>
+                            {% endfor %}
                             <td style="padding: var(--md3-spacing-lg); color: var(--md3-on-surface);">
                                 <div style="display: flex; gap: var(--md3-spacing-sm); flex-wrap: wrap;">
                                     <a href="{% url 'clubs:club_detail' club_id=club.id %}" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem;">
                                         <span class="material-icons" style="font-size: 1rem;">visibility</span> <span>查看</span>
                                     </a>
-                                    <form method="post" action="{% url 'clubs:toggle_review_enabled' club_id=club.id %}" style="display: inline;">
+                                    {% for state in club.dynamic_channel_states %}
+                                    <form method="post" action="{% url 'clubs:toggle_club_form_channel' state.channel.id club.id %}" style="display: inline;">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem;">
-                                            <span class="material-icons" style="font-size: 1rem;">{% if club.review_enabled %}lock{% else %}lock_open{% endif %}</span> <span>年审</span>
+                                            <span class="material-icons" style="font-size: 1rem;">{% if state.is_enabled %}lock{% else %}lock_open{% endif %}</span> <span>{{ state.channel.name }}</span>
                                         </button>
                                     </form>
-                                    <form method="post" action="{% url 'clubs:toggle_club_registration_enabled' club_id=club.id %}" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem;">
-                                            <span class="material-icons" style="font-size: 1rem;">{% if club.registration_enabled %}lock{% else %}lock_open{% endif %}</span> <span>注册</span>
-                                        </button>
-                                    </form>
+                                    {% endfor %}
                                     <button type="button" class="btn btn-secondary" style="padding: var(--md3-spacing-sm) var(--md3-spacing-md); font-size: 0.85rem; color: var(--md3-error);" onclick="openDeleteModal('{{ club.id }}', '{{ club.name|escapejs }}')">
                                         <span class="material-icons" style="font-size: 1rem;">delete</span> <span>删除</span>
                                     </button>
@@ -1060,7 +1031,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" style="padding: var(--md3-spacing-3xl); text-align: center; color: var(--md3-on-surface-variant);">
+                            <td colspan="{{ toggle_colspan }}" style="padding: var(--md3-spacing-3xl); text-align: center; color: var(--md3-on-surface-variant);">
                                 <span class="material-icons" style="font-size: 3rem; opacity: 0.5; display: block; margin-bottom: var(--md3-spacing-md);">folder_off</span>
                                 <div>暂无社团记录</div>
                             </td>
@@ -1301,15 +1272,6 @@ function copyLowMemberClubsAll() {
     {% endfor %}
     text += '==========================\n总计: {{ clubs_with_low_members_count }}个社团';
     navigator.clipboard.writeText(text).then(showToast).catch(err => console.error('复制失败:', err));
-}
-
-function copyLowMemberClubs() {
-    copyLowMemberClubsAll();
-}
-
-// 保留旧函数以保持兼容性
-function copyUnsubmittedClubs() {
-    copyUnsubmittedClubsAll();
 }
 
 // 注册预警 - 复制我负责的

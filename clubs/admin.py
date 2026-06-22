@@ -1,9 +1,9 @@
 from django.contrib import admin
 from .models import (
-    Club, Officer, UserProfile, FormChannel, FormField, FormSubmission,
+    Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission,
     FormFieldValue, FormUploadedFile, Template, Announcement,
     EmailVerificationCode, SMTPConfig, CarouselImage, Department, Room,
-    TimeSlot, RoomBooking
+    TimeSlot, RoomBooking, PublishedActivity, ActivityRegistration
 )
 
 
@@ -13,13 +13,33 @@ class FormFieldInline(admin.TabularInline):
     fields = ('label', 'field_key', 'field_type', 'required', 'order', 'is_active')
 
 
+class FormCycleInline(admin.TabularInline):
+    model = FormCycle
+    extra = 0
+    fields = ('name', 'sequence', 'is_active', 'starts_at', 'ends_at')
+
+
 @admin.register(FormChannel)
 class FormChannelAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'builtin_action', 'is_active', 'order', 'updated_at')
-    list_filter = ('is_active', 'is_builtin', 'builtin_action')
+    list_display = ('name', 'slug', 'builtin_action', 'submission_policy', 'cycle_type', 'show_unsubmitted_status', 'allow_staff_toggle', 'is_active', 'order', 'updated_at')
+    list_filter = ('is_active', 'is_builtin', 'builtin_action', 'submission_policy', 'cycle_type', 'show_unsubmitted_status', 'allow_staff_toggle')
     search_fields = ('name', 'slug', 'description')
     list_editable = ('is_active', 'order')
-    inlines = [FormFieldInline]
+    inlines = [FormFieldInline, FormCycleInline]
+
+
+@admin.register(FormCycle)
+class FormCycleAdmin(admin.ModelAdmin):
+    list_display = ('channel', 'name', 'sequence', 'is_active', 'starts_at', 'ends_at')
+    list_filter = ('channel', 'is_active')
+    search_fields = ('channel__name', 'name')
+
+
+@admin.register(FormChannelClubState)
+class FormChannelClubStateAdmin(admin.ModelAdmin):
+    list_display = ('channel', 'club', 'is_enabled', 'updated_at', 'updated_by')
+    list_filter = ('channel', 'is_enabled')
+    search_fields = ('channel__name', 'club__name')
 
 
 @admin.register(FormSubmission)
@@ -63,6 +83,21 @@ class RoomBookingAdmin(admin.ModelAdmin):
     list_filter = ('status', 'booking_date', 'room')
     search_fields = ('user__username', 'club__name', 'purpose')
     readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(PublishedActivity)
+class PublishedActivityAdmin(admin.ModelAdmin):
+    list_display = ('activity_name', 'club', 'activity_date', 'activity_type', 'is_public', 'published_at')
+    list_filter = ('activity_type', 'activity_date', 'is_public')
+    search_fields = ('activity_name', 'club__name', 'activity_location')
+    readonly_fields = ('published_at', 'updated_at')
+
+
+@admin.register(ActivityRegistration)
+class ActivityRegistrationAdmin(admin.ModelAdmin):
+    list_display = ('activity', 'user_profile', 'registered_at')
+    search_fields = ('activity__activity_name', 'user_profile__real_name', 'user_profile__user__username')
+    readonly_fields = ('registered_at',)
 
 
 @admin.register(UserProfile)

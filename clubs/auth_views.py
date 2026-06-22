@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib import messages
-from .models import UserProfile, Club, FormChannel, FormSubmission, StaffClubRelation, Officer
+from .models import UserProfile, Club, FormChannel, FormCycle, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
 from datetime import datetime
 from django.utils import timezone
 from django.db.models import Q, Prefetch
@@ -350,274 +350,7 @@ def delete_account(request):
     return redirect('clubs:change_account_settings')
 
 
-@login_required(login_url='clubs:login')
-def user_dashboard(request):
-    """用户仪表盘 - 显示该用户的社团"""
-    user = request.user
-
-    # 统一导入相关模型，避免UnboundLocalError
-    from .models import ClubRegistration, RegistrationPeriod, StaffClubRelation, ClubRegistrationRequest, Reimbursement, ActivityApplication, PresidentTransition, Officer
-
-    # 检查用户角色
-    try:
-        profile = user.profile
-        if profile.role == 'staff':
-            return redirect('clubs:index')
-    except UserProfile.DoesNotExist:
-        return redirect('clubs:login')
-
-    # 获取该社长的社团
-    clubs = Club.objects.filter(
-        officers__user_profile__user=user,
-        officers__position='president',
-        officers__is_current=True
-    )
-    
-    # 获取用户作为社长的社团列表（用于统计待审批数量）
-    president_clubs = Officer.objects.filter(
-        user_profile=user.profile, 
-        position='president', 
-        is_current=True
-    ).values_list('club', flat=True)
-
-    # 检查每个社团是否已提交当前年度的年审
-    current_year = datetime.now().year
-    clubs_with_submission_status = []
-    
-    # 计算各类待审批数量（pending和rejected状态表示需要关注的申请）
-    annual_review_count = ReviewSubmission.objects.filter(
-        club__in=president_clubs, 
-        status__in=['pending', 'rejected']
-    ).count()
-    registration_count = ClubRegistration.objects.filter(
-        club__in=president_clubs, 
-        status__in=['pending', 'rejected']
-    ).count()
-    application_count = ClubRegistrationRequest.objects.filter(
-        requested_by=user, 
-        status__in=['pending', 'rejected']
-    ).count()
-    reimbursement_count = Reimbursement.objects.filter(
-        club__in=president_clubs, 
-        status__in=['pending', 'rejected', 'partially_rejected']
-    ).count()
-    activity_count = ActivityApplication.objects.filter(
-        club__in=president_clubs, 
-        status__in=['pending', 'rejected']
-    ).count()
-    transition_count = PresidentTransition.objects.filter(
-        club__in=president_clubs, 
-        status__in=['pending', 'rejected']
-    ).count()
-    
-    unread_approval_counts = {
-        'annual_review': annual_review_count,
-        'registration': registration_count,
-        'application': application_count,
-        'reimbursement': reimbursement_count,
-        'activity': activity_count,
-        'transition': transition_count,
-        'total': annual_review_count + registration_count + application_count + reimbursement_count + activity_count + transition_count
-    }
-    # 社团卡片数据
-    from .models import RegistrationPeriod, ClubRegistration, StaffClubRelation
-    for club in clubs:
-        has_submitted_review = ReviewSubmission.objects.filter(
-            club=club,
-            submission_year=current_year
-        ).exists()
-        has_submitted_registration = False
-        try:
-            active_period = RegistrationPeriod.objects.get(is_active=True)
-            has_submitted_registration = ClubRegistration.objects.filter(
-                club=club,
-                registration_period=active_period
-            ).exists()
-        except RegistrationPeriod.DoesNotExist:
-            pass
-        staff_relations = StaffClubRelation.objects.filter(club=club, is_active=True)
-        assigned_staff = [
-            {
-                'staff': relation.staff,
-                'name': relation.staff.get_full_name(),
-                'phone': relation.staff.phone or '--',
-                'wechat': relation.staff.wechat or '--',
-                'assigned_at': relation.assigned_at
-            }
-            for relation in staff_relations
-        ]
-        
-        club_data = {
-            'club': club,
-            'has_submitted_review': has_submitted_review,
-            'has_submitted_registration': has_submitted_registration,
-            'assigned_staff': assigned_staff,
-            'review_enabled': club.review_enabled,
-            'registration_enabled': club.registration_enabled
-        }
-        clubs_with_submission_status.append(club_data)
-    context = {
-        'user': user,
-        'clubs': clubs,
-        'clubs_with_submission_status': clubs_with_submission_status,
-        'club_count': clubs.count(),
-        'current_year': current_year,
-        'unread_approval_counts': unread_approval_counts
-    }
-    return render(request, 'clubs/user/dashboard.html', context)
-
-
-@login_required(login_url='clubs:login')
-def staff_dashboard(request):
-    """干事仪表盘 - 活动审核中心（干事和管理员可用）"""
-    user = request.user
-    
-    # 检查用户角色
-    try:
-        profile = user.profile
-        if profile.role != 'staff' and profile.role != 'admin':
-            messages.error(request, '您没有权限访问此页面')
-            return redirect('clubs:user_dashboard')
-    except UserProfile.DoesNotExist:
-        messages.error(request, '用户角色未配置')
-        return redirect('clubs:login')
-    
-    # 导入所需的模型
-    from .models import (
-        ActivityApplication, ReviewSubmission, ClubRegistrationRequest,
-        ClubRegistration, Reimbursement, PresidentTransition,
-        StaffClubRelation, Club, RegistrationPeriod
-    )
-    from datetime import datetime
-    
-    # 获取待审核的数据 - 使用模板中期望的变量名
-    pending_submissions = ReviewSubmission.objects.filter(status='pending').order_by('-submitted_at')
-    pending_club_registrations = ClubRegistration.objects.filter(status='pending').order_by('-submitted_at')
-
-    pending_reimbursements = Reimbursement.objects.filter(status='pending').order_by('-submitted_at')
-    # 活动申请 - 获取干事还未审核的申请
-    pending_activity_applications = ActivityApplication.objects.filter(
-        staff_approved__isnull=True  # 干事还未审核
-    ).order_by('-submitted_at')
-    pending_president_transitions = PresidentTransition.objects.filter(status='pending').order_by('-submitted_at')
-    pending_registrations = ClubRegistrationRequest.objects.filter(status='pending').order_by('-submitted_at')
-    
-    # 为所有待审核项添加review_url属性
-    for item in pending_submissions:
-        item.review_url = f'/staff/review-submission/{item.id}/'
-    for item in pending_club_registrations:
-        item.review_url = f'/staff/application/{item.id}/'
-    for item in pending_registrations:
-        item.review_url = f'/staff/review-club-registration-submission/{item.id}/'
-    for item in pending_reimbursements:
-        item.review_url = f'/staff/review-reimbursement/{item.id}/'
-    for item in pending_activity_applications:
-        item.review_url = f'/staff/review-activity-application/{item.id}/'
-    for item in pending_president_transitions:
-        item.review_url = f'/staff/review-president-transition/{item.id}/'
-    
-    # 计算待审核数量
-    pending_counts = {
-        'submissions': pending_submissions.count(),
-        'club_registrations': pending_club_registrations.count(),
-
-        'reimbursements': pending_reimbursements.count(),
-        'activity_applications': pending_activity_applications.count(),
-        'president_transitions': pending_president_transitions.count(),
-        'registrations': pending_registrations.count(),
-    }
-    
-    # 计算总待审核数
-    total_pending = sum(pending_counts.values())
-    
-    # 获取当前干事负责的社团ID
-    staff_club_ids = StaffClubRelation.objects.filter(
-        staff=user.profile, 
-        is_active=True
-    ).values_list('club_id', flat=True)
-    
-    # 获取成员数少20人的社团，并预加载负责干事信息（排除停止状态的社团）
-    _president_prefetch = Prefetch(
-        'officers',
-        queryset=Officer.objects.filter(position='president', is_current=True).select_related('user_profile__user', 'user_profile'),
-        to_attr='_president_list',
-    )
-    clubs_with_low_members = Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count').prefetch_related(_president_prefetch, 'responsible_staff', 'responsible_staff__staff')
-    
-    # 获取所有社团
-    clubs = Club.objects.all().order_by('name')
-    
-    # 获取当前年份
-    current_year = datetime.now().year
-    # 获取已开启年审的社团（排除停止状态的社团）
-    enabled_review_clubs = Club.objects.filter(review_enabled=True).exclude(status='suspended')
-    # 获取已提交本年度年审的社团ID
-    submitted_clubs_ids = ReviewSubmission.objects.filter(
-        club__in=enabled_review_clubs, 
-        submission_year=current_year
-    ).values_list('club_id', flat=True)
-    # 获取已开启年审但未提交的社团，并预加载负责干事信息
-    clubs_enabled_review_not_submitted = enabled_review_clubs.exclude(id__in=submitted_clubs_ids).prefetch_related('responsible_staff')
-    
-    # 分别获取当前干事负责的和其他的未提交年审社团
-    clubs_enabled_review_not_submitted_my = clubs_enabled_review_not_submitted.filter(id__in=staff_club_ids)
-    clubs_enabled_review_not_submitted_other = clubs_enabled_review_not_submitted.exclude(id__in=staff_club_ids)
-    
-    # 获取当前活跃的社团注册周期
-    active_registration_period = RegistrationPeriod.objects.filter(is_active=True).first()
-    clubs_not_registered = []
-    clubs_not_registered_my = []
-    clubs_not_registered_other = []
-    if active_registration_period:
-        # 获取本周期已提交注册的社团ID
-        registered_clubs_ids = ClubRegistration.objects.filter(
-            registration_period=active_registration_period
-        ).values_list('club_id', flat=True)
-        # 获取所有活跃社团中未提交注册的社团（排除停止状态的社团）
-        clubs_not_registered = Club.objects.exclude(status='suspended').exclude(id__in=registered_clubs_ids).prefetch_related('responsible_staff')
-        clubs_not_registered_my = clubs_not_registered.filter(id__in=staff_club_ids)
-        clubs_not_registered_other = clubs_not_registered.exclude(id__in=staff_club_ids)
-    
-    # 计算是否所有社团都开启了年审和注册
-    all_clubs = Club.objects.all()
-    all_review_enabled = all_clubs.exists() and all_clubs.filter(review_enabled=True).count() == all_clubs.count()
-    all_registration_enabled = all_clubs.exists() and all_clubs.filter(registration_enabled=True).count() == all_clubs.count()
-    
-    context = {
-        'pending_submissions': pending_submissions,
-        'pending_club_registrations': pending_club_registrations,
-
-        'pending_reimbursements': pending_reimbursements,
-        'pending_activity_applications': pending_activity_applications,
-        'pending_president_transitions': pending_president_transitions,
-        'pending_registrations': pending_registrations,
-        'pending_counts': pending_counts,
-        'total_pending': total_pending,
-        'clubs_with_low_members': clubs_with_low_members,
-        'clubs_with_low_members_count': clubs_with_low_members.count(),
-        'clubs': clubs,
-        'clubs_enabled_review_not_submitted': clubs_enabled_review_not_submitted,
-        'clubs_enabled_review_not_submitted_my': clubs_enabled_review_not_submitted_my,
-        'clubs_enabled_review_not_submitted_other': clubs_enabled_review_not_submitted_other,
-        'current_year': current_year,
-        'active_registration_period': active_registration_period,
-        'clubs_not_registered': clubs_not_registered,
-        'clubs_not_registered_my': clubs_not_registered_my,
-        'clubs_not_registered_other': clubs_not_registered_other,
-        'clubs_not_registered_count': clubs_not_registered.count() if hasattr(clubs_not_registered, 'count') else len(clubs_not_registered) if clubs_not_registered else 0,  # type: ignore
-        'all_review_enabled': all_review_enabled,
-        'all_registration_enabled': all_registration_enabled,
-        # 为stats-grid卡片添加单独的计数变量
-        'pending_submissions_count': pending_counts.get('submissions', 0),
-        'pending_reimbursements_count': pending_counts.get('reimbursements', 0),
-        'pending_registrations_count': pending_counts.get('registrations', 0),
-        'pending_club_registrations_count': pending_counts['club_registrations'],
-        'pending_activity_applications_count': pending_counts['activity_applications'],
-        'pending_president_transitions_count': pending_counts['president_transitions'],
-    }
-    
-    return render(request, 'clubs/staff/home.html', context)
-
+# 申请入口由动态表单 Dashboard 提供；带业务动作的表单通过代码注册表绑定逻辑。
 
 @login_required(login_url='clubs:login')
 def change_account_settings(request):
@@ -857,17 +590,26 @@ def staff_management(request):
         messages.error(request, '用户角色未配置')
         return redirect('clubs:login')
     
-    from .models import Club, RegistrationPeriod, ReviewSubmission, ClubRegistration, StaffClubRelation, Officer
+    from .models import Club, FormSubmission, StaffClubRelation, Officer
     from datetime import datetime
-    
-    # 计算全局年审功能状态
-    all_review_enabled = not Club.objects.filter(review_enabled=False).exists()
-    
-    # 计算全局注册功能状态
-    all_registration_enabled = not Club.objects.filter(registration_enabled=False).exists()
-    
-    # 获取当前活跃的社团注册周期
-    active_registration_period = RegistrationPeriod.objects.filter(is_active=True).first()
+    annual_channel = FormChannel.objects.filter(builtin_action='annual_review').first()
+    registration_channel = FormChannel.objects.filter(builtin_action='club_registration').first()
+    toggle_channels = list(
+        FormChannel.objects.filter(allow_staff_toggle=True)
+        .prefetch_related('cycles')
+        .order_by('order', 'id')
+    )
+    for channel in toggle_channels:
+        channel.needs_cycle = channel.cycle_type != 'none' or channel.submission_policy == 'once_per_cycle'
+        channel.active_cycle = (
+            channel.cycles.filter(is_active=True).order_by('-sequence', '-starts_at').first()
+            if channel.needs_cycle else None
+        )
+        channel.global_enabled = bool(channel.active_cycle) if channel.needs_cycle else channel.is_active
+    active_review_cycle = annual_channel.cycles.filter(is_active=True).first() if annual_channel else None
+    active_registration_period = registration_channel.cycles.filter(is_active=True).first() if registration_channel else None
+    all_review_enabled = bool(active_review_cycle)
+    all_registration_enabled = bool(active_registration_period)
 
     # 搜索 & 列表（分页）
     q = request.GET.get('q', '').strip()
@@ -893,6 +635,33 @@ def staff_management(request):
     paginator = Paginator(clubs_qs, 20)  # 每页20个
     page_number = request.GET.get('page')
     clubs_page = paginator.get_page(page_number)
+    page_clubs = list(clubs_page.object_list)
+    if annual_channel:
+        disabled_review_ids = set(FormChannelClubState.objects.filter(channel=annual_channel, is_enabled=False).values_list('club_id', flat=True))
+    else:
+        disabled_review_ids = set()
+    if registration_channel:
+        disabled_registration_ids = set(FormChannelClubState.objects.filter(channel=registration_channel, is_enabled=False).values_list('club_id', flat=True))
+    else:
+        disabled_registration_ids = set()
+    disabled_by_channel = {
+        channel.id: set(
+            FormChannelClubState.objects.filter(channel=channel, is_enabled=False)
+            .values_list('club_id', flat=True)
+        )
+        for channel in toggle_channels
+    }
+    for club in page_clubs:
+        club.dynamic_channel_states = [
+            {
+                'channel': channel,
+                'is_enabled': bool(channel.global_enabled and club.id not in disabled_by_channel.get(channel.id, set())),
+                'global_enabled': channel.global_enabled,
+                'active_cycle': channel.active_cycle,
+            }
+            for channel in toggle_channels
+        ]
+    clubs_page.object_list = page_clubs
     
     # === 预警功能数据 ===
     # 获取当前干事负责的社团ID
@@ -911,17 +680,18 @@ def staff_management(request):
     clubs_with_low_members_my = clubs_with_low_members.filter(id__in=staff_club_ids)
     clubs_with_low_members_other = clubs_with_low_members.exclude(id__in=staff_club_ids)
     
-    # 获取当前年份
     current_year = datetime.now().year
-    # 获取已开启年审的社团（排除停止状态的社团）
-    enabled_review_clubs = Club.objects.filter(review_enabled=True).exclude(status='suspended')
-    # 获取已提交本年度年审的社团ID
-    submitted_clubs_ids = ReviewSubmission.objects.filter(
-        club__in=enabled_review_clubs, 
-        submission_year=current_year
-    ).values_list('club_id', flat=True)
-    # 获取已开启年审但未提交的社团
-    clubs_enabled_review_not_submitted = enabled_review_clubs.exclude(id__in=submitted_clubs_ids).prefetch_related('responsible_staff')
+    enabled_review_clubs = Club.objects.none()
+    clubs_enabled_review_not_submitted = Club.objects.none()
+    if annual_channel and active_review_cycle:
+        enabled_review_clubs = Club.objects.exclude(status='suspended').exclude(id__in=disabled_review_ids)
+        submitted_clubs_ids = FormSubmission.objects.filter(
+            club__in=enabled_review_clubs,
+            channel=annual_channel,
+            cycle=active_review_cycle,
+            status__in=['pending', 'approved'],
+        ).values_list('club_id', flat=True)
+        clubs_enabled_review_not_submitted = enabled_review_clubs.exclude(id__in=submitted_clubs_ids).prefetch_related('responsible_staff')
     
     # 分别获取当前干事负责的和其他的未提交年审社团
     clubs_enabled_review_not_submitted_my = clubs_enabled_review_not_submitted.filter(id__in=staff_club_ids)
@@ -932,17 +702,15 @@ def staff_management(request):
     clubs_enabled_registration_not_submitted_my = Club.objects.none()
     clubs_enabled_registration_not_submitted_other = Club.objects.none()
     
-    if active_registration_period:
-        # 获取已开启注册的社团（排除停止状态的社团）
-        enabled_registration_clubs = Club.objects.filter(registration_enabled=True).exclude(status='suspended')
-        # 获取已提交本周期注册的社团ID
-        submitted_registration_ids = ClubRegistration.objects.filter(
+    if registration_channel and active_registration_period:
+        enabled_registration_clubs = Club.objects.exclude(status='suspended').exclude(id__in=disabled_registration_ids)
+        submitted_registration_ids = FormSubmission.objects.filter(
             club__in=enabled_registration_clubs,
-            registration_period=active_registration_period
+            channel=registration_channel,
+            cycle=active_registration_period,
+            status__in=['pending', 'approved'],
         ).values_list('club_id', flat=True)
-        # 获取已开启注册但未提交的社团
         clubs_enabled_registration_not_submitted = enabled_registration_clubs.exclude(id__in=submitted_registration_ids).prefetch_related('responsible_staff')
-        # 分别获取当前干事负责的和其他的未提交注册社团
         clubs_enabled_registration_not_submitted_my = clubs_enabled_registration_not_submitted.filter(id__in=staff_club_ids)
         clubs_enabled_registration_not_submitted_other = clubs_enabled_registration_not_submitted.exclude(id__in=staff_club_ids)
     
@@ -950,6 +718,8 @@ def staff_management(request):
         'all_review_enabled': all_review_enabled,
         'all_registration_enabled': all_registration_enabled,
         'active_registration_period': active_registration_period,
+        'toggle_channels': toggle_channels,
+        'toggle_colspan': 4 + len(toggle_channels),
         'clubs_page': clubs_page,
         'q': q,
         # 预警数据
@@ -1107,6 +877,42 @@ def manage_department_staff(request):
 
 # ---- Dynamic form replacements -------------------------------------------------
 
+def _dashboard_channel_card(channel, club, user):
+    state = FormChannelClubState.objects.filter(channel=channel, club=club).first()
+    enabled = True if state is None else state.is_enabled
+    cycle = None
+    unavailable_reason = ''
+    submissions = FormSubmission.objects.filter(channel=channel, club=club, submitter=user)
+    if channel.submission_policy == 'once_per_cycle':
+        cycle = channel.cycles.filter(is_active=True).order_by('-sequence', '-starts_at').first()
+        if cycle:
+            submissions = submissions.filter(cycle=cycle)
+        else:
+            enabled = False
+            unavailable_reason = '当前未开启周期'
+            submissions = submissions.none()
+    latest = submissions.order_by('-submitted_at').first()
+    blocked = latest and latest.status in ['pending', 'approved'] and channel.submission_policy in ['once_total', 'once_per_cycle']
+    if not enabled and not unavailable_reason:
+        unavailable_reason = '暂未开放'
+    can_submit = enabled and not blocked
+    status = '未提交'
+    status_class = 'pending'
+    if latest:
+        status = latest.get_status_display()
+        status_class = latest.status
+    return {
+        'channel': channel,
+        'cycle': cycle,
+        'latest': latest,
+        'status': status,
+        'status_class': status_class,
+        'can_submit': can_submit,
+        'unavailable_reason': unavailable_reason,
+        'is_cycle_channel': channel.submission_policy == 'once_per_cycle',
+    }
+
+
 @login_required(login_url='clubs:login')
 def user_dashboard(request):
     user = request.user
@@ -1122,7 +928,7 @@ def user_dashboard(request):
         officers__position='president',
         officers__is_current=True
     ).prefetch_related('responsible_staff', 'responsible_staff__staff')
-    channels = FormChannel.objects.filter(is_active=True).order_by('order', 'id')
+    channels = list(FormChannel.objects.filter(is_active=True).prefetch_related('cycles').order_by('order', 'id'))
     club_ids = [club.id for club in clubs]
     unread_total = FormSubmission.objects.filter(club_id__in=club_ids, status__in=['pending', 'rejected']).count()
 
@@ -1139,12 +945,12 @@ def user_dashboard(request):
             }
             for relation in staff_relations
         ]
+        action_cards = [_dashboard_channel_card(channel, club, user) for channel in channels]
         clubs_with_submission_status.append({
             'club': club,
             'assigned_staff': assigned_staff,
-            'dynamic_channels': channels,
-            'review_enabled': True,
-            'registration_enabled': True,
+            'status_cards': [card for card in action_cards if card['channel'].show_unsubmitted_status],
+            'action_cards': action_cards,
         })
 
     return render(request, 'clubs/user/dashboard.html', {
@@ -1154,57 +960,4 @@ def user_dashboard(request):
         'club_count': clubs.count(),
         'dynamic_channels': channels,
         'unread_approval_counts': {'total': unread_total, 'channels': {}},
-    })
-
-
-@login_required(login_url=settings.LOGIN_URL)
-def staff_management(request):
-    user = request.user
-    try:
-        profile = user.profile
-        if profile.role not in ['staff', 'admin']:
-            messages.error(request, '您没有权限访问此页面')
-            return redirect('clubs:user_dashboard')
-    except UserProfile.DoesNotExist:
-        messages.error(request, '用户角色未配置')
-        return redirect('clubs:login')
-
-    q = request.GET.get('q', '').strip()
-    clubs_qs = Club.objects.prefetch_related(
-        Prefetch(
-            'officers',
-            queryset=Officer.objects.filter(position='president', is_current=True).select_related('user_profile__user'),
-            to_attr='_president_list',
-        )
-    ).all().order_by('name')
-    if q:
-        pres_club_ids = Officer.objects.filter(
-            Q(user_profile__user__username__icontains=q) | Q(user_profile__real_name__icontains=q),
-            position='president',
-            is_current=True,
-        ).values_list('club_id', flat=True)
-        clubs_qs = clubs_qs.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(id__in=pres_club_ids))
-
-    paginator = Paginator(clubs_qs, 20)
-    clubs_page = paginator.get_page(request.GET.get('page'))
-    pending_count = FormSubmission.objects.filter(status='pending').count()
-
-    return render(request, 'clubs/staff/management.html', {
-        'clubs_page': clubs_page,
-        'q': q,
-        'all_review_enabled': True,
-        'all_registration_enabled': True,
-        'active_registration_period': None,
-        'clubs_with_low_members': Club.objects.filter(members_count__lt=20).exclude(status='suspended'),
-        'clubs_with_low_members_count': Club.objects.filter(members_count__lt=20).exclude(status='suspended').count(),
-        'clubs_with_low_members_my': Club.objects.none(),
-        'clubs_with_low_members_other': Club.objects.none(),
-        'clubs_enabled_review_not_submitted': Club.objects.none(),
-        'clubs_enabled_review_not_submitted_my': Club.objects.none(),
-        'clubs_enabled_review_not_submitted_other': Club.objects.none(),
-        'clubs_enabled_registration_not_submitted': Club.objects.none(),
-        'clubs_enabled_registration_not_submitted_my': Club.objects.none(),
-        'clubs_enabled_registration_not_submitted_other': Club.objects.none(),
-        'current_year': timezone.now().year,
-        'dynamic_pending_count': pending_count,
     })

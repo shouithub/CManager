@@ -15,9 +15,10 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from django.conf import settings
-from django.http import HttpResponse, FileResponse, HttpResponseForbidden, JsonResponse
-from django.db import IntegrityError
+from django.http import HttpResponse, FileResponse, HttpResponseForbidden, JsonResponse, Http404
+from django.db import IntegrityError, transaction
 from django.db.models import Q, Prefetch, FileField, Count
 from django.core.cache import cache
 from collections import defaultdict
@@ -29,7 +30,14 @@ import base64
 import tempfile
 import csv
 import io
-from .models import Club, Officer, UserProfile, FormChannel, FormField, FormSubmission, FormFieldValue, FormUploadedFile, Template, Announcement, StaffClubRelation, RegistrationPeriod, SMTPConfig, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken, ActivityRegistration
+from .models import Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission, FormFieldValue, FormUploadedFile, Template, Announcement, StaffClubRelation, SMTPConfig, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken, PublishedActivity, ActivityRegistration
+from .business_forms import (
+    BusinessActionError,
+    apply_business_action,
+    create_form_cycle,
+    missing_required_field_keys,
+    seed_business_form_channels,
+)
 from django.contrib.contenttypes.models import ContentType
 import shutil
 from PIL import Image
@@ -186,138 +194,12 @@ def _validate_file_allowed(file, field_name, allowed_extensions, allowed_mimetyp
     return None
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(['GET'])
-def notification_counts(request):
-    """轻量通知计数接口：用于侧边栏/底栏角标实时刷新。"""
-    role = ''
-    try:
-        role = request.user.profile.role
-    except Exception:
-        pass
-
-    cache_key = f'notification_counts:{request.user.id}:{role}'
-    cached_payload = cache.get(cache_key)
-    if cached_payload is not None:
-        return JsonResponse(cached_payload)
-
-    counts_context = get_audit_center_counts(request)
-    audit_counts = counts_context.get('audit_center_counts', {})
-    approval_counts = counts_context.get('unread_approval_counts', {})
-
-    payload = {
-        'role': role,
-        'audit_counts': {
-            'annual_review': int(audit_counts.get('annual_review', 0)),
-            'registration': int(audit_counts.get('registration', 0)),
-            'application': int(audit_counts.get('application', 0)),
-            'reimbursement': int(audit_counts.get('reimbursement', 0)),
-            'activity_application': int(audit_counts.get('activity_application', 0)),
-            'president_transition': int(audit_counts.get('president_transition', 0)),
-        },
-        'approval_counts': {
-            'annual_review': int(approval_counts.get('annual_review', 0)),
-            'registration': int(approval_counts.get('registration', 0)),
-            'application': int(approval_counts.get('application', 0)),
-            'reimbursement': int(approval_counts.get('reimbursement', 0)),
-            'activity': int(approval_counts.get('activity', 0)),
-            'transition': int(approval_counts.get('transition', 0)),
-            'total': int(approval_counts.get('total', 0)),
-        },
-    }
-
-    payload['audit_total'] = sum(payload['audit_counts'].values())
-
-    cache.set(cache_key, payload, timeout=10)
-    return JsonResponse(payload)
 
 
-def get_dynamic_materials_list(target_obj, db_req_type):
-    """
-    辅助函数：获取动态材料列表
-    返回: list of dicts suitable for _materials_display.html
-    """
-    materials, _ = get_dynamic_materials_payload(target_obj, db_req_type)
-    return materials
 
 
-def _stored_file_exists(file_obj):
-    """Safely check whether a storage-backed file currently exists on backend storage."""
-    if not file_obj:
-        return False
-    try:
-        file_name = getattr(file_obj, 'name', '')
-        storage = getattr(file_obj, 'storage', None)
-        if not file_name or storage is None:
-            return False
-        return storage.exists(file_name)
-    except Exception:
-        return False
 
 
-def get_dynamic_materials_payload(target_obj, db_req_type, include_missing=False):
-    """统一构建动态材料数据。
-
-    Returns:
-        tuple[list, list]: (materials_list, submission_files)
-    """
-    requirements = MaterialRequirement.objects.filter(request_type=db_req_type, is_active=True).order_by('order')
-    m_list = []
-    s_files = []
-    missing_files = []
-
-    try:
-        content_type = ContentType.objects.get_for_model(target_obj)
-    except Exception:
-        return [], []
-
-    for req in requirements:
-        submitted_file = SubmittedFile.objects.filter(
-            content_type=content_type,
-            object_id=target_obj.id,
-            requirement=req
-        ).first()
-
-        file_obj = submitted_file.file if submitted_file else None
-
-        if not file_obj and req.legacy_field_name and hasattr(target_obj, req.legacy_field_name):
-            legacy_file = getattr(target_obj, req.legacy_field_name)
-            if legacy_file:
-                file_obj = legacy_file
-
-        if not file_obj:
-            continue
-
-        if not _stored_file_exists(file_obj):
-            missing_files.append({
-                'name': req.name,
-                'stored_path': getattr(file_obj, 'name', ''),
-            })
-            continue
-
-        field_identifier = f"req_{req.id}"
-        icon_name = req.icon or 'description'
-        m_list.append({
-            'field_name': field_identifier,
-            'field': field_identifier,
-            'label': req.name,
-            'name': req.name,
-            'icon': icon_name,
-            'file': file_obj,
-            'req_id': req.id
-        })
-
-        file_ext = file_obj.name.split('.')[-1].lower() if '.' in file_obj.name else ''
-        s_files.append({
-            'name': req.name,
-            'url': file_obj.url,
-            'type': file_ext,
-            'icon': icon_name,
-        })
-
-    if include_missing:
-        return m_list, s_files, missing_files
-    return m_list, s_files
 
 
 import json
@@ -986,57 +868,6 @@ def get_templates_by_type(template_type):
     """根据模板类型获取活跃的模板列表"""
     return Template.objects.filter(template_type=template_type, is_active=True).order_by('-created_at')
 
-def upload_template(request):
-    """上传/更新材料要求的模板文件 - 干事和管理员可用"""
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以上传模板')
-        return redirect('clubs:index')
-
-    if request.method == 'POST':
-        requirement_id = request.POST.get('requirement_id')
-        action_type = request.POST.get('action_type')
-
-        if not requirement_id:
-             messages.error(request, '参数缺失')
-        else:
-            try:
-                req = MaterialRequirement.objects.get(pk=requirement_id)
-
-                if action_type == 'update_description':
-                    description = request.POST.get('description', '')
-                    req.description = description
-                    req.save()
-                    messages.success(request, f'"{req.name}" 描述更新成功！')
-                elif request.FILES.get('file'):
-                    file = request.FILES.get('file')
-                    req.template_file = file
-                    req.save()
-                    messages.success(request, f'"{req.name}" 模板更新成功！')
-                else:
-                    messages.warning(request, '未检测到有效操作')
-
-            except MaterialRequirement.DoesNotExist:
-                messages.error(request, '未找到指定的材料要求配置')
-            except Exception as e:
-                messages.error(request, f'操作失败: {str(e)}')
-
-        return redirect('clubs:upload_template')
-
-    # 获取所有活跃的材料要求
-    requirements = MaterialRequirement.objects.filter(is_active=True).order_by('request_type', 'order')
-
-    # 按类型分组
-    grouped_requirements = {}
-    for req in requirements:
-        req_type_display = req.get_request_type_display()
-        if req_type_display not in grouped_requirements:
-            grouped_requirements[req_type_display] = []
-        grouped_requirements[req_type_display].append(req)
-
-    context = {
-        'grouped_requirements': grouped_requirements,
-    }
-    return render(request, 'clubs/staff/upload_template.html', context)
 
 
 
@@ -1949,7 +1780,7 @@ def manage_users(request):
 @login_required(login_url=settings.LOGIN_URL)
 def staff_view_users(request):
     """干事查看用户列表 - 查看专用，无编辑权限"""
-    if not _is_staff(request.user):
+    if not is_staff_or_admin(request.user):
         messages.error(request, '仅干事可以查看用户列表')
         return redirect('clubs:index')
 
@@ -2519,244 +2350,124 @@ def change_staff_attributes(request, user_id):
 
 
 
+
 @login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['GET', 'POST'])
 def manage_smtp_config(request):
-    """管理SMTP邮箱配置"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以管理SMTP配置')
+        messages.error(request, '只有管理员可以管理 SMTP 配置')
         return redirect('clubs:index')
-
-    from .models import SMTPConfig
 
     if request.method == 'POST':
         action = request.POST.get('action', '')
         config_id = request.POST.get('config_id', '')
-
-        if action == 'create':
+        if action in ['create', 'edit']:
+            config = get_object_or_404(SMTPConfig, pk=config_id) if action == 'edit' else SMTPConfig()
             provider = request.POST.get('provider', '').strip()
             smtp_host = request.POST.get('smtp_host', '').strip()
             smtp_port = request.POST.get('smtp_port', '').strip()
             sender_email = request.POST.get('sender_email', '').strip()
             sender_password = request.POST.get('sender_password', '').strip()
-            use_tls = 'use_tls' in request.POST  # checkbox 未勾选时不会在 POST 中
-
-            errors = []
-            if not provider:
-                errors.append('邮箱服务商不能为空')
-            if not smtp_host:
-                errors.append('SMTP服务器地址不能为空')
-            if not smtp_port:
-                errors.append('SMTP端口不能为空')
-            if not sender_email:
-                errors.append('发送邮箱不能为空')
-            if not sender_password:
-                errors.append('邮箱密码/授权码不能为空')
-
+            if not provider or not smtp_host or not smtp_port or not sender_email:
+                messages.error(request, '请完整填写 SMTP 配置')
+                return redirect('clubs:manage_smtp_config')
             try:
-                if smtp_port:
-                    int(smtp_port)
+                config.smtp_port = int(smtp_port)
             except ValueError:
-                errors.append('SMTP端口必须是数字')
-
-            if errors:
-                configs = SMTPConfig.objects.all()
-                return render(request, 'clubs/admin/smtp_config.html', {
-                    'configs': configs,
-                    'errors': errors,
-                    'form_data': request.POST,
-                })
-
-            # 创建新配置时，取消其他配置的激活状态
+                messages.error(request, 'SMTP 端口必须是数字')
+                return redirect('clubs:manage_smtp_config')
             if request.POST.get('is_active') == 'on':
                 SMTPConfig.objects.all().update(is_active=False)
-
-            SMTPConfig.objects.create(
-                provider=provider,
-                smtp_host=smtp_host,
-                smtp_port=int(smtp_port),
-                sender_email=sender_email,
-                sender_password=sender_password,
-                use_tls=use_tls,
-                is_active=request.POST.get('is_active') == 'on'
-            )
-            messages.success(request, 'SMTP配置创建成功')
+            config.provider = provider
+            config.smtp_host = smtp_host
+            config.sender_email = sender_email
+            if sender_password:
+                config.sender_password = sender_password
+            config.use_tls = request.POST.get('use_tls') == 'on'
+            config.is_active = request.POST.get('is_active') == 'on'
+            config.save()
+            messages.success(request, 'SMTP 配置已保存')
             return redirect('clubs:manage_smtp_config')
-
-        elif action == 'delete':
-            config = get_object_or_404(SMTPConfig, pk=config_id)
-            config.delete()
-            messages.success(request, 'SMTP配置已删除')
+        if action == 'delete':
+            get_object_or_404(SMTPConfig, pk=config_id).delete()
+            messages.success(request, 'SMTP 配置已删除')
             return redirect('clubs:manage_smtp_config')
-
-        elif action == 'activate':
-            # 取消其他配置的激活状态
+        if action == 'activate':
             SMTPConfig.objects.all().update(is_active=False)
             config = get_object_or_404(SMTPConfig, pk=config_id)
             config.is_active = True
-            config.save()
-            messages.success(request, f'SMTP配置已激活：{config.sender_email}')
+            config.save(update_fields=['is_active'])
+            messages.success(request, 'SMTP 配置已启用')
             return redirect('clubs:manage_smtp_config')
-
-        elif action == 'edit':
+        if action == 'test_email':
             config = get_object_or_404(SMTPConfig, pk=config_id)
-
-            provider = request.POST.get('provider', '').strip()
-            smtp_host = request.POST.get('smtp_host', '').strip()
-            smtp_port = request.POST.get('smtp_port', '').strip()
-            sender_email = request.POST.get('sender_email', '').strip()
-            sender_password = request.POST.get('sender_password', '').strip()
-            use_tls = 'use_tls' in request.POST
-
-            errors = []
-            if not provider:
-                errors.append('邮箱服务商不能为空')
-            if not smtp_host:
-                errors.append('SMTP服务器地址不能为空')
-            if not smtp_port:
-                errors.append('SMTP端口不能为空')
-            if not sender_email:
-                errors.append('发送邮箱不能为空')
-
-            try:
-                if smtp_port:
-                    int(smtp_port)
-            except ValueError:
-                errors.append('SMTP端口必须是数字')
-
-            if errors:
-                configs = SMTPConfig.objects.all()
-                return render(request, 'clubs/admin/smtp_config.html', {
-                    'configs': configs,
-                    'errors': errors,
-                    'editing_config': config,
-                })
-
-            # 更新配置
-            config.provider = provider
-            config.smtp_host = smtp_host
-            config.smtp_port = int(smtp_port)
-            config.sender_email = sender_email
-            if sender_password:  # 只有填写了新密码才更新
-                config.sender_password = sender_password
-            config.use_tls = use_tls
-            config.save()
-
-            messages.success(request, 'SMTP配置更新成功')
-            return redirect('clubs:manage_smtp_config')
-
-        elif action == 'test_email':
-            # 发送测试邮件
             test_email = request.POST.get('test_email', '').strip()
             if not test_email:
-                messages.error(request, '请输入测试邮箱地址')
+                messages.error(request, '请填写测试收件邮箱')
                 return redirect('clubs:manage_smtp_config')
-
-            config = get_object_or_404(SMTPConfig, pk=config_id)
-
             from .email_utils import send_test_email_with_config
-
             success, msg = send_test_email_with_config(config, test_email)
-            if success:
-                messages.success(request, msg)
-            else:
-                messages.error(request, msg)
-
+            messages.success(request, msg) if success else messages.error(request, msg)
             return redirect('clubs:manage_smtp_config')
 
-    configs = SMTPConfig.objects.all()
-    context = {
-        'configs': configs,
-    }
-    return render(request, 'clubs/admin/smtp_config.html', context)
+    return render(request, 'clubs/admin/smtp_config.html', {'configs': SMTPConfig.objects.all()})
 
 
 
 
-def toggle_review_enabled(request, club_id):
-    """
-    切换社团的年审功能启用状态
-    """
-    # 检查用户权限 - 干事和管理员都可以操作
-    if not is_staff_or_admin(request.user):
-        return HttpResponseForbidden("您没有权限执行此操作")
+def _default_cycle_name(channel):
+    today = timezone.localdate()
+    if channel.cycle_type == 'year':
+        return f'{today.year}年'
+    if channel.cycle_type == 'month':
+        return f'{today.year}年{today.month:02d}月'
+    if channel.cycle_type == 'day':
+        return today.strftime('%Y-%m-%d')
+    return ''
 
-    try:
-        club = Club.objects.get(id=club_id)
-    except Club.DoesNotExist:
-        from django.http import Http404
-        return Http404("社团不存在")
-
-    # 切换年审启用状态
-    club.review_enabled = not club.review_enabled
-    club.save()
-
-    messages.success(request, f"社团年审功能已{'启用' if club.review_enabled else '禁用'}")
-    return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
 
 @login_required(login_url=settings.LOGIN_URL)
-def zip_materials(request, obj, materials, zip_filename, check_permission_func):
-    """通用的材料打包函数，将指定材料列表打包为zip文件并下载"""
-    import tempfile
-    import zipfile
-    import os
-    from django.http import FileResponse
-    import urllib.parse
+@require_http_methods(['POST'])
+def toggle_form_channel_cycle(request, channel_id):
+    if not is_staff_or_admin(request.user):
+        return HttpResponseForbidden("No permission")
 
-    # 检查权限
-    if not check_permission_func():
-        messages.error(request, '您没有权限下载此材料')
-        return redirect('clubs:index')
+    channel = get_object_or_404(FormChannel, pk=channel_id, allow_staff_toggle=True)
+    needs_cycle = channel.cycle_type != 'none' or channel.submission_policy == 'once_per_cycle'
+    if needs_cycle:
+        channel.is_active = True
+        channel.submission_policy = 'once_per_cycle'
+        channel.save(update_fields=['is_active', 'submission_policy', 'updated_at'])
+        active_cycle = channel.cycles.filter(is_active=True).order_by('-sequence', '-starts_at').first()
+        if active_cycle:
+            active_cycle.is_active = False
+            active_cycle.ends_at = timezone.now()
+            active_cycle.save(update_fields=['is_active', 'ends_at'])
+            messages.success(request, f"{channel.name} 已关闭：{active_cycle.name}")
+        else:
+            cycle = create_form_cycle(channel, name=_default_cycle_name(channel), user=request.user)
+            messages.success(request, f"{channel.name} 已开启：{cycle.name}")
+    else:
+        channel.is_active = not channel.is_active
+        channel.save(update_fields=['is_active', 'updated_at'])
+        messages.success(request, f"{channel.name} 已{'开启' if channel.is_active else '关闭'}")
+    return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
 
-    # 创建临时目录
-    temp_dir = tempfile.mkdtemp()
-    try:
-        # 创建zip文件
-        zip_path = os.path.join(temp_dir, zip_filename)
 
-        added_count = 0
-        missing_titles = []
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['POST'])
+def toggle_club_form_channel(request, channel_id, club_id):
+    if not is_staff_or_admin(request.user):
+        return HttpResponseForbidden("No permission")
 
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # 处理每个材料文件
-            for file_field, title in materials:
-                if not file_field or not hasattr(file_field, 'path'):
-                    continue
-
-                if not _stored_file_exists(file_field):
-                    missing_titles.append(str(title))
-                    continue
-
-                file_path = file_field.path
-                # 获取原始文件名和扩展名
-                original_filename = os.path.basename(file_path)
-                file_ext = os.path.splitext(original_filename)[1]
-
-                # 创建新的文件名，添加序号和标题
-                new_filename = f"{title}{file_ext}"
-
-                # 将文件添加到zip中
-                zipf.write(file_path, new_filename)
-                added_count += 1
-
-        if added_count == 0:
-            messages.error(request, '没有可下载的有效文件，可能原文件已被删除，请联系提交人重新上传。')
-            return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:index'))
-
-        if missing_titles:
-            messages.warning(
-                request,
-                f"部分文件已丢失，已跳过：{', '.join(missing_titles[:3])}{' ...' if len(missing_titles) > 3 else ''}"
-            )
-
-        # 创建HTTP响应
-        response = FileResponse(open(zip_path, 'rb'), content_type='application/zip')
-        response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'' + urllib.parse.quote(zip_filename)
-
-        return response
-    finally:
-        # 注意：这里我们不能直接删除temp_dir，因为FileResponse还在使用它
-        pass
+    channel = get_object_or_404(FormChannel, pk=channel_id, allow_staff_toggle=True)
+    club = get_object_or_404(Club, pk=club_id)
+    state, _ = FormChannelClubState.objects.get_or_create(channel=channel, club=club)
+    state.is_enabled = not state.is_enabled
+    state.updated_by = request.user
+    state.save()
+    messages.success(request, f"{channel.name} 对 {club.name} 已{'开启' if state.is_enabled else '关闭'}")
+    return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -2811,99 +2522,6 @@ def zip_download(request):
     return response
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(['POST'])
-def toggle_all_review_enabled(request):
-    """
-    切换所有社团的年审功能启用状态
-    """
-    # 检查用户权限 - 干事和管理员都可以操作
-    if not _is_staff(request.user) and not _is_admin(request.user):
-        return HttpResponseForbidden("您没有权限执行此操作")
-
-    # 获取所有社团
-    all_clubs = Club.objects.all()
-
-    if not all_clubs.exists():
-        messages.warning(request, '暂无社团，无需操作')
-        return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
-
-    # 检查是否所有社团都已开启
-    all_enabled = all_clubs.filter(review_enabled=True).count() == all_clubs.count()
-
-    # 切换状态：如果全部开启则关闭，否则开启
-    new_status = not all_enabled
-
-    # 更新所有社团的年审状态
-    Club.objects.update(review_enabled=new_status)
-
-    messages.success(request, f"所有社团年审功能已{'启用' if new_status else '禁用'}")
-    return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(['POST'])
-def toggle_registration_enabled(request):
-    """
-    统一开启/关闭社团注册功能
-    - 关闭时：关闭当前活跃的注册周期，禁用所有社团注册
-    - 开启时：创建新的注册周期，启用所有社团注册
-    """
-    # 检查用户权限 - 仅干事和管理员可以操作
-    if not is_staff_or_admin(request.user):
-        return HttpResponseForbidden("您没有权限执行此操作")
-
-    # 获取所有社团和当前活跃的注册周期
-    all_clubs = Club.objects.all()
-    review_snapshot = dict(all_clubs.values_list('id', 'review_enabled'))
-    active_period = RegistrationPeriod.objects.filter(is_active=True).first()
-
-    if active_period:
-        # 如果存在活跃周期，则关闭它并禁用所有社团的注册功能
-        active_period.is_active = False
-        active_period.end_date = timezone.now()
-        active_period.save()
-        Club.objects.update(registration_enabled=False)
-        messages.success(request, f"社团注册功能已关闭（第{active_period.period_number}次注册周期已结束）")
-    else:
-        # 如果不存在活跃周期，则创建新的周期并启用所有社团的注册功能
-        new_period = RegistrationPeriod.objects.create(
-            is_active=True,
-            created_by=request.user
-        )
-        Club.objects.update(registration_enabled=True)
-        messages.success(request, f"社团注册功能已开启（第{new_period.period_number}次注册周期已启动）")
-
-    review_after = dict(Club.objects.values_list('id', 'review_enabled'))
-    if review_after != review_snapshot:
-        recovery = []
-        for club in Club.objects.only('id', 'review_enabled'):
-            original = review_snapshot.get(club.id)
-            if original is not None and club.review_enabled != original:
-                club.review_enabled = original
-                recovery.append(club)
-        if recovery:
-            Club.objects.bulk_update(recovery, ['review_enabled'])
-            messages.warning(request, '检测到年审开关被意外联动，已自动恢复为原状态')
-
-    return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
-
-
-@login_required(login_url=settings.LOGIN_URL)
-
-
-
-@login_required(login_url=settings.LOGIN_URL)
-def toggle_club_registration_enabled(request, club_id):
-    """切换单个社团的注册开启状态"""
-    if not is_staff_or_admin(request.user):
-        return HttpResponseForbidden("您没有权限执行此操作")
-
-    club = get_object_or_404(Club, pk=club_id)
-    club.registration_enabled = not club.registration_enabled
-    club.save()
-    messages.success(request, f"社团注册功能已{'启用' if club.registration_enabled else '禁用'}：{club.name}")
-    return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
 
 
 def change_club_status(request, club_id):
@@ -3530,8 +3148,6 @@ def delete_room222_booking(request, booking_id):
 
 
 
-    # staff_review_history view removed as it's replaced by modal
-    # return render(request, 'clubs/staff/review_history.html', context)
 
 
 
@@ -3557,19 +3173,6 @@ def _audit_tab_url(tab):
     return tab.replace('_', '-')
 
 
-def _delete_uploaded_files_for_instance(instance):
-    for field in instance._meta.fields:
-        if not isinstance(field, FileField):
-            continue
-        uploaded_file = getattr(instance, field.name, None)
-        if uploaded_file:
-            uploaded_file.delete(save=False)
-
-    content_type = ContentType.objects.get_for_model(instance, for_concrete_model=False)
-    for submitted_file in SubmittedFile.objects.filter(content_type=content_type, object_id=instance.pk):
-        if submitted_file.file:
-            submitted_file.file.delete(save=False)
-        submitted_file.delete()
 
 
 
@@ -3624,125 +3227,12 @@ def edit_department_introduction(request):
 
 # ==================== 材料要求管理视图 ====================
 
-@login_required
-def manage_material_requirements(request):
-    """管理材料上传要求"""
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
-        return redirect('clubs:index')
-
-    requirements = MaterialRequirement.objects.all().order_by('request_type', 'order')
-
-    # 按请求类型分组
-    grouped_requirements = {}
-
-    # 初始化所有类型的分组
-    for code, name in MaterialRequirement.REQUEST_TYPE_CHOICES:
-        grouped_requirements[code] = {
-            'name': name,
-            'items': []
-        }
-
-    for req in requirements:
-        if req.request_type in grouped_requirements:
-            grouped_requirements[req.request_type]['items'].append(req)
-
-    context = {
-        'grouped_requirements': grouped_requirements,
-    }
-    return render(request, 'clubs/admin/material_requirements_list.html', context)
 
 
-@login_required
-def add_material_requirement(request):
-    """添加材料要求"""
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
-        return redirect('clubs:index')
-
-    if request.method == 'POST':
-        try:
-            request_type = request.POST.get('request_type')
-            name = request.POST.get('name')
-            icon = request.POST.get('icon', 'cloud_upload')
-            description = request.POST.get('description', '')
-            is_required = request.POST.get('is_required') == 'on'
-            allowed_extensions = request.POST.get('allowed_extensions')
-            max_size_mb = int(request.POST.get('max_size_mb', 10))
-            order = int(request.POST.get('order', 0))
-            is_active = request.POST.get('is_active') == 'on'
-            template_file = request.FILES.get('template_file')
-
-            MaterialRequirement.objects.create(
-                request_type=request_type,
-                name=name,
-                icon=icon,
-                description=description,
-                is_required=is_required,
-                allowed_extensions=allowed_extensions,
-                max_size_mb=max_size_mb,
-                order=order,
-                is_active=is_active,
-                template_file=template_file
-            )
-            messages.success(request, '添加成功')
-        except Exception as e:
-            messages.error(request, f'添加失败: {str(e)}')
-
-    return redirect('clubs:manage_material_requirements')
 
 
-@login_required
-def edit_material_requirement(request, req_id):
-    """编辑材料要求"""
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
-        return redirect('clubs:index')
-
-    req = get_object_or_404(MaterialRequirement, pk=req_id)
-
-    if request.method == 'POST':
-        try:
-            if request.POST.get('request_type'):
-                req.request_type = request.POST.get('request_type')
-
-            req.name = request.POST.get('name')
-            req.icon = request.POST.get('icon', 'cloud_upload')
-            req.description = request.POST.get('description', '')
-            req.is_required = request.POST.get('is_required') == 'on'
-            req.allowed_extensions = request.POST.get('allowed_extensions')
-            req.max_size_mb = int(request.POST.get('max_size_mb', 10))
-            req.order = int(request.POST.get('order', 0))
-            req.is_active = request.POST.get('is_active') == 'on'
-
-            if 'template_file' in request.FILES:
-                req.template_file = request.FILES['template_file']
-            elif request.POST.get('clear_template') == 'on':
-                req.template_file = None
-
-            req.save()
-
-            messages.success(request, '修改成功')
-        except Exception as e:
-            messages.error(request, f'修改失败: {str(e)}')
-
-    return redirect('clubs:manage_material_requirements')
 
 
-@login_required
-def delete_material_requirement(request, req_id):
-    """删除材料要求"""
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
-        return redirect('clubs:index')
-
-    req = get_object_or_404(MaterialRequirement, pk=req_id)
-
-    if request.method == 'POST':
-        req.delete()
-        messages.success(request, '删除成功')
-
-    return redirect('clubs:manage_material_requirements')
 
 
 @login_required
@@ -4434,7 +3924,11 @@ def admin_assign_presidents(request):
 # ==================== Dynamic form system ====================
 
 def _active_channels():
-    return FormChannel.objects.filter(is_active=True).exclude(slug='').order_by('order', 'id')
+    return (
+        FormChannel.objects.filter(is_active=True)
+        .exclude(slug='')
+        .order_by('order', 'id')
+    )
 
 
 def _get_channel(slug, active_only=True):
@@ -4442,6 +3936,42 @@ def _get_channel(slug, active_only=True):
     if active_only:
         qs = qs.filter(is_active=True)
     return get_object_or_404(qs, slug=slug)
+
+
+def _channel_enabled_for_club(channel, club):
+    state = FormChannelClubState.objects.filter(channel=channel, club=club).first()
+    return True if state is None else state.is_enabled
+
+
+def _current_cycle(channel):
+    if channel.submission_policy != 'once_per_cycle':
+        return None
+    return channel.cycles.filter(is_active=True).order_by('-sequence', '-starts_at').first()
+
+
+def _submission_policy_scope(channel, club, user=None):
+    cycle = _current_cycle(channel)
+    qs = FormSubmission.objects.filter(channel=channel, club=club)
+    if user is not None:
+        qs = qs.filter(submitter=user)
+    if channel.submission_policy == 'once_per_cycle':
+        if not cycle:
+            return None, qs.none(), '当前通道没有开启的周期'
+        qs = qs.filter(cycle=cycle)
+    return cycle, qs, ''
+
+
+def _can_create_submission(channel, club, user):
+    if not _channel_enabled_for_club(channel, club):
+        return False, None, '该社团暂未开放此提交通道'
+    cycle, scoped, error = _submission_policy_scope(channel, club, user)
+    if error:
+        return False, cycle, error
+    if channel.submission_policy in ['once_total', 'once_per_cycle']:
+        blocking = scoped.filter(status__in=['pending', 'approved']).order_by('-submitted_at').first()
+        if blocking:
+            return False, cycle, f'该通道已有{blocking.get_status_display()}提交，不能重复提交'
+    return True, cycle, ''
 
 
 def _field_input_name(field):
@@ -4536,12 +4066,16 @@ def _validate_dynamic_submission(channel, post, files):
     return fields, cleaned, upload_map, errors
 
 
-def _save_dynamic_submission(channel, club, user, fields, cleaned, upload_map):
-    previous_count = FormSubmission.objects.filter(channel=channel, club=club, submitter=user).count()
+def _save_dynamic_submission(channel, club, user, fields, cleaned, upload_map, cycle=None):
+    previous = FormSubmission.objects.filter(channel=channel, club=club, submitter=user)
+    if cycle:
+        previous = previous.filter(cycle=cycle)
+    previous_count = previous.count()
     submission = FormSubmission.objects.create(
         channel=channel,
         club=club,
         submitter=user,
+        cycle=cycle,
         resubmission_count=previous_count + 1,
     )
     for field in fields:
@@ -4564,38 +4098,7 @@ def _save_dynamic_submission(channel, club, user, fields, cleaned, upload_map):
 
 
 def _apply_builtin_action(submission):
-    action = submission.channel.builtin_action
-    if action == 'club_application':
-        club_name = submission.field_value('club_name')
-        if club_name and not Club.objects.filter(name=club_name).exists():
-            club = Club.objects.create(
-                name=club_name,
-                description=submission.field_value('club_description', ''),
-                founded_date=timezone.localdate(),
-                status='active',
-            )
-            Officer.objects.create(
-                club=club,
-                user_profile=submission.submitter.profile,
-                position='president',
-                appointed_date=timezone.localdate(),
-                is_current=True,
-            )
-    elif action == 'president_transition':
-        student_id = submission.field_value('new_president_student_id')
-        if student_id:
-            new_profile = UserProfile.objects.filter(student_id=student_id).first()
-            if new_profile:
-                Officer.objects.filter(club=submission.club, position='president', is_current=True).update(
-                    is_current=False,
-                    end_date=timezone.localdate(),
-                )
-                Officer.objects.update_or_create(
-                    club=submission.club,
-                    user_profile=new_profile,
-                    position='president',
-                    defaults={'appointed_date': timezone.localdate(), 'end_date': None, 'is_current': True},
-                )
+    apply_business_action(submission)
 
 
 def _submission_context(submission):
@@ -4622,13 +4125,18 @@ def submit_dynamic_form(request, channel_slug, club_id):
         messages.error(request, '只有该社团现任社长可以提交')
         return redirect('clubs:user_dashboard')
 
+    can_submit, cycle, policy_error = _can_create_submission(channel, club, request.user)
+    if not can_submit:
+        messages.error(request, policy_error)
+        return redirect('clubs:user_dashboard')
+
     if request.method == 'POST':
         fields, cleaned, upload_map, errors = _validate_dynamic_submission(channel, request.POST, request.FILES)
         if errors:
             for error in errors:
                 messages.error(request, error)
         else:
-            submission = _save_dynamic_submission(channel, club, request.user, fields, cleaned, upload_map)
+            submission = _save_dynamic_submission(channel, club, request.user, fields, cleaned, upload_map, cycle=cycle)
             messages.success(request, f'{channel.name} 已提交，等待审核')
             return redirect('clubs:approval_detail', item_type=channel.slug, item_id=submission.id)
     else:
@@ -4638,6 +4146,7 @@ def submit_dynamic_form(request, channel_slug, club_id):
         'channel': channel,
         'club': club,
         'fields': fields,
+        'cycle': cycle,
     })
 
 
@@ -4746,16 +4255,21 @@ def staff_review_form_submission(request, submission_id):
         if decision not in ['approved', 'rejected']:
             messages.error(request, '请选择有效审核结果')
         else:
-            submission.status = decision
-            submission.review_comment = comment
-            submission.reviewer = request.user
-            submission.reviewed_at = timezone.now()
-            submission.is_read = False
-            submission.save()
-            if decision == 'approved':
-                _apply_builtin_action(submission)
-            messages.success(request, '审核结果已保存')
-            return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
+            try:
+                with transaction.atomic():
+                    submission.status = decision
+                    submission.review_comment = comment
+                    submission.reviewer = request.user
+                    submission.reviewed_at = timezone.now()
+                    submission.is_read = False
+                    submission.save()
+                    if decision == 'approved':
+                        _apply_builtin_action(submission)
+            except BusinessActionError as exc:
+                messages.error(request, str(exc))
+            else:
+                messages.success(request, '审核结果已保存')
+                return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
     return render(request, 'clubs/staff/dynamic_submission_review.html', {
         'submission': submission,
         'rows': _submission_context(submission),
@@ -4783,15 +4297,19 @@ def manage_form_channels(request, channel_id=None):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以管理提交通道')
         return redirect('clubs:index')
-    channels = FormChannel.objects.all().prefetch_related('fields').order_by('order', 'id')
+    channels = FormChannel.objects.prefetch_related('fields', 'cycles').order_by('order', 'id')
     is_creating = request.GET.get('new') == '1'
     current = None if is_creating else (get_object_or_404(FormChannel, pk=channel_id) if channel_id else channels.first())
+    missing_fields = missing_required_field_keys(current) if current else []
     return render(request, 'clubs/admin/form_channels.html', {
         'channels': channels,
         'current': current,
         'is_creating': is_creating or current is None,
         'field_types': FormField.FIELD_TYPE_CHOICES,
         'builtin_actions': FormChannel.BUILTIN_ACTION_CHOICES,
+        'submission_policies': FormChannel.SUBMISSION_POLICY_CHOICES,
+        'cycle_types': FormChannel.CYCLE_TYPE_CHOICES,
+        'missing_required_fields': missing_fields,
     })
 
 
@@ -4807,8 +4325,16 @@ def save_form_channel(request, channel_id=None):
     channel.icon = request.POST.get('icon', 'description').strip() or 'description'
     channel.description = request.POST.get('description', '').strip()
     channel.builtin_action = request.POST.get('builtin_action', 'none')
+    channel.submission_policy = request.POST.get('submission_policy', 'repeatable')
+    channel.cycle_type = request.POST.get('cycle_type', 'none')
+    if channel.cycle_type != 'none':
+        channel.submission_policy = 'once_per_cycle'
+    elif channel.submission_policy == 'once_per_cycle':
+        channel.submission_policy = 'repeatable'
     channel.is_active = request.POST.get('is_active') == 'on'
     channel.is_builtin = request.POST.get('is_builtin') == 'on'
+    channel.show_unsubmitted_status = request.POST.get('show_unsubmitted_status') == 'on'
+    channel.allow_staff_toggle = request.POST.get('allow_staff_toggle') == 'on'
     try:
         channel.order = int(request.POST.get('order', '0') or 0)
     except ValueError:
@@ -4885,6 +4411,33 @@ def delete_form_field(request, channel_id, field_id):
 
 
 @login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def create_form_channel_cycle(request, channel_id):
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以管理周期')
+        return redirect('clubs:index')
+    channel = get_object_or_404(FormChannel, pk=channel_id)
+    name = request.POST.get('name', '').strip()
+    cycle = create_form_cycle(channel, name=name, user=request.user)
+    messages.success(request, f'周期已创建：{cycle.name}')
+    return redirect('clubs:manage_form_channels_detail', channel_id=channel_id)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def close_form_channel_cycle(request, channel_id, cycle_id):
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以管理周期')
+        return redirect('clubs:index')
+    cycle = get_object_or_404(FormCycle, pk=cycle_id, channel_id=channel_id)
+    cycle.is_active = False
+    cycle.ends_at = timezone.now()
+    cycle.save(update_fields=['is_active', 'ends_at'])
+    messages.success(request, f'周期已关闭：{cycle.name}')
+    return redirect('clubs:manage_form_channels_detail', channel_id=channel_id)
+
+
+@login_required(login_url=settings.LOGIN_URL)
 def admin_dashboard(request):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以访问此页面')
@@ -4919,18 +4472,6 @@ def admin_dashboard(request):
     })
 
 
-def _hydrate_activity(submission):
-    submission.activity_name = submission.field_value('activity_name')
-    submission.activity_type = submission.field_value('activity_type')
-    submission.activity_date = submission.field_value('activity_date')
-    submission.activity_time_start = submission.field_value('activity_time_start')
-    submission.activity_time_end = submission.field_value('activity_time_end')
-    submission.location = submission.field_value('location')
-    submission.description = submission.field_value('description')
-    submission.is_public = _coerce_bool_text(submission.field_value('is_public'))
-    submission.get_activity_type_display = lambda: submission.activity_type or '其他'
-    return submission
-
 
 @login_required
 def public_activities(request):
@@ -4939,15 +4480,14 @@ def public_activities(request):
         messages.error(request, '您没有权限访问此页面')
         return redirect('clubs:user_dashboard')
 
-    qs = FormSubmission.objects.filter(channel__builtin_action='activity_application', status='approved').select_related('club').order_by('-submitted_at')
+    qs = PublishedActivity.objects.select_related('club', 'source_submission').order_by('-published_at')
     if role == 'president':
-        club_ids = _get_president_club_ids(request.user)
-        qs = qs.filter(club_id__in=club_ids)
+        qs = qs.filter(club_id__in=_get_president_club_ids(request.user))
     elif role == 'member':
         member_club_ids = list(ClubMember.objects.filter(user_profile__user=request.user, status='active').values_list('club_id', flat=True))
-        qs = qs.filter(Q(club_id__in=member_club_ids) | Q(values__field__field_key='is_public', values__value_text__in=['\u662f', 'true', 'True', '1'])).distinct()
+        qs = qs.filter(Q(club_id__in=member_club_ids) | Q(is_public=True)).distinct()
 
-    activities = [_hydrate_activity(item) for item in qs]
+    activities = list(qs)
     search_query = request.GET.get('search', '').strip()
     if search_query:
         activities = [item for item in activities if search_query in item.activity_name or search_query in item.club.name]
@@ -4972,7 +4512,7 @@ def public_activities(request):
         'approved_activities': activities,
         'activities_by_type': dict(activities_by_type),
         'all_clubs': Club.objects.all().order_by('name'),
-        'activity_type_choices': [(value, value) for value in ['\u8bb2\u5ea7', '\u6bd4\u8d5b', '\u6f14\u51fa', '\u57f9\u8bad', '\u5fd7\u613f\u670d\u52a1', '\u5176\u4ed6']],
+        'activity_type_choices': PublishedActivity.ACTIVITY_TYPE_CHOICES,
         'club_filter': club_filter,
         'activity_type_filter': activity_type_filter,
         'date_filter': date_filter,
@@ -4986,9 +4526,10 @@ def public_activities(request):
 def register_activity(request, activity_id):
     if getattr(request.user.profile, 'role', None) != 'member':
         return JsonResponse({'success': False, 'error': '仅社员可以报名活动'}, status=403)
-    activity = get_object_or_404(FormSubmission, pk=activity_id, channel__builtin_action='activity_application', status='approved')
-    profile = request.user.profile
-    _, created = ActivityRegistration.objects.get_or_create(activity=activity, user_profile=profile)
+    activity = get_object_or_404(PublishedActivity, pk=activity_id)
+    if not activity.is_public and not ClubMember.objects.filter(user_profile=request.user.profile, club=activity.club, status='active').exists():
+        return JsonResponse({'success': False, 'error': '您不是该社团成员，无法报名'}, status=403)
+    _, created = ActivityRegistration.objects.get_or_create(activity=activity, user_profile=request.user.profile)
     if created:
         return JsonResponse({'success': True, 'registered': True})
     return JsonResponse({'success': False, 'error': '您已报名该活动'})

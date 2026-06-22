@@ -13,7 +13,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 import urllib.parse
 
-from .models import RoomBooking, Room, FormSubmission, ActivityRegistration
+from .models import RoomBooking, Room, FormSubmission, PublishedActivity
 from .views import is_staff_or_admin
 
 
@@ -237,7 +237,7 @@ def export_room_bookings_weekly(request):
 def export_activities(request):
     import csv
     from django.http import HttpResponse
-    activities = FormSubmission.objects.filter(channel__builtin_action='activity_application', status='approved').select_related('club')
+    activities = PublishedActivity.objects.select_related('club')
     response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
     response['Content-Disposition'] = 'attachment; filename=\"activities.csv\"'
     writer = csv.writer(response)
@@ -245,12 +245,12 @@ def export_activities(request):
     for item in activities:
         writer.writerow([
             item.club.name,
-            item.field_value('activity_name'),
-            item.field_value('activity_date'),
-            item.field_value('activity_time_start'),
-            item.field_value('activity_time_end'),
-            item.field_value('location'),
-            item.field_value('is_public'),
+            item.activity_name,
+            item.activity_date,
+            item.activity_time_start,
+            item.activity_time_end,
+            item.activity_location,
+            '是' if item.is_public else '否',
         ])
     return response
 

@@ -208,25 +208,7 @@
             <span class="material-icons">fact_check</span>提交内容
         </div>
         <div class="field-list">
-            {% for row in rows %}
-            <div class="field-item">
-                <div class="field-label">
-                    <span class="material-icons">{% if row.field.field_type == 'file' %}attach_file{% else %}notes{% endif %}</span>
-                    {{ row.field.label }}
-                </div>
-                <div class="field-value">
-                    {% if row.field.field_type == 'file' %}
-                        {% for uploaded in row.files %}
-                        <a class="file-link" href="{{ uploaded.file.url }}" target="_blank" rel="noopener">
-                            <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
-                        </a>{% if not forloop.last %}<br>{% endif %}
-                        {% empty %}未上传{% endfor %}
-                    {% else %}
-                        {{ row.value|default:"-" }}
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
+            {% include 'clubs/components/_dynamic_submission_fields.html' with rows=rows %}
         </div>
     </section>
 

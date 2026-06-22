@@ -372,45 +372,26 @@
                 <h3>{{ club_data.club.name }}</h3>
             </div>
             
-            {% if club_data.review_enabled %}
+            {% for card in club_data.status_cards %}
             <div class="club-info-item">
-                <span class="material-icons">assignment</span>
+                <span class="material-icons">{{ card.channel.icon }}</span>
                 <div class="club-info-content">
-                    <div class="club-info-label">年审状态</div>
+                    <div class="club-info-label">
+                        {{ card.channel.name }}
+                        {% if card.cycle %}<small>（{{ card.cycle.name }}）</small>{% endif %}
+                    </div>
                     <div class="club-info-value">
-                        {% if club_data.has_submitted_review %}
-                        <span class="status-badge success">
-                            <span class="material-icons">check_circle</span> 已提交
+                        <span class="status-badge {% if card.status_class == 'approved' %}success{% elif card.status_class == 'rejected' %}error{% else %}pending{% endif %}">
+                            <span class="material-icons">{% if card.status_class == 'approved' %}check_circle{% elif card.status_class == 'rejected' %}error{% else %}schedule{% endif %}</span>
+                            {{ card.status }}
                         </span>
-                        {% else %}
-                        <span class="status-badge pending">
-                            <span class="material-icons">schedule</span> 未提交
-                        </span>
+                        {% if card.unavailable_reason %}
+                        <span style="color: var(--md3-on-surface-variant); margin-left: 8px;">{{ card.unavailable_reason }}</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
-            {% endif %}
-            
-            {% if club_data.registration_enabled %}
-            <div class="club-info-item">
-                <span class="material-icons">add_circle</span>
-                <div class="club-info-content">
-                    <div class="club-info-label">社团注册</div>
-                    <div class="club-info-value">
-                        {% if club_data.has_submitted_registration %}
-                        <span class="status-badge success">
-                            <span class="material-icons">check_circle</span> 已提交
-                        </span>
-                        {% else %}
-                        <span class="status-badge pending">
-                            <span class="material-icons">schedule</span> 未提交
-                        </span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
+            {% endfor %}
             
             <div class="club-info-item">
                 <span class="material-icons">person</span>
@@ -455,9 +436,9 @@
                 <a href="{% url 'clubs:club_detail' club_data.club.id %}" class="btn btn-outlined">
                     <span class="material-icons">info</span> 详情
                 </a>
-                {% for channel in dynamic_channels %}
-                <a href="{% url 'clubs:submit_dynamic_form' channel.slug club_data.club.id %}" class="btn btn-primary">
-                    <span class="material-icons">{{ channel.icon }}</span> {{ channel.name }}
+                {% for card in club_data.action_cards %}
+                <a href="{% url 'clubs:submit_dynamic_form' card.channel.slug club_data.club.id %}" class="btn {% if card.can_submit %}btn-primary{% else %}btn-secondary disabled{% endif %}" {% if not card.can_submit %}aria-disabled="true" onclick="return false;"{% endif %}>
+                    <span class="material-icons">{{ card.channel.icon }}</span> {{ card.channel.name }}
                 </a>
                 {% endfor %}
             </div>

@@ -3,7 +3,6 @@ from django.urls import path, re_path
 from . import views
 from . import oobe_views
 from . import auth_views
-from . import api_views
 from . import export_views
 
 app_name = 'clubs'
@@ -12,7 +11,6 @@ urlpatterns = [
     path('oobe/', oobe_views.oobe_setup, name='oobe_setup'),
     path('oobe/test-email/', oobe_views.oobe_test_email, name='oobe_test_email'),
     # API endpoints
-    path('api/staff/review-history/<str:review_type>/', api_views.api_staff_review_history, name='api_staff_review_history'),
     path('api/notification-counts/', views.notification_counts, name='notification_counts'),
 
     # 公共页面
@@ -74,7 +72,6 @@ urlpatterns = [
     # 强制重置密码路由已移除，使用管理员重置密码表单：admin-panel/reset-user-password/
     path('staff/manage-clubs/', auth_views.manage_staff_clubs, name='manage_staff_clubs'),
     path('staff/view-users/', views.staff_view_users, name='staff_view_users'),
-    # path('staff/review-history/<str:review_type>/', views.staff_review_history, name='staff_review_history'),
     path('staff/form-submission/<int:submission_id>/review/', views.staff_review_form_submission, name='staff_review_form_submission'),
 
     # 统一压缩下载路由：/zip-download/?type=<type>&id=<id>
@@ -86,13 +83,10 @@ urlpatterns = [
     
     path('club/<int:club_id>/update-description/', views.update_club_description, name='update_club_description'),
     path('staff/direct-edit-club-info/<int:club_id>/', views.direct_edit_club_info, name='direct_edit_club_info'),
-    path('staff/toggle-review-enabled/<int:club_id>/', views.toggle_review_enabled, name='toggle_review_enabled'),
-    path('staff/toggle-club-registration-enabled/<int:club_id>/', views.toggle_club_registration_enabled, name='toggle_club_registration_enabled'),
-    path('staff/toggle-all-review-enabled/', views.toggle_all_review_enabled, name='toggle_all_review_enabled'),
-    path('staff/toggle-registration-enabled/', views.toggle_registration_enabled, name='toggle_registration_enabled'),
+    path('staff/form-channels/<int:channel_id>/toggle/', views.toggle_form_channel_cycle, name='toggle_form_channel_cycle'),
+    path('staff/form-channels/<int:channel_id>/club/<int:club_id>/toggle/', views.toggle_club_form_channel, name='toggle_club_form_channel'),
     path('staff/change-club-status/<int:club_id>/', views.change_club_status, name='change_club_status'),
     path('staff/delete-club/<int:club_id>/', views.delete_club, name='delete_club'),
-    path('staff/upload-template/', views.upload_template, name='upload_template'),
     
     # 社长换届申请路由
     
@@ -138,7 +132,8 @@ urlpatterns = [
     path('admin-panel/form-channels/<int:channel_id>/fields/save/', views.save_form_field, name='add_form_field'),
     path('admin-panel/form-channels/<int:channel_id>/fields/<int:field_id>/save/', views.save_form_field, name='edit_form_field'),
     path('admin-panel/form-channels/<int:channel_id>/fields/<int:field_id>/delete/', views.delete_form_field, name='delete_form_field'),
-    path('admin-panel/materials/', views.manage_form_channels, name='manage_material_requirements'),
+    path('admin-panel/form-channels/<int:channel_id>/cycles/create/', views.create_form_channel_cycle, name='create_form_channel_cycle'),
+    path('admin-panel/form-channels/<int:channel_id>/cycles/<int:cycle_id>/close/', views.close_form_channel_cycle, name='close_form_channel_cycle'),
 
     path('admin-panel/publish-announcement/', views.publish_announcement, name='publish_announcement'),
     path('admin-panel/delete-announcement/<int:announcement_id>/', views.delete_announcement, name='delete_announcement'),

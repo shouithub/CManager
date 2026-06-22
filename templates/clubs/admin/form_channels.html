@@ -615,9 +615,28 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <div class="field-group span-2">
+                        <label>提交策略</label>
+                        <select class="field-control" name="submission_policy">
+                            {% for value,label in submission_policies %}
+                            <option value="{{ value }}" {% if current.submission_policy == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field-group span-2">
+                        <label>周期判断方式</label>
+                        <select class="field-control" name="cycle_type">
+                            {% for value,label in cycle_types %}
+                            <option value="{{ value }}" {% if current.cycle_type == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="field-help">选择年份、月份、日期或轮次后，该通道会自动按每周期提交一次处理。</p>
+                    </div>
                     <div class="toggle-row span-2">
                         <label><input type="checkbox" name="is_active" {% if current.is_active %}checked{% endif %}>启用通道</label>
                         <label><input type="checkbox" name="is_builtin" {% if current.is_builtin %}checked{% endif %}>标记为内置默认</label>
+                        <label><input type="checkbox" name="show_unsubmitted_status" {% if current.show_unsubmitted_status %}checked{% endif %}>在我的社团显示未提交</label>
+                        <label><input type="checkbox" name="allow_staff_toggle" {% if current.allow_staff_toggle %}checked{% endif %}>允许社团管理页开关</label>
                     </div>
                     <div class="button-row span-2">
                         <button class="btn btn-primary" type="submit">
@@ -631,6 +650,33 @@
                         <span class="material-icons">delete</span>删除通道
                     </button>
                 </form>
+                {% if missing_required_fields %}
+                <div class="empty-state" style="text-align:left;color:var(--md3-error);">
+                    业务动作缺少字段：{{ missing_required_fields|join:", " }}。补齐字段前，审核通过会被阻止。
+                </div>
+                {% endif %}
+                <div class="field-group span-2">
+                    <label>周期管理</label>
+                    <form method="post" action="{% url 'clubs:create_form_channel_cycle' current.id %}" class="button-row">
+                        {% csrf_token %}
+                        <input class="field-control" name="name" placeholder="新周期名称，例如：2026年年审">
+                        <button class="btn btn-outlined" type="submit"><span class="material-icons">add</span>新建周期</button>
+                    </form>
+                    {% for cycle in current.cycles.all %}
+                    <div class="channel-meta" style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+                        <span>{{ cycle.name }} · 第{{ cycle.sequence }}期 · {% if cycle.is_active %}开启{% else %}已关闭{% endif %}</span>
+                        {% if cycle.is_active %}
+                        <form method="post" action="{% url 'clubs:close_form_channel_cycle' current.id cycle.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-soft-danger" type="submit">关闭</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="channel-meta">暂无周期。仅“每周期提交一次”的通道需要开启周期。</div>
+                    {% endfor %}
+                </div>
+
             </section>
 
             <div class="section-title">
@@ -877,9 +923,27 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <div class="field-group span-2">
+                        <label>提交策略</label>
+                        <select class="field-control" name="submission_policy">
+                            {% for value,label in submission_policies %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field-group span-2">
+                        <label>周期判断方式</label>
+                        <select class="field-control" name="cycle_type">
+                            {% for value,label in cycle_types %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="toggle-row span-2">
                         <label><input type="checkbox" name="is_active" checked>启用通道</label>
                         <label><input type="checkbox" name="is_builtin">标记为内置默认</label>
+                        <label><input type="checkbox" name="show_unsubmitted_status">在我的社团显示未提交</label>
+                        <label><input type="checkbox" name="allow_staff_toggle">允许社团管理页开关</label>
                     </div>
                     <div class="button-row span-2">
                         <button class="btn btn-primary" type="submit">

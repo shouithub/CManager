@@ -65,7 +65,11 @@ def audit_center_counts(request):
     if cached is not None:
         return cached
 
-    channels = list(FormChannel.objects.filter(is_active=True).exclude(slug='').order_by('order', 'id'))
+    channels = list(
+        FormChannel.objects.filter(is_active=True)
+        .exclude(slug='')
+        .order_by('order', 'id')
+    )
     audit_channels = {}
     approval_channels = {}
     audit_total = 0
@@ -97,7 +101,10 @@ def audit_center_counts(request):
             approval_total += count
 
     result = {
-        'audit_center_counts': {'total': audit_total, 'channels': audit_channels},
+        'audit_center_counts': {
+            'total': audit_total,
+            'channels': audit_channels,
+        },
         'unread_approval_counts': {'total': approval_total, 'channels': approval_channels},
         'active_form_channels': channels,
         'sidebar_primary_club': primary_club,
