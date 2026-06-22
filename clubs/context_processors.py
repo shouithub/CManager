@@ -1,20 +1,11 @@
-"""上下文处理器，用于在所有模板中提供全局变量"""
+"""上下文处理器：动态表单导航、审核数量和站点设置。"""
 import os
 from django.conf import settings
 from django.core.cache import cache
-from .models import (
-    ReviewSubmission, 
-    ClubRegistration, 
-    ClubRegistrationRequest, 
-    Reimbursement, 
-    ActivityApplication, 
-    PresidentTransition,
-    Officer
-)
+from .models import FormChannel, FormSubmission, Officer
 
 
 def _get_president_club_ids(user):
-    """获取社长可访问社团ID（通过 Officer 表查询）。"""
     return list(Officer.objects.filter(
         user_profile__user=user,
         position='president',
@@ -23,7 +14,6 @@ def _get_president_club_ids(user):
 
 
 def site_settings(request):
-    """全局站点设置，如favicon和字体"""
     base_media_url = f"/{settings.MEDIA_URL.lstrip('/')}"
     if not base_media_url.endswith('/'):
         base_media_url = f"{base_media_url}/"
@@ -31,16 +21,9 @@ def site_settings(request):
     favicon_preview_path = os.path.join(settings.MEDIA_ROOT, 'site', 'favicon.png')
     import time
     cache_buster = int(time.time())
-    if os.path.exists(favicon_path):
-        site_favicon_url = f"{base_media_url}site/favicon.ico?v={cache_buster}"
-    else:
-        site_favicon_url = None
-    if os.path.exists(favicon_preview_path):
-        site_favicon_preview_url = f"{base_media_url}site/favicon.png?v={cache_buster}"
-    else:
-        site_favicon_preview_url = None
+    site_favicon_url = f"{base_media_url}site/favicon.ico?v={cache_buster}" if os.path.exists(favicon_path) else None
+    site_favicon_preview_url = f"{base_media_url}site/favicon.png?v={cache_buster}" if os.path.exists(favicon_preview_path) else None
 
-    # 字体设置
     try:
         from .models import SiteSettings
         font_cfg = SiteSettings.get_settings()
@@ -62,133 +45,67 @@ def site_settings(request):
 
 
 def audit_center_counts(request):
-    """为审核中心菜单项提供待审核申请的数目"""
-    empty_result = {
-        'audit_center_counts': {
-            'annual_review': 0,
-            'registration': 0,
-            'application': 0,
-            'reimbursement': 0,
-            'activity_application': 0,
-            'president_transition': 0,
-        },
-        'unread_approval_counts': {
-            'annual_review': 0,
-            'registration': 0,
-            'application': 0,
-            'reimbursement': 0,
-            'activity': 0,
-            'transition': 0,
-            'total': 0
-        }
+    empty = {
+        'audit_center_counts': {'total': 0, 'channels': {}},
+        'unread_approval_counts': {'total': 0, 'channels': {}},
+        'active_form_channels': [],
+        'sidebar_primary_club': None,
+        'sidebar_president_clubs': [],
     }
-
     if not request.user.is_authenticated:
-        return empty_result
-    
-    # 检查用户是否为干事或管理员
-    try:
-        user_role = request.user.profile.role
-        is_staff_or_admin = user_role in ['staff', 'admin']
-        is_president = user_role == 'president'
-    except:
-        is_staff_or_admin = False
-        is_president = False
+        return empty
 
-    cache_key = f"audit_center_counts:{request.user.id}:{user_role if 'user_role' in locals() else 'unknown'}:{int(request.user.is_superuser)}"
-    cached_result = cache.get(cache_key)
-    if cached_result is not None:
-        return cached_result
-    
-    # 计算干事端审核中心数量
-    if is_staff_or_admin or request.user.is_superuser:
-        audit_counts = {
-            'annual_review': ReviewSubmission.objects.filter(status='pending').count(),
-            'registration': ClubRegistration.objects.filter(status='pending').count(),
-            'application': ClubRegistrationRequest.objects.filter(status='pending').count(),
-            'reimbursement': Reimbursement.objects.filter(status='pending').count(),
-            'activity_application': ActivityApplication.objects.filter(staff_approved__isnull=True).count(),
-            'president_transition': PresidentTransition.objects.filter(status='pending').count(),
-        }
-    else:
-        audit_counts = {
-            'annual_review': 0,
-            'registration': 0,
-            'application': 0,
-            'reimbursement': 0,
-            'activity_application': 0,
-            'president_transition': 0,
-        }
-    
-    # 计算社长端审批中心数量
-    if is_president:
-        try:
-            president_clubs = _get_president_club_ids(request.user)
-            
-            annual_review_count = ReviewSubmission.objects.filter(
-                club__in=president_clubs, 
-                status__in=['pending', 'rejected']
+    try:
+        role = request.user.profile.role
+    except Exception:
+        return empty
+
+    cache_key = f"dynamic_nav_counts:{request.user.id}:{role}:{int(request.user.is_superuser)}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    channels = list(FormChannel.objects.filter(is_active=True).exclude(slug='').order_by('order', 'id'))
+    audit_channels = {}
+    approval_channels = {}
+    audit_total = 0
+    approval_total = 0
+
+    if role in ['staff', 'admin'] or request.user.is_superuser:
+        for channel in channels:
+            count = FormSubmission.objects.filter(channel=channel, status='pending').count()
+            audit_channels[channel.slug] = count
+            audit_total += count
+
+    president_clubs = []
+    primary_club = None
+    if role == 'president':
+        president_clubs = list(Officer.objects.filter(
+            user_profile__user=request.user,
+            position='president',
+            is_current=True,
+        ).select_related('club').order_by('club__name'))
+        primary_club = president_clubs[0].club if president_clubs else None
+        club_ids = [item.club_id for item in president_clubs]
+        for channel in channels:
+            count = FormSubmission.objects.filter(
+                channel=channel,
+                club_id__in=club_ids,
+                status__in=['pending', 'rejected'],
             ).count()
-            registration_count = ClubRegistration.objects.filter(
-                club__in=president_clubs, 
-                status__in=['pending', 'rejected']
-            ).count()
-            application_count = ClubRegistrationRequest.objects.filter(
-                requested_by=request.user, 
-                status__in=['pending', 'rejected']
-            ).count()
-            reimbursement_count = Reimbursement.objects.filter(
-                club__in=president_clubs, 
-                status__in=['pending', 'rejected', 'partially_rejected']
-            ).count()
-            activity_count = ActivityApplication.objects.filter(
-                club__in=president_clubs, 
-                status__in=['pending', 'rejected']
-            ).count()
-            transition_count = PresidentTransition.objects.filter(
-                club__in=president_clubs, 
-                status__in=['pending', 'rejected']
-            ).count()
-            
-            approval_counts = {
-                'annual_review': annual_review_count,
-                'registration': registration_count,
-                'application': application_count,
-                'reimbursement': reimbursement_count,
-                'activity': activity_count,
-                'transition': transition_count,
-                'total': annual_review_count + registration_count + application_count + reimbursement_count + activity_count + transition_count
-            }
-        except:
-            approval_counts = {
-                'annual_review': 0,
-                'registration': 0,
-                'application': 0,
-                'reimbursement': 0,
-                'activity': 0,
-                'transition': 0,
-                'total': 0
-            }
-    else:
-        approval_counts = {
-            'annual_review': 0,
-            'registration': 0,
-            'application': 0,
-            'reimbursement': 0,
-            'activity': 0,
-            'transition': 0,
-            'total': 0
-        }
+            approval_channels[channel.slug] = count
+            approval_total += count
 
     result = {
-        'audit_center_counts': audit_counts,
-        'unread_approval_counts': approval_counts
+        'audit_center_counts': {'total': audit_total, 'channels': audit_channels},
+        'unread_approval_counts': {'total': approval_total, 'channels': approval_channels},
+        'active_form_channels': channels,
+        'sidebar_primary_club': primary_club,
+        'sidebar_president_clubs': [item.club for item in president_clubs],
     }
-
     cache.set(cache_key, result, timeout=10)
     return result
 
 
 def unread_approvals(request):
-    """兼容旧的上下文处理器名，返回审核/审批相关计数"""
     return audit_center_counts(request)

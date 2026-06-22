@@ -1,0 +1,284 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}{{ channel.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .submit-page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 110px);
+        box-sizing: border-box;
+    }
+
+    .page-header,
+    .form-card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .page-header {
+        display: flex;
+        gap: var(--md3-spacing-lg);
+        align-items: center;
+        padding: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .page-icon {
+        width: 52px;
+        height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        flex: 0 0 auto;
+    }
+
+    .page-icon .material-icons {
+        font-size: 1.9rem;
+    }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs);
+        font-size: 1.55rem;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: var(--md3-on-surface-variant);
+        line-height: 1.5;
+    }
+
+    .form-card {
+        padding: var(--md3-spacing-xl);
+    }
+
+    .field-block {
+        padding: var(--md3-spacing-lg);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-low);
+        margin-bottom: var(--md3-spacing-lg);
+    }
+
+    .field-label {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-on-surface);
+        font-weight: 700;
+    }
+
+    .required {
+        color: var(--md3-error);
+    }
+
+    .field-help {
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .field-control {
+        width: 100%;
+        min-height: 48px;
+        padding: 12px 14px;
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        box-sizing: border-box;
+        font: inherit;
+    }
+
+    textarea.field-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .field-control:focus {
+        outline: 2px solid color-mix(in srgb, var(--md3-primary) 22%, transparent);
+        border-color: var(--md3-primary);
+    }
+
+    .option-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .option-chip {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: 0 var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        border: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface);
+        font-weight: 600;
+    }
+
+    .option-chip input {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--md3-primary);
+    }
+
+    .example-link,
+    .file-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-primary);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.92rem;
+    }
+
+    .file-hint {
+        margin: var(--md3-spacing-sm) 0 0;
+        color: var(--md3-on-surface-variant);
+        font-weight: 500;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-xl);
+    }
+
+    .empty-state {
+        padding: var(--md3-spacing-xl);
+        text-align: center;
+        color: var(--md3-on-surface-variant);
+    }
+
+    @media (max-width: 768px) {
+        .submit-page {
+            padding: var(--md3-spacing-lg);
+            padding-bottom: 110px;
+        }
+
+        .page-header {
+            align-items: flex-start;
+            padding: var(--md3-spacing-lg);
+        }
+
+        .page-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .form-card {
+            padding: var(--md3-spacing-lg);
+        }
+
+        .field-block {
+            padding: var(--md3-spacing-md);
+        }
+
+        .option-grid {
+            flex-direction: column;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .form-actions .btn,
+        .form-actions button,
+        .form-actions a {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="submit-page">
+    <section class="page-header">
+        <span class="page-icon"><span class="material-icons">{{ channel.icon }}</span></span>
+        <div>
+            <h1>{{ channel.name }}</h1>
+            <p>{{ club.name }}</p>
+            {% if channel.description %}<p>{{ channel.description }}</p>{% endif %}
+        </div>
+    </section>
+
+    <form method="post" enctype="multipart/form-data" class="form-card">
+        {% csrf_token %}
+        {% for field in fields %}
+        <section class="field-block">
+            <label class="field-label">
+                <span class="material-icons">{% if field.field_type == 'file' %}attach_file{% elif field.field_type == 'date' %}event{% elif field.field_type == 'time' %}schedule{% else %}edit_note{% endif %}</span>
+                {{ field.label }}{% if field.required %}<span class="required">*</span>{% endif %}
+            </label>
+            {% if field.help_text %}<div class="field-help">{{ field.help_text }}</div>{% endif %}
+            {% if field.example_file %}
+            <a class="example-link" href="{{ field.example_file.url }}" target="_blank" rel="noopener">
+                <span class="material-icons">download</span>示例文件
+            </a>
+            {% endif %}
+
+            {% if field.field_type == 'textarea' %}
+            <textarea name="field_{{ field.id }}" class="field-control" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %}></textarea>
+            {% elif field.field_type == 'number' %}
+            <input type="number" name="field_{{ field.id }}" class="field-control" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %}>
+            {% elif field.field_type == 'date' %}
+            <input type="date" name="field_{{ field.id }}" class="field-control" {% if field.required %}required{% endif %}>
+            {% elif field.field_type == 'time' %}
+            <input type="time" name="field_{{ field.id }}" class="field-control" {% if field.required %}required{% endif %}>
+            {% elif field.field_type == 'select' %}
+            <select name="field_{{ field.id }}" class="field-control" {% if field.required %}required{% endif %}>
+                <option value="">请选择</option>
+                {% for option in field.options %}<option value="{{ option }}">{{ option }}</option>{% endfor %}
+            </select>
+            {% elif field.field_type == 'radio' %}
+            <div class="option-grid">
+                {% for option in field.options %}
+                <label class="option-chip"><input type="radio" name="field_{{ field.id }}" value="{{ option }}" {% if field.required %}required{% endif %}>{{ option }}</label>
+                {% endfor %}
+            </div>
+            {% elif field.field_type == 'checkbox' %}
+            <div class="option-grid">
+                {% for option in field.options %}
+                <label class="option-chip"><input type="checkbox" name="field_{{ field.id }}" value="{{ option }}">{{ option }}</label>
+                {% endfor %}
+            </div>
+            {% elif field.field_type == 'file' %}
+            <input type="file" name="field_{{ field.id }}" class="field-control" {% if field.required %}required{% endif %}>
+            <div class="file-hint">
+                <span class="material-icons">info</span>允许：{{ field.allowed_extensions|join:", " }}；最大 {{ field.max_size_mb }}MB
+            </div>
+            {% else %}
+            <input type="text" name="field_{{ field.id }}" class="field-control" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %}>
+            {% endif %}
+        </section>
+        {% empty %}
+        <div class="empty-state">该通道还没有启用字段，请联系管理员配置。</div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-secondary">
+                <span class="material-icons">arrow_back</span>返回
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <span class="material-icons">send</span>提交
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

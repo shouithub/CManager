@@ -269,25 +269,6 @@ def review_xxx(request, id):
 
 ---
 
-## 需要更新的页面列表
-
-以下页面需要使用新组件重构：
-
-### 审核中心页面 (staff/)
-1. `review_activity_application.html` - 活动申请审核
-2. `review_reimbursement.html` - 报销申请审核
-3. `review_submission.html` - 年度审核提交
-4. `review_club_registration.html` - 社团申请审核
-5. `review_club_registration_submission.html` - 社团注册审核
-6. `review_request.html` - 通用请求审核
-7. `review_detail.html` - 审核详情
-8. `review_president_transition.html` ✅ 已完成
-
-### 审批中心页面 (user/)
-需要检查是否有类似结构的页面需要更新。
-
----
-
 ## 注意事项
 
 1. 组件已包含完整的 CSS 样式，无需在父页面重复定义

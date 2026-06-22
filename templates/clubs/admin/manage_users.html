@@ -16,6 +16,7 @@
     .page-header {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: var(--md3-spacing-lg);
         margin-bottom: var(--md3-spacing-2xl);
         padding: var(--md3-spacing-xl);
@@ -31,6 +32,7 @@
 
     .page-header-content {
         flex: 1;
+        min-width: 240px;
     }
 
     .page-header h1 {
@@ -38,6 +40,9 @@
         font-size: 1.75rem;
         font-weight: 600;
         color: var(--md3-on-surface);
+        line-height: 1.2;
+        letter-spacing: 0;
+        word-break: keep-all;
     }
 
     .page-header .subtitle {
@@ -59,6 +64,21 @@
     
     .stats-badge .material-icons {
         font-size: 1.25rem;
+    }
+
+    .page-header-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-md);
+        min-width: min(100%, 380px);
+    }
+
+    .page-header-actions .btn-action,
+    .page-header-actions .stats-badge {
+        min-height: 44px;
+        box-sizing: border-box;
     }
 
     .bulk-modal-overlay {
@@ -477,6 +497,18 @@
             width: 100%;
             justify-content: center;
         }
+
+        .page-header-actions {
+            width: 100%;
+            min-width: 0;
+            justify-content: stretch;
+        }
+
+        .page-header-actions .btn-action,
+        .page-header-actions .stats-badge {
+            flex: 1 1 160px;
+            justify-content: center;
+        }
         
         .search-form {
             grid-template-columns: 1fr;
@@ -488,6 +520,13 @@
         
         .data-table {
             min-width: 1000px;
+        }
+    }
+
+    @media (max-width: 1120px) {
+        .page-header-actions {
+            width: 100%;
+            justify-content: flex-start;
         }
     }
 </style>
@@ -502,7 +541,7 @@
             <h1>系统用户管理</h1>
             <p class="subtitle">管理所有用户账户和权限</p>
         </div>
-        <div style="display: flex; align-items: center; gap: var(--md3-spacing-md);">
+        <div class="page-header-actions">
             <button type="button" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;" onclick="openBulkOpsModal()">
                 批量操作
             </button>
@@ -660,7 +699,7 @@
                     <td>
                         <div class="action-buttons">
                             {% if user.profile.role == 'staff' and user.profile.status == 'pending' %}
-                                <a href="{% url 'clubs:admin_review' user.id %}?type=staff_registration" class="btn-action review">
+                                <a href="{% url 'clubs:review_staff_registration' user.id %}" class="btn-action review">
                                     <span class="material-icons">assignment</span>
                                     审核
                                 </a>

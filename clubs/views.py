@@ -17,7 +17,8 @@ from django.utils import timezone
 from datetime import datetime
 from django.conf import settings
 from django.http import HttpResponse, FileResponse, HttpResponseForbidden, JsonResponse
-from django.db.models import Q, Prefetch
+from django.db import IntegrityError
+from django.db.models import Q, Prefetch, FileField, Count
 from django.core.cache import cache
 from collections import defaultdict
 import os
@@ -28,7 +29,7 @@ import base64
 import tempfile
 import csv
 import io
-from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, ReimbursementHistory, ClubRegistrationRequest, ClubApplicationReview, ClubRegistration, Template, Announcement, StaffClubRelation, SubmissionReview, ClubRegistrationReview, RegistrationPeriod, PresidentTransition, ActivityApplication, SMTPConfig, CarouselImage, ActivityApplicationHistory, MaterialRequirement, SubmittedFile, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken, ActivityRegistration
+from .models import Club, Officer, UserProfile, FormChannel, FormField, FormSubmission, FormFieldValue, FormUploadedFile, Template, Announcement, StaffClubRelation, RegistrationPeriod, SMTPConfig, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken, ActivityRegistration
 from django.contrib.contenttypes.models import ContentType
 import shutil
 from PIL import Image
@@ -41,30 +42,30 @@ def rename_uploaded_file(file, club_name, request_type, material_type):
     """
     为上传的文件重命名为：社团名-请求类型-文件类型
     例如：社团名-年审-自查表.docx
-    
+
     Args:
         file: 上传的文件对象
         club_name: 社团名称
         request_type: 请求类型（'年审', '报销', '注册'等）
         material_type: 文件类型（'自查表', '报销凭证'等）
-    
+
     Returns:
         修改后的文件对象
     """
     if not file:
         return file
-    
+
     # 获取文件扩展名
     file_ext = os.path.splitext(file.name)[1]
-    
+
     # 生成新的文件名
     new_filename = f"{club_name}-{request_type}-{material_type}{file_ext}"
-    
+
     # 清理特殊字符，避免文件系统问题
     invalid_chars = '<>:"/\\|?*'
     for char in invalid_chars:
         new_filename = new_filename.replace(char, '_')
-    
+
     # 修改文件名
     file.name = new_filename
     return file
@@ -324,7 +325,7 @@ import json
 @login_required(login_url=settings.LOGIN_URL)
 def download_file(request):
     """自定义文件下载视图，用于处理文件下载并重命名
-    
+
     GET参数:
         file_path: 文件的相对路径（相对于MEDIA_ROOT）
         filename: 下载时使用的文件名
@@ -332,7 +333,7 @@ def download_file(request):
     # 从GET请求中获取参数
     file_path = request.GET.get('file_path', '')
     filename = request.GET.get('filename', '')
-    
+
     # 添加调试信息
     debug_info = {
         'received_params': {
@@ -346,16 +347,16 @@ def download_file(request):
             'BASE_DIR': str(getattr(settings, 'BASE_DIR', 'Not set')),
         }
     }
-    
+
     debug_info['processing_steps'].append(f"Received parameters - file_path: {file_path}, filename: {filename}")
-    
+
     # 检查必要参数
     if not file_path:
         debug_info['processing_steps'].append('Missing file_path parameter')
         response = HttpResponse("缺少文件路径参数", status=400)
         response['X-Debug-Info'] = json.dumps(debug_info, ensure_ascii=False)
         return response
-    
+
     # 构建完整的文件路径
     # 清理file_path，移除可能的查询参数或片段
     if '?' in file_path:
@@ -364,7 +365,7 @@ def download_file(request):
     if '#' in file_path:
         file_path = file_path.split('#')[0]
         debug_info['processing_steps'].append(f"Removed fragment: {file_path}")
-    
+
     # 如果file_path包含完整URL，提取相对路径
     if file_path.startswith('http://') or file_path.startswith('https://'):
         # 移除域名部分，获取相对路径
@@ -372,7 +373,7 @@ def download_file(request):
         parsed_url = urlparse(file_path)
         file_path = parsed_url.path
         debug_info['processing_steps'].append(f"Extracted path from URL: {file_path}")
-        
+
         # 如果路径以MEDIA_URL开头，移除它
         media_url = settings.MEDIA_URL
         if file_path.startswith(media_url):
@@ -385,16 +386,16 @@ def download_file(request):
         # 如果路径以斜杠开头，移除它
         file_path = file_path[1:]
         debug_info['processing_steps'].append(f"Removed leading slash: {file_path}")
-    
+
     # 特别处理以media/开头的路径
     if file_path.startswith('media/'):
         file_path = file_path[6:]  # 移除'media/'前缀
         debug_info['processing_steps'].append(f"Removed media/ prefix: {file_path}")
-    
+
     full_path = os.path.join(settings.MEDIA_ROOT, file_path)
     debug_info['processing_steps'].append(f"Constructed full path: {full_path}")
     debug_info['processing_steps'].append(f"MEDIA_ROOT: {settings.MEDIA_ROOT}")
-    
+
     # 检查文件是否存在
     if not os.path.exists(full_path):
         debug_info['processing_steps'].append(f"File not found at primary path: {full_path}")
@@ -409,9 +410,9 @@ def download_file(request):
             response = HttpResponse(json.dumps(debug_info, ensure_ascii=False, indent=2), content_type='application/json', status=404)
             response['X-Debug-Info'] = json.dumps(debug_info, ensure_ascii=False)
             return response
-    
+
     debug_info['processing_steps'].append(f"File exists: {full_path}")
-    
+
     # 获取文件大小
     try:
         file_size = os.path.getsize(full_path)
@@ -419,7 +420,7 @@ def download_file(request):
     except Exception as e:
         debug_info['processing_steps'].append(f"Error getting file size: {str(e)}")
         file_size = None
-    
+
     # 如果没有提供文件名，使用原始文件名
     if not filename:
         filename = os.path.basename(full_path)
@@ -428,34 +429,34 @@ def download_file(request):
         # 确保文件名是安全的（移除路径分隔符）
         filename = os.path.basename(filename)
         debug_info['processing_steps'].append(f"Using provided filename: {filename}")
-    
+
     # 添加最终调试信息
     debug_info['processing_steps'].append(f"Final filename: {filename}")
-    
+
     # 创建文件响应
     try:
         # 打开文件并创建响应
         with open(full_path, 'rb') as f:
             response = HttpResponse(f.read(), content_type='application/octet-stream')
-            
+
             # 处理文件名编码以支持中文
             ascii_filename = filename.encode('ascii', 'ignore').decode('ascii')
             utf8_filename = filename.encode('utf-8')
-            
+
             # 设置Content-Disposition头以指定下载文件名
             response['Content-Disposition'] = f"attachment; filename*=UTF-8''{urllib.parse.quote(utf8_filename)}"
             debug_info['processing_steps'].append(f"Set Content-Disposition: attachment; filename*=UTF-8''{urllib.parse.quote(utf8_filename)}")
-            
+
             # 添加文件信息到响应头
             if file_size:
                 response['Content-Length'] = str(file_size)
                 debug_info['processing_steps'].append(f"Set Content-Length: {file_size}")
-            
+
             # 添加调试信息到响应头
             response['X-Debug-Info'] = json.dumps(debug_info, ensure_ascii=False)
-            
+
             return response
-            
+
     except Exception as e:
         debug_info['processing_steps'].append(f"Error opening file: {str(e)}")
         response = HttpResponse(json.dumps(debug_info, ensure_ascii=False, indent=2), content_type='application/json', status=500)
@@ -469,7 +470,7 @@ def user_detail(request, user_id):
     """用户详情页 - 显示用户公开信息及关联社团/干事"""
     target_user = get_object_or_404(User, pk=user_id)
     from .models import StaffClubRelation, Officer
-    
+
     context = {
         'target_user': target_user,
         'responsible_clubs': [],
@@ -478,26 +479,26 @@ def user_detail(request, user_id):
         'responsible_staff_list': [],
         'is_staff_of_viewing_president': False,
     }
-    
+
     try:
         profile = target_user.profile
-        
+
         # 检查是否为当前查看者(社长)负责的社团的干事
         if request.user.is_authenticated and hasattr(request.user, 'profile') and request.user.profile.role == 'president':
             if profile.role == 'staff':
                 # 获取该干事负责的社团
                 staff_club_ids = StaffClubRelation.objects.filter(
-                    staff=profile, 
+                    staff=profile,
                     is_active=True
                 ).values_list('club_id', flat=True)
-                
+
                 # 获取当前用户(社长)负责的社团
                 president_club_ids = Officer.objects.filter(
                     user_profile=request.user.profile,
                     position='president',
                     is_current=True
                 ).values_list('club_id', flat=True)
-                
+
                 # 检查是否有交集
                 if set(staff_club_ids) & set(president_club_ids):
                     context['is_staff_of_viewing_president'] = True
@@ -508,7 +509,7 @@ def user_detail(request, user_id):
                 staff=profile,
                 is_active=True
             ).select_related('club')
-            
+
         # 如果是社长，获取所属社团及对应的负责干事
         if profile.role == 'president':
             # 获取当前担任职位的社团
@@ -517,14 +518,14 @@ def user_detail(request, user_id):
                 is_current=True
             ).select_related('club')
             context['affiliated_clubs'] = officer_positions
-            
+
             # 获取这些社团对应的负责干事
             club_ids = officer_positions.values_list('club_id', flat=True)
             staff_relations = StaffClubRelation.objects.filter(
                 club_id__in=club_ids,
                 is_active=True
             ).select_related('staff', 'staff__user').distinct()
-            
+
             staff_by_club = {}
             staff_seen_by_club = {}
             for relation in staff_relations:
@@ -544,10 +545,10 @@ def user_detail(request, user_id):
                 }
                 for officer in officer_positions
             ]
-            
+
     except UserProfile.DoesNotExist:
         pass
-        
+
     return render(request, 'clubs/user_detail.html', context)
 
 
@@ -676,7 +677,7 @@ def club_detail(request, club_id):
     club = get_object_or_404(Club, pk=club_id)
     officers = Officer.objects.filter(club=club, is_current=True)
     memberships = ClubMember.objects.filter(club=club).select_related('user_profile__user').order_by('-joined_at')
-    
+
     # 检查当前用户是否为该社团的社长
     is_president = False
     is_staff = False
@@ -688,13 +689,13 @@ def club_detail(request, club_id):
             position='president',
             is_current=True
         ).exists()
-        
+
         # 检查是否为干事或管理员
         try:
             is_staff = request.user.profile.role in ['staff', 'admin']
         except:
             is_staff = False
-    
+
     context = {
         'club': club,
         'officers': officers,
@@ -724,11 +725,11 @@ def generate_member_join_token(request, club_id):
     try:
         minutes = int(request.POST.get('minutes', 10))
         max_uses_str = request.POST.get('max_uses', '1')
-        
+
         # 验证有效时长范围
         if minutes < 1 or minutes > 43200:  # 最多30天
             return JsonResponse({'success': False, 'message': '有效时长必须在1-43200分钟之间'}, status=400)
-        
+
         # 解析使用次数
         if max_uses_str == 'unlimited':
             max_uses = None
@@ -746,6 +747,7 @@ def generate_member_join_token(request, club_id):
     join_path = reverse('clubs:member_join_by_token', args=[token.code])
     join_url = _build_external_url(request, join_path)
     qr_data_uri = _make_qr_data_uri(join_url)
+    qr_error = '' if qr_data_uri else '二维码图片生成失败，请确认已安装 qrcode[pil] 依赖'
 
     uses_info = '不限次数' if max_uses is None else f'{max_uses}次'
     return JsonResponse({
@@ -756,6 +758,7 @@ def generate_member_join_token(request, club_id):
         'join_path': join_path,
         'qr_payload': join_url,
         'qr_data_uri': qr_data_uri,
+        'qr_error': qr_error,
         'uses_info': uses_info,
     })
 
@@ -947,1381 +950,17 @@ def member_join_by_token(request, token_code):
     })
 
 
-@login_required(login_url='clubs:login')
-@require_http_methods(["GET", "POST"])
-def register_club(request):
-    """社团注册申请 - 仅社长可用（需要干事审核批准）"""
-    if not _is_president(request.user):
-        messages.error(request, '仅社长可以注册社团')
-        return redirect('clubs:index')
-    
-    # 获取当前用户的实名信息
-    try:
-        current_user_profile = request.user.profile
-    except UserProfile.DoesNotExist:
-        messages.error(request, '用户实名信息未配置，请联系管理员')
-        return redirect('clubs:user_dashboard')
-    
-    # 获取所有其他社长的用户信息，允许选择其他用户作为申请人
-    other_presidents = UserProfile.objects.filter(role='president').exclude(user=request.user).select_related('user')
-    
-    # 获取社团创建模板
-    registration_templates = Template.objects.filter(template_type='club_creation', is_active=True)
-    
-    # 获取材料要求
-    requirements = MaterialRequirement.objects.filter(
-        request_type='club_application', 
-        is_active=True
-    ).order_by('order')
-    
-    if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        description = request.POST.get('description', '').strip()
-        founded_date = request.POST.get('founded_date', '')
-        members_count = request.POST.get('members_count', '').strip()
-        president_profile_id = request.POST.get('president_profile_id', '')
-        
-        # 验证
-        errors = []
-        if not name:
-            errors.append('社团名称不能为空')
-        if Club.objects.filter(name=name).exists():
-            errors.append('社团名称已存在')
-        if ClubRegistrationRequest.objects.filter(club_name=name, status='pending').exists():
-            errors.append('该社团已有待审核的注册申请')
-        if not founded_date:
-            errors.append('成立日期不能为空')
-        if not members_count:
-            errors.append('社团人数不能为空')
-        else:
-            try:
-                members_count = int(members_count)
-                if members_count <= 0:
-                    errors.append('社团人数必须大于0')
-            except ValueError:
-                errors.append('社团人数必须是数字')
-        
-        # 验证上传的文件（动态材料）
-        uploaded_files_map = {} # req.id -> file_obj
-        
-        for req in requirements:
-            file_key = f'material_{req.id}'
-            file_obj = request.FILES.get(file_key)
-            
-            if req.is_required and not file_obj:
-                errors.append(f'请上传{req.name}')
-                continue
-                
-            if file_obj:
-                # 验证文件类型
-                if req.allowed_extensions:
-                    allowed_exts = [ext.strip().lower() for ext in req.allowed_extensions.split(',')]
-                    file_ext = os.path.splitext(file_obj.name)[1].lower()
-                    if file_ext not in allowed_exts:
-                        errors.append(f'{req.name}格式不正确，支持的格式: {req.allowed_extensions}')
-                
-                # 验证文件大小
-                if req.max_size_mb > 0:
-                    if file_obj.size > req.max_size_mb * 1024 * 1024:
-                        errors.append(f'{req.name}文件过大，最大允许{req.max_size_mb}MB')
-                
-                # 重命名文件 (使用 helper)
-                file_obj = rename_uploaded_file(file_obj, name, '社团申请', req.name)
-                
-                uploaded_files_map[req.id] = file_obj
-        
-        # 确定申请人的实名信息
-        if president_profile_id:
-            # 选择其他用户
-            try:
-                president_profile = UserProfile.objects.get(id=president_profile_id)
-                if president_profile.role != 'president':
-                    errors.append('所选用户不是社长')
-            except UserProfile.DoesNotExist:
-                errors.append('所选用户不存在')
-        else:
-            # 使用当前用户
-            president_profile = current_user_profile
-        
-        if errors:
-            context = {
-                'errors': errors,
-                'form_data': request.POST,
-                'current_user_profile': current_user_profile,
-                'other_presidents': other_presidents,
-                'registration_templates': registration_templates,
-                'requirements': requirements,
-            }
-            return render(request, 'clubs/user/register_club.html', context)
-        
-        # 创建社团注册申请（待审核）
-        registration_request = ClubRegistrationRequest.objects.create(
-            club_name=name,
-            description=description,
-            founded_date=founded_date,
-            members_count=members_count,
-            president_name=president_profile.real_name,
-            president_id=president_profile.student_id,
-            president_email=president_profile.user.email,
-            requested_by=request.user,
-            status='pending'
-        )
-        
-        # 创建 SubmittedFile 记录
-        content_type = ContentType.objects.get_for_model(ClubRegistrationRequest)
-        for req in requirements:
-            if req.id in uploaded_files_map:
-                SubmittedFile.objects.create(
-                    content_type=content_type,
-                    object_id=registration_request.id,
-                    requirement=req,
-                    file=uploaded_files_map[req.id]
-                )
-        
-        messages.success(request, f'社团注册申请已提交，等待干事审核！')
-        return redirect('clubs:user_dashboard')
-    
-    context = {
-        'current_user_profile': current_user_profile,
-        'other_presidents': other_presidents,
-        'registration_templates': registration_templates,
-        'requirements': requirements,
-    }
-    return render(request, 'clubs/user/register_club.html', context)
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(["GET", "POST"])
-def edit_rejected_review(request, club_id):
-    # 获取查询参数
-    request_id = request.GET.get('request_id')
-    if not request_id:
-        messages.error(request, '缺少请求ID参数')
-        return redirect('clubs:user_dashboard')
-    """统一处理修改被拒绝材料的请求 - 仅社长可用
-    支持的请求类型：
-    - club_application: 社团申请
-    - club_registration: 社团注册
-    - review: 社团年审
-    - club_info_change: 社团信息变更
-    """
-    
-    # 获取请求类型
-    request_type = request.GET.get('type', 'review')
-    
-    request_type_to_req_type = {
-        'club_application': 'club_application',
-        'club_registration': 'club_registration',
-        'review': 'annual_review',
-        'reimbursement': 'reimbursement',
-        'activity_application': 'activity_application',
-        'president_transition': 'president_transition',
-    }
 
-    def _token_matches_requirement(token, requirement):
-        if token == f'req_{requirement.id}':
-            return True
-        if requirement.legacy_field_name and token == requirement.legacy_field_name:
-            return True
-        return False
 
-    def _build_rejected_material_items(target_obj, reqs, rejected_tokens):
-        items = []
-        if not target_obj:
-            return items
 
-        try:
-            content_type = ContentType.objects.get_for_model(target_obj)
-            submitted_files = SubmittedFile.objects.filter(
-                content_type=content_type,
-                object_id=target_obj.id,
-            )
-            file_map = {sf.requirement_id: sf.file for sf in submitted_files}
-        except Exception:
-            file_map = {}
 
-        for req in reqs:
-            include_item = (not rejected_tokens) or any(_token_matches_requirement(token, req) for token in rejected_tokens)
-            if not include_item:
-                continue
 
-            file_obj = file_map.get(req.id)
-            if not file_obj and req.legacy_field_name and hasattr(target_obj, req.legacy_field_name):
-                legacy_file = getattr(target_obj, req.legacy_field_name)
-                if legacy_file:
-                    file_obj = legacy_file
 
-            items.append({
-                'name': req.name,
-                'icon': req.icon or 'description',
-                'file': file_obj,
-            })
 
-        return items
 
-    # 对于社团申请类型，不需要检查是否是社长（因为申请时还没有社团）
-    if request_type == 'club_application':
-        # 社团申请只需要检查是否是申请人本人
-        application = get_object_or_404(ClubRegistrationRequest, pk=request_id)
-        if application.requested_by != request.user:
-            messages.error(request, '您没有权限修改此申请')
-            return redirect('clubs:user_dashboard')
-    else:
-        # 其他类型需要检查是否是社长
-        if not _is_president(request.user):
-            messages.error(request, '仅社长可以修改被拒绝的申请材料')
-            return redirect('clubs:index')
-        
-        club = get_object_or_404(Club, pk=club_id)
-        
-        # 检查权限 - 只能修改自己社团的申请
-        is_club_president = Officer.objects.filter(
-            user_profile__user=request.user,
-            club=club,
-            position='president',
-            is_current=True
-        ).exists()
-        
-        if not is_club_president:
-            messages.error(request, '您没有权限修改此社团的申请材料')
-            return redirect('clubs:user_dashboard')
-    
-    # 根据请求类型获取对应的对象和数据
-    requirements = []
-    rejected_materials = []
-    rejected_reasons = []
 
-    if request_type == 'club_application':
-        # 处理社团申请重新提交（application 已在权限检查时获取）
-        
-        # 只有被拒绝的申请才能重新提交
-        if application.status != 'rejected':
-            messages.error(request, '只有被拒绝的申请才能重新提交')
-            return redirect('clubs:approval_center', tab='application')
-        
-        # 检查是否已经被修改提交过（通过检查是否已有新的pending申请）
-        newer_application = ClubRegistrationRequest.objects.filter(
-            requested_by=request.user,
-            club_name=application.club_name,
-            submitted_at__gt=application.submitted_at
-        ).exists()
-        
-        if newer_application:
-            messages.error(request, '该申请已被修改提交，不允许再次修改之前的请求')
-            return redirect('clubs:approval_center', tab='application')
-        
-        # 获取社团创建模板
-        registration_templates = Template.objects.filter(template_type='club_creation', is_active=True)
-
-        requirements = MaterialRequirement.objects.filter(
-            request_type='club_application',
-            is_active=True,
-        ).order_by('order')
-        
-        # 获取被拒绝的材料列表
-        review = application.reviews.filter(status='rejected').last()
-        if review:
-            rejected_materials = review.rejected_materials
-            if review.comment:
-                rejected_reasons.append(review.comment)
-
-        if not rejected_materials and requirements:
-            rejected_materials = [f'req_{req.id}' for req in requirements if req.is_required]
-            if not rejected_materials:
-                rejected_materials = [f'req_{req.id}' for req in requirements]
-
-        rejected_material_items = _build_rejected_material_items(application, requirements, set(rejected_materials))
-            
-        context = {
-            'application': application,
-            'registration_templates': registration_templates,
-            'requirements': requirements,
-            'rejected_materials': rejected_materials,
-            'rejected_material_items': rejected_material_items,
-            'rejected_reasons': rejected_reasons,
-            'review_type': 'club_application',
-            'club_id_param': 0,  # 社团申请时还没有club，使用0作为占位符
-        }
-        
-    elif request_type == 'club_registration':
-        # 处理社团注册重新提交
-        registration = get_object_or_404(ClubRegistration, pk=request_id, club=club)
-        
-        # 只有被拒绝的申请才能重新提交
-        if registration.status != 'rejected':
-            messages.error(request, '只有被拒绝的申请才能重新提交')
-            return redirect('clubs:approval_center', tab='registration')
-        
-        # 检查是否已经被修改提交过（通过检查是否已有更新的pending申请）
-        newer_registration = ClubRegistration.objects.filter(
-            club=registration.club,
-            registration_period=registration.registration_period,
-            submitted_at__gt=registration.submitted_at
-        ).exists()
-        
-        if newer_registration:
-            messages.error(request, '该申请已被修改提交，不允许再次修改之前的请求')
-            return redirect('clubs:approval_center', tab='registration')
-        
-        # 获取所有注册相关的模板
-        registration_templates = Template.objects.filter(template_type__startswith='registration_').order_by('template_type')
-
-        requirements = MaterialRequirement.objects.filter(
-            request_type='club_registration',
-            is_active=True,
-        ).order_by('order')
-        
-        # 获取被拒绝的材料列表
-        review = registration.reviews.filter(status='rejected').last()
-        if review:
-            rejected_materials = review.rejected_materials
-
-        rejected_reviews = registration.reviews.filter(status='rejected').order_by('-reviewed_at')
-        for rejected_review in rejected_reviews:
-            if rejected_review.comment:
-                rejected_reasons.append(rejected_review.comment)
-
-        if not rejected_materials and requirements:
-            rejected_materials = [f'req_{req.id}' for req in requirements if req.is_required]
-            if not rejected_materials:
-                rejected_materials = [f'req_{req.id}' for req in requirements]
-
-        rejected_material_items = _build_rejected_material_items(registration, requirements, set(rejected_materials))
-        
-        context = {
-            'club': club,
-            'registration': registration,
-            'registration_templates': registration_templates,
-            'requirements': requirements,
-            'rejected_materials': rejected_materials,
-            'rejected_material_items': rejected_material_items,
-            'rejected_reasons': rejected_reasons,
-            'review_type': 'club_registration',
-            'club_id_param': club.id,
-        }
-        
-    elif request_type == 'review':
-        # 处理年审材料重新提交
-        submission = get_object_or_404(ReviewSubmission, pk=request_id, club=club, status='rejected')
-
-        requirements = MaterialRequirement.objects.filter(
-            request_type='annual_review',
-            is_active=True,
-        ).order_by('order')
-        
-        # 检查是否已经被修改提交过（通过检查是否已有该年份的更新提交）
-        newer_submission = ReviewSubmission.objects.filter(
-            club=submission.club,
-            submission_year=submission.submission_year,
-            submitted_at__gt=submission.submitted_at
-        ).exists()
-        
-        if newer_submission:
-            messages.error(request, '该申请已被修改提交，不允许再次修改之前的请求')
-            return redirect('clubs:approval_center', tab='annual_review')
-        
-        is_resubmission = True
-        
-
-        # 收集被拒绝的材料列表
-        review_comments = []
-        # 同时包含被拒绝和部分拒绝的审核记录
-        reviews = SubmissionReview.objects.filter(submission=submission, status__in=['rejected', 'partially_rejected'])
-        for review in reviews:
-            if review.rejected_materials:
-                rejected_materials.extend(review.rejected_materials)
-            # 收集审核意见
-            if review.comment:
-                review_comments.append(review.comment)
-                rejected_reasons.append(review.comment)
-        # 去重
-        rejected_materials = list(set(rejected_materials))
-        
-        # 如果没有具体的被拒绝材料列表，但有审核意见，添加提示
-        if not rejected_materials and review_comments:
-            # 提供一个通用提示，让用户查看审核意见
-            pass
-
-        if not rejected_materials and requirements:
-            rejected_materials = [f'req_{req.id}' for req in requirements if req.is_required]
-            if not rejected_materials:
-                rejected_materials = [f'req_{req.id}' for req in requirements]
-
-        rejected_material_items = _build_rejected_material_items(submission, requirements, set(rejected_materials))
-        
-        context = {
-            'club': club,
-
-            'is_resubmission': is_resubmission,
-            'rejected_submission': submission,
-            'requirements': requirements,
-            'rejected_materials': rejected_materials,
-            'rejected_material_items': rejected_material_items,
-            'rejected_reasons': rejected_reasons,
-            'review_comments': review_comments,  # 添加审核意见到上下文
-            'review_type': 'review',
-            'club_id_param': club.id,
-        }
-    
-    elif request_type == 'reimbursement':
-        # 处理报销重新提交
-        reimbursement = get_object_or_404(Reimbursement, pk=request_id, club=club)
-        
-        # 只有被拒绝的申请才能重新提交
-        if reimbursement.status != 'rejected':
-            messages.error(request, '只有被拒绝的报销申请才能重新提交')
-            return redirect('clubs:view_reimbursements', club_id=club.id)  # type: ignore[attr-defined]
-        
-        # 获取可用模板
-        reimbursement_templates = Template.objects.filter(template_type='reimbursement', is_active=True)
-
-        requirements = MaterialRequirement.objects.filter(
-            request_type='reimbursement',
-            is_active=True,
-        ).order_by('order')
-        rejected_materials = [f'req_{req.id}' for req in requirements if req.is_required]
-        if not rejected_materials:
-            rejected_materials = [f'req_{req.id}' for req in requirements]
-
-        if reimbursement.reviewer_comment:
-            rejected_reasons.append(reimbursement.reviewer_comment)
-
-        rejected_material_items = _build_rejected_material_items(reimbursement, requirements, set(rejected_materials))
-        
-        context = {
-            'club': club,
-            'reimbursement': reimbursement,
-            'templates': reimbursement_templates,
-            'requirements': requirements,
-            'rejected_materials': rejected_materials,
-            'rejected_material_items': rejected_material_items,
-            'rejected_reasons': rejected_reasons,
-            'review_type': 'reimbursement',
-            'club_id_param': club.id,
-        }
-    
-    elif request_type == 'activity_application':
-        # 处理活动申请重新提交
-        activity = get_object_or_404(ActivityApplication, pk=request_id, club=club)
-        
-        # 只有被拒绝的申请才能重新提交
-        if activity.status != 'rejected':
-            messages.error(request, '只有被拒绝的活动申请才能重新提交')
-            return redirect('clubs:approval_center', tab='activity_application')
-
-        requirements = MaterialRequirement.objects.filter(
-            request_type='activity_application',
-            is_active=True,
-        ).order_by('order')
-        rejected_materials = [f'req_{req.id}' for req in requirements if req.is_required]
-        if not rejected_materials:
-            rejected_materials = [f'req_{req.id}' for req in requirements]
-
-        if activity.staff_comment:
-            rejected_reasons.append(activity.staff_comment)
-        elif activity.reviewer_comment:
-            rejected_reasons.append(activity.reviewer_comment)
-
-        history_reject = ActivityApplicationHistory.objects.filter(
-            activity_application=activity,
-            status='rejected'
-        ).order_by('-attempt_number').first()
-        if history_reject and history_reject.reviewer_comment and history_reject.reviewer_comment not in rejected_reasons:
-            rejected_reasons.append(history_reject.reviewer_comment)
-
-        rejected_material_items = _build_rejected_material_items(activity, requirements, set(rejected_materials))
-        
-        context = {
-            'club': club,
-            'activity': activity,
-            'requirements': requirements,
-            'rejected_materials': rejected_materials,
-            'rejected_material_items': rejected_material_items,
-            'rejected_reasons': rejected_reasons,
-            'review_type': 'activity_application',
-            'club_id_param': club.id,
-        }
-    
-    elif request_type == 'president_transition':
-        # 处理社长换届申请重新提交
-        transition = get_object_or_404(PresidentTransition, pk=request_id, club=club)
-        
-        # 只有被拒绝的申请才能重新提交
-        if transition.status != 'rejected':
-            messages.error(request, '只有被拒绝的换届申请才能重新提交')
-            return redirect('clubs:user_dashboard')
-        
-        # 获取当前社团的所有干部（用于选择新社长）
-        officers = Officer.objects.filter(club=club, is_current=True).exclude(position='president')
-
-        requirements = MaterialRequirement.objects.filter(
-            request_type='president_transition',
-            is_active=True,
-        ).order_by('order')
-        rejected_materials = [f'req_{req.id}' for req in requirements if req.is_required]
-        if not rejected_materials:
-            rejected_materials = [f'req_{req.id}' for req in requirements]
-
-        if transition.reviewer_comment:
-            rejected_reasons.append(transition.reviewer_comment)
-
-        rejected_material_items = _build_rejected_material_items(transition, requirements, set(rejected_materials))
-        
-        context = {
-            'club': club,
-            'transition': transition,
-            'officers': officers,
-            'requirements': requirements,
-            'rejected_materials': rejected_materials,
-            'rejected_material_items': rejected_material_items,
-            'rejected_reasons': rejected_reasons,
-            'review_type': 'president_transition',
-            'club_id_param': club.id,
-        }
-    
-    if request.method == 'POST':
-        if request_type in request_type_to_req_type:
-            req_type = request_type_to_req_type[request_type]
-            requirements = MaterialRequirement.objects.filter(request_type=req_type, is_active=True).order_by('order')
-
-            target_obj = None
-            if request_type == 'club_application':
-                target_obj = application
-            elif request_type == 'club_registration':
-                target_obj = registration
-            elif request_type == 'review':
-                target_obj = submission
-            elif request_type == 'reimbursement':
-                target_obj = reimbursement
-            elif request_type == 'activity_application':
-                target_obj = activity
-            elif request_type == 'president_transition':
-                target_obj = transition
-
-            rejected_tokens = set(rejected_materials) if 'rejected_materials' in locals() and rejected_materials else set()
-            uploaded_by_req = {}
-            errors = []
-
-            def _extract_file_for_req(req):
-                candidates = [f'req_{req.id}', f'material_{req.id}']
-                if req.legacy_field_name:
-                    candidates.append(req.legacy_field_name)
-                for name in candidates:
-                    file_obj = request.FILES.get(name)
-                    if file_obj:
-                        return file_obj
-                return None
-
-            for req in requirements:
-                file_obj = _extract_file_for_req(req)
-                uploaded_by_req[req.id] = file_obj
-
-                req_is_rejected = any(_token_matches_requirement(token, req) for token in rejected_tokens)
-                should_require_upload = req.is_required and (not rejected_tokens or req_is_rejected)
-
-                if should_require_upload and not file_obj:
-                    errors.append(f'{req.name}不能为空')
-                    continue
-
-                if file_obj:
-                    allowed_exts = [ext.strip().lower() for ext in req.allowed_extensions.split(',') if ext.strip()]
-                    ext = os.path.splitext(file_obj.name)[1].lower()
-                    if allowed_exts and ext not in allowed_exts:
-                        errors.append(f'{req.name}必须是以下格式: {req.allowed_extensions}')
-                    if file_obj.size > req.max_size_mb * 1024 * 1024:
-                        errors.append(f'{req.name}文件大小不能超过{req.max_size_mb}MB')
-
-            if request_type == 'reimbursement':
-                submission_date = request.POST.get('submission_date', '')
-                reimbursement_amount = request.POST.get('reimbursement_amount', '')
-                description = request.POST.get('description', '').strip()
-                if not submission_date:
-                    errors.append('报销日期不能为空')
-                if not reimbursement_amount:
-                    errors.append('报销金额不能为空')
-                if not description:
-                    errors.append('报销说明不能为空')
-
-            if errors:
-                context['errors'] = errors
-                return render(request, 'clubs/user/edit_rejected_review.html', context)
-
-            if request_type == 'reimbursement':
-                target_obj.submission_date = request.POST.get('submission_date', target_obj.submission_date)
-                target_obj.reimbursement_amount = request.POST.get('reimbursement_amount', target_obj.reimbursement_amount)
-                target_obj.description = request.POST.get('description', target_obj.description)
-
-            content_type = ContentType.objects.get_for_model(target_obj)
-            club_name_for_file = club.name if 'club' in locals() else getattr(target_obj, 'club_name', '申请')
-
-            for req in requirements:
-                file_obj = uploaded_by_req.get(req.id)
-                if not file_obj:
-                    continue
-
-                file_obj = rename_uploaded_file(file_obj, club_name_for_file, '申请', req.name)
-
-                if req.legacy_field_name and hasattr(target_obj, req.legacy_field_name):
-                    setattr(target_obj, req.legacy_field_name, file_obj)
-
-                SubmittedFile.objects.update_or_create(
-                    content_type=content_type,
-                    object_id=target_obj.id,
-                    requirement=req,
-                    defaults={'file': file_obj}
-                )
-
-            if hasattr(target_obj, 'status'):
-                target_obj.status = 'pending'
-            if hasattr(target_obj, 'reviewed_at'):
-                target_obj.reviewed_at = None
-            if hasattr(target_obj, 'reviewer_comment'):
-                target_obj.reviewer_comment = ''
-            if hasattr(target_obj, 'reviewer'):
-                target_obj.reviewer = None
-            if hasattr(target_obj, 'review_count'):
-                target_obj.review_count = 0
-            if hasattr(target_obj, 'resubmission_attempt'):
-                target_obj.resubmission_attempt = (target_obj.resubmission_attempt or 0) + 1
-
-            target_obj.save()
-
-            # 年审类型：兼容旧逻辑，删除旧审核记录（SubmissionReview无submission_attempt筛选支持）
-            if request_type == 'review':
-                SubmissionReview.objects.filter(submission=target_obj, submission_attempt__lt=target_obj.resubmission_attempt).delete()
-
-            redirect_tab_map = {
-                'club_application': ('clubs:approval_center', {'tab': 'application'}),
-                'club_registration': ('clubs:approval_center', {'tab': 'registration'}),
-                'review': ('clubs:approval_center', {'tab': 'annual_review'}),
-                'reimbursement': ('clubs:approval_center', {'tab': 'reimbursement'}),
-                'activity_application': ('clubs:approval_center', {'tab': 'activity_application'}),
-                'president_transition': ('clubs:approval_center', {'tab': 'president_transition'}),
-            }
-            msg_map = {
-                'club_application': '社团申请已重新提交，等待审核',
-                'club_registration': '社团注册申请已重新提交，等待审核',
-                'review': '年审材料已重新提交，等待审核',
-                'reimbursement': '报销申请已重新提交，等待审核',
-                'activity_application': '活动申请已重新提交，等待审核',
-                'president_transition': '换届申请已重新提交，等待审核',
-            }
-            messages.success(request, msg_map.get(request_type, '申请已重新提交'))
-            route_name, params = redirect_tab_map[request_type]
-            return redirect(route_name, **params)
-    
-    # GET请求时渲染页面
-    return render(request, 'clubs/user/edit_rejected_review.html', context)
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(["GET", "POST"])
-def submit_review(request, club_id):
-    """年审材料提交/重新提交 - 仅社长可用"""
-    if not _is_president(request.user):
-        messages.error(request, '仅社长可以提交年审材料')
-        return redirect('clubs:index')
-    
-    club = get_object_or_404(Club, pk=club_id)
-    
-    # 检查权限 - 只能提交自己社团的年审
-    if club.president != request.user:
-        messages.error(request, '您没有权限提交此社团的年审材料')
-        return redirect('clubs:user_dashboard')
-    
-    # 获取动态材料要求
-    requirements = MaterialRequirement.objects.filter(
-        request_type='annual_review', 
-        is_active=True
-    ).order_by('order')
-
-    # 验证文件函数
-    def validate_file(file, requirement):
-        if not file:
-            return None
-        
-        # 检查扩展名
-        allowed_exts = [ext.strip().lower() for ext in requirement.allowed_extensions.split(',')]
-        ext = '.' + file.name.lower().split('.')[-1]
-        if ext not in allowed_exts:
-            return f'{requirement.name}必须是以下格式: {requirement.allowed_extensions}'
-        
-        # 检查大小
-        if file.size > requirement.max_size_mb * 1024 * 1024:
-            return f'{requirement.name}文件大小不能超过{requirement.max_size_mb}MB'
-            
-        return None
-    
-    # 检查是否有被拒绝的提交记录
-    resubmit_id = request.GET.get('resubmit')
-    if resubmit_id:
-        # 使用用户指定的提交记录进行重新提交
-        rejected_submission = get_object_or_404(ReviewSubmission, pk=resubmit_id, club=club, status='rejected')
-    else:
-        # 使用最新的被拒绝记录
-        rejected_submission = ReviewSubmission.objects.filter(club=club, status='rejected').order_by('-submitted_at').first()
-    is_resubmission = rejected_submission is not None
-    
-    # 收集被拒绝的材料列表
-    rejected_materials = []
-    rejected_req_ids = set()
-    if is_resubmission:
-        # 获取所有审核记录中的被拒绝材料
-        reviews = SubmissionReview.objects.filter(submission=rejected_submission, status__in=['rejected', 'partially_rejected'])
-        for review in reviews:
-            if review.rejected_materials:
-                rejected_materials.extend(review.rejected_materials)
-        # 去重
-        rejected_materials = list(set(rejected_materials))
-        
-        # 提取被拒绝的 Requirement ID
-        for item in rejected_materials:
-            if item.startswith('req_'):
-                try:
-                    rejected_req_ids.add(int(item.split('_')[1]))
-                except ValueError:
-                    pass
-    
-    # 准备已存在的文件信息
-    existing_files = {}
-    if is_resubmission:
-        # 获取SubmittedFiles
-        submitted_files = SubmittedFile.objects.filter(
-            content_type=ContentType.objects.get_for_model(ReviewSubmission),
-            object_id=rejected_submission.id
-        )
-        file_map = {sf.requirement_id: sf.file for sf in submitted_files}
-        
-        for req in requirements:
-            file_field = file_map.get(req.id)
-            if file_field:
-                try:
-                    existing_files[req.id] = {
-                        'url': file_field.url,
-                        'name': file_field.name.split('/')[-1]
-                    }
-                except Exception:
-                    pass
-
-    if request.method == 'POST':
-        submission_year = request.POST.get('submission_year', '')
-        
-        # 验证
-        errors = []
-        if not submission_year:
-            errors.append('年份不能为空')
-            
-        # 收集上传的文件
-        uploaded_files = {}
-        
-        for req in requirements:
-            file = request.FILES.get(f'material_{req.id}')
-            uploaded_files[req.id] = file
-            
-            # 验证必填项
-            is_req_rejected = f"req_{req.id}" in rejected_materials
-            
-            # 如果是重新提交，且该材料被拒绝，则必须上传
-            # 如果是首次提交，且该材料是必填，则必须上传
-            if is_resubmission:
-                if is_req_rejected and not file:
-                    errors.append(f'{req.name}是被拒绝的材料，必须重新上传')
-            else:
-                if req.is_required and not file:
-                    errors.append(f'{req.name}不能为空')
-            
-            # 验证文件格式和大小
-            if file:
-                err = validate_file(file, req)
-                if err:
-                    errors.append(err)
-        
-        if errors:
-            context = {
-                'club': club,
-                'errors': errors,
-                'is_resubmission': is_resubmission,
-                'rejected_submission': rejected_submission,
-                'requirements': requirements,
-                'rejected_materials': rejected_materials,
-                'rejected_req_ids': rejected_req_ids,
-                'existing_files': existing_files,
-            }
-            return render(request, 'clubs/user/submit_review.html', context)
-        
-        try:
-            if is_resubmission:
-                submission = rejected_submission
-                submission.status = 'pending'
-                submission.review_count = 0
-                submission.reviewed_at = None
-                submission.resubmission_attempt += 1
-            else:
-                submission = ReviewSubmission(
-                    club=club,
-                    submission_year=int(submission_year),
-                    status='pending'
-                )
-            
-            # 保存 Submission (为了获取 ID 用于 GenericForeignKey)
-            submission.save()
-            
-            # 处理文件保存
-            for req in requirements:
-                file = uploaded_files.get(req.id)
-                if file:
-                    # 重命名文件
-                    file = rename_uploaded_file(file, club.name, '年审', req.name)
-                    
-                    # 1. 保存到 SubmittedFile
-                    SubmittedFile.objects.update_or_create(
-                        content_type=ContentType.objects.get_for_model(ReviewSubmission),
-                        object_id=submission.id,
-                        requirement=req,
-                        defaults={'file': file}
-                    )
-            
-            # 再次保存 submission 以更新 legacy fields
-            submission.save()
-            
-            if is_resubmission:
-                # 删除原有的审核记录
-                SubmissionReview.objects.filter(submission=submission).delete()
-                messages.success(request, f'{submission_year}年审材料重新提交成功（第{submission.resubmission_attempt}次），等待审核！')
-            else:
-                messages.success(request, f'{submission_year}年审材料提交成功，等待审核！')
-            
-            return redirect('clubs:user_dashboard')
-            
-        except Exception as e:
-            messages.error(request, f'提交失败: {str(e)}')
-            # 出错时返回页面
-            context = {
-                'club': club,
-                'is_resubmission': is_resubmission,
-                'rejected_submission': rejected_submission,
-                'requirements': requirements,
-                'rejected_materials': rejected_materials,
-            }
-            return render(request, 'clubs/user/submit_review.html', context)
-    
-    # GET请求时渲染页面
-    context = {
-        'club': club,
-        'rejected_materials': rejected_materials,
-        'is_resubmission': is_resubmission,
-        'rejected_submission': rejected_submission,
-        'current_year': timezone.now().year,
-        'requirements': requirements,
-        'existing_files': existing_files,
-    }
-    return render(request, 'clubs/user/submit_review.html', context)
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(["GET"])
-def approval_center_tabs(request, tab='annual_review'):
-    """审批中心"""
-    if not _is_president(request.user):
-        messages.error(request, '仅社团社长可以访问审批中心')
-        return redirect('clubs:index')
-    
-    # 获取当前用户作为社长的所有社团（兼容 Officer 与 Club.president 两种关系）
-    clubs = _get_president_club_ids(request.user)
-    
-    # 根据选项卡类型获取数据
-    active_items = []
-    completed_items = []
-    
-    if tab == 'annual_review':
-        all_items = ReviewSubmission.objects.filter(club__in=clubs).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected'])
-        completed_items = all_items.filter(status='approved')
-        
-    elif tab == 'registration':
-        all_items = ClubRegistration.objects.filter(club__in=clubs).select_related('registration_period', 'club').order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected'])
-        completed_items = all_items.filter(status='approved')
-        
-    elif tab == 'application':
-        all_items = ClubRegistrationRequest.objects.filter(requested_by=request.user).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected'])
-        completed_items = all_items.filter(status='approved')
-        
-    elif tab == 'reimbursement':
-        all_items = Reimbursement.objects.filter(club__in=clubs).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected', 'partially_rejected'])
-        completed_items = all_items.filter(status='approved')
-        
-    elif tab == 'activity_application':
-        all_items = ActivityApplication.objects.filter(club__in=clubs).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected'])
-        completed_items = all_items.filter(status='approved')
-        
-    elif tab == 'president_transition':
-        all_items = PresidentTransition.objects.filter(club__in=clubs).order_by('-submitted_at')
-        active_items = all_items.filter(status__in=['pending', 'rejected'])
-        completed_items = all_items.filter(status='approved')
-    
-    # 标记是否有更新版本
-    for item in active_items:
-        if hasattr(item, 'status') and item.status == 'rejected':
-            item.has_newer_version = False
-            # 检查是否有更新版本
-            if tab == 'annual_review':
-                newer = ReviewSubmission.objects.filter(
-                    club=item.club,
-                    submission_year=item.submission_year,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-                item.has_newer_version = newer
-            elif tab == 'registration':
-                newer = ClubRegistration.objects.filter(
-                    club=item.club,
-                    registration_period=item.registration_period,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-                item.has_newer_version = newer
-            elif tab == 'application':
-                newer = ClubRegistrationRequest.objects.filter(
-                    requested_by=item.requested_by,
-                    club_name=item.club_name,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-                item.has_newer_version = newer
-            elif tab in ['reimbursement', 'activity_application', 'president_transition']:
-                model_class = type(item)
-                newer = model_class.objects.filter(
-                    club=item.club,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-                item.has_newer_version = newer
-    
-    context = {
-        'current_tab': tab,
-        'active_items': active_items,
-        'completed_items': completed_items,
-    }
-    
-    return render(request, 'clubs/user/approval_center.html', context)
-
-@login_required(login_url=settings.LOGIN_URL)
-def approval_center_mobile(request, tab='annual_review'):
-    """审批中心移动版 - 卡片网格UI用于手机端"""
-    if not _is_president(request.user):
-        messages.error(request, '仅社团社长可以访问审批中心')
-        return redirect('clubs:index')
-    
-    # 获取当前用户作为社长的所有社团（兼容 Officer 与 Club.president 两种关系）
-    clubs = _get_president_club_ids(request.user)
-    
-    # 获取所有6种审批类型的数据
-    approved_rejected_items = {
-        'annual_review': ReviewSubmission.objects.filter(club__in=clubs, status__in=['approved', 'rejected', 'pending']).order_by('-submitted_at'),
-        'registration': ClubRegistration.objects.filter(club__in=clubs, status__in=['approved', 'rejected', 'pending']).order_by('-submitted_at'),
-        'application': ClubRegistrationRequest.objects.filter(requested_by=request.user, status__in=['approved', 'rejected', 'pending']).order_by('-submitted_at'),
-        'reimbursement': Reimbursement.objects.filter(club__in=clubs, status__in=['approved', 'rejected', 'pending', 'partially_rejected']).order_by('-submitted_at'),
-        'activity_application': ActivityApplication.objects.filter(club__in=clubs, status__in=['approved', 'rejected', 'pending']).order_by('-submitted_at'),
-        'president_transition': PresidentTransition.objects.filter(club__in=clubs, status__in=['approved', 'rejected', 'pending']).order_by('-submitted_at'),
-    }
-    
-    # 计算未处理数量（pending状态）
-    pending_counts = {
-        'annual_review': ReviewSubmission.objects.filter(club__in=clubs, status='pending').count(),
-        'registration': ClubRegistration.objects.filter(club__in=clubs, status='pending').count(),
-        'application': ClubRegistrationRequest.objects.filter(requested_by=request.user, status='pending').count(),
-        'reimbursement': Reimbursement.objects.filter(club__in=clubs, status='pending').count(),
-        'activity_application': ActivityApplication.objects.filter(club__in=clubs, status='pending').count(),
-        'president_transition': PresidentTransition.objects.filter(club__in=clubs, status='pending').count(),
-    }
-    
-    # 计算需要修改材料的数量（已拒绝且无新版本）
-    rejected_need_action_counts = {item_type: 0 for item_type in approved_rejected_items.keys()}
-    
-    # 标记是否有更新版本
-    for item_type, items in approved_rejected_items.items():
-        for item in items:
-            if hasattr(item, 'status') and item.status == 'rejected':
-                item.has_newer_version = False
-                # 检查是否有更新版本
-                if item_type == 'annual_review':
-                    newer = ReviewSubmission.objects.filter(
-                        club=item.club,
-                        submission_year=item.submission_year,
-                        submitted_at__gt=item.submitted_at
-                    ).exists()
-                    item.has_newer_version = newer
-                elif item_type == 'registration':
-                    newer = ClubRegistration.objects.filter(
-                        club=item.club,
-                        registration_period=item.registration_period,
-                        submitted_at__gt=item.submitted_at
-                    ).exists()
-                    item.has_newer_version = newer
-                elif item_type == 'application':
-                    newer = ClubRegistrationRequest.objects.filter(
-                        requested_by=item.requested_by,
-                        club_name=item.club_name,
-                        submitted_at__gt=item.submitted_at
-                    ).exists()
-                    item.has_newer_version = newer
-                elif item_type in ['reimbursement', 'activity_application', 'president_transition']:
-                    model_class = type(item)
-                    newer = model_class.objects.filter(
-                        club=item.club,
-                        submitted_at__gt=item.submitted_at
-                    ).exists()
-                    item.has_newer_version = newer
-                
-                # 累计需要处理的已拒绝项目（无新版本）
-                if not item.has_newer_version:
-                    rejected_need_action_counts[item_type] += 1
-    
-    # 合并计算：需要处理的总数 = pending + rejected且无新版本
-    unread_approval_counts = {
-        item_type: pending_counts[item_type] + rejected_need_action_counts[item_type]
-        for item_type in pending_counts.keys()
-    }
-    
-    # 计算活跃请求总数（用于底栏显示）
-    total_active_requests = sum(unread_approval_counts.values())
-    # 添加 total 键以便底栏徽章使用（与 context processor 格式一致）
-    unread_approval_counts['total'] = total_active_requests
-    
-    context = {
-        'approved_rejected_items': approved_rejected_items,
-        'unread_approval_counts': unread_approval_counts,
-        'total_active_requests': total_active_requests,
-    }
-    
-    return render(request, 'clubs/user/approval_center_mobile.html', context)
-
-
-@login_required(login_url=settings.LOGIN_URL)
-def approval_history_by_type(request, item_type):
-    """按类型显示审批历史 - 显示某个类型的全部审批记录"""
-    if not _is_president(request.user):
-        messages.error(request, '仅社团社长可以访问此页面')
-        return redirect('clubs:index')
-    
-    # 获取当前用户作为社长的所有社团（兼容 Officer 与 Club.president 两种关系）
-    clubs = _get_president_club_ids(request.user)
-    
-    items = []
-    title = ''
-    
-    if item_type == 'annual_review':
-        items = list(ReviewSubmission.objects.filter(club__in=clubs).order_by('-submitted_at'))
-        title = '年审材料历史'
-        # 标记是否有更新版本
-        for item in items:
-            if item.status == 'rejected':
-                item.has_newer_version = ReviewSubmission.objects.filter(
-                    club=item.club,
-                    submission_year=item.submission_year,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-            else:
-                item.has_newer_version = False
-    elif item_type == 'club_registration':
-        items = list(ClubRegistration.objects.filter(club__in=clubs).order_by('-submitted_at'))
-        title = '社团注册历史'
-        for item in items:
-            if item.status == 'rejected':
-                item.has_newer_version = ClubRegistration.objects.filter(
-                    club=item.club,
-                    registration_period=item.registration_period,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-            else:
-                item.has_newer_version = False
-    elif item_type == 'club_application':
-        items = list(ClubRegistrationRequest.objects.filter(requested_by=request.user).order_by('-submitted_at'))
-        title = '社团申请历史'
-        for item in items:
-            if item.status == 'rejected':
-                item.has_newer_version = ClubRegistrationRequest.objects.filter(
-                    requested_by=item.requested_by,
-                    club_name=item.club_name,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-            else:
-                item.has_newer_version = False
-    elif item_type == 'reimbursement':
-        items = list(Reimbursement.objects.filter(club__in=clubs).order_by('-submitted_at'))
-        title = '报销申请历史'
-        for item in items:
-            if item.status == 'rejected':
-                item.has_newer_version = Reimbursement.objects.filter(
-                    club=item.club,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-            else:
-                item.has_newer_version = False
-    elif item_type == 'activity_application':
-        items = list(ActivityApplication.objects.filter(club__in=clubs).order_by('-submitted_at'))
-        title = '活动申请历史'
-        for item in items:
-            if item.status == 'rejected':
-                item.has_newer_version = ActivityApplication.objects.filter(
-                    club=item.club,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-            else:
-                item.has_newer_version = False
-    elif item_type == 'president_transition':
-        items = list(PresidentTransition.objects.filter(club__in=clubs).order_by('-submitted_at'))
-        title = '社长换届历史'
-        for item in items:
-            if item.status == 'rejected':
-                item.has_newer_version = PresidentTransition.objects.filter(
-                    club=item.club,
-                    submitted_at__gt=item.submitted_at
-                ).exists()
-            else:
-                item.has_newer_version = False
-    else:
-        messages.error(request, '无效的审批类型')
-        return redirect('clubs:approval_center', 'annual_review')
-    
-    context = {
-        'items': items,
-        'item_type': item_type,
-        'title': title,
-    }
-    
-    return render(request, 'clubs/user/approval_history_by_type.html', context)
-
-@login_required(login_url=settings.LOGIN_URL)
-def approval_detail(request, item_type, item_id):
-    """查看审批详情 - 显示审批历史时间轴 - 社长使用与干事相同的详情页面"""
-    if not _is_president(request.user):
-        messages.error(request, '仅社团社长可以访问此页面')
-        return redirect('clubs:index')
-    
-    from types import SimpleNamespace
-    
-    context = {}
-    item = None
-    materials = []
-
-    def _set_materials_for(item_obj, req_type, fallback_items=None):
-        dynamic_materials = get_dynamic_materials_list(item_obj, req_type)
-        if dynamic_materials:
-            return dynamic_materials
-        return fallback_items or []
-
-    def _fallback_icon(req_type, legacy_field, default_icon='description'):
-        req = MaterialRequirement.objects.filter(
-            request_type=req_type,
-            legacy_field_name=legacy_field,
-            is_active=True,
-        ).first()
-        return (req.icon if req and req.icon else default_icon)
-    
-    if item_type == 'annual_review':
-        item = get_object_or_404(ReviewSubmission, pk=item_id)
-        # 检查权限
-        if item.club.president != request.user:
-            messages.error(request, '您没有权限查看此项目')
-            return redirect('clubs:approval_center', 'annual_review')
-        context['title'] = f'{item.club.name} - 年审记录'
-        context['item'] = item
-        context['reviews'] = SubmissionReview.objects.filter(submission=item).order_by('-reviewed_at')
-        
-        fallback_materials = []
-        material_fields = [
-            ('self_assessment_form', '自查表', 'description'),
-            ('club_constitution', '社团章程', 'description'),
-            ('leader_learning_work_report', '负责人学习及工作情况表', 'description'),
-            ('annual_activity_list', '社团年度活动清单', 'receipt'),
-            ('advisor_performance_report', '指导教师履职情况表', 'description'),
-            ('financial_report', '年度财务情况表', 'receipt'),
-            ('member_composition_list', '社团成员构成表', 'people'),
-            ('new_media_account_report', '新媒体账号及运维情况表', 'newspaper'),
-            ('other_materials', '其他材料', 'attach_file'),
-        ]
-        for field_name, display_name, icon in material_fields:
-            file_field = getattr(item, field_name, None)
-            if file_field:
-                fallback_materials.append({'name': display_name, 'file': file_field, 'icon': icon})
-        materials = _set_materials_for(item, 'annual_review', fallback_materials)
-        
-    elif item_type == 'registration':
-        item = get_object_or_404(ClubRegistration, pk=item_id)
-        if item.club.president != request.user:
-            messages.error(request, '您没有权限查看此项目')
-            return redirect('clubs:approval_center', 'registration')
-        context['title'] = f'{item.club.name} - 社团注册'
-        context['item'] = item
-        context['reviews'] = ClubRegistrationReview.objects.filter(registration=item).order_by('-reviewed_at')
-        materials = _set_materials_for(item, 'club_registration')
-        
-    elif item_type == 'application':
-        # 新社团申请 - ClubRegistrationRequest
-        item = get_object_or_404(ClubRegistrationRequest, pk=item_id)
-        if item.requested_by != request.user:
-            messages.error(request, '您没有权限查看此项目')
-            return redirect('clubs:approval_center', 'application')
-        context['title'] = f'{item.club_name} - 新社团申请'
-        context['item'] = item
-        # 使用 ClubApplicationReview 存储的审核记录
-        context['reviews'] = ClubApplicationReview.objects.filter(application=item).order_by('-reviewed_at')
-        
-        fallback_materials = []
-        material_fields = [
-            ('establishment_application', '社团成立申请书', 'description'),
-            ('constitution_draft', '社团章程草案', 'description'),
-            ('three_year_plan', '社团三年发展规划', 'description'),
-            ('leaders_resumes', '拟任负责人和指导老师简历', 'attach_file'),
-            ('one_month_activity_plan', '一个月后活动计划', 'description'),
-            ('advisor_certificates', '社团老师专业证书', 'attach_file'),
-        ]
-        for field_name, display_name, icon in material_fields:
-            file_field = getattr(item, field_name, None)
-            if file_field:
-                fallback_materials.append({'name': display_name, 'file': file_field, 'icon': icon})
-        materials = _set_materials_for(item, 'club_application', fallback_materials)
-        
-    elif item_type == 'reimbursement':
-        item = get_object_or_404(Reimbursement, pk=item_id)
-        if item.club.president != request.user:
-            messages.error(request, '您没有权限查看此项目')
-            return redirect('clubs:approval_center', 'reimbursement')
-        context['title'] = f'{item.club.name} - 报销申请'
-        context['item'] = item
-        # 报销只有一条审核记录，直接从对象字段获取
-        reviews = []
-        if item.reviewer or item.reviewed_at:
-            status = 'approved' if item.status == 'approved' else 'rejected' if item.status == 'rejected' else 'pending'
-            reviews.append(SimpleNamespace(reviewer=item.reviewer, status=status, comment=item.reviewer_comment, reviewed_at=item.reviewed_at))
-        context['reviews'] = reviews
-        
-        fallback_materials = []
-        if item.receipt_file:
-            fallback_materials.append({'name': '报销凭证', 'file': item.receipt_file, 'icon': 'receipt'})
-        materials = _set_materials_for(item, 'reimbursement', fallback_materials)
-        
-    elif item_type == 'activity_application':
-        item = get_object_or_404(ActivityApplication, pk=item_id)
-        if item.club.president != request.user:
-            messages.error(request, '您没有权限查看此项目')
-            return redirect('clubs:approval_center', 'activity_application')
-        context['title'] = f'{item.club.name} - 活动申请'
-        context['item'] = item
-        # 使用 ActivityApplicationHistory 获取审核历史
-        context['reviews'] = ActivityApplicationHistory.objects.filter(activity_application=item).order_by('-attempt_number')
-        
-        fallback_materials = []
-        if item.application_form:
-            fallback_materials.append({
-                'name': '活动申请表',
-                'file': item.application_form,
-                'icon': _fallback_icon('activity_application', 'application_form', 'description')
-            })
-        materials = _set_materials_for(item, 'activity_application', fallback_materials)
-        
-    elif item_type == 'president_transition':
-        item = get_object_or_404(PresidentTransition, pk=item_id)
-        if item.club.president != request.user:
-            messages.error(request, '您没有权限查看此项目')
-            return redirect('clubs:approval_center', 'president_transition')
-        context['title'] = f'{item.club.name} - 社长换届'
-        context['item'] = item
-        # 为社长换届创建模拟的审核记录
-        reviews = []
-        if item.status in ['approved', 'rejected'] and item.reviewed_at:
-            reviews.append(SimpleNamespace(
-                reviewed_at=item.reviewed_at,
-                reviewer=item.reviewer,
-                status=item.status,
-                comment=item.reviewer_comment or '',
-            ))
-        context['reviews'] = reviews
-        
-        fallback_materials = []
-        for field_name, display_name, icon in [
-            ('transition_form', '社团主要负责人变动申请表', _fallback_icon('president_transition', 'transition_form', 'description')),
-            ('transition_document', '换届申请文档', _fallback_icon('president_transition', 'transition_document', 'description')),
-        ]:
-            file_field = getattr(item, field_name, None)
-            if file_field:
-                fallback_materials.append({'name': display_name, 'file': file_field, 'icon': icon})
-        materials = _set_materials_for(item, 'president_transition', fallback_materials)
-    
-    else:
-        messages.error(request, '无效的项目类型')
-        return redirect('clubs:approval_center', 'annual_review')
-    
-    context['item_type'] = item_type
-    context['materials'] = materials
-    req_type_for_zip = {
-        'annual_review': 'annual_review',
-        'registration': 'club_registration',
-        'application': 'club_application',
-        'reimbursement': 'reimbursement',
-        'activity_application': 'activity_application',
-        'president_transition': 'president_transition',
-    }
-    if item and materials and item_type in req_type_for_zip:
-        context['materials_zip_show'] = True
-        context['materials_zip_url'] = f"{reverse('clubs:zip_download')}?type={req_type_for_zip[item_type]}&id={item.id}"
-    else:
-        context['materials_zip_show'] = False
-        context['materials_zip_url'] = None
-    # 使用与干事审核详情相同的模板
-    return render(request, 'clubs/user/approval_detail.html', context)
-
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(['POST'])
-def cancel_submission(request, submission_id):
-    """取消年审请求并删除已上传的文件 - 仅社长可用"""
-    if not _is_president(request.user):
-        messages.error(request, '仅社长可以取消年审请求')
-        return redirect('clubs:index')
-    
-    submission = get_object_or_404(ReviewSubmission, pk=submission_id)
-    
-    # 检查权限 - 只能取消自己社团的年审请求
-    if submission.club.president != request.user:
-        messages.error(request, '您没有权限取消此社团的年审请求')
-        return redirect('clubs:user_dashboard')
-    
-    # 只有待审核状态的请求可以取消
-    if submission.status != 'pending':
-        messages.error(request, '只有待审核的请求可以取消')
-        return redirect('clubs:user_dashboard')
-    
-    # 删除已上传的文件
-    file_fields = [
-        'self_assessment_form',
-        'club_constitution',
-        'leader_learning_work_report',
-        'annual_activity_list',
-        'advisor_performance_report',
-        'financial_report',
-        'member_composition_list',
-        'new_media_account_report',
-        'other_materials'
-    ]
-    
-    for field_name in file_fields:
-        file_field = getattr(submission, field_name)
-        if file_field:
-            # 获取文件路径
-            file_path = file_field.path
-            # 检查文件是否存在并删除
-            if os.path.exists(file_path):
-                os.remove(file_path)
-    
-    # 删除审核记录
-    submission.reviews.all().delete()
-    
-    # 删除提交记录
-    submission.delete()
-    
-    messages.success(request, '年审请求已成功取消，所有上传的文件已删除')
-    return redirect('clubs:user_dashboard')
 
 
 
@@ -2329,126 +968,6 @@ def cancel_submission(request, submission_id):
 
 # ==================== 干事审核界面 ====================
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(['GET', 'POST'])
-def review_submission(request, submission_id):
-    """审核年审材料 - 干事和管理员可用"""
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以审核年审材料')
-        return redirect('clubs:index')
-    
-    submission = get_object_or_404(ReviewSubmission, pk=submission_id)
-    
-    # 检查当前用户是否已经审核过该材料
-    if request.method == 'GET':
-        existing_review = SubmissionReview.objects.filter(submission=submission, reviewer=request.user).first()
-        if existing_review:
-            messages.error(request, '您已经审核过该材料，无法再次查看审核页面')
-            # 都重定向到审核中心的年审标签页
-            return redirect('clubs:staff_audit_center', 'annual_review')
-    
-    if request.method == 'POST':
-        status = request.POST.get('review_status', '')
-        comment = request.POST.get('review_comment', '').strip()
-        
-        if status not in ['approved', 'rejected']:
-            messages.error(request, '无效的审核状态')
-            return redirect('clubs:staff_audit_center', 'annual_review')
-        
-        # 处理被拒绝的材料
-        rejected_materials = []
-        if status == 'rejected':
-            # 获取所有可能的材料字段
-            material_fields = [
-                ('self_assessment_form', '自查表'),
-                ('club_constitution', '社团章程'),
-                ('leader_learning_work_report', '负责人学习及工作情况表'),
-                ('annual_activity_list', '社团年度活动清单'),
-                ('advisor_performance_report', '指导教师履职情况表'),
-                ('financial_report', '年度财务情况表'),
-                ('member_composition_list', '社团成员构成表'),
-                ('new_media_account_report', '新媒体账号及运维情况表'),
-                ('other_materials', '其他材料')
-            ]
-            
-            # 收集被拒绝的材料（从 checkbox 获取）
-            rejected_materials = request.POST.getlist('rejected_materials')
-            
-            # 如果没有选择任何被拒绝的材料，默认拒绝所有
-            if not rejected_materials:
-                rejected_materials = [field[0] for field in material_fields]
-        
-        # 创建新的审核记录
-        review = SubmissionReview(
-            submission=submission,
-            reviewer=request.user,
-            status=status,
-            comment=comment,
-            rejected_materials=rejected_materials
-        )
-        review.save()
-        
-        # 更新审核计数
-        submission.review_count = SubmissionReview.objects.filter(submission=submission).count()
-        submission.reviewed_at = timezone.now()
-        
-        # 如果当前审核是拒绝，直接打回请求
-        if status == 'rejected':
-            submission.status = status
-            messages.success(request, f'{submission.club.name}的年审申请已驳回')
-            submission.save()
-        else:
-            # 检查是否有任何拒绝记录
-            has_reject = SubmissionReview.objects.filter(submission=submission, status='rejected').exists()
-            if has_reject:
-                # 如果之前已有拒绝记录，保持拒绝状态
-                submission.status = 'rejected'
-                submission.save()
-            else:
-                # 没有拒绝记录，检查是否已经有三次审核
-                if submission.review_count >= 3:
-                    # 所有审核都通过，批准申请
-                    submission.status = 'approved'
-                    # 更新社团状态
-                    submission.club.is_active = True
-                    submission.club.last_review_date = timezone.now()
-                    submission.club.save()
-                    messages.success(request, f'{submission.club.name}的年审申请已通过（3人全部通过）')
-                    submission.save()
-                else:
-                    # 还没到三次审核，保持pending状态
-                    submission.status = 'pending'
-                    submission.save()
-                    messages.success(request, f'已完成审核，当前审核次数：{submission.review_count}/3')
-        
-        # 重定向到审核中心的年审标签页
-        return redirect('clubs:staff_audit_center', 'annual_review')
-    
-    # 获取动态材料列表（过滤丢失文件并回传丢失项）
-    materials, _, missing_materials = get_dynamic_materials_payload(
-        submission,
-        'annual_review',
-        include_missing=True,
-    )
-    
-    # 获取审核记录
-    existing_reviews = SubmissionReview.objects.filter(submission=submission).order_by('-reviewed_at')
-    
-    # 计算批准和拒绝数量
-    approved_count = existing_reviews.filter(status='approved').count()
-    rejected_count = existing_reviews.filter(status='rejected').count()
-    
-    context = {
-        'submission': submission,
-        'club': submission.club,
-        'existing_reviews': existing_reviews,
-        'submission_materials': materials,
-        'materials': materials,
-        'missing_materials': missing_materials,
-        'approved_count': approved_count,
-        'rejected_count': rejected_count,
-    }
-    return render(request, 'clubs/staff/review_submission.html', context)
 
 
 
@@ -2456,175 +975,8 @@ def review_submission(request, submission_id):
 
 # ==================== 报销功能 ====================
 
-@login_required(login_url=settings.LOGIN_URL)
-def view_reimbursements(request, club_id):
-    """查看报销历史 - 社长和干事可用"""
-    user = request.user
-    
-    # 检查权限：社长或干事
-    if not (_is_president(user) or _is_staff(user)):
-        messages.error(request, '您没有权限查看此页面')
-        return redirect('clubs:index')
-    
-    club = get_object_or_404(Club, pk=club_id)
-    
-    # 社长只能查看自己社团的报销历史
-    if _is_president(user) and (not club.president or club.president != user):
-        messages.error(request, '您没有权限查看此社团的报销历史')
-        return redirect('clubs:user_dashboard')
-    
-    # 获取该社团的所有报销记录，按提交时间降序排列
-    reimbursements = club.reimbursements.all().order_by('-submitted_at')
-
-    context = {
-        'club': club,
-        'reimbursements': reimbursements,
-    }
-    return render(request, 'clubs/user/view_reimbursements.html', context)
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(["GET", "POST"])
-def submit_reimbursement(request, club_id):
-    """提交报销材料 - 仅社长可用"""
-    if not _is_president(request.user):
-        messages.error(request, '仅社长可以提交报销材料')
-        return redirect('clubs:index')
-    
-    club = get_object_or_404(Club, pk=club_id)
-    
-    if club.president != request.user:
-        messages.error(request, '您没有权限为此社团提交报销')
-        return redirect('clubs:user_dashboard')
-    
-    # 获取可用模板
-    reimbursement_templates = Template.objects.filter(template_type='reimbursement', is_active=True)
-    
-    # 获取动态材料要求
-    requirements = MaterialRequirement.objects.filter(
-        request_type='reimbursement', 
-        is_active=True
-    ).order_by('order')
-
-    # 验证文件函数
-    def validate_file(file, requirement):
-        if not file:
-            return None
-        
-        # 检查扩展名
-        allowed_exts = [ext.strip().lower() for ext in requirement.allowed_extensions.split(',')]
-        ext = '.' + file.name.lower().split('.')[-1]
-        if ext not in allowed_exts:
-            return f'{requirement.name}必须是以下格式: {requirement.allowed_extensions}'
-        
-        # 检查大小
-        if file.size > requirement.max_size_mb * 1024 * 1024:
-            return f'{requirement.name}文件大小不能超过{requirement.max_size_mb}MB'
-        
-        return None
-
-    if request.method == 'POST':
-        submission_date = request.POST.get('submission_date', '')
-        reimbursement_amount = request.POST.get('reimbursement_amount', '')
-        description = request.POST.get('description', '').strip()
-        
-        errors = []
-        if not submission_date:
-            errors.append('报销日期不能为空')
-        if not reimbursement_amount:
-            errors.append('报销金额不能为空')
-        if not description:
-            errors.append('报销说明不能为空')
-            
-        # 验证动态材料
-        uploaded_files = {}
-        for req in requirements:
-            file = request.FILES.get(f'material_{req.id}')
-            uploaded_files[req.id] = file
-            
-            # 验证必填项
-            if req.is_required and not file:
-                errors.append(f'{req.name}不能为空')
-            
-            # 验证文件格式和大小
-            if file:
-                err = validate_file(file, req)
-                if err:
-                    errors.append(err)
-        
-        if errors:
-            return render(request, 'clubs/user/submit_reimbursement.html', {
-                'errors': errors,
-                'club': club,
-                'templates': reimbursement_templates,
-                'requirements': requirements,
-                'submission_date': submission_date,
-                'reimbursement_amount': reimbursement_amount,
-                'description': description,
-            })
-        
-        try:
-            # 创建报销申请
-            reimbursement = Reimbursement(
-                club=club,
-                submission_date=submission_date,
-                reimbursement_amount=reimbursement_amount,
-                description=description,
-                status='pending'
-            )
-            
-            # 查找 receipt_file 对应的文件
-            receipt_file_content = None
-            for req in requirements:
-                if req.legacy_field_name == 'receipt_file' and uploaded_files.get(req.id):
-                    receipt_file_content = uploaded_files.get(req.id)
-                    # 重命名
-                    receipt_file_content = rename_uploaded_file(receipt_file_content, club.name, '报销', '凭证')
-                    reimbursement.receipt_file = receipt_file_content
-                    break
-            
-            # 保存主对象
-            reimbursement.save()
-            
-            # 处理所有文件保存
-            for req in requirements:
-                file = uploaded_files.get(req.id)
-                if file:
-                    final_file = file
-                    if req.legacy_field_name == 'receipt_file':
-                         final_file = receipt_file_content
-                    else:
-                         final_file = rename_uploaded_file(file, club.name, '报销', req.name)
-
-                    # 1. 保存到 SubmittedFile
-                    SubmittedFile.objects.create(
-                        content_type=ContentType.objects.get_for_model(Reimbursement),
-                        object_id=reimbursement.id,
-                        requirement=req,
-                        file=final_file
-                    )
-            
-            messages.success(request, '报销材料已提交，等待审核！')
-            return redirect('clubs:user_dashboard')
-            
-        except Exception as e:
-            messages.error(request, f'提交失败: {str(e)}')
-            return render(request, 'clubs/user/submit_reimbursement.html', {
-                'errors': [f'提交失败: {str(e)}'],
-                'club': club,
-                'templates': reimbursement_templates,
-                'requirements': requirements,
-                'submission_date': submission_date,
-                'reimbursement_amount': reimbursement_amount,
-                'description': description,
-            })
-    
-    context = {
-        'club': club,
-        'templates': reimbursement_templates,
-        'requirements': requirements,
-    }
-    return render(request, 'clubs/user/submit_reimbursement.html', context)
 
 
 # ==================== 干事管理功能 ====================
@@ -2639,17 +991,17 @@ def upload_template(request):
     if not is_staff_or_admin(request.user):
         messages.error(request, '仅干事和管理员可以上传模板')
         return redirect('clubs:index')
-    
+
     if request.method == 'POST':
         requirement_id = request.POST.get('requirement_id')
         action_type = request.POST.get('action_type')
-        
+
         if not requirement_id:
              messages.error(request, '参数缺失')
         else:
             try:
                 req = MaterialRequirement.objects.get(pk=requirement_id)
-                
+
                 if action_type == 'update_description':
                     description = request.POST.get('description', '')
                     req.description = description
@@ -2662,17 +1014,17 @@ def upload_template(request):
                     messages.success(request, f'"{req.name}" 模板更新成功！')
                 else:
                     messages.warning(request, '未检测到有效操作')
-                    
+
             except MaterialRequirement.DoesNotExist:
                 messages.error(request, '未找到指定的材料要求配置')
             except Exception as e:
                 messages.error(request, f'操作失败: {str(e)}')
-        
+
         return redirect('clubs:upload_template')
-    
+
     # 获取所有活跃的材料要求
     requirements = MaterialRequirement.objects.filter(is_active=True).order_by('request_type', 'order')
-    
+
     # 按类型分组
     grouped_requirements = {}
     for req in requirements:
@@ -2680,783 +1032,17 @@ def upload_template(request):
         if req_type_display not in grouped_requirements:
             grouped_requirements[req_type_display] = []
         grouped_requirements[req_type_display].append(req)
-    
+
     context = {
         'grouped_requirements': grouped_requirements,
     }
     return render(request, 'clubs/staff/upload_template.html', context)
 
 
-@login_required(login_url=settings.LOGIN_URL)
-def review_reimbursement(request, reimbursement_id):
-    """审核报销材料 - 干事和管理员可用"""
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以审核报销')
-        return redirect('clubs:index')
-    
-    reimbursement = get_object_or_404(Reimbursement, pk=reimbursement_id)
-    
-    if request.method == 'POST':
-        decision = request.POST.get('review_status', '')
-        review_comments = request.POST.get('review_comment', '').strip()
-        
-        if decision not in ['approved', 'rejected']:
-            messages.error(request, '状态不合法')
-            return redirect('clubs:staff_audit_center', 'reimbursement')
-        
-        # 保存历史记录
-        ReimbursementHistory.objects.create(
-            reimbursement=reimbursement,
-            attempt_number=reimbursement.resubmission_attempt,
-            submission_date=reimbursement.submission_date,
-            reimbursement_amount=reimbursement.reimbursement_amount,
-            description=reimbursement.description,
-            submitted_at=reimbursement.submitted_at,
-            reviewed_at=timezone.now(),
-            reviewer=request.user,
-            status=decision,
-            reviewer_comment=review_comments
-        )
-        
-        reimbursement.status = decision
-        reimbursement.reviewer_comment = review_comments
-        reimbursement.reviewed_at = timezone.now()
-        reimbursement.reviewer = request.user
-        reimbursement.save()
-        
-        messages.success(request, f'报销材料已{'批准' if decision == 'approved' else '拒绝'}')
-        return redirect('clubs:staff_audit_center', 'reimbursement')
-    
-    # 报销是单人审核，不需要多人审核统计
-    # 检查当前用户是否已经审核过（通过检查reimbursement的reviewer字段）
-    user_has_reviewed = reimbursement.reviewer == request.user if reimbursement.reviewer else False
-    
-    # 获取动态材料列表（过滤丢失文件并回传丢失项）
-    materials, _, missing_materials = get_dynamic_materials_payload(
-        reimbursement,
-        'reimbursement',
-        include_missing=True,
-    )
-
-    context = {
-        'reimbursement': reimbursement,
-        'materials': materials,
-        'missing_materials': missing_materials,
-        'user_has_reviewed': user_has_reviewed,
-        'approved_count': 1 if reimbursement.status == 'approved' else 0,
-        'rejected_count': 1 if reimbursement.status == 'rejected' else 0,
-        'existing_reviews': ReimbursementHistory.objects.filter(reimbursement=reimbursement).order_by('attempt_number'),
-    }
-    return render(request, 'clubs/staff/review_reimbursement.html', context)
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(["GET", "POST"])
-def review_club_registration(request, registration_id):
-    """审核社团注册申请 - 仅干事和管理员可用"""
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以审核社团注册')
-        return redirect('clubs:index')
-    
-    registration = get_object_or_404(ClubRegistrationRequest, pk=registration_id)
-    
-    # 检查当前用户是否已经审核过该申请（仅当前提交轮次）
-    user_has_reviewed = registration.reviews.filter(reviewer=request.user, submission_attempt=registration.resubmission_attempt).exists()
-    
-    if request.method == 'POST':
-        # 如果用户已审核过，禁止重复提交
-        if user_has_reviewed:
-            messages.error(request, '您已经审核过该社团注册申请，无法再次审核')
-            return redirect('clubs:review_club_registration', registration_id=registration_id)
-            
-        decision = request.POST.get('review_status', '')
-        review_comments = request.POST.get('review_comment', '').strip()
-        
-        # 获取被拒绝的材料
-        rejected_materials = request.POST.getlist('rejected_materials')
-        
-        if decision not in ['approved', 'rejected']:
-            messages.error(request, '状态不合法')
-            return redirect('clubs:staff_audit_center', 'application')
-        
-        # 如果是拒绝，需要确保至少有一个被拒绝的材料
-        if decision == 'rejected' and not rejected_materials:
-            messages.error(request, '拒绝必须选择至少一个被拒绝的材料')
-            return redirect('clubs:review_club_registration', registration_id=registration_id)
-        
-        # 创建审核记录（绑定到当前提交轮次）
-        ClubApplicationReview.objects.create(
-            application=registration,
-            reviewer=request.user,
-            status=decision,
-            comment=review_comments,
-            rejected_materials=rejected_materials,
-            submission_attempt=registration.resubmission_attempt
-        )
-        
-        # 更新申请状态
-        registration.status = decision
-        registration.reviewer_comment = review_comments
-        registration.reviewed_at = timezone.now()
-        registration.reviewer = request.user
-        registration.save()
-        
-        # 如果批准，创建社团和社长Officer记录
-        if decision == 'approved':
-            club, created = Club.objects.get_or_create(
-                name=registration.club_name,
-                defaults={
-                    'description': registration.description,
-                    'founded_date': registration.founded_date,
-                    'status': 'active',
-                    'members_count': registration.members_count
-                }
-            )
-            
-            # 创建或获取申请人的UserProfile
-            try:
-                president_profile = registration.requested_by.profile
-            except UserProfile.DoesNotExist:
-                # 如果申请人没有profile，需要创建一个
-                import uuid
-                president_profile = UserProfile.objects.create(
-                    user=registration.requested_by,
-                    role='president',
-                    real_name=registration.president_name,
-                    student_id=registration.president_id,
-                    status='approved'
-                )
-            
-            # 创建社长Officer记录
-            Officer.objects.get_or_create(
-                club=club,
-                user_profile=president_profile,
-                position='president',
-                defaults={
-                    'appointed_date': timezone.now().date(),
-                    'is_current': True
-                }
-            )
-        
-        messages.success(request, f'社团注册申请已{'批准' if decision == 'approved' else '拒绝'}')
-        return redirect('clubs:staff_dashboard')
-    
-    # 准备材料列表 (动态构建)
-    from .models import MaterialRequirement, SubmittedFile
-    from django.contrib.contenttypes.models import ContentType
-
-    requirements = MaterialRequirement.objects.filter(request_type='club_registration', is_active=True).order_by('order')
-
-    # 使用统一函数获取材料列表（过滤丢失文件并回传丢失项）
-    materials_list, _, missing_materials = get_dynamic_materials_payload(
-        registration,
-        'club_registration',
-        include_missing=True,
-    )
-    
-    # 获取现有审核记录
-    existing_reviews = registration.reviews.all().order_by('-reviewed_at')
-    approved_count = existing_reviews.filter(status='approved').count()
-    rejected_count = existing_reviews.filter(status='rejected').count()
-    
-    # 动态生成被拒绝材料选项
-    rejected_choices = [(req.name, req.name) for req in requirements]
-    
-    context = {
-        'registration': registration,
-        'rejected_materials': rejected_choices,
-        'materials_list': materials_list,
-        'materials': materials_list,
-        'show_rejected_materials': True,
-        'existing_reviews': existing_reviews,
-        'approved_count': approved_count,
-        'rejected_count': rejected_count,
-        'has_reviewed': user_has_reviewed,
-        'missing_materials': missing_materials,
-    }
-    return render(request, 'clubs/staff/review_club_registration.html', context)
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(['GET', 'POST'])
-def review_request(request, club_id):
-    """
-    统一审核视图函数，处理所有类型的审核请求
-    
-    request_type 可以是以下值：
-    - 'submission': 年审材料审核
-    - 'registration': 社团注册审核
-    - 'leader_change': 社长变更审核
-    - 'reimbursement': 报销审核
-    - 'staff_registration': 干事注册审核
-    """
-    # 验证用户权限
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限进行审核操作')
-        return redirect('clubs:index')
-    
-    # 从URL查询参数中获取请求类型和申请次数
-    request_type = request.GET.get('type', '')
-    submission_number = request.GET.get('number', '')
-    
-    if not request_type:
-        messages.error(request, '无效的审核请求类型')
-        return redirect('clubs:staff_dashboard')
-    
-    # 映射request_type到audit-center的tab名称
-    audit_center_tab_mapping = {
-        'submission': 'annual_review',
-        'registration': 'application',
-        'club_registration_submission': 'registration',
-        'leader_change': 'president_transition',
-        'reimbursement': 'reimbursement',
-        'staff_registration': 'staff_dashboard'  # 使用旧的重定向地址
-    }
-    audit_center_tab = audit_center_tab_mapping.get(request_type, 'staff_dashboard')
-    
-    # 对于某些审核类型不需要申请次数
-    # - staff_registration: 用 club_id 作为 user_id
-    # - registration: 用 club_id 作为申请ID
-    if request_type not in ['staff_registration', 'registration']:
-        if not submission_number:
-            messages.error(request, '无效的申请次数')
-            if audit_center_tab == 'staff_dashboard':
-                return redirect('clubs:staff_dashboard')
-            else:
-                return redirect('clubs:staff_audit_center', audit_center_tab)
-        
-        # 尝试将申请次数转换为整数
-        try:
-            submission_number = int(submission_number)
-        except ValueError:
-            messages.error(request, '无效的申请次数格式')
-            if audit_center_tab == 'staff_dashboard':
-                return redirect('clubs:staff_dashboard')
-            else:
-                return redirect('clubs:staff_audit_center', audit_center_tab)
-    
-    # 映射request_type到MaterialRequirement.request_type
-    request_type_map = {
-        'submission': 'annual_review',
-        'registration': 'club_application',
-        'club_registration_submission': 'club_registration',
-        'reimbursement': 'reimbursement',
-        'leader_change': 'president_transition',
-        'staff_registration': 'staff_registration'
-    }
-    
-    req_type_db = request_type_map.get(request_type)
-    
-    # 根据请求类型获取审核对象
-    if request_type == 'submission':
-        from clubs.models import Club, ReviewSubmission, SubmissionReview
-        
-        # 获取社团对象
-        club = get_object_or_404(Club, pk=club_id)
-        
-        # 获取所有年审申请（用于计算submission_number）
-        submissions = ReviewSubmission.objects.filter(club=club).order_by('submitted_at')
-        
-        # 优先使用ID参数获取年审申请（解决重新提交后的链接问题）
-        submission_id = request.GET.get('id', '')
-        if submission_id:
-            try:
-                obj = ReviewSubmission.objects.get(pk=submission_id, club=club)
-                # 计算该申请在列表中的实际位置
-                submission_number = list(submissions).index(obj) + 1
-            except (ValueError, ReviewSubmission.DoesNotExist):
-                # 如果ID无效，回退到使用submission_number
-                if submission_number > len(submissions):
-                    messages.error(request, '该社团没有这么多次的申请记录')
-                    return redirect('clubs:staff_dashboard')
-                obj = submissions[submission_number - 1]
-        else:
-            # 没有ID参数时，使用submission_number
-            if submission_number > len(submissions):
-                messages.error(request, '该社团没有这么多次的申请记录')
-                return redirect('clubs:staff_dashboard')
-            obj = submissions[submission_number - 1]
-        template_name = 'clubs/staff/review_request.html'  # 使用统一审核模板
-        title = f"审核 {club.name} 的第 {submission_number} 次年审材料"
-        
-        # 检查当前用户是否已经审核过
-        existing_review = SubmissionReview.objects.filter(submission=obj, reviewer=request.user).first()
-        
-        # 处理POST请求
-        if request.method == 'POST':
-            # 如果已经审核过，不允许再次提交
-            if existing_review:
-                messages.error(request, '您已经审核过该材料，无法重复提交')
-                return redirect('clubs:staff_dashboard')
-            
-            status = request.POST.get('review_status', '')
-            comment = request.POST.get('review_comment', '').strip()
-            
-            if status not in ['approved', 'rejected']:
-                messages.error(request, '无效的审核状态')
-                return redirect('clubs:staff_dashboard')
-            
-            # 统一处理被拒绝的材料
-            rejected_materials = []
-            if status == 'rejected':
-                # 收集被拒绝的材料
-                rejected_materials = request.POST.getlist('rejected_materials')
-                
-                # 如果没有选择任何被拒绝的材料，默认拒绝所有
-                if not rejected_materials:
-                    reqs = MaterialRequirement.objects.filter(request_type=req_type_db, is_active=True)
-                    for r in reqs:
-                        fid = f"req_{r.id}"
-                        rejected_materials.append(fid)
-            
-            # 创建新的审核记录
-            review = SubmissionReview(
-                submission=obj,
-                reviewer=request.user,
-                status=status,
-                comment=comment,
-                rejected_materials=rejected_materials
-            )
-            review.save()
-            
-            # 更新审核计数和状态
-            obj.review_count = SubmissionReview.objects.filter(submission=obj).count()
-            obj.reviewed_at = timezone.now()
-            
-            # 如果当前审核是拒绝，直接打回请求
-            if status == 'rejected':
-                obj.status = status
-                messages.success(request, f'{obj.club.name}的年审申请已驳回')
-                obj.save()
-            else:
-                # 检查是否有任何拒绝记录
-                has_reject = SubmissionReview.objects.filter(submission=obj, status='rejected').exists()
-                if has_reject:
-                    # 如果之前已有拒绝记录，保持拒绝状态
-                    obj.status = 'rejected'
-                    obj.save()
-                else:
-                    # 没有拒绝记录，检查是否已经有三次审核
-                    if obj.review_count >= 3:
-                        # 所有审核都通过，批准申请
-                        obj.status = 'approved'
-                        # 更新社团状态
-                        obj.club.is_active = True
-                        obj.club.last_review_date = timezone.now()
-                        obj.club.save()
-                        messages.success(request, f'{obj.club.name}的年审申请已通过（3人全部通过）')
-                        obj.save()
-                    else:
-                        # 还没到三次审核，保持pending状态
-                        obj.status = 'pending'
-                        obj.save()
-                        messages.success(request, f'已完成审核，当前审核次数：{obj.review_count}/3')
-            
-            return redirect('clubs:staff_dashboard')
-        
-        # 使用动态函数获取材料列表
-        materials_list, submission_files, missing_materials = get_dynamic_materials_payload(
-            obj,
-            req_type_db,
-            include_missing=True,
-        )
-        
-        # 获取现有的审核记录
-        existing_reviews = SubmissionReview.objects.filter(submission=obj).order_by('reviewed_at')
-        
-        # 计算批准和拒绝数量
-        approved_count = existing_reviews.filter(status='approved').count()
-        rejected_count = existing_reviews.filter(status='rejected').count()
-        
-        context = {
-            'submission': obj,
-            'club': obj.club,
-            'materials_list': materials_list,
-            'existing_reviews': existing_reviews,
-            'submission_files': submission_files,
-            'user_has_reviewed': existing_review is not None,
-            'user_review': existing_review,
-            'approved_count': approved_count,
-            'rejected_count': rejected_count,
-            'missing_materials': missing_materials,
-        }
-    
-    elif request_type == 'registration':
-        # 注意：社团注册请求是在社团创建之前提交的，所以没有club_id
-        # 这种情况下，我们仍然使用request_id作为申请ID
-        from clubs.models import ClubRegistrationRequest
-        obj = get_object_or_404(ClubRegistrationRequest, pk=club_id)  # 这里club_id实际上是申请ID
-        template_name = 'clubs/staff/review_request.html'  # 使用统一审核模板
-        title = f"审核 {obj.club_name} 的注册申请"
-        
-        # 处理POST请求
-        if request.method == 'POST':
-            # 检查当前用户是否已经审核过该申请
-            if obj.reviews.filter(reviewer=request.user).exists():
-                messages.error(request, '您已经审核过该社团注册申请，无法再次审核')
-                return redirect('clubs:staff_dashboard')
-            
-            decision = request.POST.get('review_status', '')
-            review_comments = request.POST.get('review_comment', '').strip()
-            
-            # 统一处理被拒绝的材料
-            rejected_materials = []
-            if decision == 'rejected':
-                # 收集被拒绝的材料 - 统一使用getlist('rejected_materials')，与模板保持一致
-                rejected_materials = request.POST.getlist('rejected_materials')
-                
-                # 如果没有选择任何被拒绝的材料，默认拒绝所有
-                if not rejected_materials:
-                    reqs = MaterialRequirement.objects.filter(request_type=req_type_db, is_active=True)
-                    for r in reqs:
-                        fid = f"req_{r.id}"
-                        rejected_materials.append(fid)
-            
-            if decision not in ['approved', 'rejected']:
-                messages.error(request, '状态不合法')
-                return redirect('clubs:staff_dashboard')
-            
-            # 创建审核记录
-            from clubs.models import ClubApplicationReview
-            ClubApplicationReview.objects.create(
-                application=obj,
-                reviewer=request.user,
-                status=decision,
-                comment=review_comments,
-                rejected_materials=rejected_materials
-            )
-            
-            # 更新申请状态
-            obj.status = decision
-            obj.reviewer_comment = review_comments
-            obj.reviewed_at = timezone.now()
-            obj.save()
-            
-            # 如果批准，创建社团和社长Officer记录
-            if decision == 'approved':
-                from clubs.models import Club, Officer
-                club, created = Club.objects.get_or_create(
-                    name=obj.club_name,
-                    defaults={
-                        'description': obj.description,
-                        'founded_date': obj.founded_date,
-                        'status': 'active',
-                        'members_count': obj.members_count
-                    }
-                )
-                
-                # 创建或获取申请人的UserProfile
-                try:
-                    president_profile = obj.requested_by.profile
-                except UserProfile.DoesNotExist:
-                    # 如果申请人没有profile，需要创建一个
-                    import uuid
-                    president_profile = UserProfile.objects.create(
-                        user=obj.requested_by,
-                        role='president',
-                        real_name=obj.president_name,
-                        student_id=obj.president_id,
-                        status='approved'
-                    )
-                
-                # 创建社长Officer记录
-                Officer.objects.get_or_create(
-                    club=club,
-                    user_profile=president_profile,
-                    position='president',
-                    defaults={
-                        'appointed_date': timezone.now().date(),
-                        'is_current': True
-                    }
-                )
-            
-            messages.success(request, f'社团注册申请已{'批准' if decision == 'approved' else '拒绝'}')
-            return redirect('clubs:staff_dashboard')
-        
-        # 使用动态函数获取材料列表
-        materials_list, submission_files, missing_materials = get_dynamic_materials_payload(
-            obj,
-            req_type_db,
-            include_missing=True,
-        )
-        
-        context = {
-            'registration': obj,
-            'materials_list': materials_list,
-            'submission_files': submission_files,
-            'missing_materials': missing_materials,
-        }
-    
-
-    
-    elif request_type == 'reimbursement':
-        from clubs.models import Club, Reimbursement
-        
-        # 获取社团对象
-        club = get_object_or_404(Club, pk=club_id)
-        
-        # 获取所有报销申请（用于计算submission_number）
-        reimbursements = Reimbursement.objects.filter(club=club).order_by('submitted_at')
-        
-        # 优先使用ID参数获取报销申请（解决重新提交后的链接问题）
-        reimbursement_id = request.GET.get('id', '')
-        if reimbursement_id:
-            try:
-                obj = Reimbursement.objects.get(pk=reimbursement_id, club=club)
-                # 计算该申请在列表中的实际位置
-                submission_number = list(reimbursements).index(obj) + 1
-            except (ValueError, Reimbursement.DoesNotExist):
-                # 如果ID无效，回退到使用submission_number
-                if submission_number > len(reimbursements):
-                    messages.error(request, '该社团没有这么多次的报销申请记录')
-                    return redirect('clubs:staff_dashboard')
-                obj = reimbursements[submission_number - 1]
-        else:
-            # 没有ID参数时，使用submission_number
-            if submission_number > len(reimbursements):
-                messages.error(request, '该社团没有这么多次的报销申请记录')
-                return redirect('clubs:staff_dashboard')
-            obj = reimbursements[submission_number - 1]
-        template_name = 'clubs/staff/review_request.html'  # 使用统一审核模板
-        title = f"审核 {club.name} 的第 {submission_number} 次报销申请"
-        
-        # 处理POST请求
-        if request.method == 'POST':
-            decision = request.POST.get('review_status', '')  # 统一使用'review_status'参数名
-            review_comments = request.POST.get('review_comment', '').strip()  # 统一使用'review_comment'参数名
-            
-            # 统一处理被拒绝的材料
-            rejected_materials = []
-            if decision == 'rejected':
-                # 收集被拒绝的材料
-                rejected_materials = request.POST.getlist('rejected_materials')
-                
-                # 如果没有选择任何被拒绝的材料，默认拒绝所有
-                if not rejected_materials:
-                    reqs = MaterialRequirement.objects.filter(request_type=req_type_db, is_active=True)
-                    for r in reqs:
-                        fid = f"req_{r.id}"
-                        rejected_materials.append(fid)
-            
-            if decision not in ['approved', 'rejected']:
-                messages.error(request, '状态不合法')
-                return redirect('clubs:staff_dashboard')
-            
-            obj.status = decision
-            obj.reviewer_comment = review_comments
-            # 保存被拒绝的材料（如果有）
-            if hasattr(obj, 'rejected_materials'):
-                obj.rejected_materials = rejected_materials
-            obj.reviewed_at = timezone.now()
-            obj.save()
-            
-            messages.success(request, f'报销材料已{'批准' if decision == 'approved' else '拒绝'}')
-            return redirect('clubs:staff_dashboard')
-        
-        # 使用动态函数获取材料列表
-        materials_list, submission_files, missing_materials = get_dynamic_materials_payload(
-            obj,
-            req_type_db,
-            include_missing=True,
-        )
-        
-        context = {
-            'reimbursement': obj,
-            'materials_list': materials_list,
-            'submission_files': submission_files,
-            'missing_materials': missing_materials,
-        }
-    
-    elif request_type == 'staff_registration':
-        # 干事注册审核需要管理员权限
-        if not _is_admin(request.user):
-            messages.error(request, '仅管理员可以审核干事注册申请')
-            return redirect('clubs:index')
-        
-        # 注意：这里club_id实际上是user_id，因为我们统一了路由参数名
-        user = get_object_or_404(User, pk=club_id)
-        obj = user.profile
-
-        if obj.status != 'pending':
-            messages.info(request, '该干事账号不是待审核状态，无需重复审核')
-            return redirect('clubs:manage_users')
-
-        template_name = 'clubs/admin/review_staff_registration.html'  # 使用干事审核模板
-        title = f"审核 {obj.user.username} 的干事注册申请"
-        
-        # 处理POST请求
-        if request.method == 'POST':
-            decision = request.POST.get('review_status', '')
-            review_comments = request.POST.get('review_comment', '').strip()
-            
-            if decision not in ['approved', 'rejected']:
-                messages.error(request, '状态不合法')
-                return redirect('clubs:admin_dashboard')
-            
-            obj.status = decision
-            # 保存审核意见（如果有）
-            if hasattr(obj, 'review_comments'):
-                obj.review_comments = review_comments
-            obj.save()
-            
-            messages.success(request, f'干事注册申请已{"批准" if decision == "approved" else "拒绝"}')
-            return redirect('clubs:admin_dashboard')
-        
-        context = {
-            'user': user,
-            'profile': obj,
-        }
-        # 继续执行下面的代码，不要在这里直接返回
-    
-
-    
-    elif request_type == 'club_registration_submission':
-        from clubs.models import Club, ClubRegistration, ClubRegistrationReview
-        
-        # 获取社团对象
-        club = get_object_or_404(Club, pk=club_id)
-        
-        # 优先使用ID参数获取注册申请（解决重新提交后的链接问题）
-        registration_id = request.GET.get('id', '')
-        
-        # 获取所有注册申请（用于计算submission_number）
-        registrations = ClubRegistration.objects.filter(club=club).order_by('submitted_at')
-        
-        if registration_id:
-            try:
-                obj = ClubRegistration.objects.get(pk=registration_id, club=club)
-                # 计算该申请在列表中的实际位置
-                submission_number = list(registrations).index(obj) + 1
-            except (ValueError, ClubRegistration.DoesNotExist):
-                # 如果ID无效，回退到使用submission_number
-                if submission_number > len(registrations):
-                    messages.error(request, '该社团没有这么多次的注册申请记录')
-                    return redirect('clubs:staff_dashboard')
-                obj = registrations[submission_number - 1]
-        else:
-            # 没有ID参数时，使用submission_number
-            if submission_number > len(registrations):
-                messages.error(request, '该社团没有这么多次的注册申请记录')
-                return redirect('clubs:staff_dashboard')
-            obj = registrations[submission_number - 1]
-        template_name = 'clubs/staff/review_request.html'  # 使用统一审核模板
-        title = f"审核 {club.name} 的第 {submission_number} 次注册申请"
-        
-        # 检查审核是否已完成，已完成则不允许查看
-        if obj.status != 'pending':
-            messages.error(request, '该申请已完成审核，无法再查看审核页面')
-            return redirect('clubs:staff_dashboard')
-        
-        # 检查当前用户是否已经审核过该申请
-        # 对于重新提交的申请（状态为pending），允许同一干事再次审核
-        has_reviewed = obj.reviews.filter(reviewer=request.user).exists()
-        if has_reviewed and obj.status != 'pending':
-            messages.error(request, '您已经审核过该申请，无法再次查看审核页面')
-            return redirect('clubs:staff_dashboard')
-        
-        # 处理POST请求
-        if request.method == 'POST':
-            # 检查当前用户是否已经审核过该申请
-            if has_reviewed:
-                messages.error(request, '您已经审核过该社团注册申请，无法再次审核')
-                return redirect('clubs:staff_dashboard')
-            
-            decision = request.POST.get('review_status', '')  # 使用统一的'review_status'参数名
-            review_comments = request.POST.get('review_comment', '').strip()  # 使用统一的'review_comment'参数名
-            
-            # 统一处理被拒绝的材料
-            rejected_materials = []
-            if decision == 'rejected':
-                # 直接从表单中获取被拒绝的材料列表
-                rejected_materials = request.POST.getlist('rejected_materials')
-                
-                # 如果没有选择任何被拒绝的材料，默认拒绝所有
-                if not rejected_materials:
-                    reqs = MaterialRequirement.objects.filter(request_type=req_type_db, is_active=True)
-                    for r in reqs:
-                        fid = f"req_{r.id}"
-                        rejected_materials.append(fid)
-            
-            if decision not in ['approved', 'rejected']:
-                messages.error(request, '状态不合法')
-                return redirect('clubs:staff_dashboard')
-            
-            # 创建审核记录
-            club_registration_review = ClubRegistrationReview.objects.create(
-                registration=obj,
-                reviewer=request.user,
-                status=decision,
-                comment=review_comments,
-                rejected_materials=rejected_materials if decision == 'rejected' else []
-            )
-            
-            # 检查当前审核状态
-            reviews = obj.reviews.all()
-            
-            # 收集所有审核意见
-            all_comments = []
-            for review in reviews:
-                if review.comment:
-                    all_comments.append(f"{review.reviewer.username}: {review.comment}")
-                else:
-                    all_comments.append(f"{review.reviewer.username}: 无")
-            
-            # 如果当前审核是拒绝，直接打回请求
-            if decision == 'rejected':
-                obj.status = decision
-                obj.reviewer_comment = '\n'.join(all_comments)
-                obj.reviewed_at = timezone.now()
-                messages.success(request, f'社团注册申请已拒绝')
-            # 如果当前审核是批准，检查是否有3人或以上批准，通过该申请
-            elif reviews.filter(status='approved').count() >= 3:
-                obj.status = 'approved'
-                obj.reviewer_comment = '\n'.join(all_comments)
-                obj.reviewed_at = timezone.now()
-                messages.success(request, f'社团注册申请已批准')
-            # 否则保持待审核状态
-            else:
-                obj.status = 'pending'
-                messages.success(request, f'已提交审核意见，等待其他审核者完成审核（当前有{reviews.filter(status="approved").count()}人批准）')
-            
-            obj.save()
-            
-            return redirect('clubs:staff_dashboard')
-        
-        # 计算审核统计信息
-        approved_count = obj.reviews.filter(status='approved').count()
-        rejected_count = obj.reviews.filter(status='rejected').count()
-        
-        # 获取现有的审核记录
-        existing_reviews = obj.reviews.all().order_by('reviewed_at')
-        
-        # 使用动态函数获取材料列表
-        materials_list, submission_files, missing_materials = get_dynamic_materials_payload(
-            obj,
-            req_type_db,
-            include_missing=True,
-        )
-        
-        context = {
-            'registration': obj,
-            'approved_count': approved_count,
-            'rejected_count': rejected_count,
-            'has_reviewed': has_reviewed,
-            'user_has_reviewed': has_reviewed,
-            'materials_list': materials_list,
-            'submission_files': submission_files,
-            'existing_reviews': existing_reviews,
-            'missing_materials': missing_materials,
-        }   
-    
-    else:
-        messages.error(request, '无效的审核请求类型')
-        return redirect('clubs:staff_dashboard')
-    
-    # 添加通用上下文
-    context['title'] = title
-    context['request_type'] = request_type
-    
-    return render(request, template_name, context)
 
 # ==================== 管理员功能 ====================
 
@@ -3468,7 +1054,7 @@ def review_staff_registration(request, user_id):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以审核干事注册申请')
         return redirect('clubs:index')
-    
+
     # 获取用户和用户角色信息
     user = get_object_or_404(User, pk=user_id)
     try:
@@ -3480,15 +1066,15 @@ def review_staff_registration(request, user_id):
     except UserProfile.DoesNotExist:
         messages.error(request, '用户角色信息不存在')
         return redirect('clubs:admin_dashboard')
-    
+
     if request.method == 'POST':
         decision = request.POST.get('decision', '')
         review_comment = request.POST.get('review_comment', '').strip()
-        
+
         if decision not in ['approved', 'rejected']:
             messages.error(request, '审核结果不合法')
             return redirect('clubs:review_staff_registration', user_id=user_id)
-        
+
         # 更新用户状态
         profile.status = decision
         if review_comment:
@@ -3496,186 +1082,16 @@ def review_staff_registration(request, user_id):
             # 为了简单起见，我们暂时不保存评论
             pass
         profile.save()
-        
+
         messages.success(request, f'用户 {user.username} 的注册申请已{'批准' if decision == 'approved' else '拒绝'}')
         return redirect('clubs:manage_users')
-    
+
     context = {
         'user': user,
         'profile': profile,
     }
     return render(request, 'clubs/admin/review_staff_registration.html', context)
 
-@login_required(login_url=settings.LOGIN_URL)
-def admin_dashboard(request):
-    """管理员仪表板"""
-    if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以访问此页面')
-        return redirect('clubs:index')
-    
-    # 统计数据
-    total_clubs = Club.objects.count()
-    total_users = User.objects.count()
-    pending_registrations = ClubRegistrationRequest.objects.filter(status='pending').count()
-    published_announcements = Announcement.objects.filter(status='published').count()
-    pending_staff_count = UserProfile.objects.filter(role='staff', status='pending').count()
-    
-    # 用户角色分布
-    presidents_count = UserProfile.objects.filter(role='president').count()
-    staff_count = UserProfile.objects.filter(role='staff').count()
-    admins_count = UserProfile.objects.filter(role='admin').count()
-    members_count = UserProfile.objects.filter(role='member').count()
-    
-    # 最近发布的公告
-    recent_announcements = Announcement.objects.all().order_by('-created_at')[:5]
-
-    # 申请总数统计
-    total_applications = (
-        ReviewSubmission.objects.count()
-        + ClubRegistration.objects.count()
-        + ClubRegistrationRequest.objects.count()
-        + Reimbursement.objects.count()
-        + ActivityApplication.objects.count()
-        + PresidentTransition.objects.count()
-    )
-    pending_all = (
-        ReviewSubmission.objects.filter(status='pending').count()
-        + ClubRegistration.objects.filter(status='pending').count()
-        + ClubRegistrationRequest.objects.filter(status='pending').count()
-        + Reimbursement.objects.filter(status='pending').count()
-        + ActivityApplication.objects.filter(staff_approved__isnull=True).count()
-        + PresidentTransition.objects.filter(status='pending').count()
-    )
-
-    # 最近 14 天每日访问
-    from django.utils import timezone as tz
-    import json
-    today = tz.localdate()
-    visit_dates = [str(today - __import__('datetime').timedelta(days=i)) for i in range(13, -1, -1)]
-    visit_counts_qs = DailyStat.objects.filter(
-        date__gte=today - __import__('datetime').timedelta(days=13)
-    ).values('date', 'visits')
-    visit_map = {str(row['date']): row['visits'] for row in visit_counts_qs}
-    visit_counts = [visit_map.get(d, 0) for d in visit_dates]
-    total_visits_14d = sum(visit_counts)
-
-    # Redis 缓存信息（可选）
-    redis_info = None
-    try:
-        from django.conf import settings as dj_settings
-        backend = getattr(dj_settings, 'CACHE_BACKEND', '')
-        if backend == 'redis':
-            from django_redis import get_redis_connection
-            conn = get_redis_connection('default')
-            info = conn.info()
-            mem_used = info.get('used_memory', 0)
-            mem_max = info.get('maxmemory', 0)
-            keys = conn.dbsize()
-            redis_info = {
-                'used_mb': round(mem_used / 1024 / 1024, 2),
-                'max_mb': round(mem_max / 1024 / 1024, 2) if mem_max > 0 else None,
-                'usage_pct': round(mem_used / mem_max * 100, 1) if mem_max > 0 else None,
-                'keys': keys,
-                'version': info.get('redis_version', '?'),
-                'connected_clients': info.get('connected_clients', '?'),
-                'uptime_days': info.get('uptime_in_days', '?'),
-            }
-    except Exception:
-        redis_info = None
-
-    # Per-type application stats
-    rs_total = ReviewSubmission.objects.count()
-    rs_approved = ReviewSubmission.objects.filter(status='approved').count()
-    rs_rejected = ReviewSubmission.objects.filter(status='rejected').count()
-    rs_pending  = ReviewSubmission.objects.filter(status='pending').count()
-
-    cr_total    = ClubRegistration.objects.count()
-    cr_approved = ClubRegistration.objects.filter(status='approved').count()
-    cr_rejected = ClubRegistration.objects.filter(status='rejected').count()
-    cr_pending  = ClubRegistration.objects.filter(status='pending').count()
-
-    crr_total    = ClubRegistrationRequest.objects.count()
-    crr_approved = ClubRegistrationRequest.objects.filter(status='approved').count()
-    crr_rejected = ClubRegistrationRequest.objects.filter(status='rejected').count()
-    crr_pending  = ClubRegistrationRequest.objects.filter(status='pending').count()
-
-    rb_total    = Reimbursement.objects.count()
-    rb_approved = Reimbursement.objects.filter(status='approved').count()
-    rb_rejected = Reimbursement.objects.filter(status='rejected').count()
-    rb_pending  = Reimbursement.objects.filter(status='pending').count()
-
-    aa_total    = ActivityApplication.objects.count()
-    aa_approved = ActivityApplication.objects.filter(status='approved').count()
-    aa_rejected = ActivityApplication.objects.filter(status='rejected').count()
-    aa_pending  = ActivityApplication.objects.filter(staff_approved__isnull=True).count()
-
-    pt_total    = PresidentTransition.objects.count()
-    pt_approved = PresidentTransition.objects.filter(status='approved').count()
-    pt_rejected = PresidentTransition.objects.filter(status='rejected').count()
-    pt_pending  = PresidentTransition.objects.filter(status='pending').count()
-
-    # 历史决策统计：每次审核决定都单独计入（拒绝后重提再通过算两次）
-    # SubmissionReview / ClubApplicationReview / ClubRegistrationReview 本身即历史审核记录表
-    hist_rs_approved  = SubmissionReview.objects.filter(status='approved').count()
-    hist_rs_rejected  = SubmissionReview.objects.filter(status='rejected').count()
-    hist_crr_approved = ClubApplicationReview.objects.filter(status='approved').count()
-    hist_crr_rejected = ClubApplicationReview.objects.filter(status='rejected').count()
-    hist_cr_approved  = ClubRegistrationReview.objects.filter(status='approved').count()
-    hist_cr_rejected  = ClubRegistrationReview.objects.filter(status='rejected').count()
-    # ReimbursementHistory 存储历史轮次，当前轮次仍在 Reimbursement 表
-    hist_rb_approved  = (ReimbursementHistory.objects.filter(status='approved').count()
-                         + rb_approved)
-    hist_rb_rejected  = (ReimbursementHistory.objects.filter(status='rejected').count()
-                         + rb_rejected)
-    # ActivityApplicationHistory 同上
-    hist_aa_approved  = (ActivityApplicationHistory.objects.filter(status='approved').count()
-                         + aa_approved)
-    hist_aa_rejected  = (ActivityApplicationHistory.objects.filter(status='rejected').count()
-                         + aa_rejected)
-
-    total_approved_all = (hist_rs_approved + hist_crr_approved + hist_cr_approved
-                          + hist_rb_approved + hist_aa_approved + pt_approved)
-    total_rejected_all = (hist_rs_rejected + hist_crr_rejected + hist_cr_rejected
-                          + hist_rb_rejected + hist_aa_rejected + pt_rejected)
-    total_decided = total_approved_all + total_rejected_all
-    overall_approval_rate  = round(total_approved_all / total_decided * 100, 1) if total_decided > 0 else 0
-    overall_rejection_rate = round(total_rejected_all / total_decided * 100, 1) if total_decided > 0 else 0
-
-    type_labels   = ['年审材料', '社团注册', '注册申请', '报销申请', '活动申请', '换届申请']
-    type_totals   = [rs_total, cr_total, crr_total, rb_total, aa_total, pt_total]
-    type_pending  = [rs_pending, cr_pending, crr_pending, rb_pending, aa_pending, pt_pending]
-    # 柱状图也使用历史决策数据（与通过率计算口径一致）
-    type_approved = [hist_rs_approved, hist_cr_approved, hist_crr_approved,
-                     hist_rb_approved, hist_aa_approved, pt_approved]
-    type_rejected = [hist_rs_rejected, hist_cr_rejected, hist_crr_rejected,
-                     hist_rb_rejected, hist_aa_rejected, pt_rejected]
-
-    context = {
-        'total_clubs': total_clubs,
-        'total_users': total_users,
-        'pending_registrations': pending_registrations,
-        'published_announcements': published_announcements,
-        'pending_staff_count': pending_staff_count,
-        'presidents_count': presidents_count,
-        'staff_count': staff_count,
-        'admins_count': admins_count,
-        'members_count': members_count,
-        'announcements': recent_announcements,
-        'total_applications': total_applications,
-        'pending_all': pending_all,
-        'total_visits_14d': total_visits_14d,
-        'visit_dates_json': json.dumps(visit_dates),
-        'visit_counts_json': json.dumps(visit_counts),
-        'redis_info': redis_info,
-        'type_labels_json':   json.dumps(type_labels, ensure_ascii=False),
-        'type_totals_json':   json.dumps(type_totals),
-        'type_pending_json':  json.dumps(type_pending),
-        'type_approved_json': json.dumps(type_approved),
-        'type_rejected_json': json.dumps(type_rejected),
-        'overall_approval_rate':  overall_approval_rate,
-        'overall_rejection_rate': overall_rejection_rate,
-    }
-    return render(request, 'clubs/admin/dashboard.html', context)
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -3690,7 +1106,7 @@ def manage_carousel(request):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以访问此页面')
         return redirect('clubs:index')
-    
+
     carousel_images = CarouselImage.objects.all().order_by('-uploaded_at')
     return render(request, 'clubs/admin/manage_carousel.html', {
         'carousel_images': carousel_images,
@@ -3703,7 +1119,7 @@ def add_carousel(request):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以访问此页面')
         return redirect('clubs:index')
-    
+
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         description = request.POST.get('description', '').strip()
@@ -3711,11 +1127,11 @@ def add_carousel(request):
         order = int(request.POST.get('order', 0))
         is_active = request.POST.get('is_active') == 'on'
         image = request.FILES.get('image')
-        
+
         if not image:
             messages.error(request, '请选择要上传的图片')
             return render(request, 'clubs/admin/carousel_form.html')
-        
+
         carousel = CarouselImage.objects.create(
             title=title,
             description=description,
@@ -3727,7 +1143,7 @@ def add_carousel(request):
         )
         messages.success(request, '轮播图添加成功')
         return redirect('clubs:manage_carousel')
-    
+
     return render(request, 'clubs/admin/carousel_form.html')
 
 
@@ -3737,16 +1153,16 @@ def edit_carousel(request, carousel_id):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以访问此页面')
         return redirect('clubs:index')
-    
+
     carousel = get_object_or_404(CarouselImage, id=carousel_id)
-    
+
     if request.method == 'POST':
         carousel.title = request.POST.get('title', '').strip()
         carousel.description = request.POST.get('description', '').strip()
         carousel.link = request.POST.get('link', '').strip()
         carousel.order = int(request.POST.get('order', 0))
         carousel.is_active = request.POST.get('is_active') == 'on'
-        
+
         # 如果上传了新图片，替换旧图片
         new_image = request.FILES.get('image')
         if new_image:
@@ -3759,11 +1175,11 @@ def edit_carousel(request, carousel_id):
                 except:
                     pass
             carousel.image = new_image
-        
+
         carousel.save()
         messages.success(request, '轮播图更新成功')
         return redirect('clubs:manage_carousel')
-    
+
     return render(request, 'clubs/admin/carousel_form.html', {
         'carousel': carousel,
     })
@@ -3775,9 +1191,9 @@ def delete_carousel(request, carousel_id):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以访问此页面')
         return redirect('clubs:index')
-    
+
     carousel = get_object_or_404(CarouselImage, id=carousel_id)
-    
+
     if request.method == 'POST':
         # 删除图片文件
         if carousel.image:
@@ -3787,10 +1203,10 @@ def delete_carousel(request, carousel_id):
                     os.remove(carousel.image.path)
             except:
                 pass
-        
+
         carousel.delete()
         messages.success(request, '轮播图删除成功')
-    
+
     return redirect('clubs:manage_carousel')
 
 
@@ -3848,20 +1264,20 @@ def publish_announcement(request):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以发布公告')
         return redirect('clubs:index')
-    
+
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         content = request.POST.get('content', '').strip()
         status = request.POST.get('status', 'published')
         expires_at = request.POST.get('expires_at', '')
         attachment = request.FILES.get('attachment')
-        
+
         errors = []
         if not title:
             errors.append('公告标题不能为空')
         if not content:
             errors.append('公告内容不能为空')
-        
+
         if errors:
             announcements = Announcement.objects.all().order_by('-created_at')[:10]
             context = {
@@ -3871,7 +1287,7 @@ def publish_announcement(request):
                 'announcements': announcements,
             }
             return render(request, 'clubs/admin/publish_announcement.html', context)
-        
+
         announcement = Announcement.objects.create(
             title=title,
             content=content,
@@ -3881,10 +1297,10 @@ def publish_announcement(request):
             expires_at=expires_at if expires_at else None,
             attachment=attachment,
         )
-        
+
         messages.success(request, '公告发布成功！')
         return redirect('clubs:admin_dashboard')
-    
+
     # GET 请求 - 获取最近的公告列表
     announcements = Announcement.objects.all().order_by('-created_at')[:10]
     context = {
@@ -3899,272 +1315,23 @@ def delete_announcement(request, announcement_id):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以删除公告')
         return redirect('clubs:admin_dashboard')
-    
+
     announcement = get_object_or_404(Announcement, pk=announcement_id)
-    
+
     if request.method == 'POST':
         announcement_title = announcement.title
         announcement.delete()
         messages.success(request, f'公告"{announcement_title}"已删除')
         return redirect('clubs:admin_dashboard')
-    
+
     # GET 请求：确认删除
     context = {
         'announcement': announcement,
     }
     return render(request, 'clubs/admin/confirm_delete_announcement.html', context)
 
-@login_required(login_url=settings.LOGIN_URL)
-def submit_club_registration(request, club_id):
-    """提交社团注册 - 仅社团社长可用"""
-    # 获取社团对象
-    try:
-        club = Club.objects.get(pk=club_id)
-    except Club.DoesNotExist:
-        messages.error(request, '社团不存在')
-        return redirect('clubs:user_dashboard')
-    
-    # 验证权限：只有当前社团社长可以提交注册
-    is_club_president = Officer.objects.filter(
-        user_profile__user=request.user,
-        club=club,
-        position='president',
-        is_current=True
-    ).exists()
-    
-    if not is_club_president:
-        messages.error(request, '仅社团社长可以提交社团注册')
-        return redirect('clubs:user_dashboard')
-    
-    # 检查是否有活跃的注册周期
-    active_period = RegistrationPeriod.objects.filter(is_active=True).first()
-    if not active_period:
-        messages.error(request, '当前社团注册功能未开启，无法提交注册申请')
-        return redirect('clubs:user_dashboard')
-    
-    # 获取动态材料要求
-    requirements = MaterialRequirement.objects.filter(
-        request_type='club_registration', 
-        is_active=True
-    ).order_by('order')
-
-    # 验证文件函数
-    def validate_file(file, requirement):
-        if not file:
-            return None
-        
-        # 检查扩展名
-        allowed_exts = [ext.strip().lower() for ext in requirement.allowed_extensions.split(',')]
-        ext = '.' + file.name.lower().split('.')[-1]
-        if ext not in allowed_exts:
-            return f'{requirement.name}必须是以下格式: {requirement.allowed_extensions}'
-        
-        # 检查大小
-        if file.size > requirement.max_size_mb * 1024 * 1024:
-            return f'{requirement.name}文件大小不能超过{requirement.max_size_mb}MB'
-        
-        return None
-
-    if request.method == 'POST':
-        errors = []
-        uploaded_files = {}
-        
-        for req in requirements:
-            file = request.FILES.get(f'material_{req.id}')
-            uploaded_files[req.id] = file
-            
-            # 验证必填项
-            if req.is_required and not file:
-                errors.append(f'{req.name}不能为空')
-            
-            # 验证文件格式和大小
-            if file:
-                err = validate_file(file, req)
-                if err:
-                    errors.append(err)
-        
-        if errors:
-            for err in errors:
-                messages.error(request, err)
-            # 返回页面
-            registration_templates = Template.objects.filter(template_type__startswith='registration_').order_by('template_type')
-            context = {
-                'club': club,
-                'registration_templates': registration_templates,
-                'active_period': active_period,
-                'requirements': requirements,
-            }
-            return render(request, 'clubs/user/submit_club_registration.html', context)
-        
-        # 创建社团注册记录
-        try:
-            registration = ClubRegistration.objects.create(
-                club=club,
-                registration_period=active_period,  # 关联到当前活跃的注册周期
-                requested_by=request.user,
-                status='pending'
-            )
-            
-            # 处理文件保存
-            for req in requirements:
-                file = uploaded_files.get(req.id)
-                if file:
-                    # 重命名文件
-                    file = rename_uploaded_file(file, club.name, '社团注册', req.name)
-                    
-                    # 1. 保存到 SubmittedFile
-                    SubmittedFile.objects.create(
-                        content_type=ContentType.objects.get_for_model(ClubRegistration),
-                        object_id=registration.id,
-                        requirement=req,
-                        file=file
-                    )
-            
-            messages.success(request, '社团注册已提交，等待审核')
-            return redirect('clubs:user_dashboard')
-            
-        except Exception as e:
-            messages.error(request, f'提交失败: {str(e)}')
-            # 出错时返回页面
-            registration_templates = Template.objects.filter(template_type__startswith='registration_').order_by('template_type')
-            context = {
-                'club': club,
-                'registration_templates': registration_templates,
-                'active_period': active_period,
-                'requirements': requirements,
-            }
-            return render(request, 'clubs/user/submit_club_registration.html', context)
-    
-    # GET请求 - 显示注册表单
-    # 再次检查是否有活跃的注册周期（可能在加载页面时被关闭）
-    if not active_period:
-        messages.error(request, '当前社团注册功能未开启，无法提交注册申请')
-        return redirect('clubs:user_dashboard')
-    
-    # 获取所有注册相关的模板
-    registration_templates = Template.objects.filter(template_type__startswith='registration_').order_by('template_type')
-    
-    context = {
-        'club': club,
-        'registration_templates': registration_templates,
-        'active_period': active_period,
-        'requirements': requirements,
-    }
-    return render(request, 'clubs/user/submit_club_registration.html', context)
 
 
-def review_club_registration_submission(request, registration_id):
-    """审核社团注册 - 仅干事和管理员可用"""
-    # 简单的权限检查
-    try:
-        user_role = request.user.profile.role
-        if user_role in ['staff', 'admin']:
-            # 权限通过，渲染审核页面
-            registration = get_object_or_404(ClubRegistration, pk=registration_id)
-            
-            # 检查审核是否已完成，已完成则不允许查看
-            if registration.status != 'pending':
-                messages.error(request, '该申请已完成审核，无法再查看审核页面')
-                return redirect('clubs:staff_audit_center', 'registration')
-            
-            # 检查当前用户是否已经审核过该申请（仅当前提交轮次）
-            has_reviewed = registration.reviews.filter(reviewer=request.user, submission_attempt=registration.resubmission_attempt).exists()
-            if has_reviewed:
-                messages.error(request, '您已经审核过该社团注册申请，无法再次审核')
-                return redirect('clubs:staff_audit_center', 'registration')
-            
-            if request.method == 'POST':
-                decision = request.POST.get('review_status', '')
-                review_comments = request.POST.get('review_comment', '').strip()
-                
-                # 获取被拒绝的材料
-                rejected_materials = request.POST.getlist('rejected_materials')
-                
-                if decision not in ['approved', 'rejected']:
-                    messages.error(request, '状态不合法')
-                    return redirect('clubs:staff_audit_center', 'registration')
-                
-                # 如果是拒绝，需要确保至少有一个被拒绝的材料
-                if decision == 'rejected' and not rejected_materials:
-                    messages.error(request, '拒绝必须选择至少一个被拒绝的材料')
-                    return redirect('clubs:review_club_registration_submission', registration_id=registration_id)
-                
-                # 创建审核记录（绑定到当前提交轮次）
-                club_registration_review = ClubRegistrationReview.objects.create(
-                    registration=registration,
-                    reviewer=request.user,
-                    status=decision,
-                    comment=review_comments,
-                    rejected_materials=rejected_materials if decision == 'rejected' else [],
-                    submission_attempt=registration.resubmission_attempt
-                )
-                
-                # 检查当前审核状态（仅当前提交轮次）
-                reviews = registration.reviews.filter(submission_attempt=registration.resubmission_attempt)
-                
-                # 收集所有审核意见
-                all_comments = []
-                for review in reviews:
-                    if review.comment:
-                        all_comments.append(f"{review.reviewer.username}: {review.comment}")
-                    else:
-                        all_comments.append(f"{review.reviewer.username}: 无")
-                
-                # 如果当前审核是拒绝，直接打回请求
-                if decision == 'rejected':
-                    registration.status = decision
-                    registration.reviewer_comment = '\n'.join(all_comments)
-                    registration.reviewed_at = timezone.now()
-                    messages.success(request, f'社团注册申请已拒绝')
-                # 如果当前审核是批准，检查是否有3人或以上批准，通过该申请
-                elif reviews.filter(status='approved').count() >= 3:
-                    registration.status = 'approved'
-                    registration.reviewer_comment = '\n'.join(all_comments)
-                    registration.reviewed_at = timezone.now()
-                    messages.success(request, f'社团注册申请已批准')
-                # 否则保持待审核状态
-                else:
-                    registration.status = 'pending'
-                    messages.success(request, f'已提交审核意见，等待其他审核者完成审核（当前有{reviews.filter(status="approved").count()}人批准）')
-                
-                registration.save()
-                
-                return redirect('clubs:staff_audit_center', 'registration')
-            
-            # 获取所有审核记录（用于历史展示）
-            all_reviews = registration.reviews.order_by('submission_attempt', '-reviewed_at')
-
-            # 计算当前轮次的统计信息
-            current_attempt_reviews = registration.reviews.filter(submission_attempt=registration.resubmission_attempt)
-            approved_count = current_attempt_reviews.filter(status='approved').count()
-            rejected_count = current_attempt_reviews.filter(status='rejected').count()
-            
-            # 获取动态材料列表，并识别文件已被删除的异常记录
-            materials, _, missing_materials = get_dynamic_materials_payload(
-                registration,
-                'club_registration',
-                include_missing=True,
-            )
-            
-            context = {
-                'registration': registration,
-                'all_reviews': all_reviews,
-                'approved_count': approved_count,
-                'rejected_count': rejected_count,
-                'has_reviewed': has_reviewed,
-                'materials': materials,
-                'materials_list': materials,
-                'missing_materials': missing_materials,
-            }
-            
-            return render(request, 'clubs/staff/review_club_registration_submission.html', context)
-        else:
-            # 权限不足，重定向到首页
-            messages.error(request, '仅干事和管理员可以审核社团注册')
-            return redirect('clubs:index')
-    except UserProfile.DoesNotExist:
-        messages.error(request, '用户配置文件不存在')
-        return redirect('clubs:index')
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -4174,22 +1341,22 @@ def edit_announcement(request, announcement_id):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以编辑公告')
         return redirect('clubs:admin_dashboard')
-    
+
     announcement = get_object_or_404(Announcement, pk=announcement_id)
-    
+
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         content = request.POST.get('content', '').strip()
         status = request.POST.get('status', 'published')
         expires_at = request.POST.get('expires_at', '')
         attachment = request.FILES.get('attachment')
-        
+
         errors = []
         if not title:
             errors.append('公告标题不能为空')
         if not content:
             errors.append('公告内容不能为空')
-        
+
         if errors:
             context = {
                 'errors': errors,
@@ -4198,25 +1365,25 @@ def edit_announcement(request, announcement_id):
                 'announcement': announcement,
             }
             return render(request, 'clubs/admin/edit_announcement.html', context)
-        
+
         announcement.title = title
         announcement.content = content
         announcement.status = status
         announcement.expires_at = expires_at if expires_at else None
-        
+
         # 如果有新附件，则更新附件
         if attachment:
             announcement.attachment = attachment
-        
+
         # 如果状态从非发布状态变为发布状态，更新发布时间
         if status == 'published' and announcement.status != 'published':
             announcement.published_at = timezone.now()
-        
+
         announcement.save()
-        
+
         messages.success(request, '公告修改成功！')
         return redirect('clubs:admin_dashboard')
-    
+
     # GET 请求 - 预填充表单
     context = {
         'announcement': announcement,
@@ -4388,7 +1555,7 @@ def import_users_csv(request):
             # 预处理：检查所有行的有效性和重复性，构建待创建/更新对象列表
             rows_to_process = []
             existing_student_ids = {}  # {student_id: username}
-            
+
             # 加载数据库中已有的学号
             for profile in UserProfile.objects.filter(student_id__isnull=False).values('user__username', 'student_id'):
                 if profile['student_id']:
@@ -4425,13 +1592,13 @@ def import_users_csv(request):
                         skipped += 1
                         errors.append(f'第{idx}行学号重复：{student_id}')
                         continue
-                    
+
                     # 检查本次导入中是否有重复学号
                     if student_id in import_student_ids:
                         skipped += 1
                         errors.append(f'第{idx}行学号与第{import_student_ids[student_id]}行重复')
                         continue
-                    
+
                     import_student_ids[student_id] = idx
 
                 department_obj = None
@@ -4745,22 +1912,22 @@ def manage_users(request):
             messages.success(request, f'已删除用户账号：{username}')
 
         return redirect('clubs:manage_users')
-    
+
     # 获取所有用户，使用select_related加载关联的UserProfile以包含状态信息
     # 便于管理员审核待审核的干事账号
     users = User.objects.select_related('profile').all()
-    
+
     # 搜索过滤
     search = request.GET.get('search', '').strip()
     if search:
         from django.db.models import Q
         users = users.filter(Q(username__icontains=search) | Q(email__icontains=search))
-    
+
     # 角色过滤
     role = request.GET.get('role', '').strip()
     if role:
         users = users.filter(profile__role=role)
-    
+
     # 检查哪些用户被锁（用于在用户列表中显示解锁按钮）
     from django.core.cache import cache
     locked_usernames = set()
@@ -4785,21 +1952,21 @@ def staff_view_users(request):
     if not _is_staff(request.user):
         messages.error(request, '仅干事可以查看用户列表')
         return redirect('clubs:index')
-    
+
     # 获取所有用户，但不提供编辑功能
     users = User.objects.select_related('profile').all()
-    
+
     # 搜索过滤
     search = request.GET.get('search', '').strip()
     if search:
         from django.db.models import Q
         users = users.filter(Q(username__icontains=search) | Q(email__icontains=search))
-    
+
     # 角色过滤
     role = request.GET.get('role', '').strip()
     if role:
         users = users.filter(profile__role=role)
-    
+
     context = {
         'users': users,
         'total_users': User.objects.count(),
@@ -4817,7 +1984,7 @@ def create_user(request):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以创建用户账户')
         return redirect('clubs:index')
-    
+
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         real_name = request.POST.get('real_name', '').strip()
@@ -4828,9 +1995,9 @@ def create_user(request):
         password2 = request.POST.get('password2', '').strip()
         role = request.POST.get('role', 'president').strip()
         student_id = request.POST.get('student_id', '').strip()
-        
+
         errors = []
-        
+
         # 验证
         if not username:
             errors.append('登录用户名不能为空')
@@ -4838,43 +2005,43 @@ def create_user(request):
             errors.append('登录用户名已存在')
         elif len(username) < 3 or len(username) > 30:
             errors.append('登录用户名长度应在3-30个字符之间')
-        
+
         if not real_name:
             errors.append('姓名不能为空')
-        
+
         if not email:
             errors.append('邮箱不能为空')
         elif User.objects.filter(email=email).exists():
             errors.append('邮箱已被使用')
-        
+
         if not phone:
             errors.append('电话不能为空')
-        
+
         if not wechat:
             errors.append('微信号不能为空')
-        
+
         if not password:
             errors.append('密码不能为空')
         elif len(password) < 6:
             errors.append('密码至少6个字符')
-        
+
         if password != password2:
             errors.append('两次输入的密码不一致')
-        
+
         if role not in ['president', 'staff', 'admin']:
             errors.append('无效的用户角色')
-        
+
         # 学号验证（必填字段）
         if not student_id:
             errors.append('学号不能为空')
-        
+
         if errors:
             context = {
                 'errors': errors,
                 'form_data': request.POST,
             }
             return render(request, 'clubs/admin/create_user.html', context)
-        
+
         # 创建用户
         user = User.objects.create_user(
             username=username,
@@ -4882,10 +2049,10 @@ def create_user(request):
             password=password,
             first_name=real_name
         )
-        
+
         # 确定用户状态 - 干事默认待审核，其他类型直接批准
         status = 'pending' if role == 'staff' else 'approved'
-        
+
         # 创建用户角色信息
         profile, created = UserProfile.objects.get_or_create(
             user=user,
@@ -4898,7 +2065,7 @@ def create_user(request):
                 'student_id': student_id
             }
         )
-        
+
         # 如果profile已经存在，更新它
         if not created:
             profile.role = role
@@ -4908,11 +2075,11 @@ def create_user(request):
             profile.wechat = wechat
             profile.student_id = student_id
             profile.save()
-        
+
         role_display = dict(UserProfile.ROLE_CHOICES).get(role, role)
         messages.success(request, f'成功创建用户账户：{username}（角色：{role_display}）')
         return redirect('clubs:manage_users')
-    
+
     return render(request, 'clubs/admin/create_user.html')
 
 
@@ -4924,25 +2091,25 @@ def admin_edit_user_account(request, user_id):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以编辑用户账户信息')
         return redirect('clubs:index')
-    
+
     # 获取目标用户
     target_user = get_object_or_404(User, pk=user_id)
-    
+
     # 确保管理员不能编辑自己的账户（使用自己的账户设置页面）
     if request.user == target_user:
         messages.error(request, '请使用您自己的账户设置页面编辑个人信息')
         return redirect('clubs:change_account_settings')
-    
+
     errors = []
     success_messages = []
-    
+
     if request.method == 'POST':
         action = request.POST.get('action', '')
-        
+
         # 修改用户名
         if action == 'change_username':
             new_username = request.POST.get('new_username', '').strip()
-            
+
             if not new_username:
                 errors.append('新用户名不能为空')
             elif len(new_username) < 3:
@@ -4954,12 +2121,12 @@ def admin_edit_user_account(request, user_id):
                 target_user.username = new_username
                 target_user.save()
                 success_messages.append(f'已将用户 {old_username} 的用户名修改为 {new_username}')
-        
+
         # 修改密码
         elif action == 'change_password':
             new_password = request.POST.get('new_password', '').strip()
             confirm_password = request.POST.get('confirm_password', '').strip()
-            
+
             if not new_password:
                 errors.append('新密码不能为空')
             elif len(new_password) < 6:
@@ -4970,11 +2137,11 @@ def admin_edit_user_account(request, user_id):
                 target_user.set_password(new_password)
                 target_user.save()
                 success_messages.append(f'已成功重置用户 {target_user.username} 的密码')
-        
+
         # 修改角色
         elif action == 'change_role':
             new_role = request.POST.get('new_role', '')
-            
+
             if new_role not in ['president', 'staff', 'admin', 'member']:
                 errors.append('角色不合法')
             else:
@@ -4989,19 +2156,19 @@ def admin_edit_user_account(request, user_id):
                     # 创建UserProfile时处理student_id唯一性约束
                     import uuid
                     unique_student_id = f"USER_{target_user.username}_{str(uuid.uuid4())[:8]}"
-                    
+
                     profile = UserProfile.objects.create(
-                        user=target_user, 
+                        user=target_user,
                         role=new_role,
                         student_id=unique_student_id  # 设置唯一的student_id
                     )
                     role_display = dict(UserProfile.ROLE_CHOICES).get(new_role, new_role)
                     success_messages.append(f'已为用户 {target_user.username} 创建角色：「{role_display}」')
-        
+
         # 修改全名
         elif action == 'change_full_name':
             full_name = request.POST.get('full_name', '').strip()
-            
+
             try:
                 profile = target_user.profile
                 profile.real_name = full_name
@@ -5017,11 +2184,11 @@ def admin_edit_user_account(request, user_id):
                     student_id=unique_student_id
                 )
                 success_messages.append(f'已为用户 {target_user.username} 设置全名：{full_name}')
-        
+
         # 修改邮箱
         elif action == 'change_email':
             email = request.POST.get('email', '').strip()
-            
+
             if not email:
                 errors.append('邮箱不能为空')
             elif not email.count('@'):
@@ -5032,11 +2199,11 @@ def admin_edit_user_account(request, user_id):
                 target_user.email = email
                 target_user.save()
                 success_messages.append(f'已更新用户 {target_user.username} 的邮箱：{email}')
-        
+
         # 修改电话
         elif action == 'change_phone':
             phone = request.POST.get('phone', '').strip()
-            
+
             try:
                 profile = target_user.profile
                 profile.phone = phone
@@ -5052,11 +2219,11 @@ def admin_edit_user_account(request, user_id):
                     student_id=unique_student_id
                 )
                 success_messages.append(f'已为用户 {target_user.username} 设置电话：{phone}')
-        
+
         # 修改QQ
         elif action == 'change_qq':
             qq = request.POST.get('qq', '').strip()
-            
+
             try:
                 profile = target_user.profile
                 profile.qq = qq
@@ -5072,11 +2239,11 @@ def admin_edit_user_account(request, user_id):
                     student_id=unique_student_id
                 )
                 success_messages.append(f'已为用户 {target_user.username} 设置QQ：{qq}')
-        
+
         # 修改微信
         elif action == 'change_wechat':
             wechat = request.POST.get('wechat', '').strip()
-            
+
             try:
                 profile = target_user.profile
                 profile.wechat = wechat
@@ -5092,11 +2259,11 @@ def admin_edit_user_account(request, user_id):
                     student_id=unique_student_id
                 )
                 success_messages.append(f'已为用户 {target_user.username} 设置微信：{wechat}')
-        
+
         # 修改性别
         elif action == 'change_gender':
             gender = request.POST.get('gender', '').strip()
-            
+
             if gender and gender not in ['male', 'female', 'other']:
                 errors.append('性别选项不合法')
             else:
@@ -5117,7 +2284,7 @@ def admin_edit_user_account(request, user_id):
                     )
                     gender_display = dict(UserProfile.GENDER_CHOICES).get(gender, '不设定') if gender else '不设定'
                     success_messages.append(f'已为用户 {target_user.username} 设置性别：{gender_display}')
-        
+
         # 修改用户详细信息
         elif action == 'change_user_info':
             real_name = request.POST.get('real_name', '').strip()
@@ -5126,24 +2293,24 @@ def admin_edit_user_account(request, user_id):
             wechat = request.POST.get('wechat', '').strip()
             political_status = request.POST.get('political_status', 'non_member')
             email = request.POST.get('email', '').strip()
-            
+
             # 验证必填字段
             if not email:
                 errors.append('邮箱不能为空')
             elif User.objects.exclude(id=target_user.id).filter(email=email).exists():
                 errors.append('邮箱已被使用')
-            
+
             if not real_name:
                 errors.append('真实姓名不能为空')
-            
+
             if student_id and UserProfile.objects.exclude(user=target_user).filter(student_id=student_id).exists():
                 errors.append('学号已被使用')
-            
+
             if not errors:
                 # 更新用户基本信息
                 target_user.email = email
                 target_user.save()
-                
+
                 # 更新用户资料信息
                 try:
                     profile = target_user.profile
@@ -5157,7 +2324,7 @@ def admin_edit_user_account(request, user_id):
                     # 如果用户没有资料，创建一个
                     import uuid
                     unique_student_id = student_id or f"USER_{target_user.username}_{str(uuid.uuid4())[:8]}"
-                    
+
                     profile = UserProfile.objects.create(
                         user=target_user,
                         role='president',  # 默认角色
@@ -5167,7 +2334,7 @@ def admin_edit_user_account(request, user_id):
                         wechat=wechat,
                         political_status=political_status
                     )
-                
+
                 success_messages.append(f'已成功更新用户 {target_user.username} 的详细信息')
 
         # 删除用户
@@ -5182,7 +2349,7 @@ def admin_edit_user_account(request, user_id):
                     return redirect('clubs:manage_users')
                 except Exception as e:
                     errors.append(f'删除失败：{str(e)}')
-        
+
         # 切换账户启用状态
         elif action == 'toggle_active':
             if target_user.is_superuser:
@@ -5208,14 +2375,14 @@ def admin_edit_user_account(request, user_id):
 
                 new_state = '启用' if target_user.is_active else '禁用'
                 success_messages.append(f'已将用户 {target_user.username} 的账户状态从「{old_state}」更改为「{new_state}」')
-        
+
 
     # 获取用户角色信息
     try:
         profile = target_user.profile
     except UserProfile.DoesNotExist:
         profile = None
-    
+
     context = {
         'target_user': target_user,
         'profile': profile,
@@ -5225,7 +2392,7 @@ def admin_edit_user_account(request, user_id):
         'ROLE_CHOICES': UserProfile.ROLE_CHOICES,
         'POLITICAL_STATUS_CHOICES': UserProfile.POLITICAL_STATUS_CHOICES,
     }
-    
+
     return render(request, 'clubs/admin/admin_edit_user_account.html', context)
 
 
@@ -5236,19 +2403,19 @@ def change_user_role(request, user_id):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以修改用户角色')
         return redirect('clubs:index')
-    
+
     target_user = get_object_or_404(User, pk=user_id)
-    
+
     if request.method == 'POST':
         new_role = request.POST.get('new_role', '')
-        
+
         if new_role not in ['president', 'staff', 'admin']:
             messages.error(request, '角色不合法')
             context = {'user': target_user}
             return render(request, 'clubs/admin/change_user_role.html', context)
-        
+
         # 干事注册需要管理员同意（已确保只有管理员可以执行此操作）
-        
+
         try:
             profile = target_user.profile
             old_role = profile.get_role_display()
@@ -5261,23 +2428,23 @@ def change_user_role(request, user_id):
             # 为新创建的用户生成一个唯一的student_id，使用用户名+时间戳确保唯一性
             import uuid
             unique_student_id = f"USER_{target_user.username}_{str(uuid.uuid4())[:8]}"
-            
+
             profile = UserProfile.objects.create(
-                user=target_user, 
+                user=target_user,
                 role=new_role,
                 student_id=unique_student_id  # 设置唯一的student_id
             )
             role_display = dict(UserProfile.ROLE_CHOICES).get(new_role, new_role)
             messages.success(request, f'已为 {target_user.username} 创建角色：「{role_display}」')
-        
+
         return redirect('clubs:manage_users')
-    
+
     # GET 请求
     try:
         profile = target_user.profile
     except UserProfile.DoesNotExist:
         profile = None
-    
+
     context = {
         'user': target_user,
         'profile': profile,
@@ -5292,9 +2459,9 @@ def change_staff_attributes(request, user_id):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以修改干事属性')
         return redirect('clubs:index')
-    
+
     target_user = get_object_or_404(User, pk=user_id)
-    
+
     # 检查目标用户是否为干事或管理员
     try:
         profile = target_user.profile
@@ -5304,11 +2471,11 @@ def change_staff_attributes(request, user_id):
     except UserProfile.DoesNotExist:
         messages.error(request, '用户角色信息不存在')
         return redirect('clubs:manage_users')
-    
+
     if request.method == 'POST':
         department = request.POST.get('department', '').strip()
         staff_level = request.POST.get('staff_level', '').strip()
-        
+
         # 验证部门和职级
         valid_levels = dict(UserProfile.STAFF_LEVEL_CHOICES).keys()
 
@@ -5319,29 +2486,29 @@ def change_staff_attributes(request, user_id):
             except (ValueError, Department.DoesNotExist):
                 messages.error(request, '部门选择无效')
                 return redirect('clubs:manage_users')
-        
+
         if staff_level and staff_level not in valid_levels:
             messages.error(request, '职级选择无效')
             return redirect('clubs:manage_users')
-        
+
         try:
             old_department = profile.department_link.name if profile.department_link else (profile.department or '未设定')
             old_level = profile.get_staff_level_display() if profile.staff_level else '未设定'
-            
+
             profile.department_link = selected_department
             profile.department = selected_department.name if selected_department else None
             profile.staff_level = staff_level if staff_level else profile.staff_level
             profile.save()
-            
+
             new_department = profile.department_link.name if profile.department_link else (profile.department or '未设定')
             new_level = profile.get_staff_level_display()
-            
+
             messages.success(request, f'已修改 {target_user.username} 的干事属性：部门「{old_department}」→「{new_department}」，职级「{old_level}」→「{new_level}」')
         except Exception as e:
             messages.error(request, f'修改失败：{str(e)}')
-        
+
         return redirect('clubs:manage_users')
-    
+
     context = {
         'user': target_user,
         'profile': profile,
@@ -5359,13 +2526,13 @@ def manage_smtp_config(request):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以管理SMTP配置')
         return redirect('clubs:index')
-    
+
     from .models import SMTPConfig
-    
+
     if request.method == 'POST':
         action = request.POST.get('action', '')
         config_id = request.POST.get('config_id', '')
-        
+
         if action == 'create':
             provider = request.POST.get('provider', '').strip()
             smtp_host = request.POST.get('smtp_host', '').strip()
@@ -5373,7 +2540,7 @@ def manage_smtp_config(request):
             sender_email = request.POST.get('sender_email', '').strip()
             sender_password = request.POST.get('sender_password', '').strip()
             use_tls = 'use_tls' in request.POST  # checkbox 未勾选时不会在 POST 中
-            
+
             errors = []
             if not provider:
                 errors.append('邮箱服务商不能为空')
@@ -5385,13 +2552,13 @@ def manage_smtp_config(request):
                 errors.append('发送邮箱不能为空')
             if not sender_password:
                 errors.append('邮箱密码/授权码不能为空')
-            
+
             try:
                 if smtp_port:
                     int(smtp_port)
             except ValueError:
                 errors.append('SMTP端口必须是数字')
-            
+
             if errors:
                 configs = SMTPConfig.objects.all()
                 return render(request, 'clubs/admin/smtp_config.html', {
@@ -5399,11 +2566,11 @@ def manage_smtp_config(request):
                     'errors': errors,
                     'form_data': request.POST,
                 })
-            
+
             # 创建新配置时，取消其他配置的激活状态
             if request.POST.get('is_active') == 'on':
                 SMTPConfig.objects.all().update(is_active=False)
-            
+
             SMTPConfig.objects.create(
                 provider=provider,
                 smtp_host=smtp_host,
@@ -5415,13 +2582,13 @@ def manage_smtp_config(request):
             )
             messages.success(request, 'SMTP配置创建成功')
             return redirect('clubs:manage_smtp_config')
-        
+
         elif action == 'delete':
             config = get_object_or_404(SMTPConfig, pk=config_id)
             config.delete()
             messages.success(request, 'SMTP配置已删除')
             return redirect('clubs:manage_smtp_config')
-        
+
         elif action == 'activate':
             # 取消其他配置的激活状态
             SMTPConfig.objects.all().update(is_active=False)
@@ -5430,17 +2597,17 @@ def manage_smtp_config(request):
             config.save()
             messages.success(request, f'SMTP配置已激活：{config.sender_email}')
             return redirect('clubs:manage_smtp_config')
-        
+
         elif action == 'edit':
             config = get_object_or_404(SMTPConfig, pk=config_id)
-            
+
             provider = request.POST.get('provider', '').strip()
             smtp_host = request.POST.get('smtp_host', '').strip()
             smtp_port = request.POST.get('smtp_port', '').strip()
             sender_email = request.POST.get('sender_email', '').strip()
             sender_password = request.POST.get('sender_password', '').strip()
             use_tls = 'use_tls' in request.POST
-            
+
             errors = []
             if not provider:
                 errors.append('邮箱服务商不能为空')
@@ -5450,13 +2617,13 @@ def manage_smtp_config(request):
                 errors.append('SMTP端口不能为空')
             if not sender_email:
                 errors.append('发送邮箱不能为空')
-            
+
             try:
                 if smtp_port:
                     int(smtp_port)
             except ValueError:
                 errors.append('SMTP端口必须是数字')
-            
+
             if errors:
                 configs = SMTPConfig.objects.all()
                 return render(request, 'clubs/admin/smtp_config.html', {
@@ -5464,7 +2631,7 @@ def manage_smtp_config(request):
                     'errors': errors,
                     'editing_config': config,
                 })
-            
+
             # 更新配置
             config.provider = provider
             config.smtp_host = smtp_host
@@ -5474,17 +2641,17 @@ def manage_smtp_config(request):
                 config.sender_password = sender_password
             config.use_tls = use_tls
             config.save()
-            
+
             messages.success(request, 'SMTP配置更新成功')
             return redirect('clubs:manage_smtp_config')
-        
+
         elif action == 'test_email':
             # 发送测试邮件
             test_email = request.POST.get('test_email', '').strip()
             if not test_email:
                 messages.error(request, '请输入测试邮箱地址')
                 return redirect('clubs:manage_smtp_config')
-            
+
             config = get_object_or_404(SMTPConfig, pk=config_id)
 
             from .email_utils import send_test_email_with_config
@@ -5494,9 +2661,9 @@ def manage_smtp_config(request):
                 messages.success(request, msg)
             else:
                 messages.error(request, msg)
-            
+
             return redirect('clubs:manage_smtp_config')
-    
+
     configs = SMTPConfig.objects.all()
     context = {
         'configs': configs,
@@ -5504,7 +2671,6 @@ def manage_smtp_config(request):
     return render(request, 'clubs/admin/smtp_config.html', context)
 
 
-# review_club_info_change 视图已整合到 review_request 中
 
 
 def toggle_review_enabled(request, club_id):
@@ -5536,18 +2702,18 @@ def zip_materials(request, obj, materials, zip_filename, check_permission_func):
     import os
     from django.http import FileResponse
     import urllib.parse
-    
+
     # 检查权限
     if not check_permission_func():
         messages.error(request, '您没有权限下载此材料')
         return redirect('clubs:index')
-    
+
     # 创建临时目录
     temp_dir = tempfile.mkdtemp()
     try:
         # 创建zip文件
         zip_path = os.path.join(temp_dir, zip_filename)
-        
+
         added_count = 0
         missing_titles = []
 
@@ -5582,11 +2748,11 @@ def zip_materials(request, obj, materials, zip_filename, check_permission_func):
                 request,
                 f"部分文件已丢失，已跳过：{', '.join(missing_titles[:3])}{' ...' if len(missing_titles) > 3 else ''}"
             )
-        
+
         # 创建HTTP响应
         response = FileResponse(open(zip_path, 'rb'), content_type='application/zip')
         response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'' + urllib.parse.quote(zip_filename)
-        
+
         return response
     finally:
         # 注意：这里我们不能直接删除temp_dir，因为FileResponse还在使用它
@@ -5596,189 +2762,54 @@ def zip_materials(request, obj, materials, zip_filename, check_permission_func):
 @login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['GET'])
 def zip_download(request):
-    """统一材料打包下载入口：/zip-download/?type=<type>&id=<id>"""
-    zip_type = (request.GET.get('type') or '').strip().lower().replace('-', '_')
-    object_id_raw = (request.GET.get('id') or '').strip()
-
-    if not zip_type or not object_id_raw:
-        messages.error(request, '缺少下载参数，请提供 type 与 id')
+    submission_id = (request.GET.get('id') or '').strip()
+    if not submission_id.isdigit():
+        messages.error(request, '缺少有效的提交 ID')
         return redirect(request.META.get('HTTP_REFERER', 'clubs:index'))
 
-    try:
-        object_id = int(object_id_raw)
-    except ValueError:
-        messages.error(request, '下载参数 id 必须为整数')
-        return redirect(request.META.get('HTTP_REFERER', 'clubs:index'))
+    submission = get_object_or_404(
+        FormSubmission.objects.select_related('channel', 'club').prefetch_related('uploaded_files__field'),
+        pk=int(submission_id),
+    )
+    if not (is_staff_or_admin(request.user) or _is_president_of_club(request.user, submission.club)):
+        messages.error(request, '无权下载此提交的材料')
+        return redirect('clubs:index')
 
-    dispatch = {
-        'review': lambda req, oid: zip_review_docs(req, oid),
-        'club_registration': lambda req, oid: zip_club_registration_docs(req, oid),
-        'registration_request': lambda req, oid: zip_registration_request_docs(req, oid),
-        'reimbursement': lambda req, oid: zip_reimbursement_docs(req, oid),
-        'president_transition': lambda req, oid: zip_president_transition_docs(req, oid),
-        'activity_application': lambda req, oid: zip_activity_application_docs(req, oid),
-    }
+    uploaded_files = [item for item in submission.uploaded_files.all() if item.file]
+    if not uploaded_files:
+        messages.warning(request, '这个提交没有可打包下载的文件')
+        return redirect(request.META.get('HTTP_REFERER', 'clubs:staff_audit_center'))
 
-    handler = dispatch.get(zip_type)
-    if not handler:
-        messages.error(request, '不支持的下载类型')
-        return redirect(request.META.get('HTTP_REFERER', 'clubs:index'))
-
-    return handler(request, object_id)
-
-
-@login_required(login_url=settings.LOGIN_URL)
-def zip_review_docs(request, submission_id):
-    """打包所有年审材料为zip文件并下载"""
-    import tempfile
-    import shutil
+    import io
     import zipfile
-    from django.http import HttpResponse
-    
-    submission = get_object_or_404(ReviewSubmission, pk=submission_id)
-    
-    # 定义权限检查函数
-    def check_permission():
-        return _is_staff(request.user) or submission.club.president == request.user
-    
-    # 定义要打包的材料列表，按顺序
-    materials = [
-        (submission.self_assessment_form, '1_自查表'),
-        (submission.club_constitution, '2_社团章程'),
-        (submission.leader_learning_work_report, '3_负责人学习及工作情况表'),
-        (submission.annual_activity_list, '4_社团年度活动清单'),
-        (submission.advisor_performance_report, '5_指导教师履职情况表'),
-        (submission.financial_report, '6_年度财务情况表'),
-        (submission.member_composition_list, '7_社团成员构成表'),
-        (submission.new_media_account_report, '8_新媒体账号及运维情况表'),
-    ]
-    
-    # 如果有其他材料，也添加进来
-    if submission.other_materials:
-        materials.append((submission.other_materials, '9_其他材料'))
-    
-    # 创建zip文件，使用简化的文件名格式
-    zip_filename = f"{submission.club.name}-{submission.submission_year}.zip"
-    
-    # 调用通用的zip_materials函数
-    return zip_materials(request, submission, materials, zip_filename, check_permission)
+    from pathlib import PurePath
 
-@login_required(login_url=settings.LOGIN_URL)
-def zip_club_registration_docs(request, registration_id):
-    """为已有社团的 `ClubRegistration` 打包材料并下载。"""
-    registration = get_object_or_404(ClubRegistration, pk=registration_id)
+    buffer = io.BytesIO()
+    used_names = set()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
+        for uploaded in uploaded_files:
+            field_label = uploaded.field.label if uploaded.field_id else '附件'
+            filename = uploaded.original_name or PurePath(uploaded.file.name).name
+            arcname = f'{field_label}/{filename}'
+            base, dot, suffix = arcname.rpartition('.')
+            candidate = arcname
+            counter = 2
+            while candidate in used_names:
+                candidate = f'{base}_{counter}.{suffix}' if dot else f'{arcname}_{counter}'
+                counter += 1
+            used_names.add(candidate)
+            uploaded.file.open('rb')
+            try:
+                archive.writestr(candidate, uploaded.file.read())
+            finally:
+                uploaded.file.close()
 
-    def check_permission():
-        return is_staff_or_admin(request.user)
+    buffer.seek(0)
+    filename = f'{submission.club.name}-{submission.channel.name}-{submission.id}.zip'
+    response = HttpResponse(buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f"attachment; filename*=UTF-8''{urllib.parse.quote(filename)}"
+    return response
 
-    materials = [
-        (registration.registration_form, '1_社团注册申请表'),
-        (registration.basic_info_form, '2_基础信息表'),
-        (registration.membership_fee_form, '3_社团会费表'),
-        (registration.leader_change_application, '4_负责人变动申请'),
-        (registration.meeting_minutes, '5_会议纪要'),
-        (registration.name_change_application, '6_名称变更申请'),
-        (registration.advisor_change_application, '7_指导老师变动申请'),
-        (registration.business_advisor_change_application, '8_业务指导单位变动申请'),
-        (registration.new_media_application, '9_新媒体平台建立申请'),
-    ]
-
-    if hasattr(registration, 'other_materials') and registration.other_materials:
-        materials.append((registration.other_materials, '9_其他材料'))
-
-    zip_filename = f"{registration.club.name}-社团注册.zip"
-    return zip_materials(request, registration, materials, zip_filename, check_permission)
-
-
-@login_required(login_url=settings.LOGIN_URL)
-def zip_registration_request_docs(request, request_id):
-    """为社团创建申请 `ClubRegistrationRequest` 打包材料并下载。"""
-    registration = get_object_or_404(ClubRegistrationRequest, pk=request_id)
-
-    def check_permission():
-        return is_staff_or_admin(request.user)
-
-    # 使用动态函数获取材料列表
-    m_list = get_dynamic_materials_list(registration, 'club_registration')
-    materials = []
-    for item in m_list:
-        if item.get('file'):
-            materials.append((item['file'], item['name']))
-
-    zip_filename = f"{registration.club_name}-社团申请.zip"
-    return zip_materials(request, registration, materials, zip_filename, check_permission)
-
-
-# 已移除：原来的通用兼容视图 zip_registration_docs
-# 为了强制使用更明确的路由和权限边界，已删除旧实现。
-# 如果需要相应的下载逻辑，请使用以下两个视图：
-# - zip_club_registration_docs(request, registration_id)
-# - zip_registration_request_docs(request, request_id)
-# 旧路由和视图已从项目中移除。
-
-@login_required(login_url=settings.LOGIN_URL)
-def zip_reimbursement_docs(request, reimbursement_id):
-    """打包所有报销材料为zip文件并下载"""
-    from clubs.models import Reimbursement
-    
-    reimbursement = get_object_or_404(Reimbursement, pk=reimbursement_id)
-    
-    # 定义权限检查函数
-    def check_permission():
-        return _is_staff(request.user) or reimbursement.club.president == request.user
-    
-    # 使用动态函数获取材料列表
-    m_list = get_dynamic_materials_list(reimbursement, 'reimbursement')
-    materials = []
-    for item in m_list:
-        if item.get('file'):
-            materials.append((item['file'], item['name']))
-    
-    # 兼容: 如果没有动态材料但有 receipt_file (旧数据/模型字段), 也添加进去
-    if not materials and reimbursement.receipt_file:
-         materials.append((reimbursement.receipt_file, '凭证'))
-    
-    if not materials:
-        messages.error(request, '该报销记录没有附件')
-        return redirect('clubs:staff_dashboard')
-    
-    # 创建zip文件
-    zip_filename = f"{reimbursement.club.name}-报销材料-{reimbursement.id}.zip"
-    
-    # 调用通用的zip_materials函数
-    return zip_materials(request, reimbursement, materials, zip_filename, check_permission)
-
-@login_required(login_url=settings.LOGIN_URL)
-def zip_president_transition_docs(request, transition_id):
-    """打包所有社长变更材料为zip文件并下载"""
-    from clubs.models import PresidentTransition
-    
-    transition = get_object_or_404(PresidentTransition, pk=transition_id)
-    
-    # 定义权限检查函数
-    def check_permission():
-        return _is_staff(request.user) or transition.club.president == request.user
-    
-    # 使用动态函数获取材料列表
-    m_list = get_dynamic_materials_list(transition, 'president_transition')
-    materials = []
-    for item in m_list:
-        if item.get('file'):
-            materials.append((item['file'], item['name']))
-            
-    # 兼容: 如果没有动态材料但有 transition_form (旧数据/模型字段)
-    if not materials and transition.transition_form:
-        materials.append((transition.transition_form, '社长换届申请表'))
-    
-    if not materials:
-        messages.error(request, '该社长变更记录没有附件')
-        return redirect('clubs:staff_dashboard')
-    
-    # 创建zip文件
-    zip_filename = f"{transition.club.name}-社长变更材料.zip"
-    
-    # 调用通用的zip_materials函数
-    return zip_materials(request, transition, materials, zip_filename, check_permission)
 
 @login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['POST'])
@@ -5792,17 +2823,17 @@ def toggle_all_review_enabled(request):
 
     # 获取所有社团
     all_clubs = Club.objects.all()
-    
+
     if not all_clubs.exists():
         messages.warning(request, '暂无社团，无需操作')
         return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
-    
+
     # 检查是否所有社团都已开启
     all_enabled = all_clubs.filter(review_enabled=True).count() == all_clubs.count()
-    
+
     # 切换状态：如果全部开启则关闭，否则开启
     new_status = not all_enabled
-    
+
     # 更新所有社团的年审状态
     Club.objects.update(review_enabled=new_status)
 
@@ -5821,12 +2852,12 @@ def toggle_registration_enabled(request):
     # 检查用户权限 - 仅干事和管理员可以操作
     if not is_staff_or_admin(request.user):
         return HttpResponseForbidden("您没有权限执行此操作")
-    
+
     # 获取所有社团和当前活跃的注册周期
     all_clubs = Club.objects.all()
     review_snapshot = dict(all_clubs.values_list('id', 'review_enabled'))
     active_period = RegistrationPeriod.objects.filter(is_active=True).first()
-    
+
     if active_period:
         # 如果存在活跃周期，则关闭它并禁用所有社团的注册功能
         active_period.is_active = False
@@ -5854,7 +2885,7 @@ def toggle_registration_enabled(request):
         if recovery:
             Club.objects.bulk_update(recovery, ['review_enabled'])
             messages.warning(request, '检测到年审开关被意外联动，已自动恢复为原状态')
-    
+
     return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
 
 
@@ -5883,30 +2914,30 @@ def change_club_status(request, club_id):
     if not _is_staff(request.user) and not _is_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:club_detail', club_id=club_id)
-    
+
     club = get_object_or_404(Club, pk=club_id)
-    
+
     if request.method == 'POST':
         new_status = request.POST.get('status', club.status)
-        
+
         # 验证状态值
         valid_statuses = ['active', 'inactive', 'suspended']
         if new_status not in valid_statuses:
             messages.error(request, '无效的社团状态')
             return redirect('clubs:club_detail', club_id=club_id)
-        
+
         # 如果状态没有改变
         if new_status == club.status:
             messages.info(request, f'社团状态已是 {club.get_status_display()}')
             return redirect('clubs:club_detail', club_id=club_id)
-        
+
         old_status = club.get_status_display()
         club.status = new_status
         club.save()
-        
+
         messages.success(request, f'社团状态已从"{old_status}"更改为"{club.get_status_display()}"')
         return redirect('clubs:club_detail', club_id=club_id)
-    
+
     # GET 请求：返回状态变更选项
     context = {
         'club': club,
@@ -5944,25 +2975,25 @@ def direct_edit_club_info(request, club_id):
     if not _is_staff(request.user) and not _is_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:club_detail', club_id=club_id)
-    
+
     club = get_object_or_404(Club, pk=club_id)
-    
+
     if request.method == 'POST':
         # 获取表单数据
         new_name = request.POST.get('name', '').strip()
         new_description = request.POST.get('description', '').strip()
         new_founded_date = request.POST.get('founded_date', '')
         new_members_count = request.POST.get('members_count', '')
-        
+
         # 验证
         errors = []
-        
+
         if not new_name:
             errors.append('社团名称不能为空')
-        
+
         if new_members_count and not new_members_count.isdigit():
             errors.append('成员数量必须是数字')
-        
+
         if errors:
             context = {
                 'club': club,
@@ -5970,27 +3001,27 @@ def direct_edit_club_info(request, club_id):
                 'form_data': request.POST,
             }
             return render(request, 'clubs/direct_edit_club_info.html', context)
-        
+
         # 更新社团信息
         if new_name:
             club.name = new_name
-        
+
         if new_description:
             club.description = new_description
         else:
             club.description = ''
-        
+
         if new_founded_date:
             club.founded_date = new_founded_date
-        
+
         if new_members_count:
             club.members_count = int(new_members_count)
-        
+
         club.save()
-        
+
         messages.success(request, '社团信息已成功更新！')
         return redirect('clubs:club_detail', club_id=club_id)
-    
+
     # GET 请求：显示表单
     context = {
         'club': club,
@@ -6006,13 +3037,13 @@ def delete_club(request, club_id):
     if not _is_staff(request.user) and not _is_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:index')
-    
+
     club = get_object_or_404(Club, pk=club_id)
-    
+
     if request.method == 'POST':
         # 获取并验证用户输入的确认社团名称
         confirm_club_name = request.POST.get('confirm_club_name')
-        
+
         # 检查确认社团名称是否正确
         if confirm_club_name == club.name:
                 club_name = club.name
@@ -6022,7 +3053,7 @@ def delete_club(request, club_id):
         else:
             # 显示错误消息
             messages.error(request, '社团名称输入错误，删除失败！')
-    
+
     # GET 请求：返回确认页面
     context = {
         'club': club,
@@ -6035,23 +3066,6 @@ def delete_club(request, club_id):
 
 
 
-@login_required
-def view_president_transitions(request, club_id):
-    """查看社长换届申请记录"""
-    club = get_object_or_404(Club, pk=club_id)
-    
-    # 检查用户是否为该社团的社长
-    if club.president != request.user:
-        messages.error(request, '只有社团社长可以查看换届申请记录')
-        return redirect('clubs:club_detail', club_id=club_id)
-    
-    transitions = PresidentTransition.objects.filter(club=club).order_by('-submitted_at')
-    
-    context = {
-        'club': club,
-        'transitions': transitions,
-    }
-    return render(request, 'clubs/user/view_president_transitions.html', context)
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -6173,23 +3187,6 @@ def president_member_management(request):
 
 
 
-@login_required
-def view_activity_applications(request, club_id):
-    """查看活动申请记录"""
-    club = get_object_or_404(Club, pk=club_id)
-    
-    # 检查用户是否为该社团的社长
-    if club.president != request.user:
-        messages.error(request, '只有社团社长可以查看活动申请记录')
-        return redirect('clubs:club_detail', club_id=club_id)
-    
-    applications = ActivityApplication.objects.filter(club=club).order_by('-submitted_at')
-    
-    context = {
-        'club': club,
-        'applications': applications,
-    }
-    return render(request, 'clubs/user/view_activity_applications.html', context)
 
 
 # ==================== 222房间借用相关视图 ====================
@@ -6199,7 +3196,7 @@ def room222_calendar(request):
     """222房间借用日历视图 - 谷歌日历单日网格风格"""
     # 获取日期参数，默认为今天
     date_str = request.GET.get('date')
-    
+
     if date_str:
         try:
             from datetime import datetime
@@ -6208,18 +3205,18 @@ def room222_calendar(request):
             view_date = timezone.now().date()
     else:
         view_date = timezone.now().date()
-    
+
     # 获取前一天和后一天
     from datetime import timedelta
     prev_date = view_date - timedelta(days=1)
     next_date = view_date + timedelta(days=1)
-    
+
     # 获取当天所有有效的预订
     bookings = Room222Booking.objects.filter(
         booking_date=view_date,
         status='active'
     ).select_related('user__profile', 'club').order_by('start_time')
-    
+
     # 定义时间段（按照实际课程时间）
     from datetime import time
     raw_time_slots = [
@@ -6234,7 +3231,7 @@ def room222_calendar(request):
         {'start': time(20, 0), 'end': time(21, 0), 'label': '晚间2'},
         {'start': time(21, 0), 'end': time(22, 0), 'label': '晚间3'},
     ]
-    
+
     # 计算总分钟数（从8:15到22:00）
     day_start_minutes = 8 * 60 + 15
     total_minutes = (22 * 60) - day_start_minutes  # 13小时45分钟 = 825分钟
@@ -6246,7 +3243,7 @@ def room222_calendar(request):
         duration_minutes = slot_end_minutes - slot_start_minutes
         top_percent = ((slot_start_minutes - day_start_minutes) / total_minutes) * 100
         height_percent = (duration_minutes / total_minutes) * 100
-        
+
         # 检查该时间段是否有预约覆盖
         has_booking = False
         for booking in bookings:
@@ -6265,23 +3262,23 @@ def room222_calendar(request):
             'top_percent': top_percent,
             'has_booking': has_booking,
         })
-    
+
     # 为每个预订计算其在时间轴上的位置和高度
     bookings_with_position = []
     for booking in bookings:
         # 计算开始时间在时间轴上的位置（以分钟为单位，从8:15开始）
         start_minutes = (booking.start_time.hour * 60 + booking.start_time.minute) - day_start_minutes
         end_minutes = (booking.end_time.hour * 60 + booking.end_time.minute) - day_start_minutes
-        
+
         # 确保不超出范围
         start_minutes = max(0, start_minutes)
         end_minutes = min(total_minutes, end_minutes)
-        
+
         # 计算持续时间和位置百分比
         duration_minutes = end_minutes - start_minutes
         top_percent = (start_minutes / total_minutes) * 100
         height_percent = (duration_minutes / total_minutes) * 100
-        
+
         bookings_with_position.append({
             'booking': booking,
             'top_percent': top_percent,
@@ -6289,12 +3286,12 @@ def room222_calendar(request):
             'can_edit': booking.can_edit(request.user),
             'can_delete': booking.can_delete(request.user),
         })
-    
+
     # 计算周的起始日期（周一）
     from datetime import datetime
     week_start = view_date - timedelta(days=view_date.weekday())
     week_end = week_start + timedelta(days=6)
-    
+
     context = {
         'view_date': view_date,
         'prev_date': prev_date,
@@ -6322,13 +3319,13 @@ def submit_room222_booking(request):
         participant_count = request.POST.get('participant_count')
         contact_phone = request.POST.get('contact_phone')
         special_requirements = request.POST.get('special_requirements', '')
-        
+
         # 验证必填字段
-        if not all([booking_date_str, start_time_str, end_time_str, purpose, 
+        if not all([booking_date_str, start_time_str, end_time_str, purpose,
                    participant_count, contact_phone]):
             messages.error(request, '请填写所有必填字段')
             return redirect('clubs:submit_room222_booking')
-        
+
         # 转换日期、时间字符串为对象
         from datetime import datetime
         try:
@@ -6338,7 +3335,7 @@ def submit_room222_booking(request):
         except ValueError:
             messages.error(request, '时间格式不正确')
             return redirect('clubs:submit_room222_booking')
-        
+
         # 获取社团（如果选择了）
         club = None
         if club_id:
@@ -6347,7 +3344,7 @@ def submit_room222_booking(request):
             if club.president != request.user:
                 messages.error(request, '您不是该社团的社长')
                 return redirect('clubs:submit_room222_booking')
-        
+
         # 创建借用记录（状态为active，无需审核）
         booking = Room222Booking(
             user=request.user,
@@ -6361,16 +3358,16 @@ def submit_room222_booking(request):
             special_requirements=special_requirements,
             status='active'
         )
-        
+
         # 检查时间冲突
         if booking.has_conflict():
             messages.error(request, '该时间段已被预订，请选择其他时间')
             return redirect('clubs:submit_room222_booking')
-        
+
         booking.save()
         messages.success(request, '222房间预约成功！')
         return redirect('clubs:room222_calendar')
-    
+
     # GET 请求
     # 获取用户是社长的所有社团
     user_clubs = Club.objects.filter(
@@ -6379,7 +3376,7 @@ def submit_room222_booking(request):
         officers__is_current=True,
         status='active',
     )
-    
+
     # 获取日期参数（从日历页面跳转过来时）
     selected_date = request.GET.get('date', '')
     selected_start_time = request.GET.get('start_time', '')
@@ -6424,7 +3421,7 @@ def my_room222_bookings(request):
     bookings = Room222Booking.objects.filter(
         user=request.user
     ).order_by('-booking_date', '-start_time')
-    
+
     context = {
         'bookings': bookings,
     }
@@ -6435,12 +3432,12 @@ def my_room222_bookings(request):
 def edit_room222_booking(request, booking_id):
     """编辑222房间借用"""
     booking = get_object_or_404(Room222Booking, pk=booking_id)
-    
+
     # 检查权限
     if not booking.can_edit(request.user):
         messages.error(request, '您没有权限编辑此预约')
         return redirect('clubs:my_room222_bookings')
-    
+
     if request.method == 'POST':
         # 获取表单数据
         club_id = request.POST.get('club_id')
@@ -6451,18 +3448,18 @@ def edit_room222_booking(request, booking_id):
         participant_count = request.POST.get('participant_count')
         contact_phone = request.POST.get('contact_phone')
         special_requirements = request.POST.get('special_requirements', '')
-        
+
         # 验证必填字段
-        if not all([booking_date, start_time, end_time, purpose, 
+        if not all([booking_date, start_time, end_time, purpose,
                    participant_count, contact_phone]):
             messages.error(request, '请填写所有必填字段')
             return redirect('clubs:edit_room222_booking', booking_id=booking_id)
-        
+
         # 获取社团（如果选择了）
         club = None
         if club_id:
             club = get_object_or_404(Club, pk=club_id)
-        
+
         # 更新预订信息
         booking.club = club
         booking.booking_date = booking_date
@@ -6472,16 +3469,16 @@ def edit_room222_booking(request, booking_id):
         booking.participant_count = participant_count
         booking.contact_phone = contact_phone
         booking.special_requirements = special_requirements
-        
+
         # 检查时间冲突
         if booking.has_conflict():
             messages.error(request, '该时间段已被其他预订占用，请选择其他时间')
             return redirect('clubs:edit_room222_booking', booking_id=booking_id)
-        
+
         booking.save()
         messages.success(request, '预约已成功更新')
         return redirect('clubs:my_room222_bookings')
-    
+
     # GET 请求
     user_clubs = Club.objects.filter(
         officers__user_profile__user=request.user,
@@ -6489,7 +3486,7 @@ def edit_room222_booking(request, booking_id):
         officers__is_current=True,
         status='active',
     )
-    
+
     context = {
         'booking': booking,
         'user_clubs': user_clubs,
@@ -6501,19 +3498,19 @@ def edit_room222_booking(request, booking_id):
 def delete_room222_booking(request, booking_id):
     """删除/取消222房间借用"""
     booking = get_object_or_404(Room222Booking, pk=booking_id)
-    
+
     # 检查权限
     if not booking.can_delete(request.user):
         messages.error(request, '您没有权限删除此预约')
         return redirect('clubs:my_room222_bookings')
-    
+
     if request.method == 'POST':
         booking_info = f"{booking.booking_date} {booking.start_time}-{booking.end_time}"
         booking.status = 'cancelled'
         booking.save()
         messages.success(request, f'已取消预约：{booking_info}')
         return redirect('clubs:my_room222_bookings')
-    
+
     context = {
         'booking': booking,
     }
@@ -6522,1092 +3519,60 @@ def delete_room222_booking(request, booking_id):
 
 # ==================== 活动申请功能 ====================
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(["GET", "POST"])
-def submit_activity_application(request, club_id):
-    """提交活动申请 - 仅社团社长可用"""
-    # 当前用户负责的社团列表（社长身份）
-    user_clubs = Club.objects.filter(
-        officers__user_profile__user=request.user,
-        officers__position='president',
-        officers__is_current=True,
-    )
-    if not user_clubs.exists():
-        messages.error(request, '您目前没有负责的社团，无法提交活动申请')
-        return redirect('clubs:user_dashboard')
-
-    # 允许通过表单选择社团，默认为URL中的club_id
-    selected_club_id = request.POST.get('club_id', club_id)
-    try:
-        club = user_clubs.get(pk=selected_club_id)
-    except Club.DoesNotExist:
-        messages.error(request, '仅能为自己负责的社团提交活动申请')
-        return redirect('clubs:user_dashboard')
-
-    # 获取动态材料要求
-    requirements = MaterialRequirement.objects.filter(
-        request_type='activity_application', 
-        is_active=True
-    ).order_by('order')
-
-    if request.method == 'POST':
-        activity_name = request.POST.get('activity_name', '').strip()
-        activity_type = request.POST.get('activity_type', 'other')
-        activity_description = request.POST.get('activity_description', '').strip()
-        activity_date = request.POST.get('activity_date', '')
-        activity_time_start = request.POST.get('activity_time_start', '')
-        activity_time_end = request.POST.get('activity_time_end', '')
-        activity_location = request.POST.get('activity_location', '').strip()
-        expected_participants = request.POST.get('expected_participants', '0').strip()
-        budget = request.POST.get('budget', '0').strip()
-        is_public = request.POST.get('is_public') == 'on'
-        
-        # 收集上传的文件
-        uploaded_files = {}
-        for req in requirements:
-            file = request.FILES.get(f'material_{req.id}')
-            uploaded_files[req.id] = file
-            
-            if req.is_required and not file:
-                errors.append(f'{req.name}不能为空')
-
-        # 自动填充联系人信息（可选）
-        profile = getattr(request.user, 'profile', None)
-        contact_person = profile.real_name if profile and profile.real_name else request.user.get_username()
-        contact_phone = profile.phone if profile and getattr(profile, 'phone', None) else ''
-        
-        errors = []
-        if not activity_name:
-            errors.append('活动名称不能为空')
-        if not activity_description:
-            errors.append('活动描述不能为空')
-        if not activity_date:
-            errors.append('活动日期不能为空')
-        if not activity_time_start:
-            errors.append('活动开始时间不能为空')
-        if not activity_time_end:
-            errors.append('活动结束时间不能为空')
-        if not activity_location:
-            errors.append('活动地点不能为空')
-        
-        # 验证预计人数和预算（必填）
-        if not expected_participants:
-            errors.append('预计参与人数不能为空')
-        else:
-            try:
-                expected_participants = int(expected_participants)
-                if expected_participants <= 0:
-                    errors.append('预计参与人数必须大于0')
-            except ValueError:
-                errors.append('预计参与人数必须是整数')
-        
-        if not budget:
-            errors.append('活动预算不能为空')
-        else:
-            try:
-                budget = float(budget)
-                if budget < 0:
-                    errors.append('活动预算不能为负数')
-            except ValueError:
-                errors.append('活动预算必须是数字')
-
-        if errors:
-            context = {
-                'club': club,
-                'clubs': user_clubs,
-                'selected_club_id': int(selected_club_id) if selected_club_id else None,
-                'errors': errors,
-                'activity_name': activity_name,
-                'activity_type': activity_type,
-                'activity_description': activity_description,
-                'activity_date': activity_date,
-                'activity_time_start': activity_time_start,
-                'activity_time_end': activity_time_end,
-                'activity_location': activity_location,
-                'expected_participants': expected_participants,
-                'budget': budget,
-                'contact_person': contact_person,
-                'contact_phone': contact_phone,
-                'requirements': requirements,
-            }
-            return render(request, 'clubs/user/submit_activity_application.html', context)
-        
-        # 准备 application_form 文件 (兼容旧模型字段)
-        application_form_file = None
-        if uploaded_files:
-            # 使用第一个上传的文件作为主申请表
-            application_form_file = list(uploaded_files.values())[0]
-            
-        if application_form_file:
-            application_form_file = rename_uploaded_file(application_form_file, club.name, '活动', '申请表')
-        
-        # 创建活动申请
-        try:
-            application = ActivityApplication.objects.create(
-                club=club,
-                activity_name=activity_name,
-                activity_type=activity_type,
-                activity_description=activity_description,
-                activity_date=activity_date,
-                activity_time_start=activity_time_start,
-                activity_time_end=activity_time_end,
-                activity_location=activity_location,
-                expected_participants=expected_participants,
-                budget=budget,
-                application_form=application_form_file,
-                contact_person=contact_person,
-                contact_phone=contact_phone or '无',
-                status='pending',
-                is_public=is_public,
-            )
-            
-            # 保存 SubmittedFile
-            from django.contrib.contenttypes.models import ContentType
-            from .models import SubmittedFile
-            
-            for req in requirements:
-                file = uploaded_files.get(req.id)
-                if file:
-                    # 重命名
-                    file = rename_uploaded_file(file, club.name, '活动', req.name)
-                    
-                    SubmittedFile.objects.create(
-                        content_type=ContentType.objects.get_for_model(ActivityApplication),
-                        object_id=application.id,
-                        requirement=req,
-                        file=file
-                    )
-            
-            messages.success(request, '活动申请已提交，等待审核')
-            return redirect('clubs:user_dashboard')
-        except Exception as e:
-            messages.error(request, f'提交失败: {str(e)}')
-            return redirect('clubs:submit_activity_application', club_id=club_id)
-    
-    # GET请求 - 显示表单
-    context = {
-        'club': club,
-        'clubs': user_clubs,
-        'selected_club_id': int(selected_club_id) if selected_club_id else None,
-        'contact_person': (getattr(getattr(request.user, 'profile', None), 'real_name', None) or request.user.get_username()),
-        'contact_phone': (getattr(getattr(request.user, 'profile', None), 'phone', None) or ''),
-        'activity_date': '',
-        'activity_time_start': '09:00',
-        'activity_time_end': '10:00',
-        'expected_participants': '',
-        'budget': '',
-        'requirements': requirements,
-    }
-    return render(request, 'clubs/user/submit_activity_application.html', context)
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(["GET", "POST"])
-def submit_president_transition(request, club_id):
-    """提交社长换届申请 - 仅社团社长可用"""
-    # 获取社团对象
-    try:
-        club = Club.objects.get(pk=club_id)
-    except Club.DoesNotExist:
-        messages.error(request, '社团不存在')
-        return redirect('clubs:user_dashboard')
-    
-    # 验证权限：只有当前社团社长可以提交社长换届申请
-    is_club_president = Officer.objects.filter(
-        user_profile__user=request.user,
-        club=club,
-        position='president',
-        is_current=True
-    ).exists()
-    
-    if not is_club_president:
-        messages.error(request, '仅社团社长可以提交社长换届申请')
-        return redirect('clubs:user_dashboard')
-    
-    # 获取动态材料要求
-    requirements = MaterialRequirement.objects.filter(
-        request_type='president_transition', 
-        is_active=True
-    ).order_by('order')
-
-    # 验证文件函数
-    def validate_file(file, requirement):
-        if not file:
-            return None
-        
-        # 检查扩展名
-        allowed_exts = [ext.strip().lower() for ext in requirement.allowed_extensions.split(',')]
-        ext = '.' + file.name.lower().split('.')[-1]
-        if ext not in allowed_exts:
-            return f'{requirement.name}必须是以下格式: {requirement.allowed_extensions}'
-        
-        # 检查大小
-        if file.size > requirement.max_size_mb * 1024 * 1024:
-            return f'{requirement.name}文件大小不能超过{requirement.max_size_mb}MB'
-        
-        return None
-
-    # 候选人来源改为本社成员（排除当前社长）
-    candidate_profiles = UserProfile.objects.filter(
-        club_memberships__club=club,
-    ).exclude(user=request.user).select_related('user').distinct()
-
-    if request.method == 'POST':
-        new_president_profile_id = request.POST.get('new_president_profile_id', '')
-        transition_date = request.POST.get('transition_date', '')
-        transition_reason = request.POST.get('transition_reason', '').strip()
-        
-        errors = []
-        if not new_president_profile_id:
-            errors.append('新社长不能为空')
-        if not transition_date:
-            errors.append('换届日期不能为空')
-        if not transition_reason:
-            errors.append('换届原因不能为空')
-        
-        # 验证动态材料
-        uploaded_files = {}
-        for req in requirements:
-            file = request.FILES.get(f'material_{req.id}')
-            uploaded_files[req.id] = file
-            
-            # 验证必填项
-            if req.is_required and not file:
-                errors.append(f'{req.name}不能为空')
-            
-            # 验证文件格式和大小
-            if file:
-                err = validate_file(file, req)
-                if err:
-                    errors.append(err)
-
-        new_president_profile = None
-        new_president_officer = None
-
-        # 验证新社长是否来自本社成员，且不是当前社长
-        try:
-            new_president_profile = candidate_profiles.get(
-                pk=new_president_profile_id,
-            )
-            if new_president_profile.user == request.user:
-                errors.append('新社长不能是当前社长')
-        except UserProfile.DoesNotExist:
-            errors.append('选择的新社长必须来自本社成员')
-        
-        if errors:
-            context = {
-                'club': club,
-                'errors': errors,
-                'transition_date': transition_date,
-                'transition_reason': transition_reason,
-                'requirements': requirements,
-                'candidate_profiles': candidate_profiles,
-            }
-            return render(request, 'clubs/user/submit_president_transition.html', context)
-        
-        # 创建社长换届申请
-        try:
-            new_president_officer, _created = Officer.objects.get_or_create(
-                club=club,
-                user_profile=new_president_profile,
-                position='president',
-                defaults={
-                    'is_current': False,
-                    'appointed_date': timezone.now().date(),
-                    'end_date': None,
-                },
-            )
-
-            transition = PresidentTransition.objects.create(
-                club=club,
-                old_president=request.user,
-                new_president_officer=new_president_officer,
-                transition_date=transition_date,
-                transition_reason=transition_reason,
-                status='pending'
-            )
-            
-            # 处理文件保存
-            for req in requirements:
-                file = uploaded_files.get(req.id)
-                if file:
-                    # 重命名文件
-                    file = rename_uploaded_file(file, club.name, '社长换届', req.name)
-                    
-                    # 1. 保存到 SubmittedFile
-                    SubmittedFile.objects.create(
-                        content_type=ContentType.objects.get_for_model(PresidentTransition),
-                        object_id=transition.id,
-                        requirement=req,
-                        file=file
-                    )
-            
-            messages.success(request, '社长换届申请已提交，等待审核')
-            return redirect('clubs:user_dashboard')
-        except Exception as e:
-            messages.error(request, f'提交失败: {str(e)}')
-            return redirect('clubs:submit_president_transition', club_id=club_id)
-    
-    # GET请求 - 显示表单
-    context = {
-        'club': club,
-        'candidate_profiles': candidate_profiles,
-        'requirements': requirements,
-    }
-    return render(request, 'clubs/user/submit_president_transition.html', context)
 
 
 # ==================== 审核活动申请和社长换届 ====================
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(["GET", "POST"])
-def review_activity_application(request, activity_id):
-    """审核活动申请 - 干事审核"""
-    if not _is_staff(request.user) and not _is_admin(request.user):
-        messages.error(request, '仅干事和管理员可以审核活动申请')
-        return redirect('clubs:index')
-    
-    activity = get_object_or_404(ActivityApplication, pk=activity_id)
-    
-    if request.method == 'POST':
-        decision = request.POST.get('review_status', '').strip().lower()
-        review_comment = request.POST.get('review_comment', '').strip()
-
-        if decision == 'approved':
-            activity.staff_approved = True
-            activity.staff_reviewer = request.user
-            activity.staff_comment = review_comment
-            activity.staff_reviewed_at = timezone.now()
-            activity.update_status()
-            
-            # 保存审核历史记录
-            ActivityApplicationHistory.objects.create(
-                activity_application=activity,
-                attempt_number=activity.resubmission_attempt,
-                activity_name=activity.activity_name,
-                activity_date=activity.activity_date,
-                submitted_at=activity.submitted_at,
-                reviewed_at=activity.staff_reviewed_at,
-                reviewer=request.user,
-                status='approved',
-                reviewer_comment=review_comment
-            )
-            
-            messages.success(request, '活动申请已批准')
-        elif decision == 'rejected':
-            activity.staff_approved = False
-            activity.staff_reviewer = request.user
-            activity.staff_comment = review_comment
-            activity.staff_reviewed_at = timezone.now()
-            activity.update_status()
-            
-            # 保存审核历史记录
-            ActivityApplicationHistory.objects.create(
-                activity_application=activity,
-                attempt_number=activity.resubmission_attempt,
-                activity_name=activity.activity_name,
-                activity_date=activity.activity_date,
-                submitted_at=activity.submitted_at,
-                reviewed_at=activity.staff_reviewed_at,
-                reviewer=request.user,
-                status='rejected',
-                reviewer_comment=review_comment
-            )
-            
-            messages.success(request, '活动申请已拒绝')
-        else:
-            messages.error(request, '无效的审核操作')
-        
-        return redirect('clubs:staff_audit_center', 'activity_application')
-    
-    activity_materials, _, missing_materials = get_dynamic_materials_payload(
-        activity,
-        'activity_application',
-        include_missing=True,
-    )
-
-    context = {
-        'activity': activity,
-        'club': activity.club,
-        'materials': activity_materials,
-        'missing_materials': missing_materials,
-        'existing_reviews': ActivityApplicationHistory.objects.filter(activity_application=activity).order_by('-attempt_number'),
-    }
-    return render(request, 'clubs/staff/review_activity_application.html', context)
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(["GET", "POST"])
-def review_president_transition(request, transition_id):
-    """审核社长换届申请 - 干事和管理员可用"""
-    if not _is_staff(request.user) and not _is_admin(request.user):
-        messages.error(request, '仅干事和管理员可以审核社长换届申请')
-        return redirect('clubs:index')
-    
-    transition = get_object_or_404(PresidentTransition, pk=transition_id)
-    
-    if request.method == 'POST':
-        status = request.POST.get('review_status', '')
-        comment = request.POST.get('review_comment', '').strip()
-        
-        if status not in ['approved', 'rejected']:
-            messages.error(request, '无效的审核状态')
-            return redirect('clubs:staff_dashboard')
-        
-        transition.status = status
-        transition.reviewer = request.user
-        transition.reviewer_comment = comment
-        transition.reviewed_at = timezone.now()
-        transition.save()
-        
-        # 如果批准，更新社长信息
-        if status == 'approved':
-            # 更新现任社长为不在任状态
-            old_officer = Officer.objects.filter(
-                club=transition.club,
-                position='president',
-                is_current=True
-            ).first()
-            if old_officer:
-                old_officer.is_current = False
-                old_officer.end_date = timezone.now().date()
-                old_officer.save()
-
-                # 老社长转为社员并置为不活跃（触发邮件提醒）
-                old_profile = old_officer.user_profile
-                if old_profile:
-                    old_profile.role = 'member'
-                    old_profile.save(update_fields=['role', 'updated_at'])
-                    mark_profile_inactive(old_profile, reason='transition')
-            
-            # 新社长Officer已存在，直接设置其为现任
-            try:
-                new_officer = transition.new_president_officer
-                new_officer.is_current = True
-                new_officer.appointed_date = transition.transition_date
-                new_officer.save()
-
-                if new_officer.user_profile:
-                    new_officer.user_profile.role = 'president'
-                    new_officer.user_profile.account_status = 'active'
-                    new_officer.user_profile.status = 'approved'
-                    new_officer.user_profile.inactive_since = None
-                    new_officer.user_profile.save(
-                        update_fields=['role', 'account_status', 'status', 'inactive_since', 'updated_at']
-                    )
-                
-            except Exception as e:
-                messages.warning(request, f'社长换届已批准，但更新社长信息时出错: {str(e)}')
-        
-        messages.success(request, f'社长换届申请已{'批准' if status == 'approved' else '拒绝'}')
-        return redirect('clubs:staff_dashboard')
-    
-    # 构建材料列表给组件使用（过滤丢失文件并回传丢失项）
-    transition_materials, _, missing_materials = get_dynamic_materials_payload(
-        transition,
-        'president_transition',
-        include_missing=True,
-    )
-    
-    context = {
-        'transition': transition,
-        'club': transition.club,
-        'transition_materials': transition_materials,
-        'materials': transition_materials,
-        'missing_materials': missing_materials,
-        'zip_url': f"{reverse('clubs:zip_download')}?type=president_transition&id={transition.id}" if transition_materials else None,
-    }
-    return render(request, 'clubs/staff/review_president_transition.html', context)
 
 
-@login_required(login_url=settings.LOGIN_URL)
-def staff_review_history(request, review_type):
-    """干事审核历史记录"""
-    if not _is_staff(request.user) and not _is_admin(request.user):
-        messages.error(request, '仅干事和管理员可以访问此页面')
-        return redirect('clubs:staff_dashboard')
-    
-    context = {'review_type': review_type}
-    
-    if review_type == 'submission':
-        # 年审材料审核历史
-        submissions = ReviewSubmission.objects.exclude(status='pending').order_by('-reviewed_at')
-        context['title'] = '年审材料审核历史'
-        context['items'] = submissions
-        context['item_type'] = 'submission'
-        
-    elif review_type == 'club_registration':
-        # 社团注册审核历史
-        registrations = ClubRegistration.objects.exclude(status='pending').order_by('-reviewed_at')
-        context['title'] = '社团注册审核历史'
-        context['items'] = registrations
-        context['item_type'] = 'club_registration'
-        
-        
-    elif review_type == 'reimbursement':
-        # 报销申请审核历史
-        reimbursements = Reimbursement.objects.exclude(status='pending').order_by('-reviewed_at')
-        context['title'] = '报销申请审核历史'
-        context['items'] = reimbursements
-        context['item_type'] = 'reimbursement'
-        
-    elif review_type == 'club_application':
-        # 新社团申请审核历史
-        applications = ClubRegistrationRequest.objects.exclude(status='pending').order_by('-reviewed_at')
-        context['title'] = '新社团申请审核历史'
-        context['items'] = applications
-        context['item_type'] = 'club_application'
-        
-    elif review_type == 'activity_application':
-        # 活动申请审核历史
-        activities = ActivityApplication.objects.exclude(status='pending').order_by('-reviewed_at')
-        context['title'] = '活动申请审核历史'
-        context['items'] = activities
-        context['item_type'] = 'activity_application'
-        
-    elif review_type == 'president_transition':
-        # 社长换届申请审核历史
-        transitions = PresidentTransition.objects.exclude(status='pending').order_by('-reviewed_at')
-        context['title'] = '社长换届申请审核历史'
-        context['items'] = transitions
-        context['item_type'] = 'president_transition'
-        
-    else:
-        messages.error(request, '无效的审核类型')
-        return redirect('clubs:staff_dashboard')
-    
+
     # staff_review_history view removed as it's replaced by modal
     # return render(request, 'clubs/staff/review_history.html', context)
 
 
-@login_required(login_url=settings.LOGIN_URL)
-def staff_review_detail(request, item_type, item_id):
-    """干事查看审核详情 - 显示完整的审核信息和历史"""
-    if not _is_staff(request.user) and not _is_admin(request.user):
-        messages.error(request, '仅干事和管理员可以访问此页面')
-        return redirect('clubs:staff_dashboard')
-    
-    context = {}
-    item = None
-    
-    if item_type == 'annual_review':
-        item = get_object_or_404(ReviewSubmission, pk=item_id)
-        context['title'] = f'{item.club.name} - 年审记录'
-        context['item'] = item
-        context['reviews'] = SubmissionReview.objects.filter(submission=item).order_by('-reviewed_at')
-        
-    elif item_type == 'registration':
-        item = get_object_or_404(ClubRegistration, pk=item_id)
-        context['title'] = f'{item.club.name} - 社团注册'
-        context['item'] = item
-        context['reviews'] = ClubRegistrationReview.objects.filter(registration=item).order_by('-reviewed_at')
-        
-    elif item_type == 'application':
-        # 新社团申请 - ClubRegistrationRequest
-        item = get_object_or_404(ClubRegistrationRequest, pk=item_id)
-        context['title'] = f'{item.club_name} - 新社团申请'
-        context['item'] = item
-        # 使用 ClubApplicationReview 存储的审核记录
-        context['reviews'] = ClubApplicationReview.objects.filter(application=item).order_by('-reviewed_at')
-        
-        
-    elif item_type == 'reimbursement':
-        item = get_object_or_404(Reimbursement, pk=item_id)
-        context['title'] = f'{item.club.name} - 报销申请'
-        context['item'] = item
-        # 报销只有一条审核记录，直接从对象字段获取
-        from types import SimpleNamespace
-        reviews = []
-        if item.reviewer or item.reviewed_at:
-            status = 'approved' if item.status == 'approved' else 'rejected' if item.status == 'rejected' else 'pending'
-            reviews.append(SimpleNamespace(reviewer=item.reviewer, status=status, comment=item.reviewer_comment, reviewed_at=item.reviewed_at))
-        context['reviews'] = reviews
-        
-    elif item_type == 'activity_application':
-        item = get_object_or_404(ActivityApplication, pk=item_id)
-        context['title'] = f'{item.club.name} - 活动申请'
-        context['item'] = item
-        # 使用 ActivityApplicationHistory 获取审核历史
-        context['reviews'] = ActivityApplicationHistory.objects.filter(activity_application=item).order_by('-attempt_number')
-        
-    elif item_type == 'president_transition':
-        item = get_object_or_404(PresidentTransition, pk=item_id)
-        context['title'] = f'{item.club.name} - 社长换届'
-        context['item'] = item
-        
-        # 换届只有一条审核记录，直接从对象字段获取
-        from types import SimpleNamespace
-        reviews = []
-        if item.reviewer or item.reviewed_at:
-            status = 'approved' if item.status == 'approved' else 'rejected' if item.status == 'rejected' else 'pending'
-            reviews.append(SimpleNamespace(reviewer=item.reviewer, status=status, comment=item.reviewer_comment, reviewed_at=item.reviewed_at))
-        context['reviews'] = reviews
-    
-    else:
-        messages.error(request, '无效的项目类型')
-        return redirect('clubs:staff_dashboard')
-    
-    # 获取动态材料列表
-    req_type_map = {
-        'annual_review': 'annual_review',
-        'registration': 'club_registration',
-        'application': 'club_application',
-
-        'reimbursement': 'reimbursement',
-        'activity_application': 'activity_application',
-        'president_transition': 'president_transition'
-    }
-    
-    if item and item_type in req_type_map:
-        materials = get_dynamic_materials_list(item, req_type_map[item_type])
-        context['materials_list'] = materials
-        context['materials'] = materials
-        context['zip_url'] = f"{reverse('clubs:zip_download')}?type={req_type_map[item_type]}&id={item.id}" if materials else None
-
-    context['item_type'] = item_type
-    return render(request, 'clubs/staff/review_detail.html', context)
-
-
-@login_required
-def public_activities(request):
-    """
-    活动列表页面 - 干事、管理员、社长和社员可见
-    社长只能看到本社团的活动，干事和管理员可以看到所有社团的活动
-    社员可以看到：本社团的所有活动 + 其他社团公开的活动
-    支持筛选和搜索功能
-    """
-    # 权限检查：干事、管理员、社长和社员可以访问
-    user_role = getattr(request.user.profile, 'role', None) if hasattr(request.user, 'profile') else None
-    if user_role not in ['staff', 'admin', 'president', 'member']:
-        messages.error(request, '您没有权限访问此页面。')
-        return redirect('clubs:user_dashboard')
-    
-    # 获取筛选和搜索参数
-    club_filter = request.GET.get('club', '')
-    activity_type_filter = request.GET.get('activity_type', '')
-    date_filter = request.GET.get('date', '')
-    search_query = request.GET.get('search', '')
-    
-    # 获取所有已批准且未过期的活动
-    from datetime import datetime, time
-    current_datetime = timezone.now()
-    
-    approved_activities = ActivityApplication.objects.filter(
-        status='approved'
-    ).exclude(
-        # 排除已过期的活动（活动日期小于今天，或活动日期是今天但结束时间已过）
-        Q(activity_date__lt=current_datetime.date()) |
-        Q(activity_date=current_datetime.date(), activity_time_end__lt=current_datetime.time())
-    ).select_related('club')  # 优化查询，预加载社团信息
-    
-    # 根据用户角色过滤活动
-    if user_role == 'president':
-        # 社长只能看到自己社团的活动
-        user_clubs = _get_president_club_ids(request.user)
-        if user_clubs:
-            approved_activities = approved_activities.filter(club__in=user_clubs)
-        else:
-            # 如果找不到社长职位，显示空列表
-            approved_activities = approved_activities.none()
-    elif user_role == 'member':
-        # 社员：本社团的全部活动 + 其他社团中 is_public=True 的活动
-        user_club_ids = list(
-            ClubMember.objects.filter(
-                user_profile__user=request.user,
-                status='active'
-            ).values_list('club_id', flat=True)
-        )
-        if user_club_ids:
-            approved_activities = approved_activities.filter(
-                Q(club__in=user_club_ids) | Q(is_public=True)
-            )
-        else:
-            # 未加入任何社团，只能看公开活动
-            approved_activities = approved_activities.filter(is_public=True)
-    
-    # 应用筛选条件
-    if club_filter:
-        approved_activities = approved_activities.filter(club__name__icontains=club_filter)
-    
-    if activity_type_filter:
-        approved_activities = approved_activities.filter(activity_type=activity_type_filter)
-    
-    if date_filter:
-        try:
-            filter_date = datetime.strptime(date_filter, '%Y-%m-%d').date()
-            approved_activities = approved_activities.filter(activity_date=filter_date)
-        except ValueError:
-            pass  # 忽略无效的日期格式
-    
-    # 应用搜索条件
-    if search_query:
-        approved_activities = approved_activities.filter(
-            Q(club__name__icontains=search_query) |
-            Q(activity_name__icontains=search_query)
-        )
-    
-    approved_activities = approved_activities.order_by('activity_date', 'activity_time_start')
-    
-    # 分类活动
-    activities_by_type = {}
-    for activity in approved_activities:
-        activity_type = activity.get_activity_type_display()
-        if activity_type not in activities_by_type:
-            activities_by_type[activity_type] = []
-        activities_by_type[activity_type].append(activity)
-    
-    # 获取筛选选项数据
-    if user_role == 'president':
-        # 社长只能看到自己负责的社团
-        user_club_ids = _get_president_club_ids(request.user)
-        if user_club_ids:
-            all_clubs = Club.objects.filter(id__in=user_club_ids)
-        else:
-            all_clubs = Club.objects.none()
-    elif user_role == 'member':
-        # 社员可以看到自己所在的社团 + 有公开活动的社团
-        member_club_ids = list(
-            ClubMember.objects.filter(
-                user_profile__user=request.user,
-                status='active'
-            ).values_list('club_id', flat=True)
-        )
-        all_clubs = Club.objects.filter(
-            Q(id__in=member_club_ids) | Q(activity_applications__status='approved', activity_applications__is_public=True)
-        ).distinct().order_by('name')
-    else:
-        # 干事和管理员可以看到所有社团
-        all_clubs = Club.objects.filter(activity_applications__status='approved').distinct().order_by('name')
-
-    activity_type_choices = ActivityApplication.ACTIVITY_TYPE_CHOICES
-
-    # 获取当前用户已报名的活动 ID 集合（社员使用）
-    user_registered_ids: set = set()
-    if user_role == 'member':
-        user_registered_ids = set(
-            ActivityRegistration.objects.filter(
-                user_profile__user=request.user
-            ).values_list('activity_id', flat=True)
-        )
-
-    context = {
-        'approved_activities': approved_activities,
-        'activities_by_type': activities_by_type,
-        'all_clubs': all_clubs,
-        'activity_type_choices': activity_type_choices,
-        # 传递筛选参数用于表单回填
-        'club_filter': club_filter,
-        'activity_type_filter': activity_type_filter,
-        'date_filter': date_filter,
-        'search_query': search_query,
-        'user_registered_ids': user_registered_ids,
-    }
-    return render(request, 'clubs/public_activities.html', context)
-
-
-@login_required
-@require_POST
-def register_activity(request, activity_id):
-    """社员报名活动"""
-    user_role = getattr(request.user.profile, 'role', None) if hasattr(request.user, 'profile') else None
-    if user_role != 'member':
-        return JsonResponse({'success': False, 'error': '仅社员可以报名活动'}, status=403)
-
-    activity = get_object_or_404(ActivityApplication, pk=activity_id, status='approved')
-
-    # 检查社员是否有权限看到该活动（本社活动或公开活动）
-    user_club_ids = list(
-        ClubMember.objects.filter(
-            user_profile__user=request.user, status='active'
-        ).values_list('club_id', flat=True)
-    )
-    if activity.club_id not in user_club_ids and not activity.is_public:
-        return JsonResponse({'success': False, 'error': '无权报名该活动'}, status=403)
-
-    profile = getattr(request.user, 'profile', None)
-    if not profile:
-        return JsonResponse({'success': False, 'error': '用户资料不存在'}, status=400)
-
-    _, created = ActivityRegistration.objects.get_or_create(
-        activity=activity,
-        user_profile=profile,
-    )
-    if created:
-        return JsonResponse({'success': True, 'registered': True})
-    else:
-        return JsonResponse({'success': False, 'error': '您已报名该活动'})
-
-
-@login_required
-@require_POST
-def unregister_activity(request, activity_id):
-    """社员取消报名活动"""
-    user_role = getattr(request.user.profile, 'role', None) if hasattr(request.user, 'profile') else None
-    if user_role != 'member':
-        return JsonResponse({'success': False, 'error': '仅社员可以取消报名'}, status=403)
-
-    activity = get_object_or_404(ActivityApplication, pk=activity_id)
-    profile = getattr(request.user, 'profile', None)
-    if not profile:
-        return JsonResponse({'success': False, 'error': '用户资料不存在'}, status=400)
-
-    deleted, _ = ActivityRegistration.objects.filter(activity=activity, user_profile=profile).delete()
-    if deleted:
-        return JsonResponse({'success': True, 'registered': False})
-    else:
-        return JsonResponse({'success': False, 'error': '您尚未报名该活动'})
 
 
 
 
 
 
-@login_required
-def edit_activity_application(request, activity_id):
-    """
-    编辑活动申请 - 干事、管理员和负责老师可用
-    """
-    activity = get_object_or_404(ActivityApplication, pk=activity_id)
-    
-    # 权限检查
-    user_role = getattr(request.user.profile, 'role', None) if hasattr(request.user, 'profile') else None
-    
-    # 检查用户权限
-    has_permission = False
-    if user_role in ['admin', 'staff']:
-        has_permission = True
-    
-    if not has_permission:
-        messages.error(request, '您没有权限编辑此活动')
-        return redirect('clubs:public_activities')
-    
-    if request.method == 'POST':
-        # 获取表单数据
-        activity_name = request.POST.get('activity_name', '').strip()
-        activity_type = request.POST.get('activity_type', '').strip()
-        activity_description = request.POST.get('activity_description', '').strip()
-        activity_date = request.POST.get('activity_date', '').strip()
-        activity_time_start = request.POST.get('activity_time_start', '').strip()
-        activity_time_end = request.POST.get('activity_time_end', '').strip()
-        activity_location = request.POST.get('activity_location', '').strip()
-        expected_participants = request.POST.get('expected_participants', '').strip()
-        budget = request.POST.get('budget', '').strip() or '0'
-        contact_person = request.POST.get('contact_person', '').strip()
-        contact_phone = request.POST.get('contact_phone', '').strip()
-        
-        errors = []
-        
-        # 基本验证
-        if not activity_name:
-            errors.append('活动名称不能为空')
-        if not activity_type:
-            errors.append('活动类型不能为空')
-        if not activity_description:
-            errors.append('活动描述不能为空')
-        if not activity_date:
-            errors.append('活动日期不能为空')
-        if not activity_time_start:
-            errors.append('活动开始时间不能为空')
-        if not activity_time_end:
-            errors.append('活动结束时间不能为空')
-        if not activity_location:
-            errors.append('活动地点不能为空')
-        if not contact_person:
-            errors.append('联系人不能为空')
-        
-        # 验证参与人数
-        try:
-            expected_participants = int(expected_participants) if expected_participants else 0
-            if expected_participants < 0:
-                errors.append('预计参与人数不能为负数')
-        except ValueError:
-            errors.append('预计参与人数必须是整数')
-        
-        # 验证预算
-        try:
-            budget = float(budget) if budget else 0
-            if budget < 0:
-                errors.append('活动预算不能为负数')
-        except ValueError:
-            errors.append('活动预算必须是数字')
-        
-        if errors:
-            context = {
-                'activity': activity,
-                'errors': errors,
-                'activity_name': activity_name,
-                'activity_type': activity_type,
-                'activity_description': activity_description,
-                'activity_date': activity_date,
-                'activity_time_start': activity_time_start,
-                'activity_time_end': activity_time_end,
-                'activity_location': activity_location,
-                'expected_participants': expected_participants,
-                'budget': budget,
-                'contact_person': contact_person,
-                'contact_phone': contact_phone,
-            }
-            return render(request, 'clubs/edit_activity_application.html', context)
-        
-        # 更新活动信息
-        try:
-            activity.activity_name = activity_name
-            activity.activity_type = activity_type
-            activity.activity_description = activity_description
-            activity.activity_date = activity_date
-            activity.activity_time_start = activity_time_start
-            activity.activity_time_end = activity_time_end
-            activity.activity_location = activity_location
-            activity.expected_participants = expected_participants
-            activity.budget = budget
-            activity.contact_person = contact_person
-            activity.contact_phone = contact_phone or '无'
-            activity.save()
-            
-            messages.success(request, '活动信息已更新')
-            return redirect('clubs:public_activities')
-        except Exception as e:
-            messages.error(request, f'更新失败: {str(e)}')
-            return redirect('clubs:edit_activity_application', activity_id=activity_id)
-    
-    # GET请求 - 显示编辑表单
-    context = {
-        'activity': activity,
-    }
-    return render(request, 'clubs/edit_activity_application.html', context)
 
 
-@login_required(login_url=settings.LOGIN_URL)
-def staff_audit_center(request, tab='annual-review'):
-    """干事/管理员审核中心 - 类似社长审批中心的界面"""
-    if not _is_staff(request.user) and not _is_admin(request.user):
-        messages.error(request, '仅干事和管理员可以访问审核中心')
-        return redirect('clubs:index')
-    
-    # 将连字符转换为下划线以兼容内部处理
-    tab_internal = tab.replace('-', '_')
-    
-    # 根据选项卡类型获取数据
-    pending_items = []
-    reviewing_items = []
-    completed_items = []
-    
-    if tab_internal == 'annual_review':
-        all_items = ReviewSubmission.objects.all().order_by('-submitted_at')
-        pending_items_queryset = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        
-        # 分离待审核和审核中的项目
-        for item in pending_items_queryset:
-            # 检查当前用户是否已审核过（仅当前提交轮次）
-            user_reviewed = SubmissionReview.objects.filter(submission=item, reviewer=request.user, submission_attempt=item.resubmission_attempt).exists()
-            item.user_reviewed = user_reviewed
-            
-            # 检查是否有其他人审核过（审核中状态）（仅当前提交轮次）
-            total_reviews = SubmissionReview.objects.filter(submission=item, submission_attempt=item.resubmission_attempt).count()
-            if total_reviews > 0:
-                item.review_count = total_reviews
-                reviewing_items.append(item)
-            else:
-                pending_items.append(item)
-        
-    elif tab_internal == 'registration':
-        all_items = ClubRegistration.objects.all().order_by('-submitted_at')
-        pending_items_queryset = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        
-        # 分离待审核和审核中的项目
-        for item in pending_items_queryset:
-            # 检查当前用户是否已审核过（仅当前提交轮次）
-            user_reviewed = ClubRegistrationReview.objects.filter(registration=item, reviewer=request.user, submission_attempt=item.resubmission_attempt).exists()
-            item.user_reviewed = user_reviewed
-            
-            # 检查是否有其他人审核过（审核中状态）（仅当前提交轮次）
-            total_reviews = ClubRegistrationReview.objects.filter(registration=item, submission_attempt=item.resubmission_attempt).count()
-            if total_reviews > 0:
-                item.review_count = total_reviews
-                reviewing_items.append(item)
-            else:
-                pending_items.append(item)
-        
-    elif tab_internal == 'application':
-        all_items = ClubRegistrationRequest.objects.all().order_by('-submitted_at')
-        pending_items_queryset = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        
-        # 分离待审核和审核中的项目
-        for item in pending_items_queryset:
-            # 检查当前用户是否已审核过（仅当前提交轮次）
-            user_reviewed = ClubApplicationReview.objects.filter(application=item, reviewer=request.user, submission_attempt=item.resubmission_attempt).exists()
-            item.user_reviewed = user_reviewed
-            
-            # 检查是否有其他人审核过（审核中状态）（仅当前提交轮次）
-            total_reviews = ClubApplicationReview.objects.filter(application=item, submission_attempt=item.resubmission_attempt).count()
-            if total_reviews > 0:
-                item.review_count = total_reviews
-                reviewing_items.append(item)
-            else:
-                pending_items.append(item)
-        
-        
-    elif tab_internal == 'reimbursement':
-        all_items = Reimbursement.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        
-    elif tab_internal == 'activity_application':
-        all_items = ActivityApplication.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-        
-    elif tab_internal == 'president_transition':
-        all_items = PresidentTransition.objects.all().order_by('-submitted_at')
-        pending_items = all_items.filter(status='pending')
-        completed_items = all_items.exclude(status='pending')
-    
-    context = {
-        'current_tab': tab_internal,
-        'pending_items': pending_items,
-        'reviewing_items': reviewing_items if tab_internal in ['annual_review', 'registration', 'application'] else [],
-        'active_items': list(pending_items) + list(reviewing_items) if tab_internal in ['annual_review', 'registration', 'application'] else pending_items,
-        'completed_items': completed_items,
-    }
-    
-    return render(request, 'clubs/staff/audit_center.html', context)
 
-@login_required(login_url=settings.LOGIN_URL)
-def staff_audit_center_mobile(request):
-    """干事/管理员审核中心移动版 - 卡片网格UI用于手机端"""
-    if not _is_staff(request.user) and not _is_admin(request.user):
-        messages.error(request, '仅干事和管理员可以访问审核中心')
-        return redirect('clubs:index')
-    
-    # 获取所有审核类型的数据
-    audit_items = {
-        'annual_review': ReviewSubmission.objects.all().order_by('-submitted_at'),
-        'registration': ClubRegistration.objects.all().order_by('-submitted_at'),
-        'application': ClubRegistrationRequest.objects.all().order_by('-submitted_at'),
-        'reimbursement': Reimbursement.objects.all().order_by('-submitted_at'),
-        'activity_application': ActivityApplication.objects.all().order_by('-submitted_at'),
-        'president_transition': PresidentTransition.objects.all().order_by('-submitted_at'),
-    }
-    
-    # 计算未审核数量
-    pending_counts = {
-        'annual_review': ReviewSubmission.objects.filter(status='pending').count(),
-        'registration': ClubRegistration.objects.filter(status='pending').count(),
-        'application': ClubRegistrationRequest.objects.filter(status='pending').count(),
-        'reimbursement': Reimbursement.objects.filter(status='pending').count(),
-        'activity_application': ActivityApplication.objects.filter(staff_approved__isnull=True).count(),
-        'president_transition': PresidentTransition.objects.filter(status='pending').count(),
-    }
-    
-    context = {
-        'audit_items': audit_items,
-        'pending_counts': pending_counts,
-    }
-    
-    return render(request, 'clubs/staff/audit_center_mobile.html', context)
+
+
+
+
+
+
+
+AUDIT_REQUEST_MODELS = {}
+
+
+def _audit_tab_url(tab):
+    return tab.replace('_', '-')
+
+
+def _delete_uploaded_files_for_instance(instance):
+    for field in instance._meta.fields:
+        if not isinstance(field, FileField):
+            continue
+        uploaded_file = getattr(instance, field.name, None)
+        if uploaded_file:
+            uploaded_file.delete(save=False)
+
+    content_type = ContentType.objects.get_for_model(instance, for_concrete_model=False)
+    for submitted_file in SubmittedFile.objects.filter(content_type=content_type, object_id=instance.pk):
+        if submitted_file.file:
+            submitted_file.file.delete(save=False)
+        submitted_file.delete()
+
+
+
 
 
 @login_required
@@ -7618,10 +3583,10 @@ def edit_department_introduction(request):
     if not _is_admin(request.user) and not request.user.is_superuser:
         messages.error(request, '您没有权限编辑部门介绍')
         return redirect('clubs:index')
-    
+
     # 获取所有部门
     departments = DepartmentIntroduction.objects.all().order_by('department')
-    
+
     if request.method == 'POST':
         # 处理表单提交 - 更新每个部门的介绍
         try:
@@ -7631,7 +3596,7 @@ def edit_department_introduction(request):
                 description = request.POST.get(f"{dept_key}_description", "").strip()
                 highlights = request.POST.get(f"{dept_key}_highlights", "").strip()
                 icon = request.POST.get(f"{dept_key}_icon", dept.icon).strip()
-                
+
                 # 更新部门信息
                 if description:  # 只有在有描述时才更新
                     dept.description = description
@@ -7640,12 +3605,12 @@ def edit_department_introduction(request):
                     dept.updated_by = request.user
                     dept.save()
                     messages.success(request, f'已更新{dept.get_department_display()}部门信息')
-            
+
             messages.success(request, '所有部门介绍已成功更新')
             return redirect('clubs:index')
         except Exception as e:
             messages.error(request, f'更新部门介绍时出错: {str(e)}')
-    
+
     context = {
         'departments': departments,
         'material_icons': [
@@ -7665,23 +3630,23 @@ def manage_material_requirements(request):
     if not is_staff_or_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:index')
-        
+
     requirements = MaterialRequirement.objects.all().order_by('request_type', 'order')
-    
+
     # 按请求类型分组
     grouped_requirements = {}
-    
+
     # 初始化所有类型的分组
     for code, name in MaterialRequirement.REQUEST_TYPE_CHOICES:
         grouped_requirements[code] = {
             'name': name,
             'items': []
         }
-        
+
     for req in requirements:
         if req.request_type in grouped_requirements:
             grouped_requirements[req.request_type]['items'].append(req)
-            
+
     context = {
         'grouped_requirements': grouped_requirements,
     }
@@ -7694,7 +3659,7 @@ def add_material_requirement(request):
     if not is_staff_or_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:index')
-        
+
     if request.method == 'POST':
         try:
             request_type = request.POST.get('request_type')
@@ -7707,7 +3672,7 @@ def add_material_requirement(request):
             order = int(request.POST.get('order', 0))
             is_active = request.POST.get('is_active') == 'on'
             template_file = request.FILES.get('template_file')
-            
+
             MaterialRequirement.objects.create(
                 request_type=request_type,
                 name=name,
@@ -7723,7 +3688,7 @@ def add_material_requirement(request):
             messages.success(request, '添加成功')
         except Exception as e:
             messages.error(request, f'添加失败: {str(e)}')
-            
+
     return redirect('clubs:manage_material_requirements')
 
 
@@ -7733,14 +3698,14 @@ def edit_material_requirement(request, req_id):
     if not is_staff_or_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:index')
-        
+
     req = get_object_or_404(MaterialRequirement, pk=req_id)
-    
+
     if request.method == 'POST':
         try:
             if request.POST.get('request_type'):
                 req.request_type = request.POST.get('request_type')
-                
+
             req.name = request.POST.get('name')
             req.icon = request.POST.get('icon', 'cloud_upload')
             req.description = request.POST.get('description', '')
@@ -7749,18 +3714,18 @@ def edit_material_requirement(request, req_id):
             req.max_size_mb = int(request.POST.get('max_size_mb', 10))
             req.order = int(request.POST.get('order', 0))
             req.is_active = request.POST.get('is_active') == 'on'
-            
+
             if 'template_file' in request.FILES:
                 req.template_file = request.FILES['template_file']
             elif request.POST.get('clear_template') == 'on':
                 req.template_file = None
-                
+
             req.save()
-            
+
             messages.success(request, '修改成功')
         except Exception as e:
             messages.error(request, f'修改失败: {str(e)}')
-            
+
     return redirect('clubs:manage_material_requirements')
 
 
@@ -7770,13 +3735,13 @@ def delete_material_requirement(request, req_id):
     if not is_staff_or_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:index')
-        
+
     req = get_object_or_404(MaterialRequirement, pk=req_id)
-    
+
     if request.method == 'POST':
         req.delete()
         messages.success(request, '删除成功')
-        
+
     return redirect('clubs:manage_material_requirements')
 
 
@@ -7786,7 +3751,7 @@ def manage_departments(request):
     if not is_staff_or_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:index')
-        
+
     departments = Department.objects.all()
     return render(request, 'clubs/admin/manage_departments.html', {'departments': departments})
 
@@ -7797,14 +3762,14 @@ def add_department(request):
     if not is_staff_or_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:index')
-        
+
     if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description')
         highlights = request.POST.get('highlights')
         icon = request.POST.get('icon', 'work')
         order = request.POST.get('order', 0)
-        
+
         try:
             Department.objects.create(
                 name=name,
@@ -7817,7 +3782,7 @@ def add_department(request):
             return redirect('clubs:manage_departments')
         except Exception as e:
             messages.error(request, f'添加失败: {str(e)}')
-            
+
     return render(request, 'clubs/admin/department_form.html', {'title': '添加部门'})
 
 
@@ -7826,57 +3791,11 @@ def get_clubs_list(request):
     """获取社团列表API"""
     if not is_staff_or_admin(request.user):
         return HttpResponseForbidden()
-        
+
     clubs = Club.objects.filter(status='active').values('id', 'name')
     return JsonResponse({'clubs': list(clubs)})
 
 
-@login_required
-def zip_activity_application_docs(request, application_id):
-    """打包下载活动申请文件"""
-    if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
-        return redirect('clubs:index')
-        
-    application = get_object_or_404(ActivityApplication, pk=application_id)
-    
-    # 创建临时目录
-    with tempfile.TemporaryDirectory() as temp_dir:
-        # 获取所有提交的文件
-        files = SubmittedFile.objects.filter(
-            content_type=ContentType.objects.get_for_model(ActivityApplication),
-            object_id=application.id
-        )
-        
-        if not files.exists():
-            messages.warning(request, '没有可下载的文件')
-            return redirect('clubs:review_activity_application', activity_id=application.id)
-            
-        # 复制文件到临时目录
-        for f in files:
-            if f.file:
-                try:
-                    src_path = f.file.path
-                    if os.path.exists(src_path):
-                        # 使用 requirement 名称作为文件名
-                        req_name = f.requirement.name if f.requirement else 'unknown'
-                        file_ext = os.path.splitext(f.file.name)[1]
-                        dst_name = f"{req_name}{file_ext}"
-                        shutil.copy2(src_path, os.path.join(temp_dir, dst_name))
-                except Exception as e:
-                    print(f"Error copying file: {e}")
-                    
-        # 创建zip文件
-        activity_display_name = getattr(application, 'activity_name', None) or getattr(application, 'name', '活动申请')
-        zip_filename = f"{application.club.name}-活动申请-{activity_display_name}.zip"
-        zip_path = os.path.join(tempfile.gettempdir(), zip_filename)
-        
-        shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', temp_dir)
-        
-        # 发送文件
-        response = FileResponse(open(zip_path, 'rb'), content_type='application/zip')
-        response['Content-Disposition'] = f'attachment; filename="{urllib.parse.quote(zip_filename)}"'
-    return response
 
 
 @login_required
@@ -7887,7 +3806,7 @@ def room_calendar(request):
     # 获取参数
     room_id = request.GET.get('room_id')
     date_str = request.GET.get('date')
-    
+
     # 获取当前查看的日期
     if date_str:
         try:
@@ -7896,52 +3815,52 @@ def room_calendar(request):
             view_date = timezone.now().date()
     else:
         view_date = timezone.now().date()
-        
+
     # 获取所有可用房间
     rooms = Room.objects.filter(status='available')
     if not rooms.exists():
         messages.error(request, '暂时没有可用的房间')
         return redirect('clubs:index')
-        
+
     # 确定当前选中的房间
     if room_id:
         selected_room = get_object_or_404(Room, pk=room_id)
     else:
         selected_room = rooms.first()
-        
+
     # 计算日期导航
     is_today = (view_date == timezone.now().date())
     prev_date = view_date - timezone.timedelta(days=1)
     next_date = view_date + timezone.timedelta(days=1)
     week_start = view_date - timezone.timedelta(days=view_date.weekday())
-    
+
     # 获取时间段
     time_slots = TimeSlot.objects.filter(is_active=True).order_by('start_time')
-    
+
     # 计算整个日历的起止时间（用于计算百分比）
     # 默认 8:00 (480min) 到 22:00 (1320min)，总长 840min
     day_start_minutes = 8 * 60
     day_end_minutes = 22 * 60
-    
+
     if time_slots.exists():
         first_slot = time_slots.first()
         last_slot = time_slots.last()
         day_start_minutes = min(day_start_minutes, first_slot.start_time.hour * 60 + first_slot.start_time.minute)
         day_end_minutes = max(day_end_minutes, last_slot.end_time.hour * 60 + last_slot.end_time.minute)
-    
+
     total_minutes = day_end_minutes - day_start_minutes
     if total_minutes <= 0:
         total_minutes = 14 * 60
-        
+
     processed_slots = []
     for slot in time_slots:
         slot_start_min = slot.start_time.hour * 60 + slot.start_time.minute
         slot_end_min = slot.end_time.hour * 60 + slot.end_time.minute
-        
+
         # 使用浮点数计算百分比，保留4位小数以确保精度
         top_percent = ((slot_start_min - day_start_minutes) / total_minutes) * 100
         height_percent = ((slot_end_min - slot_start_min) / total_minutes) * 100
-        
+
         # 检查该时间段是否已有预约
         has_booking = RoomBooking.objects.filter(
             room=selected_room,
@@ -7950,7 +3869,7 @@ def room_calendar(request):
             start_time__lt=slot.end_time,
             end_time__gt=slot.start_time
         ).exists()
-        
+
         processed_slots.append({
             'start': slot.start_time,
             'end': slot.end_time,
@@ -7960,27 +3879,27 @@ def room_calendar(request):
             'has_booking': has_booking,
             'id': slot.id
         })
-        
+
     # 获取当天的预约
     bookings = RoomBooking.objects.filter(
         room=selected_room,
         booking_date=view_date,
         status='active'
     ).select_related('user__profile', 'club')
-    
+
     processed_bookings = []
     for booking in bookings:
         # 权限检查
         can_edit = booking.can_edit(request.user)
         can_delete = booking.can_delete(request.user)
-             
+
         # 计算位置
         b_start_min = booking.start_time.hour * 60 + booking.start_time.minute
         b_end_min = booking.end_time.hour * 60 + booking.end_time.minute
-        
+
         top_percent = ((b_start_min - day_start_minutes) / total_minutes) * 100
         height_percent = ((b_end_min - b_start_min) / total_minutes) * 100
-        
+
         processed_bookings.append({
             'booking': booking,
             'top_percent': f"{top_percent:.4f}", # 格式化为字符串
@@ -8000,7 +3919,7 @@ def room_calendar(request):
         'time_slots': processed_slots,
         'bookings': processed_bookings,
     }
-    
+
     return render(request, 'clubs/room_calendar.html', context)
 
 
@@ -8011,9 +3930,9 @@ def edit_department(request, dept_id):
     if not is_staff_or_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:index')
-        
+
     dept = get_object_or_404(Department, pk=dept_id)
-    
+
     if request.method == 'POST':
         dept.name = request.POST.get('name')
         dept.description = request.POST.get('description')
@@ -8024,7 +3943,7 @@ def edit_department(request, dept_id):
         dept.save()
         messages.success(request, '部门更新成功')
         return redirect('clubs:manage_departments')
-        
+
     return render(request, 'clubs/admin/department_form.html', {
         'title': '编辑部门',
         'department': dept
@@ -8037,12 +3956,12 @@ def delete_department(request, dept_id):
     if not is_staff_or_admin(request.user):
         messages.error(request, '您没有权限执行此操作')
         return redirect('clubs:index')
-        
+
     dept = get_object_or_404(Department, pk=dept_id)
     if request.method == 'POST':
         dept.delete()
         messages.success(request, '部门删除成功')
-        
+
     return redirect('clubs:manage_departments')
 
 
@@ -8057,10 +3976,10 @@ def submit_room_booking(request):
         date_str = request.GET.get('date')
         start_time = request.GET.get('start_time')
         end_time = request.GET.get('end_time')
-        
+
         # 获取基础数据
         rooms = Room.objects.filter(status='available')
-        
+
         # 获取用户关联的社团（作为社长，通过 Officer 表）
         user_clubs = []
         if hasattr(request.user, 'profile'):
@@ -8070,9 +3989,9 @@ def submit_room_booking(request):
                 officers__is_current=True,
                 status='active',
             )
-            
+
         today = timezone.now().date().strftime('%Y-%m-%d')
-        
+
         context = {
             'rooms': rooms,
             'user_clubs': user_clubs,
@@ -8096,7 +4015,7 @@ def submit_room_booking(request):
         contact_phone = request.POST.get('contact_phone')
         special_requirements = request.POST.get('special_requirements')
         participant_count = request.POST.get('participant_count')
-        
+
         if not all([room_id, date_str, start_time_str, end_time_str, purpose, contact_phone, participant_count]):
             messages.error(request, '请填写所有必填项')
             return redirect('clubs:submit_room_booking')
@@ -8108,11 +4027,11 @@ def submit_room_booking(request):
 
         room = get_object_or_404(Room, pk=room_id)
         booking_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        
+
         # 解析时间
         start_time = datetime.strptime(start_time_str, '%H:%M').time()
         end_time = datetime.strptime(end_time_str, '%H:%M').time()
-        
+
         # 验证时间顺序
         if start_time >= end_time:
             messages.error(request, '结束时间必须晚于开始时间')
@@ -8124,7 +4043,7 @@ def submit_room_booking(request):
             end_time=end_time,
             is_active=True
         ).exists()
-        
+
         if not is_valid_slot:
             messages.error(request, '请选择有效的固定时间段')
             return redirect('clubs:room_calendar')
@@ -8143,17 +4062,17 @@ def submit_room_booking(request):
             if not is_staff_or_admin(request.user):
                 messages.error(request, '普通用户必须选择社团进行申请')
                 return redirect('clubs:submit_room_booking')
-        
+
         # 检查冲突
         existing_booking = RoomBooking.objects.filter(
             room=room,
             booking_date=booking_date,
             status='active'
         ).filter(
-            Q(start_time__lt=end_time) & 
+            Q(start_time__lt=end_time) &
             Q(end_time__gt=start_time)
         ).exists()
-        
+
         if existing_booking:
             messages.error(request, '该时间段已被预约，请选择其他时间')
             # 返回并带上参数以便重填，这里简单处理直接跳回日历
@@ -8178,7 +4097,7 @@ def submit_room_booking(request):
         messages.error(request, f'预约失败: {str(e)}')
         # 发生错误时，最好能保留用户输入，但这里简化处理
         return redirect('clubs:room_calendar')
-            
+
     return redirect('clubs:room_calendar')
 
 
@@ -8196,14 +4115,14 @@ def edit_room_booking(request, booking_id):
     if not booking.can_edit(request.user):
         messages.error(request, '您没有权限编辑此预约')
         return redirect('clubs:my_room_bookings')
-        
+
     if request.method == 'POST':
         # 简单实现，实际可能需要更多逻辑
         booking.reason = request.POST.get('reason')
         booking.save()
         messages.success(request, '预约已更新')
         return redirect('clubs:my_room_bookings')
-        
+
     return render(request, 'clubs/room_my_bookings.html', {'booking': booking})
 
 
@@ -8388,16 +4307,16 @@ def get_department_members(request, department_id):
         department = Department.objects.get(id=department_id)
     except Department.DoesNotExist:
         return JsonResponse({'error': '部门不存在'}, status=404)
-        
+
     # Include both staff and admin users in the department
     members = UserProfile.objects.filter(
         role__in=['staff', 'admin'],
         department_link=department
     ).select_related('user').order_by('staff_level', 'user__username')
-    
+
     directors_data = []
     members_data = []
-    
+
     for member in members:
         avatar_url = member.avatar.url if member.avatar else None
         item = {
@@ -8410,7 +4329,7 @@ def get_department_members(request, department_id):
             directors_data.append(item)
         else:
             members_data.append(item)
-            
+
     return JsonResponse({
         'name': department.name,
         'directors': directors_data,
@@ -8421,7 +4340,7 @@ def get_department_members(request, department_id):
 @login_required(login_url=settings.LOGIN_URL)
 def admin_assign_presidents(request):
     """管理员批量指定/修改各社团的现任社长。
-    
+
     GET  — 列出所有社团及其当前绑定的社长，每行有下拉框选择用户。
     POST — 根据提交数据，在 Officer 表中更新或创建社长记录。
     """
@@ -8512,3 +4431,613 @@ def admin_assign_presidents(request):
     return render(request, 'clubs/admin/assign_presidents.html', context)
 
 
+# ==================== Dynamic form system ====================
+
+def _active_channels():
+    return FormChannel.objects.filter(is_active=True).exclude(slug='').order_by('order', 'id')
+
+
+def _get_channel(slug, active_only=True):
+    qs = FormChannel.objects.all()
+    if active_only:
+        qs = qs.filter(is_active=True)
+    return get_object_or_404(qs, slug=slug)
+
+
+def _field_input_name(field):
+    return f'field_{field.id}'
+
+
+def _parse_options(raw):
+    return [line.strip() for line in (raw or '').replace('\r', '').split('\n') if line.strip()]
+
+
+def _parse_validation(field_type, post):
+    validation = {}
+    if field_type == 'file':
+        exts = post.get('allowed_extensions', '').strip()
+        validation['allowed_extensions'] = [e.strip() if e.strip().startswith('.') else f'.{e.strip()}' for e in exts.split(',') if e.strip()] or ['.doc', '.docx', '.pdf', '.jpg', '.jpeg', '.png', '.zip']
+        try:
+            validation['max_size_mb'] = int(post.get('max_size_mb', '10') or 10)
+        except ValueError:
+            validation['max_size_mb'] = 10
+    elif field_type == 'number':
+        for key in ['min', 'max', 'step']:
+            value = post.get(key, '').strip()
+            if value:
+                validation[key] = value
+    else:
+        max_length = post.get('max_length', '').strip()
+        if max_length:
+            validation['max_length'] = max_length
+    return validation
+
+
+def _is_president_of_club(user, club):
+    return Officer.objects.filter(
+        club=club,
+        user_profile__user=user,
+        position='president',
+        is_current=True,
+    ).exists()
+
+
+def _coerce_bool_text(value):
+    return str(value).strip() in ['是', 'true', 'True', '1', 'yes', '公开']
+
+
+def _validate_dynamic_submission(channel, post, files):
+    cleaned = {}
+    upload_map = {}
+    errors = []
+    fields = channel.fields.filter(is_active=True).order_by('order', 'id')
+    for field in fields:
+        name = _field_input_name(field)
+        if field.field_type == 'file':
+            uploaded = files.get(name)
+            if field.required and not uploaded:
+                errors.append(f'{field.label} 为必填文件')
+                continue
+            if uploaded:
+                ext = os.path.splitext(uploaded.name)[1].lower()
+                allowed = field.allowed_extensions()
+                if ext not in allowed:
+                    errors.append(f'{field.label} 文件类型不允许，允许：{", ".join(allowed)}')
+                max_bytes = field.max_size_mb() * 1024 * 1024
+                if uploaded.size > max_bytes:
+                    errors.append(f'{field.label} 文件不能超过 {field.max_size_mb()}MB')
+                upload_map[field.id] = uploaded
+            continue
+
+        if field.field_type == 'checkbox':
+            value = post.getlist(name)
+        else:
+            value = post.get(name, '').strip()
+
+        if field.required and (value == '' or value == []):
+            errors.append(f'{field.label} 为必填项')
+            continue
+
+        if field.field_type == 'number' and value != '':
+            try:
+                float(value)
+            except ValueError:
+                errors.append(f'{field.label} 必须是数字')
+        max_length = field.validation.get('max_length')
+        if max_length and isinstance(value, str) and len(value) > int(max_length):
+            errors.append(f'{field.label} 不能超过 {max_length} 个字符')
+        if field.field_type in ['select', 'radio'] and value and field.options and value not in field.options:
+            errors.append(f'{field.label} 选项无效')
+        if field.field_type == 'checkbox' and value and field.options:
+            invalid = [item for item in value if item not in field.options]
+            if invalid:
+                errors.append(f'{field.label} 选项无效')
+        cleaned[field.id] = value
+    return fields, cleaned, upload_map, errors
+
+
+def _save_dynamic_submission(channel, club, user, fields, cleaned, upload_map):
+    previous_count = FormSubmission.objects.filter(channel=channel, club=club, submitter=user).count()
+    submission = FormSubmission.objects.create(
+        channel=channel,
+        club=club,
+        submitter=user,
+        resubmission_count=previous_count + 1,
+    )
+    for field in fields:
+        if field.field_type == 'file':
+            uploaded = upload_map.get(field.id)
+            if uploaded:
+                FormUploadedFile.objects.create(
+                    submission=submission,
+                    field=field,
+                    file=uploaded,
+                    original_name=uploaded.name,
+                )
+            continue
+        value = cleaned.get(field.id, [] if field.field_type == 'checkbox' else '')
+        if field.field_type == 'checkbox':
+            FormFieldValue.objects.create(submission=submission, field=field, value_json=value)
+        else:
+            FormFieldValue.objects.create(submission=submission, field=field, value_text=str(value))
+    return submission
+
+
+def _apply_builtin_action(submission):
+    action = submission.channel.builtin_action
+    if action == 'club_application':
+        club_name = submission.field_value('club_name')
+        if club_name and not Club.objects.filter(name=club_name).exists():
+            club = Club.objects.create(
+                name=club_name,
+                description=submission.field_value('club_description', ''),
+                founded_date=timezone.localdate(),
+                status='active',
+            )
+            Officer.objects.create(
+                club=club,
+                user_profile=submission.submitter.profile,
+                position='president',
+                appointed_date=timezone.localdate(),
+                is_current=True,
+            )
+    elif action == 'president_transition':
+        student_id = submission.field_value('new_president_student_id')
+        if student_id:
+            new_profile = UserProfile.objects.filter(student_id=student_id).first()
+            if new_profile:
+                Officer.objects.filter(club=submission.club, position='president', is_current=True).update(
+                    is_current=False,
+                    end_date=timezone.localdate(),
+                )
+                Officer.objects.update_or_create(
+                    club=submission.club,
+                    user_profile=new_profile,
+                    position='president',
+                    defaults={'appointed_date': timezone.localdate(), 'end_date': None, 'is_current': True},
+                )
+
+
+def _submission_context(submission):
+    values = {value.field_id: value for value in submission.values.select_related('field')}
+    files_by_field = defaultdict(list)
+    for uploaded in submission.uploaded_files.select_related('field'):
+        files_by_field[uploaded.field_id].append(uploaded)
+    rows = []
+    for field in submission.channel.fields.filter(is_active=True).order_by('order', 'id'):
+        value_obj = values.get(field.id)
+        rows.append({
+            'field': field,
+            'value': value_obj.value_json if value_obj and value_obj.value_json not in ({}, []) else (value_obj.value_text if value_obj else ''),
+            'files': files_by_field.get(field.id, []),
+        })
+    return rows
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def submit_dynamic_form(request, channel_slug, club_id):
+    channel = _get_channel(channel_slug)
+    club = get_object_or_404(Club, pk=club_id)
+    if not _is_president(request.user) or not _is_president_of_club(request.user, club):
+        messages.error(request, '只有该社团现任社长可以提交')
+        return redirect('clubs:user_dashboard')
+
+    if request.method == 'POST':
+        fields, cleaned, upload_map, errors = _validate_dynamic_submission(channel, request.POST, request.FILES)
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            submission = _save_dynamic_submission(channel, club, request.user, fields, cleaned, upload_map)
+            messages.success(request, f'{channel.name} 已提交，等待审核')
+            return redirect('clubs:approval_detail', item_type=channel.slug, item_id=submission.id)
+    else:
+        fields = channel.fields.filter(is_active=True).order_by('order', 'id')
+
+    return render(request, 'clubs/user/dynamic_form_submit.html', {
+        'channel': channel,
+        'club': club,
+        'fields': fields,
+    })
+
+
+def _redirect_builtin_submit(request, club_id, slug):
+    return redirect('clubs:submit_dynamic_form', channel_slug=slug, club_id=club_id)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def approval_center_tabs(request, tab='all'):
+    if not _is_president(request.user):
+        messages.error(request, '仅社长可以访问审批记录')
+        return redirect('clubs:index')
+    clubs = Club.objects.filter(officers__user_profile__user=request.user, officers__position='president', officers__is_current=True)
+    items = FormSubmission.objects.filter(club__in=clubs).select_related('channel', 'club', 'reviewer').order_by('-submitted_at')
+    if tab and tab != 'all':
+        items = items.filter(channel__slug=tab.replace('_', '-'))
+    active_items = items.filter(status__in=['pending', 'rejected'])
+    completed_items = items.exclude(status__in=['pending', 'rejected'])
+    channels = list(_active_channels())
+    grouped_channels = []
+    for channel in channels:
+        channel_items = items.filter(channel=channel)
+        grouped_channels.append({
+            'channel': channel,
+            'active_items': channel_items.filter(status__in=['pending', 'rejected']),
+            'completed_items': channel_items.exclude(status__in=['pending', 'rejected']),
+            'total_count': channel_items.count(),
+        })
+    return render(request, 'clubs/user/dynamic_approval_center.html', {
+        'items': items,
+        'active_items': active_items,
+        'completed_items': completed_items,
+        'channels': channels,
+        'grouped_channels': grouped_channels,
+        'current_tab': tab.replace('_', '-'),
+    })
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def approval_detail(request, item_type, item_id):
+    submission = get_object_or_404(FormSubmission.objects.select_related('channel', 'club', 'submitter', 'reviewer'), pk=item_id)
+    if _is_president(request.user) and not _is_president_of_club(request.user, submission.club):
+        messages.error(request, '无权查看此提交')
+        return redirect('clubs:user_dashboard')
+    if not (_is_president(request.user) or is_staff_or_admin(request.user)):
+        messages.error(request, '无权查看此提交')
+        return redirect('clubs:index')
+    return render(request, 'clubs/user/dynamic_approval_detail.html', {
+        'item': submission,
+        'submission': submission,
+        'rows': _submission_context(submission),
+        'item_type': submission.channel.slug,
+    })
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def staff_audit_center(request, tab='all'):
+    if not is_staff_or_admin(request.user):
+        messages.error(request, '仅干事和管理员可以访问审核中心')
+        return redirect('clubs:index')
+    slug = tab.replace('_', '-')
+    channels = list(_active_channels())
+    current_channel = None
+    if slug != 'all':
+        current_channel = FormChannel.objects.filter(slug=slug).first()
+    qs = FormSubmission.objects.select_related('channel', 'club', 'submitter', 'reviewer').order_by('-submitted_at')
+    if current_channel:
+        qs = qs.filter(channel=current_channel)
+    pending_items = qs.filter(status='pending')
+    completed_items = qs.exclude(status='pending')
+    return render(request, 'clubs/staff/dynamic_audit_center.html', {
+        'channels': channels,
+        'current_channel': current_channel,
+        'current_tab': slug,
+        'pending_items': pending_items,
+        'completed_items': completed_items,
+        'is_admin': _is_admin(request.user),
+    })
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def staff_review_form_submission(request, submission_id):
+    if not is_staff_or_admin(request.user):
+        messages.error(request, '仅干事和管理员可以审核')
+        return redirect('clubs:index')
+    submission = get_object_or_404(FormSubmission.objects.select_related('channel', 'club', 'submitter'), pk=submission_id)
+    if request.method == 'POST':
+        decision = request.POST.get('decision')
+        comment = request.POST.get('comment', '').strip()
+        if decision not in ['approved', 'rejected']:
+            messages.error(request, '请选择有效审核结果')
+        else:
+            submission.status = decision
+            submission.review_comment = comment
+            submission.reviewer = request.user
+            submission.reviewed_at = timezone.now()
+            submission.is_read = False
+            submission.save()
+            if decision == 'approved':
+                _apply_builtin_action(submission)
+            messages.success(request, '审核结果已保存')
+            return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
+    return render(request, 'clubs/staff/dynamic_submission_review.html', {
+        'submission': submission,
+        'rows': _submission_context(submission),
+    })
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def delete_audit_request(request, tab, item_id):
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以删除审核请求')
+        return redirect('clubs:staff_audit_center', tab=tab)
+    submission = get_object_or_404(FormSubmission, pk=item_id)
+    slug = submission.channel.slug
+    for uploaded in submission.uploaded_files.all():
+        if uploaded.file:
+            uploaded.file.delete(save=False)
+    submission.delete()
+    messages.success(request, '审核请求已删除')
+    return redirect('clubs:staff_audit_center', tab=slug)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def manage_form_channels(request, channel_id=None):
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以管理提交通道')
+        return redirect('clubs:index')
+    channels = FormChannel.objects.all().prefetch_related('fields').order_by('order', 'id')
+    is_creating = request.GET.get('new') == '1'
+    current = None if is_creating else (get_object_or_404(FormChannel, pk=channel_id) if channel_id else channels.first())
+    return render(request, 'clubs/admin/form_channels.html', {
+        'channels': channels,
+        'current': current,
+        'is_creating': is_creating or current is None,
+        'field_types': FormField.FIELD_TYPE_CHOICES,
+        'builtin_actions': FormChannel.BUILTIN_ACTION_CHOICES,
+    })
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def save_form_channel(request, channel_id=None):
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以管理提交通道')
+        return redirect('clubs:index')
+    channel = get_object_or_404(FormChannel, pk=channel_id) if channel_id else FormChannel()
+    channel.name = request.POST.get('name', '').strip()
+    channel.slug = request.POST.get('slug', '').strip()
+    channel.icon = request.POST.get('icon', 'description').strip() or 'description'
+    channel.description = request.POST.get('description', '').strip()
+    channel.builtin_action = request.POST.get('builtin_action', 'none')
+    channel.is_active = request.POST.get('is_active') == 'on'
+    channel.is_builtin = request.POST.get('is_builtin') == 'on'
+    try:
+        channel.order = int(request.POST.get('order', '0') or 0)
+    except ValueError:
+        channel.order = 0
+    if not channel.name or not channel.slug:
+        messages.error(request, '通道名称和标识不能为空')
+    else:
+        try:
+            channel.save()
+            messages.success(request, '通道已保存')
+        except IntegrityError:
+            messages.error(request, '通道标识已存在，请换一个 slug')
+    return redirect('clubs:manage_form_channels_detail', channel_id=channel.id) if channel.id else redirect('clubs:manage_form_channels')
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def delete_form_channel(request, channel_id):
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以删除提交通道')
+        return redirect('clubs:index')
+    channel = get_object_or_404(FormChannel, pk=channel_id)
+    channel.delete()
+    messages.success(request, '通道已删除')
+    return redirect('clubs:manage_form_channels')
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def save_form_field(request, channel_id, field_id=None):
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以管理字段')
+        return redirect('clubs:index')
+    channel = get_object_or_404(FormChannel, pk=channel_id)
+    field = get_object_or_404(FormField, pk=field_id, channel=channel) if field_id else FormField(channel=channel)
+    field.label = request.POST.get('label', '').strip()
+    field.field_key = request.POST.get('field_key', '').strip()
+    field.field_type = request.POST.get('field_type', 'text')
+    field.required = request.POST.get('required') == 'on'
+    field.help_text = request.POST.get('help_text', '').strip()
+    field.placeholder = request.POST.get('placeholder', '').strip()
+    field.options = _parse_options(request.POST.get('options', ''))
+    field.validation = _parse_validation(field.field_type, request.POST)
+    field.is_active = request.POST.get('is_active') == 'on'
+    try:
+        field.order = int(request.POST.get('order', '0') or 0)
+    except ValueError:
+        field.order = 0
+    if 'example_file' in request.FILES:
+        field.example_file = request.FILES['example_file']
+    if request.POST.get('clear_example') == 'on':
+        field.example_file = None
+    if not field.label or not field.field_key:
+        messages.error(request, '字段名称和标识不能为空')
+    else:
+        try:
+            field.save()
+            messages.success(request, '字段已保存')
+        except IntegrityError:
+            messages.error(request, '字段标识已存在，请换一个 field_key')
+    return redirect('clubs:manage_form_channels_detail', channel_id=channel.id)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def delete_form_field(request, channel_id, field_id):
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以删除字段')
+        return redirect('clubs:index')
+    field = get_object_or_404(FormField, pk=field_id, channel_id=channel_id)
+    field.delete()
+    messages.success(request, '字段已删除')
+    return redirect('clubs:manage_form_channels_detail', channel_id=channel_id)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def admin_dashboard(request):
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以访问此页面')
+        return redirect('clubs:index')
+    total_clubs = Club.objects.count()
+    total_users = User.objects.count()
+    pending_registrations = FormSubmission.objects.filter(status='pending').count()
+    published_announcements = Announcement.objects.filter(status='published').count()
+    pending_staff_count = UserProfile.objects.filter(role='staff', status='pending').count()
+    recent_announcements = Announcement.objects.all().order_by('-created_at')[:5]
+    total_applications = FormSubmission.objects.count()
+    pending_all = FormSubmission.objects.filter(status='pending').count()
+    channels_count = FormChannel.objects.count()
+    return render(request, 'clubs/admin/dashboard.html', {
+        'total_clubs': total_clubs,
+        'total_users': total_users,
+        'pending_registrations': pending_registrations,
+        'published_announcements': published_announcements,
+        'pending_staff_count': pending_staff_count,
+        'presidents_count': UserProfile.objects.filter(role='president').count(),
+        'staff_count': UserProfile.objects.filter(role='staff').count(),
+        'admins_count': UserProfile.objects.filter(role='admin').count(),
+        'members_count': UserProfile.objects.filter(role='member').count(),
+        'recent_announcements': recent_announcements,
+        'total_applications': total_applications,
+        'pending_all': pending_all,
+        'channels_count': channels_count,
+        'visit_dates': [],
+        'visit_counts': [],
+        'total_visits_14d': 0,
+        'redis_info': None,
+    })
+
+
+def _hydrate_activity(submission):
+    submission.activity_name = submission.field_value('activity_name')
+    submission.activity_type = submission.field_value('activity_type')
+    submission.activity_date = submission.field_value('activity_date')
+    submission.activity_time_start = submission.field_value('activity_time_start')
+    submission.activity_time_end = submission.field_value('activity_time_end')
+    submission.location = submission.field_value('location')
+    submission.description = submission.field_value('description')
+    submission.is_public = _coerce_bool_text(submission.field_value('is_public'))
+    submission.get_activity_type_display = lambda: submission.activity_type or '其他'
+    return submission
+
+
+@login_required
+def public_activities(request):
+    role = getattr(getattr(request.user, 'profile', None), 'role', None)
+    if role not in ['staff', 'admin', 'president', 'member']:
+        messages.error(request, '您没有权限访问此页面')
+        return redirect('clubs:user_dashboard')
+
+    qs = FormSubmission.objects.filter(channel__builtin_action='activity_application', status='approved').select_related('club').order_by('-submitted_at')
+    if role == 'president':
+        club_ids = _get_president_club_ids(request.user)
+        qs = qs.filter(club_id__in=club_ids)
+    elif role == 'member':
+        member_club_ids = list(ClubMember.objects.filter(user_profile__user=request.user, status='active').values_list('club_id', flat=True))
+        qs = qs.filter(Q(club_id__in=member_club_ids) | Q(values__field__field_key='is_public', values__value_text__in=['\u662f', 'true', 'True', '1'])).distinct()
+
+    activities = [_hydrate_activity(item) for item in qs]
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        activities = [item for item in activities if search_query in item.activity_name or search_query in item.club.name]
+    activity_type_filter = request.GET.get('activity_type', '').strip()
+    if activity_type_filter:
+        activities = [item for item in activities if item.activity_type == activity_type_filter]
+    club_filter = request.GET.get('club', '').strip()
+    if club_filter:
+        activities = [item for item in activities if club_filter in item.club.name]
+    date_filter = request.GET.get('date', '').strip()
+    if date_filter:
+        activities = [item for item in activities if str(item.activity_date) == date_filter]
+
+    activities_by_type = defaultdict(list)
+    for activity in activities:
+        activities_by_type[activity.get_activity_type_display()].append(activity)
+
+    registered_ids = set()
+    if role == 'member':
+        registered_ids = set(ActivityRegistration.objects.filter(user_profile__user=request.user).values_list('activity_id', flat=True))
+    return render(request, 'clubs/public_activities.html', {
+        'approved_activities': activities,
+        'activities_by_type': dict(activities_by_type),
+        'all_clubs': Club.objects.all().order_by('name'),
+        'activity_type_choices': [(value, value) for value in ['\u8bb2\u5ea7', '\u6bd4\u8d5b', '\u6f14\u51fa', '\u57f9\u8bad', '\u5fd7\u613f\u670d\u52a1', '\u5176\u4ed6']],
+        'club_filter': club_filter,
+        'activity_type_filter': activity_type_filter,
+        'date_filter': date_filter,
+        'search_query': search_query,
+        'user_registered_ids': registered_ids,
+    })
+
+
+@login_required
+@require_POST
+def register_activity(request, activity_id):
+    if getattr(request.user.profile, 'role', None) != 'member':
+        return JsonResponse({'success': False, 'error': '仅社员可以报名活动'}, status=403)
+    activity = get_object_or_404(FormSubmission, pk=activity_id, channel__builtin_action='activity_application', status='approved')
+    profile = request.user.profile
+    _, created = ActivityRegistration.objects.get_or_create(activity=activity, user_profile=profile)
+    if created:
+        return JsonResponse({'success': True, 'registered': True})
+    return JsonResponse({'success': False, 'error': '您已报名该活动'})
+
+
+@login_required
+@require_POST
+def unregister_activity(request, activity_id):
+    if getattr(request.user.profile, 'role', None) != 'member':
+        return JsonResponse({'success': False, 'error': '仅社员可以取消报名'}, status=403)
+    deleted, _ = ActivityRegistration.objects.filter(activity_id=activity_id, user_profile=request.user.profile).delete()
+    if deleted:
+        return JsonResponse({'success': True, 'registered': False})
+    return JsonResponse({'success': False, 'error': '您尚未报名该活动'})
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['GET'])
+def notification_counts(request):
+    role = getattr(getattr(request.user, 'profile', None), 'role', '')
+    audit_counts = {}
+    approval_counts = {}
+    if role in ['staff', 'admin'] or request.user.is_superuser:
+        for row in FormSubmission.objects.filter(status='pending').values('channel__slug').annotate(count=Count('id')):
+            audit_counts[row['channel__slug']] = row['count']
+    if role == 'president':
+        club_ids = _get_president_club_ids(request.user)
+        for row in FormSubmission.objects.filter(club_id__in=club_ids, status__in=['pending', 'rejected']).values('channel__slug').annotate(count=Count('id')):
+            approval_counts[row['channel__slug']] = row['count']
+    return JsonResponse({
+        'role': role,
+        'audit_counts': audit_counts,
+        'approval_counts': {**approval_counts, 'total': sum(approval_counts.values())},
+        'audit_total': sum(audit_counts.values()),
+    })
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def cancel_submission(request, submission_id):
+    submission = get_object_or_404(FormSubmission, pk=submission_id, status='pending')
+    if not _is_president_of_club(request.user, submission.club):
+        messages.error(request, '无权取消此提交')
+        return redirect('clubs:user_dashboard')
+    for uploaded in submission.uploaded_files.all():
+        if uploaded.file:
+            uploaded.file.delete(save=False)
+    submission.delete()
+    messages.success(request, '提交已取消')
+    return redirect('clubs:approval_center', tab='all')

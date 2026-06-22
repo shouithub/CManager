@@ -1,4 +1,5 @@
 {% load static %}
+{% load common_tags %}
 <!DOCTYPE html>
 <html lang="zh-hans">
 <head>
@@ -149,114 +150,40 @@
                 </div>
                 
                 {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
-
-
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
                         <span>审核中心</span>
                         <span class="material-icons expand-icon">expand_more</span>
                     </div>
                     <div class="sidebar-menu-items">
-                        <a href="{% url 'clubs:staff_audit_center' 'annual-review' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">assignment</span></span>
-                            <span>年审材料</span>
-                            {% if audit_center_counts.annual_review > 0 %}
-                            <span class="badge-count">{{ audit_center_counts.annual_review }}</span>
-                            {% endif %}
+                        {% for channel in active_form_channels %}
+                        <a href="{% url 'clubs:staff_audit_center' channel.slug %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">{{ channel.icon }}</span></span>
+                            <span>{{ channel.name }}</span>
+                            {% with count=audit_center_counts.channels|get_item:channel.slug %}
+                            {% if count > 0 %}<span class="badge-count">{{ count }}</span>{% endif %}
+                            {% endwith %}
                         </a>
-                        <a href="{% url 'clubs:staff_audit_center' 'registration' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">add_circle</span></span>
-                            <span>社团注册</span>
-                            {% if audit_center_counts.registration > 0 %}
-                            <span class="badge-count">{{ audit_center_counts.registration }}</span>
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'clubs:staff_audit_center' 'application' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">create</span></span>
-                            <span>新社团申请</span>
-                            {% if audit_center_counts.application > 0 %}
-                            <span class="badge-count">{{ audit_center_counts.application }}</span>
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'clubs:staff_audit_center' 'reimbursement' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">receipt</span></span>
-                            <span>报销申请</span>
-                            {% if audit_center_counts.reimbursement > 0 %}
-                            <span class="badge-count">{{ audit_center_counts.reimbursement }}</span>
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'clubs:staff_audit_center' 'activity-application' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">event</span></span>
-                            <span>活动申请</span>
-                            {% if audit_center_counts.activity_application > 0 %}
-                            <span class="badge-count">{{ audit_center_counts.activity_application }}</span>
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'clubs:staff_audit_center' 'president-transition' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">swap_horiz</span></span>
-                            <span>社长换届</span>
-                            {% if audit_center_counts.president_transition > 0 %}
-                            <span class="badge-count">{{ audit_center_counts.president_transition }}</span>
-                            {% endif %}
-                        </a>
+                        {% endfor %}
                     </div>
                 </div>
                 {% endif %}
 
-                <!-- 审批中心 - 仅社长可见（折叠式） -->
                 {% if user.profile.role == 'president' %}
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
-                        <span>审批中心</span>
+                        <span>审批记录</span>
                         <span class="material-icons expand-icon">expand_more</span>
                     </div>
                     <div class="sidebar-menu-items">
-                        <a href="{% url 'clubs:approval_center' 'annual_review' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">assignment</span></span>
-                            <span>年审记录</span>
-                            {% if unread_approval_counts.annual_review > 0 %}
-                            <span class="badge-count">{{ unread_approval_counts.annual_review }}</span>
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'clubs:approval_center' 'registration' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">add_circle</span></span>
-                            <span>社团注册</span>
-                            {% if unread_approval_counts.registration > 0 %}
-                            <span class="badge-count">{{ unread_approval_counts.registration }}</span>
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'clubs:approval_center' 'application' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">create</span></span>
-                            <span>社团申请</span>
-                            {% if unread_approval_counts.application > 0 %}
-                            <span class="badge-count">{{ unread_approval_counts.application }}</span>
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'clubs:approval_center' 'reimbursement' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">receipt</span></span>
-                            <span>报销记录</span>
-                            {% if unread_approval_counts.reimbursement > 0 %}
-                            <span class="badge-count">{{ unread_approval_counts.reimbursement }}</span>
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'clubs:approval_center' 'activity_application' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">event</span></span>
-                            <span>活动申请</span>
-                            {% if unread_approval_counts.activity > 0 %}
-                            <span class="badge-count">{{ unread_approval_counts.activity }}</span>
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'clubs:approval_center' 'president_transition' %}" class="sidebar-menu-item">
-                            <span class="icon"><span class="material-icons">swap_horiz</span></span>
-                            <span>社长换届</span>
-                            {% if unread_approval_counts.transition > 0 %}
-                            <span class="badge-count">{{ unread_approval_counts.transition }}</span>
-                            {% endif %}
+                        <a href="{% url 'clubs:approval_center' 'all' %}" class="sidebar-menu-item">
+                            <span class="icon"><span class="material-icons">fact_check</span></span>
+                            <span>全部记录</span>
+                            {% if unread_approval_counts.total > 0 %}<span class="badge-count">{{ unread_approval_counts.total }}</span>{% endif %}
                         </a>
                     </div>
                 </div>
                 {% endif %}
-                
                 <!-- 房间管理 - 仅社长和干事可见 -->
                 {% if user.profile.role == 'president' or user.profile.role == 'staff' or user.profile.role == 'admin' %}
                 <div class="sidebar-menu-section">
@@ -443,10 +370,10 @@
                     <span class="icon"><span class="material-icons">settings</span></span>
                     <span>管理</span>
                 </a>
-                <a href="{% url 'clubs:staff_audit_center_mobile' %}" class="bottom-nav-item">
+                <a href="{% url 'clubs:staff_audit_center' 'all' %}" class="bottom-nav-item">
                     <span class="icon">
                         <span class="material-icons">check_circle</span>
-                        {% with total=audit_center_counts.annual_review|add:audit_center_counts.registration|add:audit_center_counts.application|add:audit_center_counts.reimbursement|add:audit_center_counts.activity_application|add:audit_center_counts.president_transition %}
+                        {% with total=audit_center_counts.total %}
                         {% if total > 0 %}
                         <span class="nav-badge">{{ total }}</span>
                         {% endif %}
@@ -459,10 +386,10 @@
                     <span>社团</span>
                 </a>
             {% elif user.profile.role == 'staff' %}
-                <a href="{% url 'clubs:staff_audit_center_mobile' %}" class="bottom-nav-item">
+                <a href="{% url 'clubs:staff_audit_center' 'all' %}" class="bottom-nav-item">
                     <span class="icon">
                         <span class="material-icons">check_circle</span>
-                        {% with total=audit_center_counts.annual_review|add:audit_center_counts.registration|add:audit_center_counts.application|add:audit_center_counts.reimbursement|add:audit_center_counts.activity_application|add:audit_center_counts.president_transition %}
+                        {% with total=audit_center_counts.total %}
                         {% if total > 0 %}
                         <span class="nav-badge">{{ total }}</span>
                         {% endif %}
@@ -479,7 +406,7 @@
                     <span class="icon"><span class="material-icons">folder</span></span>
                     <span>我的</span>
                 </a>
-                <a href="{% url 'clubs:approval_center_mobile' %}" class="bottom-nav-item">
+                <a href="{% url 'clubs:approval_center' 'all' %}" class="bottom-nav-item">
                     <span class="icon">
                         <span class="material-icons">check_circle</span>
                         {% if unread_approval_counts.total > 0 %}
@@ -630,24 +557,12 @@
 
                         if (role === 'staff' || role === 'admin') {
                             const audit = data.audit_counts || {};
-                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "annual-review" %}', audit.annual_review || 0);
-                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "registration" %}', audit.registration || 0);
-                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "application" %}', audit.application || 0);
-                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "reimbursement" %}', audit.reimbursement || 0);
-                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "activity-application" %}', audit.activity_application || 0);
-                            upsertSidebarBadge('{% url "clubs:staff_audit_center" "president-transition" %}', audit.president_transition || 0);
-                            upsertBottomBadge('{% url "clubs:staff_audit_center_mobile" %}', data.audit_total || 0);
+                            upsertBottomBadge('{% url "clubs:staff_audit_center" "all" %}', data.audit_total || 0);
                         }
 
                         if (role === 'president') {
                             const approval = data.approval_counts || {};
-                            upsertSidebarBadge('{% url "clubs:approval_center" "annual_review" %}', approval.annual_review || 0);
-                            upsertSidebarBadge('{% url "clubs:approval_center" "registration" %}', approval.registration || 0);
-                            upsertSidebarBadge('{% url "clubs:approval_center" "application" %}', approval.application || 0);
-                            upsertSidebarBadge('{% url "clubs:approval_center" "reimbursement" %}', approval.reimbursement || 0);
-                            upsertSidebarBadge('{% url "clubs:approval_center" "activity_application" %}', approval.activity || 0);
-                            upsertSidebarBadge('{% url "clubs:approval_center" "president_transition" %}', approval.transition || 0);
-                            upsertBottomBadge('{% url "clubs:approval_center_mobile" %}', approval.total || 0);
+                            upsertBottomBadge('{% url "clubs:approval_center" "all" %}', approval.total || 0);
                         }
                     }
 

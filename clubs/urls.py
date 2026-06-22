@@ -43,19 +43,12 @@ urlpatterns = [
     # 用户/社长操作
     path('dashboard/', auth_views.user_dashboard, name='user_dashboard'),
     path('president/members/', views.president_member_management, name='president_member_management'),
-    path('register-club/', views.register_club, name='register_club'),  # 社团申请
-    path('club/<int:club_id>/submit-registration/', views.submit_club_registration, name='submit_club_registration'),  # 社团注册
-    path('club/<int:club_id>/submit-review/', views.submit_review, name='submit_review'),
+    path('forms/<slug:channel_slug>/<int:club_id>/submit/', views.submit_dynamic_form, name='submit_dynamic_form'),
     # 统一修改材料页面的URL
-    path('club/<int:club_id>/edit-rejected-review/', views.edit_rejected_review, name='edit_rejected_review'),
 
-    path('club/<int:club_id>/submit-reimbursement/', views.submit_reimbursement, name='submit_reimbursement'),
-    path('club/<int:club_id>/view-reimbursements/', views.view_reimbursements, name='view_reimbursements'),
 
 
     path('approval-center/<str:tab>/', views.approval_center_tabs, name='approval_center'),  # 审批中心
-    path('approval-center-mobile/', views.approval_center_mobile, name='approval_center_mobile'),  # 审批中心移动端
-    path('approval-center-history/<str:item_type>/', views.approval_history_by_type, name='approval_history_by_type'),  # 按类型显示审批历史
     path('approval-center-detail/<str:item_type>/<int:item_id>/', views.approval_detail, name='approval_detail'),  # 审批详情
     path('submission/<int:submission_id>/cancel/', views.cancel_submission, name='cancel_submission'),
 
@@ -64,7 +57,7 @@ urlpatterns = [
     
     # 干事审核
     path('staff/audit-center/<str:tab>/', views.staff_audit_center, name='staff_audit_center'),  # 干事审核中心
-    path('staff/audit-center-mobile/', views.staff_audit_center_mobile, name='staff_audit_center_mobile'),  # 获取社团列表API
+    path('staff/audit-center/<str:tab>/<int:item_id>/delete/', views.delete_audit_request, name='delete_audit_request'),
     path('api/clubs/list/', views.get_clubs_list, name='get_clubs_list'),
     path('api/department/<int:department_id>/members/', views.get_department_members, name='get_department_members'),
     # path('staff/home/', auth_views.staff_dashboard_home, name='staff_dashboard_home'),
@@ -82,19 +75,14 @@ urlpatterns = [
     path('staff/manage-clubs/', auth_views.manage_staff_clubs, name='manage_staff_clubs'),
     path('staff/view-users/', views.staff_view_users, name='staff_view_users'),
     # path('staff/review-history/<str:review_type>/', views.staff_review_history, name='staff_review_history'),
-    path('staff/review-detail/<str:item_type>/<int:item_id>/', views.staff_review_detail, name='staff_review_detail'),
+    path('staff/form-submission/<int:submission_id>/review/', views.staff_review_form_submission, name='staff_review_form_submission'),
 
     # 统一压缩下载路由：/zip-download/?type=<type>&id=<id>
     path('zip-download/', views.zip_download, name='zip_download'),
 
     # 统一审核路由
-    path('staff/review/<int:club_id>/', views.review_request, name='review'),
     
     # 具体审核路由
-    path('staff/review-submission/<int:submission_id>/', views.review_submission, name='review_submission'),
-    path('staff/review-reimbursement/<int:reimbursement_id>/', views.review_reimbursement, name='review_reimbursement'),
-    path('staff/application/<int:registration_id>/', views.review_club_registration, name='review_club_registration'),
-    path('staff/review-club-registration-submission/<int:registration_id>/', views.review_club_registration_submission, name='review_club_registration_submission'),
     
     path('club/<int:club_id>/update-description/', views.update_club_description, name='update_club_description'),
     path('staff/direct-edit-club-info/<int:club_id>/', views.direct_edit_club_info, name='direct_edit_club_info'),
@@ -107,15 +95,8 @@ urlpatterns = [
     path('staff/upload-template/', views.upload_template, name='upload_template'),
     
     # 社长换届申请路由
-    path('club/<int:club_id>/submit-president-transition/', views.submit_president_transition, name='submit_president_transition'),
-    path('club/<int:club_id>/view-president-transitions/', views.view_president_transitions, name='view_president_transitions'),
-    path('staff/review-president-transition/<int:transition_id>/', views.review_president_transition, name='review_president_transition'),
     
     # 活动申请路由
-    path('club/<int:club_id>/submit-activity-application/', views.submit_activity_application, name='submit_activity_application'),
-    path('club/<int:club_id>/view-activity-applications/', views.view_activity_applications, name='view_activity_applications'),
-    path('staff/review-activity-application/<int:activity_id>/', views.review_activity_application, name='review_activity_application'),
-    path('activity/<int:activity_id>/edit/', views.edit_activity_application, name='edit_activity_application'),
     
     # 房间借用
     path('room/calendar/', views.room_calendar, name='room_calendar'),
@@ -148,17 +129,23 @@ urlpatterns = [
     path('admin-panel/carousel/edit/<int:carousel_id>/', views.edit_carousel, name='edit_carousel'),
     path('admin-panel/carousel/delete/<int:carousel_id>/', views.delete_carousel, name='delete_carousel'),
     
-    # Material Requirement Management
-    path('admin-panel/materials/', views.manage_material_requirements, name='manage_material_requirements'),
-    path('admin-panel/materials/add/', views.add_material_requirement, name='add_material_requirement'),
-    path('admin-panel/materials/edit/<int:req_id>/', views.edit_material_requirement, name='edit_material_requirement'),
-    path('admin-panel/materials/delete/<int:req_id>/', views.delete_material_requirement, name='delete_material_requirement'),
+    # Dynamic form channel management
+    path('admin-panel/form-channels/', views.manage_form_channels, name='manage_form_channels'),
+    path('admin-panel/form-channels/<int:channel_id>/', views.manage_form_channels, name='manage_form_channels_detail'),
+    path('admin-panel/form-channels/save/', views.save_form_channel, name='add_form_channel'),
+    path('admin-panel/form-channels/<int:channel_id>/save/', views.save_form_channel, name='edit_form_channel'),
+    path('admin-panel/form-channels/<int:channel_id>/delete/', views.delete_form_channel, name='delete_form_channel'),
+    path('admin-panel/form-channels/<int:channel_id>/fields/save/', views.save_form_field, name='add_form_field'),
+    path('admin-panel/form-channels/<int:channel_id>/fields/<int:field_id>/save/', views.save_form_field, name='edit_form_field'),
+    path('admin-panel/form-channels/<int:channel_id>/fields/<int:field_id>/delete/', views.delete_form_field, name='delete_form_field'),
+    path('admin-panel/materials/', views.manage_form_channels, name='manage_material_requirements'),
 
     path('admin-panel/publish-announcement/', views.publish_announcement, name='publish_announcement'),
     path('admin-panel/delete-announcement/<int:announcement_id>/', views.delete_announcement, name='delete_announcement'),
     path('admin-panel/edit-announcement/<int:announcement_id>/', views.edit_announcement, name='edit_announcement'),
     path('admin-panel/assign-presidents/', views.admin_assign_presidents, name='admin_assign_presidents'),
     path('admin-panel/manage-users/', views.manage_users, name='manage_users'),
+    path('admin-panel/review-staff-registration/<int:user_id>/', views.review_staff_registration, name='review_staff_registration'),
     path('admin-panel/manage-users/import-csv/', views.import_users_csv, name='import_users_csv'),
     path('admin-panel/manage-users/import-template/', views.download_user_import_template, name='download_user_import_template'),
     path('staff/management/import-clubs-csv/', views.import_clubs_csv, name='import_clubs_csv'),
@@ -169,7 +156,6 @@ urlpatterns = [
     path('admin-panel/change-user-role/<int:user_id>/', views.change_user_role, name='change_user_role'),
     path('admin-panel/change-staff-attributes/<int:user_id>/', views.change_staff_attributes, name='change_staff_attributes'),
     path('admin-panel/smtp-config/', views.manage_smtp_config, name='manage_smtp_config'),
-    path('admin-panel/review/<int:club_id>/', views.review_request, name='admin_review'),
     
     # 自定义文件下载路由
     path('download/', views.download_file, name='download_file'),

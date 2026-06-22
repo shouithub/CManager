@@ -104,3 +104,11 @@ def get_material_requirement(key):
         return None
     except Exception:
         return None
+
+
+@register.filter
+def get_item(value, key):
+    try:
+        return value.get(key, 0)
+    except Exception:
+        return 0

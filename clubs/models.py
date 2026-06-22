@@ -330,160 +330,199 @@ class Officer(models.Model):
         return f"{self.club.name} - {real_name} ({self.get_position_display()})"
 
 
-class SubmissionReview(models.Model):
-    """年审材料审核记录模型"""
-    STATUS_CHOICES = [
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
+class FormChannel(models.Model):
+    """动态表单提交通道。"""
+
+    BUILTIN_ACTION_CHOICES = [
+        ('none', '无'),
+        ('annual_review', '社团年审'),
+        ('club_registration', '社团注册'),
+        ('club_application', '社团申请'),
+        ('reimbursement', '报销申请'),
+        ('activity_application', '活动申请'),
+        ('president_transition', '社长换届'),
     ]
-    
-    # 定义可能的拒绝材料类型
-    REJECTED_MATERIALS_CHOICES = [
-        ('self_assessment_form', '自查表'),
-        ('club_constitution', '社团章程'),
-        ('leader_learning_work_report', '负责人学习及工作情况表'),
-        ('annual_activity_list', '社团年度活动清单'),
-        ('advisor_performance_report', '指导教师履职情况表'),
-        ('financial_report', '年度财务情况表'),
-        ('member_composition_list', '社团成员构成表'),
-        ('new_media_account_report', '新媒体账号及运维情况表'),
-        ('other_materials', '其他材料'),
-    ]
-    
-    submission = models.ForeignKey('ReviewSubmission', on_delete=models.CASCADE, related_name='reviews', verbose_name='年审材料')
-    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submission_reviews', verbose_name='审核人')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='审核结果')
-    comment = models.TextField(blank=True, verbose_name='审核意见')
-    reviewed_at = models.DateTimeField(auto_now_add=True, verbose_name='审核时间')
-    submission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    
-    # 添加被拒绝的材料字段，使用JSONField存储被拒绝的材料列表
-    rejected_materials = models.JSONField(default=list, blank=True, verbose_name='被拒绝的材料')
-    
+
+    name = models.CharField(max_length=100, verbose_name='通道名称')
+    slug = models.SlugField(max_length=80, unique=True, verbose_name='通道标识')
+    icon = models.CharField(max_length=50, default='description', verbose_name='图标')
+    description = models.TextField(blank=True, verbose_name='说明')
+    order = models.IntegerField(default=0, verbose_name='排序')
+    is_active = models.BooleanField(default=True, verbose_name='启用')
+    is_builtin = models.BooleanField(default=False, verbose_name='内置通道')
+    builtin_action = models.CharField(max_length=50, choices=BUILTIN_ACTION_CHOICES, default='none', verbose_name='内置动作')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
     class Meta:
-        verbose_name = '审核记录'
-        verbose_name_plural = '审核记录'
-        ordering = ['-reviewed_at']
-        unique_together = ['submission', 'reviewer', 'submission_attempt']  # 防止同一干事多次审核同一材料
-    
+        verbose_name = '提交通道'
+        verbose_name_plural = '提交通道'
+        ordering = ['order', 'id']
+
     def __str__(self):
-        return f"{self.reviewer.profile.real_name} 审核 {self.submission} - {self.get_status_display()}"
+        return self.name
 
 
-class ReviewSubmission(models.Model):
-    """年审材料提交模型"""
-    STATUS_CHOICES = [
-        ('pending', '待审核'),
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
+class FormField(models.Model):
+    """动态表单字段配置。"""
+
+    FIELD_TYPE_CHOICES = [
+        ('text', '单行文本'),
+        ('textarea', '多行文本'),
+        ('number', '数字'),
+        ('date', '日期'),
+        ('time', '时间'),
+        ('select', '下拉选择'),
+        ('radio', '单选'),
+        ('checkbox', '多选'),
+        ('file', '文件'),
     ]
-    
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='review_submissions', verbose_name='社团')
-    submission_year = models.IntegerField(verbose_name='提交年份')
-    # 按照要求的顺序重新定义材料字段（暂时允许null以确保迁移成功）
-    self_assessment_form = models.FileField(upload_to='reviews/%Y/%m/', null=True, blank=True, verbose_name='自查表')
-    club_constitution = models.FileField(upload_to='reviews/%Y/%m/', null=True, blank=True, verbose_name='社团章程')
-    leader_learning_work_report = models.FileField(upload_to='reviews/%Y/%m/', null=True, blank=True, verbose_name='负责人学习及工作情况表')
-    annual_activity_list = models.FileField(upload_to='reviews/%Y/%m/', null=True, blank=True, verbose_name='社团年度活动清单')
-    advisor_performance_report = models.FileField(upload_to='reviews/%Y/%m/', null=True, blank=True, verbose_name='指导教师履职情况表')
-    financial_report = models.FileField(upload_to='reviews/%Y/%m/', null=True, blank=True, verbose_name='年度财务情况表')
-    member_composition_list = models.FileField(upload_to='reviews/%Y/%m/', null=True, blank=True, verbose_name='社团成员构成表')
-    new_media_account_report = models.FileField(upload_to='reviews/%Y/%m/', null=True, blank=True, verbose_name='新媒体账号及运维情况表')
-    other_materials = models.FileField(upload_to='reviews/%Y/%m/', verbose_name='其他材料', blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='状态')
-    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name='提交时间')
-    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='最后审核时间')
-    
-    # 添加新字段
-    review_count = models.IntegerField(default=0, verbose_name='审核次数')
-    is_read_by_president = models.BooleanField(default=False, verbose_name='社长是否已读')
-    # 重新提交追踪 - 表示这是第几次提交（1为初始提交，2+ 为重新提交）
-    resubmission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    
+
+    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='fields', verbose_name='所属通道')
+    label = models.CharField(max_length=120, verbose_name='字段名称')
+    field_key = models.SlugField(max_length=80, verbose_name='字段标识')
+    field_type = models.CharField(max_length=20, choices=FIELD_TYPE_CHOICES, verbose_name='字段类型')
+    required = models.BooleanField(default=True, verbose_name='必填')
+    order = models.IntegerField(default=0, verbose_name='排序')
+    help_text = models.TextField(blank=True, verbose_name='提示')
+    placeholder = models.CharField(max_length=200, blank=True, verbose_name='占位提示')
+    options = models.JSONField(default=list, blank=True, verbose_name='选项')
+    validation = models.JSONField(default=dict, blank=True, verbose_name='校验规则')
+    example_file = models.FileField(upload_to='form_examples/%Y/%m/', blank=True, null=True, verbose_name='示例文件')
+    is_active = models.BooleanField(default=True, verbose_name='启用')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
     class Meta:
-        verbose_name = '年审材料'
-        verbose_name_plural = '年审材料'
-        ordering = ['-submitted_at']
-        unique_together = ('club', 'submission_year')
-        indexes = [
-            models.Index(fields=['club', 'status', '-submitted_at'], name='rsub_club_status_idx'),
-            models.Index(fields=['status', '-reviewed_at'], name='rsub_status_reviewed_idx'),
-        ]
-    
+        verbose_name = '表单字段'
+        verbose_name_plural = '表单字段'
+        ordering = ['channel', 'order', 'id']
+        unique_together = [('channel', 'field_key')]
+
     def __str__(self):
-        return f"{self.club.name} - 注册申请"
+        return f'{self.channel.name} - {self.label}'
 
-    def get_final_reviewer(self):
-        """获取最终审核通过的审核人"""
-        if self.status == 'approved':
-            last_approved_review = self.reviews.filter(status='approved').last()
-            if last_approved_review:
-                return last_approved_review.reviewer
-        return None
+    def option_lines(self):
+        if isinstance(self.options, list):
+            return '\n'.join(str(item) for item in self.options)
+        return ''
+
+    def allowed_extensions(self):
+        values = self.validation.get('allowed_extensions', ['.doc', '.docx', '.pdf', '.jpg', '.jpeg', '.png', '.zip'])
+        if isinstance(values, str):
+            values = [item.strip() for item in values.split(',') if item.strip()]
+        return [item if str(item).startswith('.') else f'.{item}' for item in values]
+
+    def max_size_mb(self):
+        try:
+            return int(self.validation.get('max_size_mb', 10))
+        except (TypeError, ValueError):
+            return 10
 
 
+class FormSubmission(models.Model):
+    """动态表单提交记录。"""
 
-class Reimbursement(models.Model):
-    """报销材料提交模型"""
     STATUS_CHOICES = [
         ('pending', '待审核'),
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
+        ('approved', '已通过'),
+        ('rejected', '已拒绝'),
     ]
-    
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='reimbursements', verbose_name='社团')
-    submission_date = models.DateField(verbose_name='报销日期')
-    reimbursement_amount = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='报销金额')
-    description = models.TextField(verbose_name='报销说明')
-    receipt_file = models.FileField(upload_to='reimbursements/%Y/%m/', verbose_name='报销凭证')
+
+    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='submissions', verbose_name='通道')
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='form_submissions', verbose_name='社团')
+    submitter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='form_submissions', verbose_name='提交人')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='状态')
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_form_submissions', verbose_name='审核人')
+    review_comment = models.TextField(blank=True, verbose_name='审核意见')
     submitted_at = models.DateTimeField(auto_now_add=True, verbose_name='提交时间')
     reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
-    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_reimbursements', verbose_name='审核人')
-    reviewer_comment = models.TextField(blank=True, verbose_name='审核意见')
-    # 社长是否已读审核结果
-    is_read = models.BooleanField(default=False, verbose_name='社长是否已读')
-    # 重新提交追踪 - 表示这是第几次提交（1为初始提交，2+ 为重新提交）
-    resubmission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    
+    resubmission_count = models.IntegerField(default=1, verbose_name='提交次数')
+    is_read = models.BooleanField(default=False, verbose_name='已读')
+    metadata = models.JSONField(default=dict, blank=True, verbose_name='扩展信息')
+
     class Meta:
-        verbose_name = '报销材料'
-        verbose_name_plural = '报销材料'
+        verbose_name = '动态表单提交'
+        verbose_name_plural = '动态表单提交'
         ordering = ['-submitted_at']
         indexes = [
-            models.Index(fields=['club', 'status', '-submitted_at'], name='reimb_club_status_idx'),
-            models.Index(fields=['status', '-reviewed_at'], name='reimb_status_reviewed_idx'),
+            models.Index(fields=['channel', 'status', '-submitted_at'], name='fs_channel_status_idx'),
+            models.Index(fields=['club', 'status', '-submitted_at'], name='fs_club_status_idx'),
         ]
-    
+
     def __str__(self):
-        return f"{self.club.name} - {self.submission_date} - ¥{self.reimbursement_amount}"
+        return f'{self.channel.name} - {self.club.name} - {self.get_status_display()}'
 
-    def get_final_reviewer(self):
-        """获取最终审核通过的审核人"""
-        if self.status == 'approved':
-            return self.reviewer
-        return None
+    def field_value(self, key, default=''):
+        value = self.values.filter(field__field_key=key).first()
+        if not value:
+            return default
+        if value.value_json not in (None, {}, []):
+            return value.value_json
+        return value.value_text or default
+
+    @property
+    def display_title(self):
+        for key in ['activity_name', 'club_name', 'title', 'name']:
+            value = self.field_value(key)
+            if value:
+                return value
+        return self.club.name
+
+    @property
+    def activity_date(self):
+        return self.field_value('activity_date')
+
+    @property
+    def activity_time_start(self):
+        return self.field_value('activity_time_start')
+
+    @property
+    def activity_time_end(self):
+        return self.field_value('activity_time_end')
+
+    @property
+    def is_public_activity(self):
+        value = self.field_value('is_public')
+        if isinstance(value, str):
+            return value in ['是', 'true', 'True', '1', 'yes']
+        return bool(value)
 
 
-class ReimbursementHistory(models.Model):
-    """报销审核历史"""
-    reimbursement = models.ForeignKey(Reimbursement, on_delete=models.CASCADE, related_name='history', verbose_name='关联报销')
-    attempt_number = models.IntegerField(verbose_name='提交次数')
-    
-    submission_date = models.DateField(verbose_name='报销日期')
-    reimbursement_amount = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='报销金额')
-    description = models.TextField(verbose_name='报销说明')
-    
-    submitted_at = models.DateTimeField(verbose_name='提交时间')
-    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
-    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reimbursement_history_reviews', verbose_name='审核人')
-    status = models.CharField(max_length=20, choices=Reimbursement.STATUS_CHOICES, verbose_name='状态')
-    reviewer_comment = models.TextField(blank=True, verbose_name='审核意见')
-    
+class FormFieldValue(models.Model):
+    """动态表单非文件字段值。"""
+
+    submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='values', verbose_name='提交')
+    field = models.ForeignKey(FormField, on_delete=models.CASCADE, related_name='values', verbose_name='字段')
+    value_text = models.TextField(blank=True, verbose_name='文本值')
+    value_json = models.JSONField(default=dict, blank=True, verbose_name='结构化值')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+
     class Meta:
-        verbose_name = '报销审核历史'
-        verbose_name_plural = '报销审核历史'
-        ordering = ['-attempt_number']
+        verbose_name = '表单字段值'
+        verbose_name_plural = '表单字段值'
+        unique_together = [('submission', 'field')]
+
+    def __str__(self):
+        return f'{self.submission_id} - {self.field.label}'
+
+
+class FormUploadedFile(models.Model):
+    """动态表单文件上传结果。"""
+
+    submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='uploaded_files', verbose_name='提交')
+    field = models.ForeignKey(FormField, on_delete=models.CASCADE, related_name='uploaded_files', verbose_name='字段')
+    file = models.FileField(upload_to='form_submissions/%Y/%m/', verbose_name='文件')
+    original_name = models.CharField(max_length=255, blank=True, verbose_name='原始文件名')
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
+
+    class Meta:
+        verbose_name = '表单上传文件'
+        verbose_name_plural = '表单上传文件'
+        ordering = ['uploaded_at']
+
+    def __str__(self):
+        return self.original_name or self.file.name
 
 
 class Template(models.Model):
@@ -599,136 +638,6 @@ class StaffClubRelation(models.Model):
         return f"{self.staff.real_name} - {self.club.name}"
 
 
-class ClubRegistrationRequest(models.Model):
-    """社团注册申请模型（实际为社团申请功能）"""
-    STATUS_CHOICES = [
-        ('pending', '待审核'),
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
-    ]
-    
-    club_name = models.CharField(max_length=100, verbose_name='社团名称')
-    description = models.TextField(verbose_name='社团介绍')
-    founded_date = models.DateField(verbose_name='成立日期')
-    members_count = models.IntegerField(verbose_name='成员数')  # 强制填写，移除default
-    president_name = models.CharField(max_length=100, verbose_name='社长名字')
-    president_id = models.CharField(max_length=20, verbose_name='社长学号')
-    president_email = models.EmailField(verbose_name='社长邮箱')
-    
-    # 社团申请所需材料
-    establishment_application = models.FileField(
-        upload_to='club_application/%Y/%m/', 
-        verbose_name='社团成立申请书',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    constitution_draft = models.FileField(
-        upload_to='club_application/%Y/%m/', 
-        verbose_name='社团章程草案',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    three_year_plan = models.FileField(
-        upload_to='club_application/%Y/%m/', 
-        verbose_name='社团三年发展规划',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    leaders_resumes = models.FileField(
-        upload_to='club_application/%Y/%m/', 
-        verbose_name='社团拟任负责人和指导老师的详细简历和身份证复印件',
-        help_text='支持上传压缩包(.zip, .rar)或Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    one_month_activity_plan = models.FileField(
-        upload_to='club_application/%Y/%m/', 
-        verbose_name='社团组建一个月后的活动计划',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    advisor_certificates = models.FileField(
-        upload_to='club_application/%Y/%m/', 
-        verbose_name='社团老师的相关专业证书',
-        help_text='支持上传压缩包(.zip, .rar)或图片文件(.jpg, .png)',
-        null=True, 
-        blank=True
-    )
-    
-    requested_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='申请用户')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='状态')
-    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name='提交时间')
-    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
-    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_club_registrations', verbose_name='审核人')
-    reviewer_comment = models.TextField(blank=True, verbose_name='审核意见')
-    # 社长是否已读审核结果
-    is_read = models.BooleanField(default=False, verbose_name='社长是否已读')
-    # 重新提交追踪 - 表示这是第几次提交（1为初始提交，2+ 为重新提交）
-    resubmission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    
-    class Meta:
-        verbose_name = '社团注册申请'
-        verbose_name_plural = '社团注册申请'
-        ordering = ['-submitted_at']
-        indexes = [
-            models.Index(fields=['requested_by', 'status', '-submitted_at'], name='crr_user_status_idx'),
-            models.Index(fields=['status', '-reviewed_at'], name='crr_status_reviewed_idx'),
-        ]
-    
-    def __str__(self):
-        return f"{self.club_name} - {self.get_status_display()}"
-
-    def get_final_reviewer(self):
-        """获取最终审核通过的审核人"""
-        if self.status == 'approved':
-            last_approved_review = self.reviews.filter(status='approved').last()
-            if last_approved_review:
-                return last_approved_review.reviewer
-        return None
-
-
-class ClubApplicationReview(models.Model):
-    """社团申请审核记录模型"""
-    STATUS_CHOICES = [
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
-    ]
-    
-    # 定义可能的拒绝材料类型
-    REJECTED_MATERIALS_CHOICES = [
-        ('establishment_application', '社团成立申请书'),
-        ('constitution_draft', '社团章程草案'),
-        ('three_year_plan', '社团三年发展规划'),
-        ('leaders_resumes', '社团拟任负责人和指导老师的详细简历和身份证复印件'),
-        ('one_month_activity_plan', '社团组建一个月后的活动计划'),
-        ('advisor_certificates', '社团老师的相关专业证书'),
-    ]
-    
-    application = models.ForeignKey(ClubRegistrationRequest, on_delete=models.CASCADE, related_name='reviews', verbose_name='社团申请')
-    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='application_reviews', verbose_name='审核人')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='审核结果')
-    comment = models.TextField(blank=True, verbose_name='审核意见')
-    reviewed_at = models.DateTimeField(auto_now_add=True, verbose_name='审核时间')
-    submission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    
-    # 存储被拒绝的材料列表
-    rejected_materials = models.JSONField(default=list, verbose_name='被拒绝的材料', blank=True)
-    
-    class Meta:
-        verbose_name = '社团申请审核记录'
-        verbose_name_plural = '社团申请审核记录'
-        unique_together = ['application', 'reviewer', 'submission_attempt']  # 防止同一干事多次审核同一申请
-
-
 class RegistrationPeriod(models.Model):
     """社团注册周期模型 - 用于跟踪每次开启社团注册功能的周期"""
     period_number = models.AutoField(primary_key=True, verbose_name='周期编号')
@@ -746,333 +655,9 @@ class RegistrationPeriod(models.Model):
         return f"第{self.period_number}次社团注册周期 ({'活跃' if self.is_active else '已结束'})"
 
 
-class ClubRegistration(models.Model):
-    """社团注册模型（已有社团的注册功能）"""
-    STATUS_CHOICES = [
-        ('pending', '待审核'),
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
-    ]
-    
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='registrations', verbose_name='社团')
-    registration_period = models.ForeignKey(RegistrationPeriod, on_delete=models.CASCADE, related_name='registrations', verbose_name='注册周期', null=True, blank=True)
-    
-    # 社团注册所需材料
-    registration_form = models.FileField(
-        upload_to='club_registration/%Y/%m/', 
-        verbose_name='社团注册申请表',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    basic_info_form = models.FileField(
-        upload_to='club_registration/%Y/%m/', 
-        verbose_name='学生社团基础信息表',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    membership_fee_form = models.FileField(
-        upload_to='club_registration/%Y/%m/', 
-        verbose_name='会费表或免收会费说明书',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    leader_change_application = models.FileField(
-        upload_to='club_registration/%Y/%m/', 
-        verbose_name='社团主要负责人变动申请',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    meeting_minutes = models.FileField(
-        upload_to='club_registration/%Y/%m/', 
-        verbose_name='社团大会会议记录',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    name_change_application = models.FileField(
-        upload_to='club_registration/%Y/%m/', 
-        verbose_name='社团名称变更申请表',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    advisor_change_application = models.FileField(
-        upload_to='club_registration/%Y/%m/', 
-        verbose_name='社团指导老师变动申请表',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    business_advisor_change_application = models.FileField(
-        upload_to='club_registration/%Y/%m/', 
-        verbose_name='社团业务指导单位变动申请表',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    new_media_application = models.FileField(
-        upload_to='club_registration/%Y/%m/', 
-        verbose_name='新媒体平台建立申请表',
-        help_text='支持上传Word文档(.docx)',
-        null=True, 
-        blank=True
-    )
-    
-    requested_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='申请用户')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='状态')
-    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name='提交时间')
-    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
-    reviewer_comment = models.TextField(blank=True, verbose_name='审核意见')
-    # 社长是否已读审核结果
-    is_read = models.BooleanField(default=False, verbose_name='社长是否已读')
-    # 重新提交追踪 - 表示这是第几次提交（1为初始提交，2+ 为重新提交）
-    resubmission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    
-    class Meta:
-        verbose_name = '社团注册'
-        verbose_name_plural = '社团注册'
-        indexes = [
-            models.Index(fields=['club', 'status', '-submitted_at'], name='cr_club_status_idx'),
-            models.Index(fields=['status', '-reviewed_at'], name='cr_status_reviewed_idx'),
-        ]
-
-    def __str__(self):
-        return f"{self.club.name} - 注册申请"
-
-    def get_final_reviewer(self):
-        """获取最终审核通过的审核人"""
-        if self.status == 'approved':
-            last_approved_review = self.reviews.filter(status='approved').last()
-            if last_approved_review:
-                return last_approved_review.reviewer
-        return None
-
-
-class ClubRegistrationReview(models.Model):
-    """社团注册审核记录模型"""
-    STATUS_CHOICES = [
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
-    ]
-    
-    # 定义可能的拒绝材料类型
-    REJECTED_MATERIALS_CHOICES = [
-        ('registration_form', '社团注册申请表'),
-        ('basic_info_form', '学生社团基础信息表'),
-        ('fee_form', '三会费表或免收会费说明书'),
-        ('leader_change_form', '社团主要负责人变动申请'),
-        ('meeting_minutes', '社团大会会议记录'),
-        ('name_change_form', '社团名称变更申请表'),
-        ('advisor_change_form', '社团指导老师变动申请表'),
-        ('business_unit_change_form', '社团业务指导单位变动申请表'),
-        ('new_media_form', '新媒体平台建立申请表'),
-    ]
-    
-    registration = models.ForeignKey(ClubRegistration, on_delete=models.CASCADE, related_name='reviews', verbose_name='社团注册')
-    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='registration_reviews', verbose_name='审核人')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='审核结果')
-    comment = models.TextField(blank=True, verbose_name='审核意见')
-    reviewed_at = models.DateTimeField(auto_now_add=True, verbose_name='审核时间')
-    submission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    
-    # 存储被拒绝的材料列表
-    rejected_materials = models.JSONField(default=list, verbose_name='被拒绝的材料', blank=True)
-    
-    class Meta:
-        verbose_name = '社团注册审核记录'
-        verbose_name_plural = '社团注册审核记录'
-        ordering = ['-reviewed_at']
-        unique_together = ['registration', 'reviewer', 'submission_attempt']  # 防止同一干事多次审核同一注册
-    
-    def __str__(self):
-        reviewer_name = self.reviewer.profile.real_name if hasattr(self.reviewer, 'profile') else self.reviewer.username
-        return f"{reviewer_name} 审核 {self.registration} - {self.get_status_display()}"
-
-
-class PresidentTransition(models.Model):
-    """社长换届申请模型"""
-    STATUS_CHOICES = [
-        ('pending', '待审核'),
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
-    ]
-    
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='president_transitions', verbose_name='社团')
-    old_president = models.ForeignKey(User, on_delete=models.CASCADE, related_name='outgoing_transitions', verbose_name='原社长')
-    # 新社长由现有成员选择，存储为Officer记录而非手填信息
-    new_president_officer = models.ForeignKey(Officer, on_delete=models.PROTECT, related_name='incoming_transitions', verbose_name='新社长干部记录', null=True, blank=True)
-    transition_date = models.DateField(verbose_name='换届日期')
-    transition_reason = models.TextField(verbose_name='换届原因')
-    
-    # 换届表文件
-    transition_form = models.FileField(
-        upload_to='president_transition/%Y/%m/', 
-        verbose_name='社团主要负责人变动申请表',
-        help_text='支持上传Word文档(.docx)或PDF文件(.pdf)'
-    )
-    
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='状态')
-    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name='提交时间')
-    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
-    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_transitions', verbose_name='审核人')
-    reviewer_comment = models.TextField(blank=True, verbose_name='审核意见')
-    
-    # 社长是否已读审核结果
-    is_read = models.BooleanField(default=False, verbose_name='社长是否已读')
-    # 重新提交追踪 - 表示这是第几次提交（1为初始提交，2+ 为重新提交）
-    resubmission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    
-    class Meta:
-        verbose_name = '社长换届申请'
-        verbose_name_plural = '社长换届申请'
-        ordering = ['-submitted_at']
-        indexes = [
-            models.Index(fields=['club', 'status', '-submitted_at'], name='pt_club_status_idx'),
-            models.Index(fields=['status', '-reviewed_at'], name='pt_status_reviewed_idx'),
-        ]
-    
-    def __str__(self):
-        new_pres_name = self.new_president_officer.user_profile.real_name if self.new_president_officer and self.new_president_officer.user_profile else '未知'
-        return f"{self.club.name} - 换届申请 ({self.old_president.username} -> {new_pres_name})"
-
-    def get_final_reviewer(self):
-        """获取最终审核通过的审核人"""
-        if self.status == 'approved':
-            return self.reviewer
-        return None
-
-
-class ActivityApplication(models.Model):
-    """活动申请模型"""
-    STATUS_CHOICES = [
-        ('pending', '待审核'),
-        ('staff_approved', '干事已批准'),
-        ('approved', '已批准'),
-        ('rejected', '被拒绝'),
-    ]
-    
-    ACTIVITY_TYPE_CHOICES = [
-        ('academic', '学术类'),
-        ('cultural', '文化类'),
-        ('sports', '体育类'),
-        ('volunteer', '志愿类'),
-        ('entertainment', '娱乐类'),
-        ('other', '其他'),
-    ]
-    
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='activity_applications', verbose_name='社团')
-    activity_name = models.CharField(max_length=200, verbose_name='活动名称')
-    activity_type = models.CharField(max_length=20, choices=ACTIVITY_TYPE_CHOICES, default='other', verbose_name='活动类型')
-    activity_description = models.TextField(verbose_name='活动描述')
-    activity_date = models.DateField(verbose_name='活动日期')
-    activity_time_start = models.TimeField(verbose_name='活动开始时间')
-    activity_time_end = models.TimeField(verbose_name='活动结束时间')
-    activity_location = models.CharField(max_length=200, verbose_name='活动地点')
-    expected_participants = models.IntegerField(verbose_name='预计参与人数')
-    budget = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='活动预算', default=0)
-    
-    # 活动申请表文件
-    application_form = models.FileField(
-        upload_to='activity_application/%Y/%m/', 
-        verbose_name='活动申请表',
-        help_text='支持上传Word文档(.docx)或PDF文件(.pdf)'
-    )
-    
-    contact_person = models.CharField(max_length=100, verbose_name='联系人')
-    contact_phone = models.CharField(max_length=20, verbose_name='联系电话')
-    
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='状态')
-    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name='提交时间')
-    
-    # 干事审核
-    staff_reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='干事审核时间')
-    staff_reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='staff_reviewed_activities', verbose_name='干事审核人')
-    staff_comment = models.TextField(blank=True, verbose_name='干事审核意见')
-    staff_approved = models.BooleanField(null=True, blank=True, verbose_name='干事是否批准')
-    
-    # 保留旧字段以兼容
-    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
-    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_activities', verbose_name='审核人')
-    reviewer_comment = models.TextField(blank=True, verbose_name='审核意见')
-    
-    # 社长是否已读审核结果
-    is_read = models.BooleanField(default=False, verbose_name='社长是否已读')
-    # 重新提交追踪 - 表示这是第几次提交（1为初始提交，2+ 为重新提交）
-    resubmission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    # 是否公开（审核通过后，社员可在活动页面看到）
-    is_public = models.BooleanField(default=False, verbose_name='是否公开')
-    
-    class Meta:
-        verbose_name = '活动申请'
-        verbose_name_plural = '活动申请'
-        ordering = ['-submitted_at']
-        indexes = [
-            models.Index(fields=['club', 'status', '-submitted_at'], name='aa_club_status_idx'),
-            models.Index(fields=['status', '-reviewed_at'], name='aa_status_reviewed_idx'),
-            models.Index(fields=['staff_approved', '-submitted_at'], name='aa_staff_approved_idx'),
-        ]
-    
-    def __str__(self):
-        return f"{self.club.name} - {self.activity_name} ({self.activity_date})"
-
-    def get_final_reviewer(self):
-        """获取当前结果对应的审核人（通过或拒绝）。"""
-        if self.status in ['approved', 'rejected']:
-            return self.staff_reviewer or self.reviewer
-        return None
-    
-    def update_status(self):
-        """根据审核结果更新状态"""
-        if self.staff_approved is False:
-            self.status = 'rejected'
-        elif self.staff_approved is True:
-            self.status = 'approved'
-        else:
-            self.status = 'pending'
-        
-        # 更新reviewed_at为最后一次审核的时间
-        if self.staff_reviewed_at:
-            self.reviewed_at = self.staff_reviewed_at
-        
-        self.save()
-
-
-class ActivityApplicationHistory(models.Model):
-    """活动申请审核历史"""
-    activity_application = models.ForeignKey(ActivityApplication, on_delete=models.CASCADE, related_name='history', verbose_name='关联活动申请')
-    attempt_number = models.IntegerField(verbose_name='提交次数')
-    
-    activity_name = models.CharField(max_length=200, verbose_name='活动名称')
-    activity_date = models.DateField(verbose_name='活动日期')
-    
-    submitted_at = models.DateTimeField(verbose_name='提交时间')
-    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
-    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='activity_history_reviews', verbose_name='审核人')
-    
-    status = models.CharField(max_length=20, choices=ActivityApplication.STATUS_CHOICES, verbose_name='状态')
-    reviewer_comment = models.TextField(blank=True, verbose_name='审核意见')
-    
-    class Meta:
-        verbose_name = '活动申请审核历史'
-        verbose_name_plural = '活动申请审核历史'
-        ordering = ['-attempt_number']
-
-
 class ActivityRegistration(models.Model):
-    """活动报名记录"""
-    activity = models.ForeignKey('ActivityApplication', on_delete=models.CASCADE, related_name='registrations', verbose_name='活动')
+    """活动报名记录。活动本身来自通过审核的动态活动申请提交。"""
+    activity = models.ForeignKey('FormSubmission', on_delete=models.CASCADE, related_name='registrations', verbose_name='活动')
     user_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE, related_name='activity_registrations', verbose_name='报名用户')
     registered_at = models.DateTimeField(auto_now_add=True, verbose_name='报名时间')
 
@@ -1082,7 +667,7 @@ class ActivityRegistration(models.Model):
         unique_together = [('activity', 'user_profile')]
 
     def __str__(self):
-        return f"{self.user_profile} 报名 {self.activity.activity_name}"
+        return f"{self.user_profile} 报名 {self.activity.display_title}"
 
 
 class EmailVerificationCode(models.Model):
@@ -1338,61 +923,6 @@ class RoomBooking(models.Model):
         if self.club and self.club.president == user:
             return True
         return False
-
-
-class MaterialRequirement(models.Model):
-    """材料上传要求配置"""
-    REQUEST_TYPE_CHOICES = [
-        ('annual_review', '社团年审'),
-        ('club_registration', '社团注册'),
-        ('club_application', '社团申请'),
-        ('president_transition', '社长换届'),
-        ('reimbursement', '报销申请'),
-        ('activity_application', '活动申请'),
-    ]
-
-    request_type = models.CharField(max_length=50, choices=REQUEST_TYPE_CHOICES, verbose_name='申请类型')
-    name = models.CharField(max_length=200, verbose_name='材料名称')
-    description = models.TextField(blank=True, verbose_name='材料描述')
-    is_required = models.BooleanField(default=True, verbose_name='是否必填')
-    allowed_extensions = models.CharField(max_length=200, default='.docx,.pdf,.jpg,.png,.zip', verbose_name='允许的文件扩展名')
-    max_size_mb = models.IntegerField(default=10, verbose_name='最大文件大小(MB)')
-    order = models.IntegerField(default=0, verbose_name='排序权重')
-    is_active = models.BooleanField(default=True, verbose_name='是否启用')
-    
-    # 映射到旧字段名 (用于兼容性)
-    legacy_field_name = models.CharField(max_length=100, blank=True, null=True, verbose_name='旧字段名')
-    
-    # 模板文件
-    template_file = models.FileField(upload_to='templates/', blank=True, null=True, verbose_name='模板文件', help_text='供用户下载的模板文件')
-    
-    # Material Icon
-    icon = models.CharField(max_length=50, default='cloud_upload', verbose_name='图标', help_text='Material Icons 图标名称')
-
-    class Meta:
-        verbose_name = '材料要求'
-        verbose_name_plural = '材料要求'
-        ordering = ['request_type', 'order']
-        
-    def __str__(self):
-        return f"{self.get_request_type_display()} - {self.name}"
-
-
-class SubmittedFile(models.Model):
-    """通用的提交文件模型"""
-    requirement = models.ForeignKey(MaterialRequirement, on_delete=models.CASCADE, verbose_name='对应材料要求', null=True, blank=True)
-    file = models.FileField(upload_to='submissions/%Y/%m/', verbose_name='文件')
-    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
-    
-    # 使用GenericForeignKey关联到各种申请模型
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-    
-    class Meta:
-        verbose_name = '提交文件'
-        verbose_name_plural = '提交文件'
-        ordering = ['uploaded_at']
 
 
 class SiteSettings(models.Model):

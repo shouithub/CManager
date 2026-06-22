@@ -1,0 +1,462 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}审批记录{% endblock %}
+
+{% block extra_css %}
+<style>
+    .approval-page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 110px);
+        box-sizing: border-box;
+    }
+
+    .page-header,
+    .content-card {
+        background: var(--md3-surface-container-low);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-xl);
+    }
+
+    .page-header > .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+        flex: 0 0 auto;
+    }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        color: var(--md3-on-surface);
+        font-size: 1.7rem;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+
+    .page-header p {
+        margin: 6px 0 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.95rem;
+    }
+
+    .mobile-approval-view {
+        display: none;
+    }
+
+    .desktop-approval-view {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-xl);
+    }
+
+    .content-card {
+        overflow: hidden;
+        background: var(--md3-surface-container);
+    }
+
+    .channel-card-header,
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        background: var(--md3-surface-container-high);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .channel-title,
+    .section-header h2 {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin: 0;
+        color: var(--md3-on-surface);
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+
+    .channel-title .material-icons,
+    .section-header .material-icons {
+        color: var(--md3-primary);
+    }
+
+    .count-badge {
+        min-width: 32px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        font-weight: 800;
+    }
+
+    .channel-record-groups {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0;
+    }
+
+    .channel-record-group + .channel-record-group {
+        border-left: 1px solid var(--md3-outline-variant);
+    }
+
+    .group-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.9rem;
+        font-weight: 750;
+    }
+
+    .record-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-md);
+    }
+
+    .record-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--md3-spacing-lg);
+        align-items: center;
+        padding: var(--md3-spacing-lg);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface);
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    }
+
+    .record-card:hover {
+        border-color: var(--md3-primary);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-1px);
+    }
+
+    .record-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        min-width: 0;
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-on-surface);
+        font-size: 1.02rem;
+        font-weight: 700;
+    }
+
+    .record-title .material-icons {
+        color: var(--md3-primary);
+        font-size: 1.25rem;
+    }
+
+    .record-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-xs) var(--md3-spacing-lg);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.9rem;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 30px;
+        padding: 0 11px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-highest);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.84rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .status-pill.pending {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+
+    .status-pill.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .status-pill.approved {
+        background: var(--md3-tertiary-container);
+        color: var(--md3-on-tertiary-container);
+    }
+
+    .empty-state {
+        min-height: 116px;
+        display: grid;
+        place-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-lg);
+        text-align: center;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .empty-state .material-icons {
+        color: var(--md3-primary);
+        font-size: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .approval-page {
+            padding: var(--md3-spacing-md);
+            padding-bottom: 92px;
+        }
+
+        .desktop-approval-view {
+            display: none;
+        }
+
+        .mobile-approval-view {
+            display: block;
+        }
+
+        .page-header {
+            align-items: flex-start;
+            margin-bottom: var(--md3-spacing-md);
+            padding: var(--md3-spacing-md);
+            border-radius: var(--md3-radius-lg);
+        }
+
+        .page-header > .material-icons {
+            font-size: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.18rem;
+        }
+
+        .page-header p {
+            font-size: 0.86rem;
+        }
+
+        .content-card {
+            margin-bottom: var(--md3-spacing-md);
+            border-radius: var(--md3-radius-lg);
+        }
+
+        .section-header {
+            padding: var(--md3-spacing-md);
+        }
+
+        .section-header h2 {
+            font-size: 1rem;
+        }
+
+        .record-list {
+            gap: var(--md3-spacing-sm);
+            padding: var(--md3-spacing-sm);
+        }
+
+        .record-card {
+            grid-template-columns: 1fr;
+            gap: var(--md3-spacing-md);
+            padding: var(--md3-spacing-md);
+            border-radius: var(--md3-radius-md);
+        }
+
+        .record-meta {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 4px;
+            font-size: 0.84rem;
+        }
+
+        .status-pill {
+            justify-self: start;
+        }
+    }
+
+    @media (max-width: 1080px) and (min-width: 769px) {
+        .channel-record-groups {
+            grid-template-columns: 1fr;
+        }
+
+        .channel-record-group + .channel-record-group {
+            border-left: 0;
+            border-top: 1px solid var(--md3-outline-variant);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="approval-page">
+    <section class="page-header">
+        <span class="material-icons">fact_check</span>
+        <div class="page-header-content">
+            <h1>审批记录</h1>
+        </div>
+    </section>
+
+    <div class="desktop-approval-view">
+        {% for group in grouped_channels %}
+        <section class="content-card">
+            <div class="channel-card-header">
+                <h2 class="channel-title">
+                    <span class="material-icons">{{ group.channel.icon }}</span>{{ group.channel.name }}
+                </h2>
+                <span class="count-badge">{{ group.total_count }}</span>
+            </div>
+            <div class="channel-record-groups">
+                <div class="channel-record-group">
+                    <div class="group-label">
+                        <span>进行中</span>
+                        <span>{{ group.active_items|length }}</span>
+                    </div>
+                    <div class="record-list">
+                        {% for item in group.active_items %}
+                        <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.id %}">
+                            <div>
+                                <div class="record-title">
+                                    <span class="material-icons">{{ item.channel.icon }}</span>
+                                    <span>{{ item.display_title }}</span>
+                                </div>
+                                <div class="record-meta">
+                                    <span>{{ item.club.name }}</span>
+                                    <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                                </div>
+                            </div>
+                            <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                        </a>
+                        {% empty %}
+                        <div class="empty-state">
+                            <span class="material-icons">task_alt</span>
+                            暂无进行中的请求
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="channel-record-group">
+                    <div class="group-label">
+                        <span>已处理</span>
+                        <span>{{ group.completed_items|length }}</span>
+                    </div>
+                    <div class="record-list">
+                        {% for item in group.completed_items %}
+                        <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.id %}">
+                            <div>
+                                <div class="record-title">
+                                    <span class="material-icons">{{ item.channel.icon }}</span>
+                                    <span>{{ item.display_title }}</span>
+                                </div>
+                                <div class="record-meta">
+                                    <span>{{ item.club.name }}</span>
+                                    <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                                </div>
+                            </div>
+                            <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                        </a>
+                        {% empty %}
+                        <div class="empty-state">
+                            <span class="material-icons">inbox</span>
+                            暂无已处理请求
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% empty %}
+        <section class="content-card">
+            <div class="empty-state">
+                <span class="material-icons">inbox</span>
+                暂无审批记录
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+
+    <div class="mobile-approval-view">
+        <section class="content-card">
+            <div class="section-header">
+                <h2><span class="material-icons">notifications_active</span>进行中</h2>
+                <span class="count-badge">{{ active_items|length }}</span>
+            </div>
+            <div class="record-list">
+                {% for item in active_items %}
+                <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.id %}">
+                    <div>
+                        <div class="record-title">
+                            <span class="material-icons">{{ item.channel.icon }}</span>
+                            <span>{{ item.display_title }}</span>
+                        </div>
+                        <div class="record-meta">
+                            <span>{{ item.channel.name }}</span>
+                            <span>{{ item.club.name }}</span>
+                            <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                    </div>
+                    <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                </a>
+                {% empty %}
+                <div class="empty-state">
+                    <span class="material-icons">task_alt</span>
+                    暂无进行中的请求
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="content-card">
+            <div class="section-header">
+                <h2><span class="material-icons">history</span>已处理</h2>
+                <span class="count-badge">{{ completed_items|length }}</span>
+            </div>
+            <div class="record-list">
+                {% for item in completed_items %}
+                <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.id %}">
+                    <div>
+                        <div class="record-title">
+                            <span class="material-icons">{{ item.channel.icon }}</span>
+                            <span>{{ item.display_title }}</span>
+                        </div>
+                        <div class="record-meta">
+                            <span>{{ item.channel.name }}</span>
+                            <span>{{ item.club.name }}</span>
+                            <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                    </div>
+                    <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                </a>
+                {% empty %}
+                <div class="empty-state">
+                    <span class="material-icons">inbox</span>
+                    暂无已处理请求
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

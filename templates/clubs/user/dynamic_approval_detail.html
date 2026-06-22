@@ -1,0 +1,191 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}提交详情{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 110px);
+        box-sizing: border-box;
+    }
+
+    .page-header,
+    .content-card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+        overflow: hidden;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        padding: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .page-icon {
+        width: 52px;
+        height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        flex: 0 0 auto;
+    }
+
+    .page-icon .material-icons {
+        font-size: 1.9rem;
+    }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs);
+        font-size: 1.45rem;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+
+    .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.92rem;
+    }
+
+    .review-comment {
+        margin-top: var(--md3-spacing-lg);
+        padding: var(--md3-spacing-md);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface);
+        line-height: 1.6;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        background: var(--md3-surface-container-high);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        font-weight: 700;
+    }
+
+    .field-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-xl);
+    }
+
+    .field-item {
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-low);
+    }
+
+    .field-label {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.84rem;
+        font-weight: 700;
+    }
+
+    .field-value {
+        word-break: break-word;
+        line-height: 1.55;
+    }
+
+    .file-link {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        min-height: 40px;
+        padding: 0 var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+        .detail-page {
+            padding: var(--md3-spacing-lg);
+            padding-bottom: 110px;
+        }
+
+        .page-header {
+            align-items: flex-start;
+            padding: var(--md3-spacing-lg);
+        }
+
+        .page-header h1 {
+            font-size: 1.22rem;
+        }
+
+        .field-list {
+            grid-template-columns: 1fr;
+            padding: var(--md3-spacing-lg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-page">
+    <section class="page-header">
+        <span class="page-icon"><span class="material-icons">{{ submission.channel.icon }}</span></span>
+        <div>
+            <h1>{{ submission.channel.name }} · {{ submission.display_title }}</h1>
+            <div class="meta-row">
+                <span>{{ submission.club.name }}</span>
+                <span>{{ submission.get_status_display }}</span>
+                <span>{{ submission.submitted_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            {% if submission.review_comment %}
+            <div class="review-comment"><strong>审核意见：</strong>{{ submission.review_comment }}</div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="content-card">
+        <div class="card-header">
+            <span class="material-icons">description</span>提交内容
+        </div>
+        <div class="field-list">
+            {% for row in rows %}
+            <div class="field-item">
+                <div class="field-label">
+                    <span class="material-icons">{% if row.field.field_type == 'file' %}attach_file{% else %}notes{% endif %}</span>
+                    {{ row.field.label }}
+                </div>
+                <div class="field-value">
+                    {% if row.field.field_type == 'file' %}
+                        {% for uploaded in row.files %}
+                        <a class="file-link" href="{{ uploaded.file.url }}" target="_blank" rel="noopener">
+                            <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
+                        </a>{% if not forloop.last %}<br>{% endif %}
+                        {% empty %}未上传{% endfor %}
+                    {% else %}
+                        {{ row.value|default:"-" }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

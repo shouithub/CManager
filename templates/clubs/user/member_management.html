@@ -297,6 +297,7 @@ async function generateMemberJoinQRCode(clubId) {
     const usesEl = document.getElementById('memberQrUses');
     const imgEl = document.getElementById('memberQrImage');
     const openEl = document.getElementById('memberJoinOpen');
+    const errorEl = document.getElementById('qrConfigError');
 
     try {
         const minutes = document.getElementById('qrMinutes').value;
@@ -328,8 +329,11 @@ async function generateMemberJoinQRCode(clubId) {
         if (data.qr_data_uri) {
             imgEl.src = data.qr_data_uri;
             imgEl.style.display = 'block';
+            errorEl.style.display = 'none';
         } else {
-            throw new Error('二维码生成失败，请稍后重试');
+            imgEl.style.display = 'none';
+            errorEl.textContent = data.qr_error || '二维码图片生成失败，请复制链接使用';
+            errorEl.style.display = 'block';
         }
     } catch (err) {
         alert(err.message || '二维码生成失败');

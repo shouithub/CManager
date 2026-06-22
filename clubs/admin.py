@@ -1,5 +1,45 @@
 from django.contrib import admin
-from .models import Club, Officer, ReviewSubmission, UserProfile, Reimbursement, Template, Announcement, ClubRegistrationRequest, EmailVerificationCode, SMTPConfig, CarouselImage, Department, Room, TimeSlot, RoomBooking
+from .models import (
+    Club, Officer, UserProfile, FormChannel, FormField, FormSubmission,
+    FormFieldValue, FormUploadedFile, Template, Announcement,
+    EmailVerificationCode, SMTPConfig, CarouselImage, Department, Room,
+    TimeSlot, RoomBooking
+)
+
+
+class FormFieldInline(admin.TabularInline):
+    model = FormField
+    extra = 0
+    fields = ('label', 'field_key', 'field_type', 'required', 'order', 'is_active')
+
+
+@admin.register(FormChannel)
+class FormChannelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'builtin_action', 'is_active', 'order', 'updated_at')
+    list_filter = ('is_active', 'is_builtin', 'builtin_action')
+    search_fields = ('name', 'slug', 'description')
+    list_editable = ('is_active', 'order')
+    inlines = [FormFieldInline]
+
+
+@admin.register(FormSubmission)
+class FormSubmissionAdmin(admin.ModelAdmin):
+    list_display = ('channel', 'club', 'submitter', 'status', 'submitted_at', 'reviewed_at')
+    list_filter = ('channel', 'status', 'submitted_at')
+    search_fields = ('club__name', 'submitter__username', 'channel__name')
+    readonly_fields = ('submitted_at', 'reviewed_at')
+
+
+@admin.register(FormFieldValue)
+class FormFieldValueAdmin(admin.ModelAdmin):
+    list_display = ('submission', 'field', 'created_at')
+    search_fields = ('submission__club__name', 'field__label', 'value_text')
+
+
+@admin.register(FormUploadedFile)
+class FormUploadedFileAdmin(admin.ModelAdmin):
+    list_display = ('submission', 'field', 'original_name', 'uploaded_at')
+    search_fields = ('submission__club__name', 'field__label', 'original_name')
 
 
 @admin.register(Room)
@@ -31,19 +71,6 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_filter = ('role', 'department_link', 'staff_level', 'political_status', 'created_at')
     search_fields = ('user__username', 'user__email', 'real_name', 'student_id')
     readonly_fields = ('created_at', 'updated_at', 'department')
-    fieldsets = (
-        ('基本信息', {
-            'fields': ('user', 'role', 'created_at', 'updated_at')
-        }),
-        ('干事信息', {
-            'fields': ('department_link', 'department', 'staff_level'),
-            'classes': ('collapse',),
-            'description': '仅对干事角色有效。部门关联为主要字段，部门文本字段为兼容保留。'
-        }),
-        ('实名信息', {
-            'fields': ('real_name', 'student_id', 'phone', 'wechat', 'political_status')
-        }),
-    )
 
 
 @admin.register(Club)
@@ -59,31 +86,14 @@ class OfficerAdmin(admin.ModelAdmin):
     list_display = ('club', 'get_name', 'position', 'get_student_id', 'appointed_date', 'is_current')
     list_filter = ('position', 'is_current', 'club')
     search_fields = ('user_profile__real_name', 'user_profile__student_id', 'club__name')
-    readonly_fields = ()
-    
+
     def get_name(self, obj):
         return obj.user_profile.real_name
     get_name.short_description = '姓名'  # type: ignore
-    
+
     def get_student_id(self, obj):
         return obj.user_profile.student_id
     get_student_id.short_description = '学号'  # type: ignore
-
-
-@admin.register(ReviewSubmission)
-class ReviewSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('club', 'submission_year', 'status', 'submitted_at')
-    list_filter = ('status', 'submission_year', 'submitted_at')
-    search_fields = ('club__name',)
-    readonly_fields = ('submitted_at', 'reviewed_at')
-
-
-@admin.register(Reimbursement)
-class ReimbursementAdmin(admin.ModelAdmin):
-    list_display = ('club', 'reimbursement_amount', 'status', 'submission_date', 'submitted_at')
-    list_filter = ('status', 'submission_date', 'submitted_at')
-    search_fields = ('club__name', 'description')
-    readonly_fields = ('submitted_at', 'reviewed_at')
 
 
 @admin.register(Template)
@@ -102,14 +112,6 @@ class AnnouncementAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
 
 
-@admin.register(ClubRegistrationRequest)
-class ClubRegistrationRequestAdmin(admin.ModelAdmin):
-    list_display = ('club_name', 'president_name', 'status', 'submitted_at')
-    list_filter = ('status', 'submitted_at')
-    search_fields = ('club_name', 'president_name', 'president_id')
-    readonly_fields = ('submitted_at', 'reviewed_at')
-
-
 @admin.register(EmailVerificationCode)
 class EmailVerificationCodeAdmin(admin.ModelAdmin):
     list_display = ('user', 'email', 'is_verified', 'created_at', 'expires_at')
@@ -124,21 +126,6 @@ class SMTPConfigAdmin(admin.ModelAdmin):
     list_filter = ('provider', 'is_active', 'created_at')
     search_fields = ('sender_email', 'smtp_host')
     readonly_fields = ('created_at', 'updated_at')
-    fieldsets = (
-        ('基本信息', {
-            'fields': ('provider', 'sender_email', 'is_active')
-        }),
-        ('SMTP设置', {
-            'fields': ('smtp_host', 'smtp_port', 'use_tls')
-        }),
-        ('认证信息', {
-            'fields': ('sender_password',)
-        }),
-        ('时间戳', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )
 
 
 @admin.register(CarouselImage)
@@ -148,15 +135,6 @@ class CarouselImageAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'uploaded_at')
     search_fields = ('title', 'description')
     readonly_fields = ('uploaded_at',)
-    fieldsets = (
-        ('基本信息', {
-            'fields': ('image', 'title', 'order', 'description', 'link', 'is_active')
-        }),
-        ('上传信息', {
-            'fields': ('uploaded_by', 'uploaded_at'),
-            'classes': ('collapse',)
-        }),
-    )
 
 
 @admin.register(Department)
@@ -165,12 +143,3 @@ class DepartmentAdmin(admin.ModelAdmin):
     list_filter = ('updated_at',)
     search_fields = ('name', 'description', 'highlights')
     readonly_fields = ('updated_at',)
-    fieldsets = (
-        ('基本信息', {
-            'fields': ('name', 'description', 'highlights', 'icon', 'order')
-        }),
-        ('更新信息', {
-            'fields': ('updated_by', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )

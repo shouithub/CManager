@@ -1,0 +1,414 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}审核中心{% endblock %}
+
+{% block extra_css %}
+<style>
+    .audit-page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 110px);
+        box-sizing: border-box;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        background: var(--md3-surface-container-low);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .page-header > .material-icons {
+        font-size: 2.5rem;
+        color: var(--md3-primary);
+        flex: 0 0 auto;
+    }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.7rem;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: 0;
+        color: var(--md3-on-surface);
+    }
+
+    .page-header p {
+        margin: 6px 0 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.95rem;
+    }
+
+    .channel-tabs {
+        display: none;
+    }
+
+    .content-card {
+        overflow: hidden;
+        margin-bottom: var(--md3-spacing-xl);
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
+        background: var(--md3-surface-container-high);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .section-header h2 {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+
+    .count-badge {
+        min-width: 32px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 var(--md3-spacing-sm);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        font-weight: 800;
+    }
+
+    .record-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-md);
+    }
+
+    .record-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--md3-spacing-lg);
+        align-items: center;
+        padding: var(--md3-spacing-lg);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface);
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    }
+
+    .record-card:hover {
+        border-color: var(--md3-primary);
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-1px);
+    }
+
+    .record-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        min-width: 0;
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-on-surface);
+        font-size: 1.02rem;
+        font-weight: 700;
+    }
+
+    .record-title .material-icons {
+        color: var(--md3-primary);
+        font-size: 1.25rem;
+    }
+
+    .record-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--md3-spacing-xs) var(--md3-spacing-lg);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.9rem;
+    }
+
+    .record-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-highest);
+        color: var(--md3-on-surface-variant);
+        font-weight: 700;
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+
+    .empty-state {
+        min-height: 150px;
+        display: grid;
+        place-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-xl);
+        text-align: center;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .empty-state .material-icons {
+        color: var(--md3-primary);
+        font-size: 2.1rem;
+    }
+
+    @media (max-width: 768px) {
+        .audit-page {
+            padding: var(--md3-spacing-md);
+            padding-bottom: 92px;
+        }
+
+        .page-header {
+            align-items: flex-start;
+            margin-bottom: var(--md3-spacing-md);
+            padding: var(--md3-spacing-md);
+            border: 1px solid var(--md3-outline-variant);
+            border-radius: var(--md3-radius-lg);
+            background: var(--md3-surface-container);
+            box-shadow: var(--md3-elevation-1);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.18rem;
+            line-height: 1.2;
+            font-weight: 750;
+            letter-spacing: 0;
+            color: var(--md3-on-surface);
+        }
+
+        .page-header p {
+            display: none;
+        }
+
+        .page-header > .material-icons {
+            font-size: 2rem;
+        }
+
+        .channel-tabs {
+            display: flex;
+            flex-flow: row nowrap;
+            flex-basis: 100%;
+            gap: 8px;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            scrollbar-width: none;
+            margin: 0 calc(-1 * var(--md3-spacing-md));
+            padding: 0 var(--md3-spacing-md) 2px;
+        }
+
+        .channel-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-chip {
+            min-height: 38px;
+            display: inline-flex;
+            flex: 0 0 auto !important;
+            width: auto !important;
+            max-width: none;
+            align-items: center;
+            gap: 6px;
+            padding: 0 13px;
+            border: 1px solid var(--md3-outline-variant);
+            border-radius: var(--md3-radius-full);
+            background: var(--md3-surface);
+            color: var(--md3-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 750;
+            white-space: nowrap;
+        }
+
+        .tab-chip .material-icons {
+            font-size: 1.1rem;
+        }
+
+        .tab-chip.active {
+            border-color: transparent;
+            background: var(--md3-primary-container);
+            color: var(--md3-on-primary-container);
+            box-shadow: var(--md3-elevation-1);
+        }
+
+        .content-card {
+            margin-bottom: var(--md3-spacing-md);
+            border-radius: var(--md3-radius-lg);
+        }
+
+        .section-header {
+            padding: var(--md3-spacing-md);
+        }
+
+        .section-header h2 {
+            font-size: 1rem;
+        }
+
+        .record-list {
+            gap: var(--md3-spacing-sm);
+            padding: var(--md3-spacing-sm);
+        }
+
+        .record-card {
+            grid-template-columns: 1fr;
+            gap: var(--md3-spacing-md);
+            padding: var(--md3-spacing-md);
+            border-radius: var(--md3-radius-md);
+        }
+
+        .record-title {
+            font-size: 0.98rem;
+        }
+
+        .record-meta {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 4px;
+            font-size: 0.84rem;
+        }
+
+        .record-actions {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .record-actions .btn,
+        .record-actions form,
+        .record-actions button,
+        .record-actions a {
+            flex: 1 1 120px;
+            justify-content: center;
+        }
+
+        .empty-state {
+            min-height: 120px;
+            padding: var(--md3-spacing-lg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="audit-page">
+    <section class="page-header">
+        <span class="material-icons">fact_check</span>
+        <div class="page-header-content">
+            <h1>审核中心</h1>
+            <p>当前分类：{% if current_channel %}{{ current_channel.name }}{% else %}全部通道{% endif %}</p>
+        </div>
+        <nav class="channel-tabs" aria-label="审核通道">
+            <a class="tab-chip {% if current_tab == 'all' %}active{% endif %}" href="{% url 'clubs:staff_audit_center' 'all' %}">
+                <span class="material-icons">dashboard</span>全部
+            </a>
+            {% for channel in channels %}
+            <a class="tab-chip {% if current_tab == channel.slug %}active{% endif %}" href="{% url 'clubs:staff_audit_center' channel.slug %}">
+                <span class="material-icons">{{ channel.icon }}</span>{{ channel.name }}
+            </a>
+            {% endfor %}
+        </nav>
+    </section>
+
+    <section class="content-card">
+        <div class="section-header">
+            <h2><span class="material-icons">pending_actions</span>待审核</h2>
+            <span class="count-badge">{{ pending_items|length }}</span>
+        </div>
+        <div class="record-list">
+            {% for item in pending_items %}
+            <article class="record-card">
+                <div>
+                    <div class="record-title">
+                        <span class="material-icons">{{ item.channel.icon }}</span>
+                        <span>{{ item.display_title }}</span>
+                    </div>
+                    <div class="record-meta">
+                        <span>{{ item.channel.name }}</span>
+                        <span>{{ item.club.name }}</span>
+                        <span>{{ item.submitter.username }}</span>
+                        <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                <div class="record-actions">
+                    <a class="btn btn-primary" href="{% url 'clubs:staff_review_form_submission' item.id %}">
+                        <span class="material-icons">rate_review</span>审核
+                    </a>
+                    {% if is_admin %}
+                    <form method="post" action="{% url 'clubs:delete_audit_request' item.channel.slug item.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-danger" type="submit" onclick="return confirm('确定删除这条请求吗？')">
+                            <span class="material-icons">delete</span>删除
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </article>
+            {% empty %}
+            <div class="empty-state">
+                <span class="material-icons">task_alt</span>
+                暂无待审核提交
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="content-card">
+        <div class="section-header">
+            <h2><span class="material-icons">history</span>已处理</h2>
+            <span class="count-badge">{{ completed_items|length }}</span>
+        </div>
+        <div class="record-list">
+            {% for item in completed_items %}
+            <article class="record-card">
+                <div>
+                    <div class="record-title">
+                        <span class="material-icons">{{ item.channel.icon }}</span>
+                        <span>{{ item.display_title }}</span>
+                    </div>
+                    <div class="record-meta">
+                        <span>{{ item.channel.name }}</span>
+                        <span>{{ item.club.name }}</span>
+                        <span class="status-pill">{{ item.get_status_display }}</span>
+                    </div>
+                </div>
+                <div class="record-actions">
+                    <a class="btn btn-outlined" href="{% url 'clubs:staff_review_form_submission' item.id %}">
+                        <span class="material-icons">visibility</span>查看
+                    </a>
+                </div>
+            </article>
+            {% empty %}
+            <div class="empty-state">
+                <span class="material-icons">inbox</span>
+                暂无已处理提交
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

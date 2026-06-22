@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib import messages
-from .models import UserProfile, Club, ReviewSubmission, Reimbursement, ClubRegistrationRequest, RegistrationPeriod, ClubRegistration, StaffClubRelation, Officer, SubmissionReview
+from .models import UserProfile, Club, FormChannel, FormSubmission, StaffClubRelation, Officer
 from datetime import datetime
 from django.utils import timezone
 from django.db.models import Q, Prefetch
@@ -326,7 +326,7 @@ def delete_account(request):
                 Officer.objects.filter(user_profile=user.profile).delete()
                 
                 # 删除干事的审核记录
-                SubmissionReview.objects.filter(reviewer=user).delete()
+                FormSubmission.objects.filter(reviewer=user).update(reviewer=None)
                 
                 # 2. 删除用户账户（级联删除profile等相关数据）
                 user.delete()
@@ -1102,3 +1102,109 @@ def manage_department_staff(request):
 
 
 
+
+
+
+# ---- Dynamic form replacements -------------------------------------------------
+
+@login_required(login_url='clubs:login')
+def user_dashboard(request):
+    user = request.user
+    try:
+        profile = user.profile
+        if profile.role == 'staff':
+            return redirect('clubs:index')
+    except UserProfile.DoesNotExist:
+        return redirect('clubs:login')
+
+    clubs = Club.objects.filter(
+        officers__user_profile__user=user,
+        officers__position='president',
+        officers__is_current=True
+    ).prefetch_related('responsible_staff', 'responsible_staff__staff')
+    channels = FormChannel.objects.filter(is_active=True).order_by('order', 'id')
+    club_ids = [club.id for club in clubs]
+    unread_total = FormSubmission.objects.filter(club_id__in=club_ids, status__in=['pending', 'rejected']).count()
+
+    clubs_with_submission_status = []
+    for club in clubs:
+        staff_relations = StaffClubRelation.objects.filter(club=club, is_active=True)
+        assigned_staff = [
+            {
+                'staff': relation.staff,
+                'name': relation.staff.get_full_name(),
+                'phone': relation.staff.phone or '--',
+                'wechat': relation.staff.wechat or '--',
+                'assigned_at': relation.assigned_at,
+            }
+            for relation in staff_relations
+        ]
+        clubs_with_submission_status.append({
+            'club': club,
+            'assigned_staff': assigned_staff,
+            'dynamic_channels': channels,
+            'review_enabled': True,
+            'registration_enabled': True,
+        })
+
+    return render(request, 'clubs/user/dashboard.html', {
+        'user': user,
+        'clubs': clubs,
+        'clubs_with_submission_status': clubs_with_submission_status,
+        'club_count': clubs.count(),
+        'dynamic_channels': channels,
+        'unread_approval_counts': {'total': unread_total, 'channels': {}},
+    })
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def staff_management(request):
+    user = request.user
+    try:
+        profile = user.profile
+        if profile.role not in ['staff', 'admin']:
+            messages.error(request, '您没有权限访问此页面')
+            return redirect('clubs:user_dashboard')
+    except UserProfile.DoesNotExist:
+        messages.error(request, '用户角色未配置')
+        return redirect('clubs:login')
+
+    q = request.GET.get('q', '').strip()
+    clubs_qs = Club.objects.prefetch_related(
+        Prefetch(
+            'officers',
+            queryset=Officer.objects.filter(position='president', is_current=True).select_related('user_profile__user'),
+            to_attr='_president_list',
+        )
+    ).all().order_by('name')
+    if q:
+        pres_club_ids = Officer.objects.filter(
+            Q(user_profile__user__username__icontains=q) | Q(user_profile__real_name__icontains=q),
+            position='president',
+            is_current=True,
+        ).values_list('club_id', flat=True)
+        clubs_qs = clubs_qs.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(id__in=pres_club_ids))
+
+    paginator = Paginator(clubs_qs, 20)
+    clubs_page = paginator.get_page(request.GET.get('page'))
+    pending_count = FormSubmission.objects.filter(status='pending').count()
+
+    return render(request, 'clubs/staff/management.html', {
+        'clubs_page': clubs_page,
+        'q': q,
+        'all_review_enabled': True,
+        'all_registration_enabled': True,
+        'active_registration_period': None,
+        'clubs_with_low_members': Club.objects.filter(members_count__lt=20).exclude(status='suspended'),
+        'clubs_with_low_members_count': Club.objects.filter(members_count__lt=20).exclude(status='suspended').count(),
+        'clubs_with_low_members_my': Club.objects.none(),
+        'clubs_with_low_members_other': Club.objects.none(),
+        'clubs_enabled_review_not_submitted': Club.objects.none(),
+        'clubs_enabled_review_not_submitted_my': Club.objects.none(),
+        'clubs_enabled_review_not_submitted_other': Club.objects.none(),
+        'clubs_enabled_registration_not_submitted': Club.objects.none(),
+        'clubs_enabled_registration_not_submitted_my': Club.objects.none(),
+        'clubs_enabled_registration_not_submitted_other': Club.objects.none(),
+        'current_year': timezone.now().year,
+        'dynamic_pending_count': pending_count,
+    })

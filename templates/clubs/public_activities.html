@@ -799,7 +799,7 @@
                             {% if user.is_authenticated %}
                                 <!-- 编辑按钮：干事、管理员和负责老师可见 -->
                                 {% if user.profile.role in 'admin,staff' %}
-                                    <a href="{% url 'clubs:edit_activity_application' activity.id %}" class="btn-edit-activity">
+                                    <a href="{% url 'clubs:staff_review_form_submission' activity.id %}" class="btn-edit-activity">
                                         <span class="material-icons">edit</span>
                                         编辑
                                     </a>

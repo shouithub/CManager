@@ -1,0 +1,1022 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}提交通道管理{% endblock %}
+
+{% block extra_css %}
+<style>
+    .forms-admin-page {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: var(--md3-spacing-2xl);
+        padding-bottom: calc(var(--md3-spacing-2xl) + 110px);
+        box-sizing: border-box;
+    }
+
+    .builder-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .builder-header h1 {
+        margin: 0;
+        color: var(--md3-on-surface);
+        font-size: 1.75rem;
+        line-height: 1.2;
+        font-weight: 750;
+        letter-spacing: 0;
+    }
+
+    .builder-header p {
+        margin: 6px 0 0;
+        color: var(--md3-on-surface-variant);
+        line-height: 1.55;
+    }
+
+    .builder-grid {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: var(--md3-spacing-xl);
+        align-items: start;
+    }
+
+    .channel-rail,
+    .builder-card,
+    .question-card {
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .channel-rail {
+        position: sticky;
+        top: var(--md3-spacing-lg);
+        overflow: hidden;
+    }
+
+    .rail-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-lg);
+        border-bottom: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container);
+    }
+
+    .rail-title {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 750;
+    }
+
+    .rail-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-height: calc(100vh - 270px);
+        overflow-y: auto;
+        padding: var(--md3-spacing-sm);
+    }
+
+    .channel-item {
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: 10px;
+        border-radius: var(--md3-radius-md);
+        color: var(--md3-on-surface);
+        text-decoration: none;
+        border: 1px solid transparent;
+    }
+
+    .channel-item:hover,
+    .channel-item.active {
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        border-color: color-mix(in srgb, var(--md3-primary) 22%, transparent);
+    }
+
+    .channel-icon {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container-high);
+        color: var(--md3-primary);
+    }
+
+    .channel-item.active .channel-icon,
+    .channel-item:hover .channel-icon {
+        background: var(--md3-surface);
+    }
+
+    .channel-main {
+        min-width: 0;
+    }
+
+    .channel-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 700;
+    }
+
+    .channel-meta {
+        margin-top: 2px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.78rem;
+    }
+
+    .channel-item.active .channel-meta,
+    .channel-item:hover .channel-meta {
+        color: inherit;
+        opacity: 0.8;
+    }
+
+    .count-pill,
+    .state-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 26px;
+        height: 24px;
+        padding: 0 8px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-highest);
+        color: var(--md3-primary);
+        font-size: 0.78rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .rail-actions {
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg) var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container-low);
+    }
+
+    .builder-stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-lg);
+    }
+
+    .form-cover {
+        position: relative;
+        overflow: hidden;
+        padding: var(--md3-spacing-xl);
+        background: var(--md3-surface);
+        border-radius: var(--md3-radius-lg);
+        border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .form-cover::before,
+    .question-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 8px;
+        background: var(--md3-primary);
+    }
+
+    .form-cover h2 {
+        margin: 6px 0 var(--md3-spacing-sm);
+        color: var(--md3-on-surface);
+        font-size: 1.55rem;
+        line-height: 1.25;
+        font-weight: 750;
+        letter-spacing: 0;
+    }
+
+    .form-cover-subtitle {
+        margin: 0 0 var(--md3-spacing-lg);
+        color: var(--md3-on-surface-variant);
+        line-height: 1.55;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--md3-spacing-md);
+    }
+
+    .span-2 {
+        grid-column: 1 / -1;
+    }
+
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    .field-group label {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .field-control {
+        width: 100%;
+        min-height: 46px;
+        padding: 11px 13px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-surface-container-low);
+        color: var(--md3-on-surface);
+        box-sizing: border-box;
+        font: inherit;
+    }
+
+    textarea.field-control {
+        min-height: 88px;
+        resize: vertical;
+    }
+
+    .field-control:focus {
+        outline: 2px solid color-mix(in srgb, var(--md3-primary) 20%, transparent);
+        border-color: var(--md3-primary);
+        background: var(--md3-surface);
+    }
+
+    .toggle-row,
+    .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+
+    .toggle-row label,
+    .switch-label {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        color: var(--md3-on-surface);
+        font-weight: 700;
+    }
+
+    .toggle-row input,
+    .switch-label input {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--md3-primary);
+    }
+
+    .btn-soft-danger {
+        color: var(--md3-error);
+        border-color: var(--md3-error-container);
+        background: var(--md3-surface);
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        margin: var(--md3-spacing-md) 0 0;
+    }
+
+    .section-title h2 {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 750;
+    }
+
+    .question-card {
+        position: relative;
+        overflow: hidden;
+        padding: var(--md3-spacing-lg);
+    }
+
+    .question-card::before {
+        height: 5px;
+        background: var(--md3-primary-container);
+    }
+
+    .question-card.is-new::before {
+        background: var(--md3-primary);
+    }
+
+    .question-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 230px auto;
+        gap: var(--md3-spacing-md);
+        align-items: start;
+        margin-bottom: var(--md3-spacing-md);
+        padding-top: 4px;
+    }
+
+    .question-title-input {
+        min-height: 48px;
+        border-width: 0 0 1px;
+        border-radius: 0;
+        background: transparent;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .field-key-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 110px;
+        gap: var(--md3-spacing-md);
+    }
+
+    .type-section {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-md);
+    }
+
+    .type-section.is-hidden {
+        display: none;
+    }
+
+    .helper-text {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.82rem;
+        line-height: 1.45;
+    }
+
+    .js-options-raw {
+        display: none;
+    }
+
+    .option-editor {
+        display: grid;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container-low);
+    }
+
+    .option-chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        min-height: 38px;
+        align-items: center;
+    }
+
+    .option-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 100%;
+        min-height: 34px;
+        padding: 0 8px 0 12px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    .option-chip button {
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        border-radius: var(--md3-radius-full);
+        background: transparent;
+        color: currentColor;
+        cursor: pointer;
+    }
+
+    .option-chip .material-icons {
+        font-size: 1rem;
+    }
+
+    .option-input-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--md3-spacing-sm);
+        align-items: center;
+    }
+
+    .example-file {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--md3-primary);
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .question-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-lg);
+        padding-top: var(--md3-spacing-md);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .empty-state {
+        padding: var(--md3-spacing-2xl);
+        text-align: center;
+        color: var(--md3-on-surface-variant);
+        border: 1px dashed var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-low);
+    }
+
+    .empty-state .material-icons {
+        display: block;
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-primary);
+        font-size: 2.2rem;
+    }
+
+    @media (max-width: 980px) {
+        .forms-admin-page {
+            padding: var(--md3-spacing-lg);
+            padding-bottom: 100px;
+        }
+
+        .builder-header {
+            flex-direction: column;
+            margin-bottom: var(--md3-spacing-lg);
+        }
+
+        .builder-grid {
+            grid-template-columns: 1fr;
+            gap: var(--md3-spacing-lg);
+        }
+
+        .channel-rail {
+            position: static;
+        }
+
+        .rail-list {
+            flex-direction: row;
+            max-height: none;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x proximity;
+        }
+
+        .channel-item {
+            min-width: 220px;
+            scroll-snap-align: start;
+        }
+    }
+
+    @media (max-width: 680px) {
+        .forms-admin-page {
+            padding: var(--md3-spacing-md);
+            padding-bottom: 92px;
+        }
+
+        .builder-header h1 {
+            font-size: 1.35rem;
+        }
+
+        .form-cover,
+        .question-card {
+            padding: var(--md3-spacing-md);
+            border-radius: var(--md3-radius-md);
+        }
+
+        .form-cover h2 {
+            font-size: 1.22rem;
+        }
+
+        .form-grid,
+        .type-section,
+        .field-key-row,
+        .question-head {
+            grid-template-columns: 1fr;
+        }
+
+        .question-head {
+            gap: var(--md3-spacing-sm);
+        }
+
+        .question-footer {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .button-row .btn,
+        .button-row button,
+        .button-row a,
+        .question-footer .btn,
+        .question-footer button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="forms-admin-page">
+    <header class="builder-header">
+        <div>
+            <h1>提交通道管理</h1>
+            <p>像配置问卷一样管理社长可提交的通道、字段、上传材料和审核后的内置动作。</p>
+        </div>
+        <a class="btn btn-primary" href="{% url 'clubs:manage_form_channels' %}?new=1">
+            <span class="material-icons">add</span>新增通道
+        </a>
+    </header>
+
+    <div class="builder-grid">
+        <aside class="channel-rail">
+            <div class="rail-header">
+                <h2 class="rail-title"><span class="material-icons">view_sidebar</span>通道</h2>
+                <span class="count-pill">{{ channels|length }}</span>
+            </div>
+            <div class="rail-list">
+                {% for channel in channels %}
+                <a href="{% url 'clubs:manage_form_channels_detail' channel.id %}" class="channel-item {% if current and current.id == channel.id %}active{% endif %}">
+                    <span class="channel-icon"><span class="material-icons">{{ channel.icon }}</span></span>
+                    <span class="channel-main">
+                        <span class="channel-name">{{ channel.name }}</span>
+                        <span class="channel-meta">{{ channel.slug }} · {{ channel.fields.count }} 个字段</span>
+                    </span>
+                    <span class="state-pill">{% if channel.is_active %}开{% else %}关{% endif %}</span>
+                </a>
+                {% empty %}
+                <div class="empty-state">
+                    <span class="material-icons">dynamic_form</span>
+                    还没有通道
+                </div>
+                {% endfor %}
+            </div>
+            <div class="rail-actions">
+                <a class="btn btn-outlined" href="{% url 'clubs:manage_form_channels' %}?new=1">
+                    <span class="material-icons">add_circle</span>新建一个通道
+                </a>
+            </div>
+        </aside>
+
+        <main class="builder-stack">
+            {% if current %}
+            <section class="form-cover">
+                <h2>{{ current.name }}</h2>
+                <p class="form-cover-subtitle">编辑通道名称、入口标识、排序和通过审核后的业务动作。修改后会立即影响社长侧入口和审核中心。</p>
+                <form method="post" action="{% url 'clubs:edit_form_channel' current.id %}" class="form-grid">
+                    {% csrf_token %}
+                    <div class="field-group">
+                        <label>通道名称</label>
+                        <input class="field-control" name="name" value="{{ current.name }}" required placeholder="例如：报销申请">
+                    </div>
+                    <div class="field-group">
+                        <label>URL 标识 slug</label>
+                        <input class="field-control" name="slug" value="{{ current.slug }}" required placeholder="reimbursement">
+                    </div>
+                    <div class="field-group">
+                        <label>Material 图标</label>
+                        <input class="field-control" name="icon" value="{{ current.icon }}" placeholder="description">
+                    </div>
+                    <div class="field-group">
+                        <label>排序</label>
+                        <input class="field-control" name="order" type="number" value="{{ current.order }}" placeholder="0">
+                    </div>
+                    <div class="field-group span-2">
+                        <label>通道说明</label>
+                        <textarea class="field-control" name="description" rows="3" placeholder="给管理员看的说明，也会作为社长侧提交提示">{{ current.description }}</textarea>
+                    </div>
+                    <div class="field-group span-2">
+                        <label>内置业务动作</label>
+                        <select class="field-control" name="builtin_action">
+                            {% for value,label in builtin_actions %}
+                            <option value="{{ value }}" {% if current.builtin_action == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="toggle-row span-2">
+                        <label><input type="checkbox" name="is_active" {% if current.is_active %}checked{% endif %}>启用通道</label>
+                        <label><input type="checkbox" name="is_builtin" {% if current.is_builtin %}checked{% endif %}>标记为内置默认</label>
+                    </div>
+                    <div class="button-row span-2">
+                        <button class="btn btn-primary" type="submit">
+                            <span class="material-icons">save</span>保存通道
+                        </button>
+                    </div>
+                </form>
+                <form method="post" action="{% url 'clubs:delete_form_channel' current.id %}" class="button-row">
+                    {% csrf_token %}
+                    <button class="btn btn-soft-danger" type="submit" onclick="return confirm('确定删除这个通道、字段和所有提交记录吗？')">
+                        <span class="material-icons">delete</span>删除通道
+                    </button>
+                </form>
+            </section>
+
+            <div class="section-title">
+                <h2><span class="material-icons">quiz</span>字段配置</h2>
+                <a class="btn btn-outlined" href="#new-field"><span class="material-icons">add</span>新增字段</a>
+            </div>
+
+            {% for field in current.fields.all %}
+            <section class="question-card js-question-card">
+                <div class="question-head">
+                    <input form="field-form-{{ field.id }}" class="field-control question-title-input js-label-input" name="label" value="{{ field.label }}" required placeholder="问题标题">
+                    <select form="field-form-{{ field.id }}" class="field-control js-field-type" name="field_type">
+                        {% for value,label in field_types %}
+                        <option value="{{ value }}" {% if field.field_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <form method="post" action="{% url 'clubs:delete_form_field' current.id field.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-soft-danger" type="submit" onclick="return confirm('确定删除这个字段吗？')">
+                            <span class="material-icons">delete</span>删除
+                        </button>
+                    </form>
+                </div>
+
+                <form id="field-form-{{ field.id }}" method="post" enctype="multipart/form-data" action="{% url 'clubs:edit_form_field' current.id field.id %}">
+                    {% csrf_token %}
+                    <div class="field-key-row">
+                        <div class="field-group">
+                            <label>字段标识 field_key</label>
+                            <input class="field-control js-key-input" name="field_key" value="{{ field.field_key }}" required placeholder="club_name">
+                        </div>
+                        <div class="field-group">
+                            <label>排序</label>
+                            <input class="field-control" name="order" type="number" value="{{ field.order }}" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="type-section">
+                        <div class="field-group">
+                            <label>占位提示</label>
+                            <input class="field-control" name="placeholder" value="{{ field.placeholder }}" placeholder="填写时显示在输入框内">
+                        </div>
+                        <div class="field-group">
+                            <label>补充说明</label>
+                            <input class="field-control" name="help_text" value="{{ field.help_text }}" placeholder="显示在字段下方">
+                        </div>
+                    </div>
+                    <div class="type-section js-type-section" data-types="text textarea">
+                        <div class="field-group span-2">
+                            <label>最大字数</label>
+                            <input class="field-control" name="max_length" type="number" value="{{ field.validation.max_length }}" placeholder="不限制可留空">
+                        </div>
+                    </div>
+                    <div class="type-section js-type-section" data-types="number">
+                        <div class="field-group">
+                            <label>最小值</label>
+                            <input class="field-control" name="min" type="number" step="any" value="{{ field.validation.min }}" placeholder="可留空">
+                        </div>
+                        <div class="field-group">
+                            <label>最大值</label>
+                            <input class="field-control" name="max" type="number" step="any" value="{{ field.validation.max }}" placeholder="可留空">
+                        </div>
+                        <div class="field-group span-2">
+                            <label>步进</label>
+                            <input class="field-control" name="step" type="number" step="any" value="{{ field.validation.step }}" placeholder="例如：1 或 0.01">
+                        </div>
+                    </div>
+                    <div class="type-section js-type-section" data-types="select radio checkbox">
+                        <div class="field-group span-2">
+                            <label>选项</label>
+                            <textarea class="js-options-raw" name="options">{{ field.option_lines }}</textarea>
+                            <div class="option-editor js-option-editor">
+                                <div class="option-chip-list js-option-list" aria-live="polite"></div>
+                                <div class="option-input-row">
+                                    <input class="field-control js-option-input" type="text" placeholder="输入一个选项，例如：讲座">
+                                    <button class="btn btn-outlined js-add-option" type="button">
+                                        <span class="material-icons">add</span>添加
+                                    </button>
+                                </div>
+                            </div>
+                            <span class="helper-text">选项会以标签形式展示，保存时仍按当前顺序写入字段配置。</span>
+                        </div>
+                    </div>
+                    <div class="type-section js-type-section" data-types="file">
+                        <div class="field-group">
+                            <label>允许后缀</label>
+                            <input class="field-control" name="allowed_extensions" placeholder=".docx,.pdf,.png" value="{{ field.validation.allowed_extensions|join:',' }}">
+                        </div>
+                        <div class="field-group">
+                            <label>最大文件大小 MB</label>
+                            <input class="field-control" name="max_size_mb" type="number" min="1" value="{{ field.max_size_mb }}">
+                        </div>
+                        <div class="field-group span-2">
+                            <label>示例文件</label>
+                            <input class="field-control" type="file" name="example_file">
+                            {% if field.example_file %}
+                            <a class="example-file" href="{{ field.example_file.url }}" target="_blank" rel="noopener">
+                                <span class="material-icons">attach_file</span>查看当前示例文件
+                            </a>
+                            <label class="switch-label"><input type="checkbox" name="clear_example">清除当前示例文件</label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="question-footer">
+                        <div class="toggle-row">
+                            <label><input type="checkbox" name="required" {% if field.required %}checked{% endif %}>必填</label>
+                            <label><input type="checkbox" name="is_active" {% if field.is_active %}checked{% endif %}>启用</label>
+                        </div>
+                        <button class="btn btn-primary" type="submit">
+                            <span class="material-icons">save</span>保存字段
+                        </button>
+                    </div>
+                </form>
+            </section>
+            {% empty %}
+            <div class="empty-state">
+                <span class="material-icons">add_notes</span>
+                这个通道还没有字段，先新增一个问题。
+            </div>
+            {% endfor %}
+
+            <section class="question-card is-new js-question-card" id="new-field">
+                <div class="question-head">
+                    <input form="new-field-form" class="field-control question-title-input js-label-input" name="label" required placeholder="新增问题标题">
+                    <select form="new-field-form" class="field-control js-field-type" name="field_type">
+                        {% for value,label in field_types %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="state-pill">新字段</span>
+                </div>
+                <form id="new-field-form" method="post" enctype="multipart/form-data" action="{% url 'clubs:add_form_field' current.id %}">
+                    {% csrf_token %}
+                    <div class="field-key-row">
+                        <div class="field-group">
+                            <label>字段标识 field_key</label>
+                            <input class="field-control js-key-input" name="field_key" required placeholder="field_key">
+                        </div>
+                        <div class="field-group">
+                            <label>排序</label>
+                            <input class="field-control" name="order" type="number" value="0" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="type-section">
+                        <div class="field-group">
+                            <label>占位提示</label>
+                            <input class="field-control" name="placeholder" placeholder="填写时显示在输入框内">
+                        </div>
+                        <div class="field-group">
+                            <label>补充说明</label>
+                            <input class="field-control" name="help_text" placeholder="显示在字段下方">
+                        </div>
+                    </div>
+                    <div class="type-section js-type-section" data-types="text textarea">
+                        <div class="field-group span-2">
+                            <label>最大字数</label>
+                            <input class="field-control" name="max_length" type="number" placeholder="不限制可留空">
+                        </div>
+                    </div>
+                    <div class="type-section js-type-section" data-types="number">
+                        <div class="field-group">
+                            <label>最小值</label>
+                            <input class="field-control" name="min" type="number" step="any" placeholder="可留空">
+                        </div>
+                        <div class="field-group">
+                            <label>最大值</label>
+                            <input class="field-control" name="max" type="number" step="any" placeholder="可留空">
+                        </div>
+                        <div class="field-group span-2">
+                            <label>步进</label>
+                            <input class="field-control" name="step" type="number" step="any" placeholder="例如：1 或 0.01">
+                        </div>
+                    </div>
+                    <div class="type-section js-type-section" data-types="select radio checkbox">
+                        <div class="field-group span-2">
+                            <label>选项</label>
+                            <textarea class="js-options-raw" name="options"></textarea>
+                            <div class="option-editor js-option-editor">
+                                <div class="option-chip-list js-option-list" aria-live="polite"></div>
+                                <div class="option-input-row">
+                                    <input class="field-control js-option-input" type="text" placeholder="输入一个选项，例如：讲座">
+                                    <button class="btn btn-outlined js-add-option" type="button">
+                                        <span class="material-icons">add</span>添加
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="type-section js-type-section" data-types="file">
+                        <div class="field-group">
+                            <label>允许后缀</label>
+                            <input class="field-control" name="allowed_extensions" placeholder=".docx,.pdf,.png">
+                        </div>
+                        <div class="field-group">
+                            <label>最大文件大小 MB</label>
+                            <input class="field-control" name="max_size_mb" type="number" min="1" value="10">
+                        </div>
+                        <div class="field-group span-2">
+                            <label>示例文件</label>
+                            <input class="field-control" type="file" name="example_file">
+                        </div>
+                    </div>
+                    <div class="question-footer">
+                        <div class="toggle-row">
+                            <label><input type="checkbox" name="required" checked>必填</label>
+                            <label><input type="checkbox" name="is_active" checked>启用</label>
+                        </div>
+                        <button class="btn btn-primary" type="submit">
+                            <span class="material-icons">add</span>新增字段
+                        </button>
+                    </div>
+                </form>
+            </section>
+            {% else %}
+            <section class="form-cover">
+                <h2>新增通道</h2>
+                <p class="form-cover-subtitle">创建后会出现在社长侧“提交通道”和审核中心里。之后可以继续添加字段。</p>
+                <form method="post" action="{% url 'clubs:add_form_channel' %}" class="form-grid">
+                    {% csrf_token %}
+                    <div class="field-group">
+                        <label>通道名称</label>
+                        <input class="field-control js-channel-name" name="name" placeholder="例如：场地申请" required>
+                    </div>
+                    <div class="field-group">
+                        <label>URL 标识 slug</label>
+                        <input class="field-control js-channel-slug" name="slug" placeholder="room-application" required>
+                    </div>
+                    <div class="field-group">
+                        <label>Material 图标</label>
+                        <input class="field-control" name="icon" placeholder="description" value="description">
+                    </div>
+                    <div class="field-group">
+                        <label>排序</label>
+                        <input class="field-control" name="order" type="number" value="0">
+                    </div>
+                    <div class="field-group span-2">
+                        <label>通道说明</label>
+                        <textarea class="field-control" name="description" rows="3" placeholder="这个通道用于收集什么内容"></textarea>
+                    </div>
+                    <div class="field-group span-2">
+                        <label>内置业务动作</label>
+                        <select class="field-control" name="builtin_action">
+                            {% for value,label in builtin_actions %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="toggle-row span-2">
+                        <label><input type="checkbox" name="is_active" checked>启用通道</label>
+                        <label><input type="checkbox" name="is_builtin">标记为内置默认</label>
+                    </div>
+                    <div class="button-row span-2">
+                        <button class="btn btn-primary" type="submit">
+                            <span class="material-icons">add</span>创建通道
+                        </button>
+                    </div>
+                </form>
+            </section>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        function normalizeKey(value, fallback) {
+            return value
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '_')
+                .replace(/^_+|_+$/g, '')
+                .slice(0, 70) || fallback;
+        }
+
+        function normalizeSlug(value) {
+            return normalizeKey(value, 'channel')
+                .replace(/_/g, '-')
+                .replace(/^-+|-+$/g, '') || 'channel';
+        }
+
+        function syncTypeSections(card) {
+            const typeSelect = card.querySelector('.js-field-type');
+            if (!typeSelect) return;
+            const type = typeSelect.value;
+            card.querySelectorAll('.js-type-section').forEach(function (section) {
+                const types = (section.dataset.types || '').split(/\s+/);
+                section.classList.toggle('is-hidden', !types.includes(type));
+            });
+        }
+
+        function initOptionEditor(card) {
+            const raw = card.querySelector('.js-options-raw');
+            const list = card.querySelector('.js-option-list');
+            const input = card.querySelector('.js-option-input');
+            const addButton = card.querySelector('.js-add-option');
+            if (!raw || !list || !input || !addButton) return;
+
+            function values() {
+                return raw.value
+                    .split(/\r?\n/)
+                    .map(function (item) { return item.trim(); })
+                    .filter(Boolean);
+            }
+
+            function write(nextValues) {
+                raw.value = nextValues.join('\n');
+                render();
+            }
+
+            function render() {
+                list.innerHTML = '';
+                values().forEach(function (value, index) {
+                    const chip = document.createElement('span');
+                    chip.className = 'option-chip';
+                    chip.appendChild(document.createTextNode(value));
+
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.setAttribute('aria-label', '删除选项');
+                    button.innerHTML = '<span class="material-icons">close</span>';
+                    button.addEventListener('click', function () {
+                        const next = values();
+                        next.splice(index, 1);
+                        write(next);
+                    });
+
+                    chip.appendChild(button);
+                    list.appendChild(chip);
+                });
+            }
+
+            function addOption() {
+                const value = input.value.trim();
+                if (!value) return;
+                const next = values();
+                next.push(value);
+                input.value = '';
+                write(next);
+            }
+
+            addButton.addEventListener('click', addOption);
+            input.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    addOption();
+                }
+            });
+            render();
+        }
+
+        document.querySelectorAll('.js-question-card').forEach(function (card) {
+            const typeSelect = card.querySelector('.js-field-type');
+            const labelInput = card.querySelector('.js-label-input');
+            const keyInput = card.querySelector('.js-key-input');
+            syncTypeSections(card);
+            initOptionEditor(card);
+            if (typeSelect) {
+                typeSelect.addEventListener('change', function () {
+                    syncTypeSections(card);
+                });
+            }
+            if (labelInput && keyInput) {
+                labelInput.addEventListener('input', function () {
+                    if (!keyInput.dataset.touched && !keyInput.value) {
+                        keyInput.value = normalizeKey(labelInput.value, 'field');
+                    }
+                });
+                keyInput.addEventListener('input', function () {
+                    keyInput.dataset.touched = '1';
+                });
+            }
+        });
+
+        const channelName = document.querySelector('.js-channel-name');
+        const channelSlug = document.querySelector('.js-channel-slug');
+        if (channelName && channelSlug) {
+            channelName.addEventListener('input', function () {
+                if (!channelSlug.dataset.touched && !channelSlug.value) {
+                    channelSlug.value = normalizeSlug(channelName.value);
+                }
+            });
+            channelSlug.addEventListener('input', function () {
+                channelSlug.dataset.touched = '1';
+            });
+        }
+    })();
+</script>
+{% endblock %}
