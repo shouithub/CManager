@@ -12,7 +12,6 @@
         box-sizing: border-box;
     }
 
-    .page-header,
     .content-card {
         background: var(--md3-surface-container-low);
         border: 1px solid var(--md3-outline-variant);
@@ -24,11 +23,14 @@
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-2xl);
         padding: var(--md3-spacing-xl);
+        background: var(--md3-surface-container-low);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
     }
 
-    .page-header > .material-icons {
+    .page-header .page-title-icon {
         font-size: 2.5rem;
         color: var(--md3-primary);
         flex: 0 0 auto;
@@ -40,18 +42,16 @@
     }
 
     .page-header h1 {
-        margin: 0;
+        margin: 0 0 var(--md3-spacing-xs) 0;
         color: var(--md3-on-surface);
-        font-size: 1.7rem;
-        line-height: 1.2;
-        font-weight: 700;
-        letter-spacing: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
     }
 
-    .page-header p {
-        margin: 6px 0 0;
+    .page-header .subtitle {
+        margin: 0;
         color: var(--md3-on-surface-variant);
-        font-size: 0.95rem;
+        font-size: 0.875rem;
     }
 
     .mobile-approval-view {
@@ -227,6 +227,21 @@
         font-size: 2rem;
     }
 
+    .more-records {
+        display: grid;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .more-records summary {
+        cursor: pointer;
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-high);
+        color: var(--md3-primary);
+        font-weight: 700;
+        list-style: none;
+    }
+
     @media (max-width: 768px) {
         .approval-page {
             padding: var(--md3-spacing-md);
@@ -248,7 +263,7 @@
             border-radius: var(--md3-radius-lg);
         }
 
-        .page-header > .material-icons {
+        .page-header .page-title-icon {
             font-size: 2rem;
         }
 
@@ -313,9 +328,10 @@
 {% block content %}
 <div class="approval-page">
     <section class="page-header">
-        <span class="material-icons">fact_check</span>
+        <span class="material-icons page-title-icon">fact_check</span>
         <div class="page-header-content">
             <h1>审批记录</h1>
+            <p class="subtitle">查看社团提交请求的审核进度和处理结果</p>
         </div>
     </section>
 
@@ -335,8 +351,8 @@
                         <span>{{ group.active_items|length }}</span>
                     </div>
                     <div class="record-list">
-                        {% for item in group.active_items %}
-                        <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.id %}">
+                        {% for item in group.active_items|slice:":3" %}
+                        <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
                             <div>
                                 <div class="record-title">
                                     <span class="material-icons">{{ item.channel.icon }}</span>
@@ -344,6 +360,7 @@
                                 </div>
                                 <div class="record-meta">
                                     <span>{{ item.club.name }}</span>
+                                    <span>编号 {{ item.public_id }}</span>
                                     <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                                 </div>
                             </div>
@@ -355,6 +372,27 @@
                             暂无进行中的请求
                         </div>
                         {% endfor %}
+                        {% if group.active_items|length > 3 %}
+                        <details class="more-records">
+                            <summary>还有 {{ group.active_items|length|add:"-3" }} 条进行中</summary>
+                            {% for item in group.active_items|slice:"3:" %}
+                            <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
+                                <div>
+                                    <div class="record-title">
+                                        <span class="material-icons">{{ item.channel.icon }}</span>
+                                        <span>{{ item.display_title }}</span>
+                                    </div>
+                                    <div class="record-meta">
+                                        <span>{{ item.club.name }}</span>
+                                        <span>编号 {{ item.public_id }}</span>
+                                        <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                                    </div>
+                                </div>
+                                <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                            </a>
+                            {% endfor %}
+                        </details>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="channel-record-group">
@@ -363,8 +401,8 @@
                         <span>{{ group.completed_items|length }}</span>
                     </div>
                     <div class="record-list">
-                        {% for item in group.completed_items %}
-                        <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.id %}">
+                        {% for item in group.completed_items|slice:":3" %}
+                        <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
                             <div>
                                 <div class="record-title">
                                     <span class="material-icons">{{ item.channel.icon }}</span>
@@ -372,6 +410,7 @@
                                 </div>
                                 <div class="record-meta">
                                     <span>{{ item.club.name }}</span>
+                                    <span>编号 {{ item.public_id }}</span>
                                     <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                                 </div>
                             </div>
@@ -383,6 +422,27 @@
                             暂无已处理请求
                         </div>
                         {% endfor %}
+                        {% if group.completed_items|length > 3 %}
+                        <details class="more-records">
+                            <summary>还有 {{ group.completed_items|length|add:"-3" }} 条已处理</summary>
+                            {% for item in group.completed_items|slice:"3:" %}
+                            <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
+                                <div>
+                                    <div class="record-title">
+                                        <span class="material-icons">{{ item.channel.icon }}</span>
+                                        <span>{{ item.display_title }}</span>
+                                    </div>
+                                    <div class="record-meta">
+                                        <span>{{ item.club.name }}</span>
+                                        <span>编号 {{ item.public_id }}</span>
+                                        <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                                    </div>
+                                </div>
+                                <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                            </a>
+                            {% endfor %}
+                        </details>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -404,8 +464,8 @@
                 <span class="count-badge">{{ active_items|length }}</span>
             </div>
             <div class="record-list">
-                {% for item in active_items %}
-                <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.id %}">
+                {% for item in active_items|slice:":3" %}
+                <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
                     <div>
                         <div class="record-title">
                             <span class="material-icons">{{ item.channel.icon }}</span>
@@ -414,6 +474,7 @@
                         <div class="record-meta">
                             <span>{{ item.channel.name }}</span>
                             <span>{{ item.club.name }}</span>
+                            <span>编号 {{ item.public_id }}</span>
                             <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                     </div>
@@ -425,6 +486,28 @@
                     暂无进行中的请求
                 </div>
                 {% endfor %}
+                {% if active_items|length > 3 %}
+                <details class="more-records">
+                    <summary>还有 {{ active_items|length|add:"-3" }} 条进行中</summary>
+                    {% for item in active_items|slice:"3:" %}
+                    <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
+                        <div>
+                            <div class="record-title">
+                                <span class="material-icons">{{ item.channel.icon }}</span>
+                                <span>{{ item.display_title }}</span>
+                            </div>
+                            <div class="record-meta">
+                                <span>{{ item.channel.name }}</span>
+                                <span>{{ item.club.name }}</span>
+                                <span>编号 {{ item.public_id }}</span>
+                                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                            </div>
+                        </div>
+                        <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                    </a>
+                    {% endfor %}
+                </details>
+                {% endif %}
             </div>
         </section>
 
@@ -434,8 +517,8 @@
                 <span class="count-badge">{{ completed_items|length }}</span>
             </div>
             <div class="record-list">
-                {% for item in completed_items %}
-                <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.id %}">
+                {% for item in completed_items|slice:":3" %}
+                <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
                     <div>
                         <div class="record-title">
                             <span class="material-icons">{{ item.channel.icon }}</span>
@@ -444,6 +527,7 @@
                         <div class="record-meta">
                             <span>{{ item.channel.name }}</span>
                             <span>{{ item.club.name }}</span>
+                            <span>编号 {{ item.public_id }}</span>
                             <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                     </div>
@@ -455,6 +539,28 @@
                     暂无已处理请求
                 </div>
                 {% endfor %}
+                {% if completed_items|length > 3 %}
+                <details class="more-records">
+                    <summary>还有 {{ completed_items|length|add:"-3" }} 条已处理</summary>
+                    {% for item in completed_items|slice:"3:" %}
+                    <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
+                        <div>
+                            <div class="record-title">
+                                <span class="material-icons">{{ item.channel.icon }}</span>
+                                <span>{{ item.display_title }}</span>
+                            </div>
+                            <div class="record-meta">
+                                <span>{{ item.channel.name }}</span>
+                                <span>{{ item.club.name }}</span>
+                                <span>编号 {{ item.public_id }}</span>
+                                <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
+                            </div>
+                        </div>
+                        <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                    </a>
+                    {% endfor %}
+                </details>
+                {% endif %}
             </div>
         </section>
     </div>

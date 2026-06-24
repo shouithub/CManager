@@ -5,7 +5,18 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 import random
 import string
+import os
+import uuid
 from datetime import timedelta
+
+
+def generate_submission_public_id():
+    return uuid.uuid4().hex[:16]
+
+
+def form_submission_upload_path(instance, filename):
+    submission_id = getattr(instance.submission, 'public_id', '') or 'unassigned'
+    return os.path.join('form_submissions', submission_id, filename)
 
 
 class UserProfile(models.Model):
@@ -364,6 +375,8 @@ class FormChannel(models.Model):
     is_builtin = models.BooleanField(default=False, verbose_name='内置通道')
     builtin_action = models.CharField(max_length=50, choices=BUILTIN_ACTION_CHOICES, default='none', verbose_name='内置动作')
     submission_policy = models.CharField(max_length=20, choices=SUBMISSION_POLICY_CHOICES, default='repeatable', verbose_name='提交策略')
+    required_approval_count = models.PositiveSmallIntegerField(default=1, verbose_name='所需通过次数')
+    show_zip_download = models.BooleanField(default=True, verbose_name='显示打包 ZIP 下载')
     show_unsubmitted_status = models.BooleanField(default=False, verbose_name='show unsubmitted status')
     allow_staff_toggle = models.BooleanField(default=False, verbose_name='allow staff toggle')
     cycle_type = models.CharField(max_length=20, choices=CYCLE_TYPE_CHOICES, default='none', verbose_name='cycle type')
@@ -426,6 +439,12 @@ class FormChannelClubState(models.Model):
 class FormField(models.Model):
     """动态表单字段配置。"""
 
+    WORD_MERGE_EXTENSIONS = {
+        '.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp',
+        '.pdf',
+        '.docx',
+    }
+
     FIELD_TYPE_CHOICES = [
         ('text', '单行文本'),
         ('textarea', '多行文本'),
@@ -479,6 +498,22 @@ class FormField(models.Model):
         except (TypeError, ValueError):
             return 10
 
+    def allow_multiple_files(self):
+        return bool(self.validation.get('allow_multiple', False))
+
+    def supports_word_merge(self):
+        if self.field_type != 'file':
+            return False
+        allowed = {str(item).lower() for item in self.allowed_extensions()}
+        return bool(allowed) and allowed.issubset(self.WORD_MERGE_EXTENSIONS)
+
+    def merge_files_to_word(self):
+        return (
+            self.allow_multiple_files()
+            and self.supports_word_merge()
+            and bool(self.validation.get('merge_to_word', False))
+        )
+
 
 class FormSubmission(models.Model):
     """动态表单提交记录。"""
@@ -490,6 +525,7 @@ class FormSubmission(models.Model):
     ]
 
     channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='submissions', verbose_name='通道')
+    public_id = models.CharField(max_length=32, unique=True, default=generate_submission_public_id, verbose_name='请求编号')
     club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='form_submissions', verbose_name='社团')
     submitter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='form_submissions', verbose_name='提交人')
     cycle = models.ForeignKey(FormCycle, on_delete=models.SET_NULL, null=True, blank=True, related_name='submissions', verbose_name='周期')
@@ -531,15 +567,72 @@ class FormSubmission(models.Model):
                 return value
         return self.club.name
 
+    @property
+    def required_approval_count(self):
+        try:
+            return max(1, int(self.channel.required_approval_count or 1))
+        except (TypeError, ValueError):
+            return 1
+
+    def current_attempt_reviews(self):
+        return self.reviews.filter(submission_attempt=self.resubmission_count)
+
+    def approved_review_count(self):
+        return self.current_attempt_reviews().filter(status='approved').count()
+
+    def rejected_review_count(self):
+        return self.current_attempt_reviews().filter(status='rejected').count()
+
+    def approval_progress_label(self):
+        return f'{self.approved_review_count()}/{self.required_approval_count}'
+
+
+class FormSubmissionReview(models.Model):
+    """动态表单审核记录。"""
+
+    STATUS_CHOICES = [
+        ('approved', '已通过'),
+        ('rejected', '已拒绝'),
+    ]
+
+    submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='reviews', verbose_name='提交')
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='form_submission_reviews', verbose_name='审核人')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='审核结果')
+    comment = models.TextField(blank=True, verbose_name='审核意见')
+    submission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
+    reviewed_at = models.DateTimeField(auto_now_add=True, verbose_name='审核时间')
+
+    class Meta:
+        verbose_name = '动态表单审核记录'
+        verbose_name_plural = '动态表单审核记录'
+        ordering = ['-reviewed_at']
+        unique_together = [('submission', 'reviewer', 'submission_attempt')]
+        indexes = [
+            models.Index(fields=['submission', 'submission_attempt', 'status'], name='fsr_submission_attempt_idx'),
+            models.Index(fields=['reviewer', '-reviewed_at'], name='fsr_reviewer_time_idx'),
+        ]
+
+    def __str__(self):
+        return f'{self.reviewer.username} - {self.submission.public_id} - {self.get_status_display()}'
+
 
 class FormFieldValue(models.Model):
     """动态表单非文件字段值。"""
+
+    REVIEW_STATUS_CHOICES = [
+        ('pending', '待审核'),
+        ('approved', '已通过'),
+        ('rejected', '需修改'),
+    ]
 
     submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='values', verbose_name='提交')
     field = models.ForeignKey(FormField, on_delete=models.CASCADE, related_name='values', verbose_name='字段')
     value_text = models.TextField(blank=True, verbose_name='文本值')
     value_json = models.JSONField(default=dict, blank=True, verbose_name='结构化值')
+    review_status = models.CharField(max_length=20, choices=REVIEW_STATUS_CHOICES, default='pending', verbose_name='字段审核状态')
+    review_comment = models.TextField(blank=True, verbose_name='字段打回原因')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
     class Meta:
         verbose_name = '表单字段值'
@@ -553,10 +646,20 @@ class FormFieldValue(models.Model):
 class FormUploadedFile(models.Model):
     """动态表单文件上传结果。"""
 
+    REVIEW_STATUS_CHOICES = [
+        ('pending', '待审核'),
+        ('approved', '已通过'),
+        ('rejected', '需修改'),
+    ]
+
     submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='uploaded_files', verbose_name='提交')
     field = models.ForeignKey(FormField, on_delete=models.CASCADE, related_name='uploaded_files', verbose_name='字段')
-    file = models.FileField(upload_to='form_submissions/%Y/%m/', verbose_name='文件')
-    original_name = models.CharField(max_length=255, blank=True, verbose_name='原始文件名')
+    file = models.FileField(upload_to=form_submission_upload_path, verbose_name='文件')
+    original_name = models.CharField(max_length=255, blank=True, verbose_name='显示文件名')
+    source_name = models.CharField(max_length=255, blank=True, verbose_name='上传原文件名')
+    review_status = models.CharField(max_length=20, choices=REVIEW_STATUS_CHOICES, default='pending', verbose_name='文件审核状态')
+    review_comment = models.TextField(blank=True, verbose_name='文件打回原因')
+    is_generated = models.BooleanField(default=False, verbose_name='系统生成文件')
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
 
     class Meta:

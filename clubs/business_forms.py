@@ -40,6 +40,7 @@ class BusinessFormAction:
     allow_staff_toggle: bool = False
     default_cycle_type: str = 'none'
     required_fields: tuple[str, ...] = ()
+    locked_fields: tuple[str, ...] = ()
     on_approved: Callable | None = None
 
 
@@ -65,6 +66,17 @@ def missing_required_field_keys(channel) -> list[str]:
         return []
     existing = set(channel.fields.filter(is_active=True).values_list('field_key', flat=True))
     return [key for key in action.required_fields if key not in existing]
+
+
+def locked_business_field_keys(channel) -> set[str]:
+    action = get_business_action(channel.builtin_action)
+    if not action or not action.on_approved:
+        return set()
+    return set(action.locked_fields)
+
+
+def is_locked_business_field(field) -> bool:
+    return field.field_key in locked_business_field_keys(field.channel)
 
 
 def _date_value(value):
@@ -269,9 +281,13 @@ register_business_form_action(BusinessFormAction(
         BusinessField('submission_year', '提交年度', 'number', True, 10, validation={'min': 2000, 'max': 2100}),
         BusinessField('self_assessment_form', '自查表', 'file', True, 20, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
         BusinessField('club_constitution', '社团章程', 'file', True, 30, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
-        BusinessField('annual_activity_list', '社团年度活动清单', 'file', True, 40, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.xls', '.xlsx'], 'max_size_mb': 10}),
-        BusinessField('financial_report', '年度财务情况表', 'file', True, 50, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.xls', '.xlsx'], 'max_size_mb': 10}),
-        BusinessField('other_materials', '其他材料', 'file', False, 60, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.jpg', '.png', '.zip'], 'max_size_mb': 20}),
+        BusinessField('leader_learning_work_report', '负责人学习及工作情况表', 'file', True, 40, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
+        BusinessField('annual_activity_list', '社团年度活动清单', 'file', True, 50, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.xls', '.xlsx'], 'max_size_mb': 10}),
+        BusinessField('advisor_performance_report', '指导教师履职情况表', 'file', True, 60, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
+        BusinessField('financial_report', '财务报告', 'file', True, 70, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.xls', '.xlsx'], 'max_size_mb': 10}),
+        BusinessField('member_composition_list', '成员构成表', 'file', True, 80, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.xls', '.xlsx'], 'max_size_mb': 10}),
+        BusinessField('new_media_account_report', '新媒体账号及运维情况表', 'file', False, 90, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.xls', '.xlsx'], 'max_size_mb': 10}),
+        BusinessField('other_materials', '其他材料', 'file', False, 100, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.jpg', '.png', '.zip'], 'max_size_mb': 20}),
     ],
 ))
 
@@ -290,9 +306,14 @@ register_business_form_action(BusinessFormAction(
     fields=[
         BusinessField('registration_form', '社团注册申请表', 'file', True, 10, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
         BusinessField('basic_info_form', '学生社团基础信息表', 'file', True, 20, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.xls', '.xlsx'], 'max_size_mb': 10}),
-        BusinessField('fee_form', '会费表或免收会费说明书', 'file', False, 30, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.xls', '.xlsx'], 'max_size_mb': 10}),
-        BusinessField('meeting_minutes', '社团大会会议记录', 'file', False, 40, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
-        BusinessField('other_materials', '其他注册材料', 'file', False, 50, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.zip'], 'max_size_mb': 20}),
+        BusinessField('membership_fee_form', '社团会费收取情况表', 'file', False, 30, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.xls', '.xlsx'], 'max_size_mb': 10}),
+        BusinessField('leader_change_application', '社团负责人变更申请表', 'file', False, 40, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
+        BusinessField('meeting_minutes', '社团大会会议记录', 'file', False, 50, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
+        BusinessField('name_change_application', '社团名称变更申请表', 'file', False, 60, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
+        BusinessField('advisor_change_application', '指导教师变更申请表', 'file', False, 70, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
+        BusinessField('business_advisor_change_application', '业务指导单位变更申请表', 'file', False, 80, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
+        BusinessField('new_media_application', '新媒体账号申请表', 'file', False, 90, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
+        BusinessField('other_materials', '其他注册材料', 'file', False, 100, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.zip'], 'max_size_mb': 20}),
     ],
 ))
 
@@ -305,6 +326,7 @@ register_business_form_action(BusinessFormAction(
     default_policy='repeatable',
     default_description='社团成立申请默认动态提交通道',
     required_fields=('club_name', 'club_description'),
+    locked_fields=('club_name', 'club_description'),
     on_approved=approve_club_application,
     fields=[
         BusinessField('club_name', '拟成立社团名称', 'text', True, 10, validation={'max_length': 100}),
@@ -331,7 +353,7 @@ register_business_form_action(BusinessFormAction(
         BusinessField('submission_date', '申请日期', 'date', True, 10),
         BusinessField('reimbursement_amount', '报销金额', 'number', True, 20, validation={'min': 0, 'step': '0.01'}),
         BusinessField('description', '报销说明', 'textarea', True, 30),
-        BusinessField('receipt_file', '报销凭证', 'file', True, 40, validation={'allowed_extensions': ['.pdf', '.jpg', '.jpeg', '.png', '.zip'], 'max_size_mb': 20}),
+        BusinessField('receipt_file', '发票', 'file', True, 40, validation={'allowed_extensions': ['.pdf', '.jpg', '.jpeg', '.png', '.docx'], 'max_size_mb': 20, 'allow_multiple': True, 'merge_to_word': True}),
     ],
 ))
 
@@ -344,6 +366,20 @@ register_business_form_action(BusinessFormAction(
     default_policy='repeatable',
     default_description='活动申请默认动态提交通道，审核通过后进入活动展示与报名页面',
     required_fields=('activity_name', 'activity_type', 'activity_description', 'activity_date', 'activity_time_start', 'activity_time_end', 'activity_location', 'contact_person'),
+    locked_fields=(
+        'activity_name',
+        'activity_type',
+        'activity_description',
+        'activity_date',
+        'activity_time_start',
+        'activity_time_end',
+        'activity_location',
+        'expected_participants',
+        'budget',
+        'contact_person',
+        'contact_phone',
+        'is_public',
+    ),
     on_approved=approve_activity_application,
     fields=[
         BusinessField('activity_name', '活动名称', 'text', True, 10, validation={'max_length': 200}),
@@ -358,7 +394,7 @@ register_business_form_action(BusinessFormAction(
         BusinessField('contact_person', '联系人', 'text', True, 100, validation={'max_length': 100}),
         BusinessField('contact_phone', '联系电话', 'text', False, 110, validation={'max_length': 30}),
         BusinessField('is_public', '是否公开报名', 'select', False, 120, options=['公开', '仅社团成员']),
-        BusinessField('application_form', '活动申请材料', 'file', False, 130, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
+        BusinessField('application_form', '活动申请表', 'file', False, 130, validation={'allowed_extensions': ['.doc', '.docx', '.pdf'], 'max_size_mb': 10}),
     ],
 ))
 
@@ -371,6 +407,7 @@ register_business_form_action(BusinessFormAction(
     default_policy='repeatable',
     default_description='社长换届默认动态提交通道',
     required_fields=('new_president_student_id',),
+    locked_fields=('new_president_student_id',),
     on_approved=approve_president_transition,
     fields=[
         BusinessField('new_president_name', '新社长姓名', 'text', True, 10, validation={'max_length': 100}),
@@ -378,6 +415,6 @@ register_business_form_action(BusinessFormAction(
         BusinessField('new_president_phone', '新社长电话', 'text', False, 30, validation={'max_length': 30}),
         BusinessField('transition_date', '换届日期', 'date', True, 40),
         BusinessField('reason', '换届说明', 'textarea', True, 50),
-        BusinessField('transition_file', '换届材料', 'file', False, 60, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.zip'], 'max_size_mb': 20}),
+        BusinessField('transition_file', '社团负责人换届申请表', 'file', False, 60, validation={'allowed_extensions': ['.doc', '.docx', '.pdf', '.zip'], 'max_size_mb': 20}),
     ],
 ))

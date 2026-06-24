@@ -16,15 +16,14 @@
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-xl);
+        margin-bottom: var(--md3-spacing-2xl);
         padding: var(--md3-spacing-xl);
         border: 1px solid var(--md3-outline-variant);
         border-radius: var(--md3-radius-xl);
         background: var(--md3-surface-container-low);
-        box-shadow: var(--md3-elevation-1);
     }
 
-    .page-header > .material-icons {
+    .page-header .page-title-icon {
         font-size: 2.5rem;
         color: var(--md3-primary);
         flex: 0 0 auto;
@@ -36,18 +35,16 @@
     }
 
     .page-header h1 {
-        margin: 0;
-        font-size: 1.7rem;
-        line-height: 1.2;
-        font-weight: 700;
-        letter-spacing: 0;
+        margin: 0 0 var(--md3-spacing-xs) 0;
+        font-size: 1.75rem;
+        font-weight: 600;
         color: var(--md3-on-surface);
     }
 
-    .page-header p {
-        margin: 6px 0 0;
+    .page-header .subtitle {
+        margin: 0;
         color: var(--md3-on-surface-variant);
-        font-size: 0.95rem;
+        font-size: 0.875rem;
     }
 
     .channel-tabs {
@@ -163,6 +160,26 @@
         white-space: nowrap;
     }
 
+    .status-pill.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+
+    .status-pill.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .status-pill.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .status-pill.progress {
+        background: var(--md3-info-container);
+        color: var(--md3-on-info-container);
+    }
+
     .empty-state {
         min-height: 150px;
         display: grid;
@@ -176,6 +193,21 @@
     .empty-state .material-icons {
         color: var(--md3-primary);
         font-size: 2.1rem;
+    }
+
+    .more-records {
+        display: grid;
+        gap: var(--md3-spacing-md);
+    }
+
+    .more-records summary {
+        cursor: pointer;
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-high);
+        color: var(--md3-primary);
+        font-weight: 700;
+        list-style: none;
     }
 
     @media (max-width: 768px) {
@@ -207,7 +239,7 @@
             display: none;
         }
 
-        .page-header > .material-icons {
+        .page-header .page-title-icon {
             font-size: 2rem;
         }
 
@@ -317,10 +349,10 @@
 {% block content %}
 <div class="audit-page">
     <section class="page-header">
-        <span class="material-icons">fact_check</span>
+        <span class="material-icons page-title-icon">fact_check</span>
         <div class="page-header-content">
             <h1>审核中心</h1>
-            <p>当前分类：{% if current_channel %}{{ current_channel.name }}{% else %}全部通道{% endif %}</p>
+            <p class="subtitle">当前分类：{% if current_channel %}{{ current_channel.name }}{% else %}全部通道{% endif %}</p>
         </div>
         <nav class="channel-tabs" aria-label="审核通道">
             <a class="tab-chip {% if current_tab == 'all' %}active{% endif %}" href="{% url 'clubs:staff_audit_center' 'all' %}">
@@ -340,7 +372,7 @@
             <span class="count-badge">{{ pending_items|length }}</span>
         </div>
         <div class="record-list">
-            {% for item in pending_items %}
+            {% for item in pending_items|slice:":3" %}
             <article class="record-card">
                 <div>
                     <div class="record-title">
@@ -351,15 +383,19 @@
                         <span>{{ item.channel.name }}</span>
                         <span>{{ item.club.name }}</span>
                         <span>{{ item.submitter.username }}</span>
+                        <span>编号 {{ item.public_id }}</span>
+                        <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                        <span>第 {{ item.resubmission_count }} 次提交</span>
+                        <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
                         <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                     </div>
                 </div>
                 <div class="record-actions">
-                    <a class="btn btn-primary" href="{% url 'clubs:staff_review_form_submission' item.id %}">
+                    <a class="btn btn-primary" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
                         <span class="material-icons">rate_review</span>审核
                     </a>
                     {% if is_admin %}
-                    <form method="post" action="{% url 'clubs:delete_audit_request' item.channel.slug item.id %}">
+                    <form method="post" action="{% url 'clubs:delete_audit_request' item.channel.slug item.public_id %}">
                         {% csrf_token %}
                         <button class="btn btn-danger" type="submit" onclick="return confirm('确定删除这条请求吗？')">
                             <span class="material-icons">delete</span>删除
@@ -374,6 +410,34 @@
                 暂无待审核提交
             </div>
             {% endfor %}
+            {% if pending_items|length > 3 %}
+            <details class="more-records">
+                <summary>还有 {{ pending_items|length|add:"-3" }} 条待审核</summary>
+                {% for item in pending_items|slice:"3:" %}
+                <article class="record-card">
+                    <div>
+                        <div class="record-title">
+                            <span class="material-icons">{{ item.channel.icon }}</span>
+                            <span>{{ item.display_title }}</span>
+                        </div>
+                        <div class="record-meta">
+                            <span>{{ item.channel.name }}</span>
+                            <span>{{ item.club.name }}</span>
+                            <span>编号 {{ item.public_id }}</span>
+                            <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                            <span>第 {{ item.resubmission_count }} 次提交</span>
+                            <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
+                        </div>
+                    </div>
+                    <div class="record-actions">
+                        <a class="btn btn-primary" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
+                            <span class="material-icons">rate_review</span>审核
+                        </a>
+                    </div>
+                </article>
+                {% endfor %}
+            </details>
+            {% endif %}
         </div>
     </section>
 
@@ -383,7 +447,7 @@
             <span class="count-badge">{{ completed_items|length }}</span>
         </div>
         <div class="record-list">
-            {% for item in completed_items %}
+            {% for item in completed_items|slice:":3" %}
             <article class="record-card">
                 <div>
                     <div class="record-title">
@@ -393,11 +457,20 @@
                     <div class="record-meta">
                         <span>{{ item.channel.name }}</span>
                         <span>{{ item.club.name }}</span>
-                        <span class="status-pill">{{ item.get_status_display }}</span>
+                        <span>编号 {{ item.public_id }}</span>
+                        <span>第 {{ item.resubmission_count }} 次提交</span>
+                        <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                        <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
+                        {% if item.reviewer %}
+                        <span>最后审核：{{ item.reviewer.username }}</span>
+                        {% endif %}
+                        {% if item.reviewed_at %}
+                        <span>{{ item.reviewed_at|date:"Y-m-d H:i" }}</span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="record-actions">
-                    <a class="btn btn-outlined" href="{% url 'clubs:staff_review_form_submission' item.id %}">
+                    <a class="btn btn-outlined" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
                         <span class="material-icons">visibility</span>查看
                     </a>
                 </div>
@@ -408,6 +481,35 @@
                 暂无已处理提交
             </div>
             {% endfor %}
+            {% if completed_items|length > 3 %}
+            <details class="more-records">
+                <summary>还有 {{ completed_items|length|add:"-3" }} 条已处理</summary>
+                {% for item in completed_items|slice:"3:" %}
+                <article class="record-card">
+                    <div>
+                        <div class="record-title">
+                            <span class="material-icons">{{ item.channel.icon }}</span>
+                            <span>{{ item.display_title }}</span>
+                        </div>
+                        <div class="record-meta">
+                            <span>{{ item.channel.name }}</span>
+                            <span>{{ item.club.name }}</span>
+                            <span>编号 {{ item.public_id }}</span>
+                            <span>第 {{ item.resubmission_count }} 次提交</span>
+                            <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
+                            <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
+                            {% if item.reviewer %}<span>最后审核：{{ item.reviewer.username }}</span>{% endif %}
+                        </div>
+                    </div>
+                    <div class="record-actions">
+                        <a class="btn btn-outlined" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
+                            <span class="material-icons">visibility</span>查看
+                        </a>
+                    </div>
+                </article>
+                {% endfor %}
+            </details>
+            {% endif %}
         </div>
     </section>
 </div>

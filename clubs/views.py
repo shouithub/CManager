@@ -21,6 +21,7 @@ from django.http import HttpResponse, FileResponse, HttpResponseForbidden, JsonR
 from django.db import IntegrityError, transaction
 from django.db.models import Q, Prefetch, FileField, Count
 from django.core.cache import cache
+from django.core.files.base import ContentFile
 from collections import defaultdict
 import os
 import re
@@ -30,11 +31,14 @@ import base64
 import tempfile
 import csv
 import io
-from .models import Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission, FormFieldValue, FormUploadedFile, Template, Announcement, StaffClubRelation, SMTPConfig, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken, PublishedActivity, ActivityRegistration
+import json
+from .models import Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission, FormSubmissionReview, FormFieldValue, FormUploadedFile, Template, Announcement, StaffClubRelation, SMTPConfig, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken, PublishedActivity, ActivityRegistration
 from .business_forms import (
     BusinessActionError,
     apply_business_action,
     create_form_cycle,
+    is_locked_business_field,
+    locked_business_field_keys,
     missing_required_field_keys,
     seed_business_form_channels,
 )
@@ -2473,18 +2477,21 @@ def toggle_club_form_channel(request, channel_id, club_id):
 @login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['GET'])
 def zip_download(request):
-    submission_id = (request.GET.get('id') or '').strip()
-    if not submission_id.isdigit():
-        messages.error(request, '缺少有效的提交 ID')
+    submission_key = (request.GET.get('id') or '').strip()
+    if not submission_key:
+        messages.error(request, '缺少有效的请求编号')
         return redirect(request.META.get('HTTP_REFERER', 'clubs:index'))
 
     submission = get_object_or_404(
         FormSubmission.objects.select_related('channel', 'club').prefetch_related('uploaded_files__field'),
-        pk=int(submission_id),
+        public_id=submission_key,
     )
     if not (is_staff_or_admin(request.user) or _is_president_of_club(request.user, submission.club)):
         messages.error(request, '无权下载此提交的材料')
         return redirect('clubs:index')
+    if not submission.channel.show_zip_download:
+        messages.error(request, '这个通道未开启打包 ZIP 下载')
+        return redirect(request.META.get('HTTP_REFERER', 'clubs:index'))
 
     uploaded_files = [item for item in submission.uploaded_files.all() if item.file]
     if not uploaded_files:
@@ -2516,7 +2523,7 @@ def zip_download(request):
                 uploaded.file.close()
 
     buffer.seek(0)
-    filename = f'{submission.club.name}-{submission.channel.name}-{submission.id}.zip'
+    filename = f'{submission.club.name}-{submission.channel.name}-{submission.public_id}.zip'
     response = HttpResponse(buffer.getvalue(), content_type='application/zip')
     response['Content-Disposition'] = f"attachment; filename*=UTF-8''{urllib.parse.quote(filename)}"
     return response
@@ -3978,8 +3985,40 @@ def _field_input_name(field):
     return f'field_{field.id}'
 
 
+def _get_submission_or_404(submission_key):
+    return get_object_or_404(
+        FormSubmission.objects.select_related('channel', 'club', 'submitter', 'reviewer'),
+        public_id=submission_key,
+    )
+
+
+def _safe_filename_part(value, fallback='文件'):
+    value = (value or fallback).strip() or fallback
+    value = re.sub(r'[<>:"/\\|?*\x00-\x1f]+', '_', value)
+    value = re.sub(r'\s+', '', value)
+    return value[:80] or fallback
+
+
+def _renamed_upload_name(field, uploaded, index=1, total=1):
+    ext = os.path.splitext(uploaded.name)[1].lower()
+    base = _safe_filename_part(field.label, '附件')
+    suffix = str(index) if total > 1 else ''
+    return f'{base}{suffix}{ext}'
+
+
+def _delete_uploaded_record(uploaded):
+    if uploaded.file:
+        uploaded.file.delete(save=False)
+    uploaded.delete()
+
+
 def _parse_options(raw):
     return [line.strip() for line in (raw or '').replace('\r', '').split('\n') if line.strip()]
+
+
+def _extensions_support_word_merge(extensions):
+    normalized = {str(item).strip().lower() for item in extensions if str(item).strip()}
+    return bool(normalized) and normalized.issubset(FormField.WORD_MERGE_EXTENSIONS)
 
 
 def _parse_validation(field_type, post):
@@ -3987,6 +4026,12 @@ def _parse_validation(field_type, post):
     if field_type == 'file':
         exts = post.get('allowed_extensions', '').strip()
         validation['allowed_extensions'] = [e.strip() if e.strip().startswith('.') else f'.{e.strip()}' for e in exts.split(',') if e.strip()] or ['.doc', '.docx', '.pdf', '.jpg', '.jpeg', '.png', '.zip']
+        validation['allow_multiple'] = post.get('allow_multiple') == 'on'
+        validation['merge_to_word'] = (
+            validation['allow_multiple']
+            and post.get('merge_to_word') == 'on'
+            and _extensions_support_word_merge(validation['allowed_extensions'])
+        )
         try:
             validation['max_size_mb'] = int(post.get('max_size_mb', '10') or 10)
         except ValueError:
@@ -4016,19 +4061,25 @@ def _coerce_bool_text(value):
     return str(value).strip() in ['是', 'true', 'True', '1', 'yes', '公开']
 
 
-def _validate_dynamic_submission(channel, post, files):
+def _validate_dynamic_submission(channel, post, files, fields=None, force_required_field_ids=None):
     cleaned = {}
     upload_map = {}
     errors = []
-    fields = channel.fields.filter(is_active=True).order_by('order', 'id')
+    fields = fields or channel.fields.filter(is_active=True).order_by('order', 'id')
+    force_required_field_ids = set(force_required_field_ids or [])
     for field in fields:
         name = _field_input_name(field)
+        is_required = field.required or field.id in force_required_field_ids
         if field.field_type == 'file':
-            uploaded = files.get(name)
-            if field.required and not uploaded:
+            uploaded_files = files.getlist(name)
+            if is_required and not uploaded_files:
                 errors.append(f'{field.label} 为必填文件')
                 continue
-            if uploaded:
+            if uploaded_files and not field.allow_multiple_files() and len(uploaded_files) > 1:
+                errors.append(f'{field.label} 只能上传 1 个文件')
+                continue
+            valid_uploads = []
+            for uploaded in uploaded_files:
                 ext = os.path.splitext(uploaded.name)[1].lower()
                 allowed = field.allowed_extensions()
                 if ext not in allowed:
@@ -4036,7 +4087,9 @@ def _validate_dynamic_submission(channel, post, files):
                 max_bytes = field.max_size_mb() * 1024 * 1024
                 if uploaded.size > max_bytes:
                     errors.append(f'{field.label} 文件不能超过 {field.max_size_mb()}MB')
-                upload_map[field.id] = uploaded
+                valid_uploads.append(uploaded)
+            if valid_uploads:
+                upload_map[field.id] = valid_uploads
             continue
 
         if field.field_type == 'checkbox':
@@ -4044,7 +4097,7 @@ def _validate_dynamic_submission(channel, post, files):
         else:
             value = post.get(name, '').strip()
 
-        if field.required and (value == '' or value == []):
+        if is_required and (value == '' or value == []):
             errors.append(f'{field.label} 为必填项')
             continue
 
@@ -4066,6 +4119,176 @@ def _validate_dynamic_submission(channel, post, files):
     return fields, cleaned, upload_map, errors
 
 
+def _add_image_to_document(document, image_source):
+    from io import BytesIO
+    from docx.shared import Inches
+    from PIL import Image
+
+    if isinstance(image_source, (str, os.PathLike)):
+        image_buffer = BytesIO()
+        with Image.open(image_source) as image:
+            if image.mode not in ['RGB', 'RGBA']:
+                image = image.convert('RGB')
+            image.save(image_buffer, format='PNG')
+        image_buffer.seek(0)
+        document.add_picture(image_buffer, width=Inches(6))
+        return
+
+    document.add_picture(image_source, width=Inches(6))
+
+
+def _append_docx_text(document, path):
+    from docx import Document
+
+    source = Document(path)
+    appended = False
+    for paragraph in source.paragraphs:
+        text = paragraph.text.strip()
+        if text:
+            document.add_paragraph(text)
+            appended = True
+    for table in source.tables:
+        for row in table.rows:
+            cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+            if cells:
+                document.add_paragraph(' | '.join(cells))
+                appended = True
+    if not appended:
+        document.add_paragraph('这个 Word 文档没有可提取的正文内容。')
+
+
+def _render_pdf_pages_to_document(document, path):
+    from io import BytesIO
+    import fitz
+
+    pdf = fitz.open(path)
+    try:
+        for page_number, page in enumerate(pdf, start=1):
+            document.add_paragraph(f'第 {page_number} 页')
+            pixmap = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+            image_stream = BytesIO(pixmap.tobytes('png'))
+            _add_image_to_document(document, image_stream)
+    finally:
+        pdf.close()
+
+
+def _build_merged_word_file(field, uploaded_records):
+    from io import BytesIO
+    from docx import Document
+    from docx.oxml.ns import qn
+    from docx.shared import Cm, Pt
+
+    image_exts = {'.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp'}
+    document = Document()
+    section = document.sections[0]
+    section.top_margin = Cm(1.4)
+    section.bottom_margin = Cm(1.4)
+    section.left_margin = Cm(1.6)
+    section.right_margin = Cm(1.6)
+
+    for style_name in ['Normal', 'Title', 'Heading 1', 'Heading 2']:
+        style = document.styles[style_name]
+        style.font.name = '微软雅黑'
+        style._element.rPr.rFonts.set(qn('w:eastAsia'), '微软雅黑')
+    document.styles['Normal'].font.size = Pt(10.5)
+
+    title = document.add_paragraph()
+    title.paragraph_format.space_before = Pt(0)
+    title.paragraph_format.space_after = Pt(8)
+    title_run = title.add_run(field.label)
+    title_run.bold = True
+    title_run.font.name = '微软雅黑'
+    title_run._element.rPr.rFonts.set(qn('w:eastAsia'), '微软雅黑')
+    title_run.font.size = Pt(16)
+
+    intro = document.add_paragraph('以下内容由系统根据本字段一次上传的多个文件自动合并生成。')
+    intro.paragraph_format.space_before = Pt(0)
+    intro.paragraph_format.space_after = Pt(10)
+
+    for index, uploaded in enumerate(uploaded_records, start=1):
+        original_name = uploaded.original_name or os.path.basename(uploaded.file.name)
+        ext = os.path.splitext(original_name)[1].lower()
+        heading = document.add_paragraph()
+        heading.paragraph_format.space_before = Pt(4)
+        heading.paragraph_format.space_after = Pt(6)
+        heading_run = heading.add_run(f'{index}. {original_name}')
+        heading_run.bold = True
+        heading_run.font.name = '微软雅黑'
+        heading_run._element.rPr.rFonts.set(qn('w:eastAsia'), '微软雅黑')
+        heading_run.font.size = Pt(12)
+        try:
+            path = uploaded.file.path
+            if ext in image_exts:
+                _add_image_to_document(document, path)
+            elif ext == '.pdf':
+                _render_pdf_pages_to_document(document, path)
+            elif ext == '.docx':
+                _append_docx_text(document, path)
+            elif ext == '.doc':
+                document.add_paragraph('旧版 .doc 文件无法在当前环境中直接解析，原文件已随提交一并保存。')
+            else:
+                document.add_paragraph('该文件类型不支持合并进 Word，原文件已随提交一并保存。')
+        except Exception as exc:
+            document.add_paragraph(f'合并该文件时遇到问题：{exc}')
+
+    buffer = BytesIO()
+    document.save(buffer)
+    buffer.seek(0)
+    return ContentFile(buffer.getvalue(), name=f'{_safe_filename_part(field.label)}-合并文档.docx')
+
+
+def _create_uploaded_records(submission, field, uploaded_files):
+    created_uploads = []
+    total = len(uploaded_files)
+    for index, uploaded in enumerate(uploaded_files, start=1):
+        source_name = uploaded.name
+        renamed_name = _renamed_upload_name(field, uploaded, index=index, total=total)
+        uploaded.name = renamed_name
+        created_uploads.append(FormUploadedFile.objects.create(
+            submission=submission,
+            field=field,
+            file=uploaded,
+            original_name=renamed_name,
+            source_name=source_name,
+        ))
+    return created_uploads
+
+
+def _refresh_generated_merge_file(submission, field):
+    for uploaded in submission.uploaded_files.filter(field=field, is_generated=True):
+        _delete_uploaded_record(uploaded)
+    source_uploads = list(
+        submission.uploaded_files.filter(field=field, is_generated=False).exclude(review_status='rejected').order_by('uploaded_at', 'id')
+    )
+    if field.merge_files_to_word() and len(source_uploads) > 1:
+        merged_file = _build_merged_word_file(field, source_uploads)
+        FormUploadedFile.objects.create(
+            submission=submission,
+            field=field,
+            file=merged_file,
+            original_name=merged_file.name,
+            is_generated=True,
+            review_status='approved',
+        )
+
+
+def _ensure_generated_merge_files(submission):
+    file_field_ids = submission.uploaded_files.filter(is_generated=False).values_list('field_id', flat=True).distinct()
+    fields = FormField.objects.filter(id__in=file_field_ids)
+    for field in fields:
+        has_generated = submission.uploaded_files.filter(field=field, is_generated=True).exists()
+        source_count = submission.uploaded_files.filter(field=field, is_generated=False).exclude(review_status='rejected').count()
+        if field.merge_files_to_word() and source_count > 1 and not has_generated:
+            _refresh_generated_merge_file(submission, field)
+
+
+def _refresh_submission_merge_files(submission):
+    file_field_ids = submission.uploaded_files.filter(is_generated=False).values_list('field_id', flat=True).distinct()
+    for field in FormField.objects.filter(id__in=file_field_ids):
+        if field.merge_files_to_word():
+            _refresh_generated_merge_file(submission, field)
+
+
 def _save_dynamic_submission(channel, club, user, fields, cleaned, upload_map, cycle=None):
     previous = FormSubmission.objects.filter(channel=channel, club=club, submitter=user)
     if cycle:
@@ -4080,14 +4303,9 @@ def _save_dynamic_submission(channel, club, user, fields, cleaned, upload_map, c
     )
     for field in fields:
         if field.field_type == 'file':
-            uploaded = upload_map.get(field.id)
-            if uploaded:
-                FormUploadedFile.objects.create(
-                    submission=submission,
-                    field=field,
-                    file=uploaded,
-                    original_name=uploaded.name,
-                )
+            uploaded_files = upload_map.get(field.id, [])
+            _create_uploaded_records(submission, field, uploaded_files)
+            _refresh_generated_merge_file(submission, field)
             continue
         value = cleaned.get(field.id, [] if field.field_type == 'checkbox' else '')
         if field.field_type == 'checkbox':
@@ -4101,20 +4319,122 @@ def _apply_builtin_action(submission):
     apply_business_action(submission)
 
 
-def _submission_context(submission):
+def _office_preview_url(request, uploaded):
+    if not uploaded.file:
+        return ''
+    filename = uploaded.original_name or uploaded.file.name
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in {'.doc', '.docx', '.ppt', '.pptx'}:
+        return ''
+    absolute_file_url = request.build_absolute_uri(uploaded.file.url) if request else uploaded.file.url
+    encoded_file_url = urllib.parse.quote(absolute_file_url, safe='')
+    return f'https://view.officeapps.live.com/op/embed.aspx?src={encoded_file_url}'
+
+
+def _submission_context(submission, request=None):
+    _ensure_generated_merge_files(submission)
     values = {value.field_id: value for value in submission.values.select_related('field')}
     files_by_field = defaultdict(list)
-    for uploaded in submission.uploaded_files.select_related('field'):
+    for uploaded in submission.uploaded_files.filter(is_generated=False).select_related('field'):
+        uploaded.office_preview_url = _office_preview_url(request, uploaded)
         files_by_field[uploaded.field_id].append(uploaded)
     rows = []
     for field in submission.channel.fields.filter(is_active=True).order_by('order', 'id'):
         value_obj = values.get(field.id)
         rows.append({
             'field': field,
+            'value_obj': value_obj,
             'value': value_obj.value_json if value_obj and value_obj.value_json not in ({}, []) else (value_obj.value_text if value_obj else ''),
             'files': files_by_field.get(field.id, []),
+            'review_status': value_obj.review_status if value_obj else '',
+            'review_comment': value_obj.review_comment if value_obj else '',
         })
     return rows
+
+
+def _submission_has_files(submission):
+    return submission.uploaded_files.exclude(file='').exists()
+
+
+def _submission_review_summary(submission):
+    current_reviews = submission.reviews.filter(submission_attempt=submission.resubmission_count).select_related('reviewer', 'reviewer__profile')
+    approved_count = current_reviews.filter(status='approved').count()
+    rejected_count = current_reviews.filter(status='rejected').count()
+    required_count = max(1, int(submission.channel.required_approval_count or 1))
+    return {
+        'current_reviews': current_reviews.order_by('-reviewed_at'),
+        'all_reviews': submission.reviews.select_related('reviewer', 'reviewer__profile').order_by('-reviewed_at'),
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'required_approval_count': required_count,
+        'remaining_approval_count': max(0, required_count - approved_count),
+        'approval_progress': f'{approved_count}/{required_count}',
+    }
+
+
+def _submission_generated_merge_files(submission):
+    _refresh_submission_merge_files(submission)
+    return list(submission.uploaded_files.filter(is_generated=True).exclude(file='').select_related('field'))
+
+
+def _show_word_downloads(submission):
+    return submission.status == 'approved'
+
+
+def _show_zip_download(submission):
+    return bool(submission.channel.show_zip_download) and _submission_has_files(submission)
+
+
+def _submission_download_context(submission):
+    show_word_downloads = _show_word_downloads(submission)
+    show_zip_download = _show_zip_download(submission)
+    return {
+        'has_files': _submission_has_files(submission),
+        'show_word_downloads': show_word_downloads,
+        'show_zip_download': show_zip_download,
+        'generated_merge_files': _submission_generated_merge_files(submission) if show_word_downloads else [],
+    }
+
+
+def _submission_common_context(submission, request=None):
+    context = {
+        'rows': _submission_context(submission, request=request),
+    }
+    context.update(_submission_review_summary(submission))
+    context.update(_submission_download_context(submission))
+    return context
+
+
+def _rejected_field_queryset(submission):
+    rejected_value_ids = submission.values.filter(review_status='rejected').values_list('field_id', flat=True)
+    rejected_file_ids = submission.uploaded_files.filter(review_status='rejected', is_generated=False).values_list('field_id', flat=True)
+    return submission.channel.fields.filter(id__in=set(rejected_value_ids) | set(rejected_file_ids), is_active=True).order_by('order', 'id')
+
+
+def _form_field_items(fields, submission=None):
+    value_map = {}
+    selected_map = {}
+    comment_map = {}
+    files_by_field = defaultdict(list)
+    if submission:
+        for value in submission.values.select_related('field'):
+            raw = value.value_json if value.value_json not in ({}, []) else value.value_text
+            value_map[value.field_id] = raw
+            selected_map[value.field_id] = raw if isinstance(raw, list) else [raw]
+            comment_map[value.field_id] = value.review_comment
+        for uploaded in submission.uploaded_files.filter(is_generated=False).select_related('field'):
+            files_by_field[uploaded.field_id].append(uploaded)
+    items = []
+    for field in fields:
+        value = value_map.get(field.id, [] if field.field_type == 'checkbox' else '')
+        items.append({
+            'field': field,
+            'value': value,
+            'selected_options': selected_map.get(field.id, []),
+            'review_comment': comment_map.get(field.id, ''),
+            'files': files_by_field.get(field.id, []),
+        })
+    return items
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -4138,7 +4458,7 @@ def submit_dynamic_form(request, channel_slug, club_id):
         else:
             submission = _save_dynamic_submission(channel, club, request.user, fields, cleaned, upload_map, cycle=cycle)
             messages.success(request, f'{channel.name} 已提交，等待审核')
-            return redirect('clubs:approval_detail', item_type=channel.slug, item_id=submission.id)
+            return redirect('clubs:approval_detail', item_type=channel.slug, submission_key=submission.public_id)
     else:
         fields = channel.fields.filter(is_active=True).order_by('order', 'id')
 
@@ -4146,7 +4466,92 @@ def submit_dynamic_form(request, channel_slug, club_id):
         'channel': channel,
         'club': club,
         'fields': fields,
+        'field_items': _form_field_items(fields),
         'cycle': cycle,
+        'revision_mode': False,
+    })
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def revise_dynamic_submission(request, submission_key):
+    submission = _get_submission_or_404(submission_key)
+    if not _is_president(request.user) or not _is_president_of_club(request.user, submission.club):
+        messages.error(request, '只有该社团现任社长可以修改补交')
+        return redirect('clubs:user_dashboard')
+    if submission.status != 'rejected':
+        messages.error(request, '只有被打回的请求可以修改补交')
+        return redirect('clubs:approval_detail', item_type=submission.channel.slug, submission_key=submission.public_id)
+
+    fields = _rejected_field_queryset(submission)
+    if not fields.exists():
+        fields = submission.channel.fields.filter(is_active=True).order_by('order', 'id')
+    force_required_ids = set(fields.values_list('id', flat=True))
+
+    if request.method == 'POST':
+        fields, cleaned, upload_map, errors = _validate_dynamic_submission(
+            submission.channel,
+            request.POST,
+            request.FILES,
+            fields=fields,
+            force_required_field_ids=force_required_ids,
+        )
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            with transaction.atomic():
+                for field in fields:
+                    if field.field_type == 'file':
+                        for uploaded in submission.uploaded_files.filter(field=field, review_status='rejected', is_generated=False):
+                            _delete_uploaded_record(uploaded)
+                        new_uploads = _create_uploaded_records(submission, field, upload_map.get(field.id, []))
+                        for uploaded in new_uploads:
+                            uploaded.review_status = 'pending'
+                            uploaded.review_comment = ''
+                            uploaded.save(update_fields=['review_status', 'review_comment'])
+                        _refresh_generated_merge_file(submission, field)
+                        continue
+
+                    value = cleaned.get(field.id, [] if field.field_type == 'checkbox' else '')
+                    defaults = {'review_status': 'pending', 'review_comment': ''}
+                    if field.field_type == 'checkbox':
+                        defaults['value_json'] = value
+                        defaults['value_text'] = ''
+                    else:
+                        defaults['value_text'] = str(value)
+                        defaults['value_json'] = {}
+                    FormFieldValue.objects.update_or_create(
+                        submission=submission,
+                        field=field,
+                        defaults=defaults,
+                    )
+                submission.status = 'pending'
+                submission.review_comment = ''
+                submission.reviewer = None
+                submission.reviewed_at = None
+                submission.submitted_at = timezone.now()
+                submission.resubmission_count += 1
+                submission.is_read = False
+                submission.save(update_fields=[
+                    'status',
+                    'review_comment',
+                    'reviewer',
+                    'reviewed_at',
+                    'submitted_at',
+                    'resubmission_count',
+                    'is_read',
+                ])
+            messages.success(request, '已补交被打回的内容，等待重新审核')
+            return redirect('clubs:approval_detail', item_type=submission.channel.slug, submission_key=submission.public_id)
+
+    return render(request, 'clubs/user/dynamic_form_submit.html', {
+        'channel': submission.channel,
+        'club': submission.club,
+        'fields': fields,
+        'field_items': _form_field_items(fields, submission=submission),
+        'cycle': submission.cycle,
+        'submission': submission,
+        'revision_mode': True,
     })
 
 
@@ -4200,20 +4605,21 @@ def approval_center_tabs(request, tab='all'):
 
 
 @login_required(login_url=settings.LOGIN_URL)
-def approval_detail(request, item_type, item_id):
-    submission = get_object_or_404(FormSubmission.objects.select_related('channel', 'club', 'submitter', 'reviewer'), pk=item_id)
+def approval_detail(request, item_type, submission_key):
+    submission = _get_submission_or_404(submission_key)
     if _is_president(request.user) and not _is_president_of_club(request.user, submission.club):
         messages.error(request, '无权查看此提交')
         return redirect('clubs:user_dashboard')
     if not (_is_president(request.user) or is_staff_or_admin(request.user)):
         messages.error(request, '无权查看此提交')
         return redirect('clubs:index')
-    return render(request, 'clubs/user/dynamic_approval_detail.html', {
+    context = {
         'item': submission,
         'submission': submission,
-        'rows': _submission_context(submission),
         'item_type': submission.channel.slug,
-    })
+    }
+    context.update(_submission_common_context(submission, request=request))
+    return render(request, 'clubs/user/dynamic_approval_detail.html', context)
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -4226,7 +4632,7 @@ def staff_audit_center(request, tab='all'):
     current_channel = None
     if slug != 'all':
         current_channel = FormChannel.objects.filter(slug=slug).first()
-    qs = FormSubmission.objects.select_related('channel', 'club', 'submitter', 'reviewer').order_by('-submitted_at')
+    qs = FormSubmission.objects.select_related('channel', 'club', 'submitter', 'reviewer').prefetch_related('reviews').order_by('-submitted_at')
     if current_channel:
         qs = qs.filter(channel=current_channel)
     pending_items = qs.filter(status='pending')
@@ -4243,12 +4649,109 @@ def staff_audit_center(request, tab='all'):
 
 
 
+def _mark_submission_approved(submission, reviewer, comment):
+    if FormSubmissionReview.objects.filter(
+        submission=submission,
+        reviewer=reviewer,
+        submission_attempt=submission.resubmission_count,
+    ).exists():
+        raise BusinessActionError('您已经审核过本次提交，不能重复审核')
+
+    FormSubmissionReview.objects.create(
+        submission=submission,
+        reviewer=reviewer,
+        status='approved',
+        comment=comment,
+        submission_attempt=submission.resubmission_count,
+    )
+    approved_count = submission.approved_review_count()
+    required_count = submission.required_approval_count
+
+    submission.reviewer = reviewer
+    submission.reviewed_at = timezone.now()
+    submission.is_read = False
+    submission.review_comment = comment
+    if approved_count >= required_count:
+        submission.values.update(review_status='approved', review_comment='')
+        submission.uploaded_files.update(review_status='approved', review_comment='')
+        submission.status = 'approved'
+        submission.save()
+        _apply_builtin_action(submission)
+    else:
+        submission.status = 'pending'
+        submission.save()
+
+
+def _mark_submission_rejected(submission, reviewer, comment, post):
+    if FormSubmissionReview.objects.filter(
+        submission=submission,
+        reviewer=reviewer,
+        submission_attempt=submission.resubmission_count,
+    ).exists():
+        raise BusinessActionError('您已经审核过本次提交，不能重复审核')
+
+    FormSubmissionReview.objects.create(
+        submission=submission,
+        reviewer=reviewer,
+        status='rejected',
+        comment=comment,
+        submission_attempt=submission.resubmission_count,
+    )
+
+    rejected_value_ids = {
+        int(key.rsplit('_', 1)[1])
+        for key in post
+        if key.startswith('reject_value_') and key.rsplit('_', 1)[1].isdigit()
+    }
+    rejected_file_ids = {
+        int(key.rsplit('_', 1)[1])
+        for key in post
+        if key.startswith('reject_file_') and key.rsplit('_', 1)[1].isdigit()
+    }
+
+    if not rejected_value_ids and not rejected_file_ids:
+        rejected_value_ids = set(submission.values.values_list('id', flat=True))
+        rejected_file_ids = set(submission.uploaded_files.filter(is_generated=False).values_list('id', flat=True))
+
+    for value in submission.values.select_related('field'):
+        is_rejected = value.id in rejected_value_ids
+        value.review_status = 'rejected' if is_rejected else 'approved'
+        value.review_comment = post.get(f'comment_value_{value.id}', '').strip() if is_rejected else ''
+        if is_rejected and not value.review_comment:
+            value.review_comment = comment
+        value.save(update_fields=['review_status', 'review_comment', 'updated_at'])
+
+    for uploaded in submission.uploaded_files.select_related('field'):
+        if uploaded.is_generated:
+            uploaded.review_status = 'approved'
+            uploaded.review_comment = ''
+        else:
+            is_rejected = uploaded.id in rejected_file_ids
+            uploaded.review_status = 'rejected' if is_rejected else 'approved'
+            uploaded.review_comment = post.get(f'comment_file_{uploaded.id}', '').strip() if is_rejected else ''
+            if is_rejected and not uploaded.review_comment:
+                uploaded.review_comment = comment
+        uploaded.save(update_fields=['review_status', 'review_comment'])
+
+    for field_id in submission.uploaded_files.filter(is_generated=False).values_list('field_id', flat=True).distinct():
+        field = FormField.objects.filter(id=field_id).first()
+        if field:
+            _refresh_generated_merge_file(submission, field)
+
+    submission.status = 'rejected'
+    submission.review_comment = comment
+    submission.reviewer = reviewer
+    submission.reviewed_at = timezone.now()
+    submission.is_read = False
+    submission.save()
+
+
 @login_required(login_url=settings.LOGIN_URL)
-def staff_review_form_submission(request, submission_id):
+def staff_review_form_submission(request, submission_key):
     if not is_staff_or_admin(request.user):
         messages.error(request, '仅干事和管理员可以审核')
         return redirect('clubs:index')
-    submission = get_object_or_404(FormSubmission.objects.select_related('channel', 'club', 'submitter'), pk=submission_id)
+    submission = _get_submission_or_404(submission_key)
     if request.method == 'POST':
         decision = request.POST.get('decision')
         comment = request.POST.get('comment', '').strip()
@@ -4257,32 +4760,43 @@ def staff_review_form_submission(request, submission_id):
         else:
             try:
                 with transaction.atomic():
-                    submission.status = decision
-                    submission.review_comment = comment
-                    submission.reviewer = request.user
-                    submission.reviewed_at = timezone.now()
-                    submission.is_read = False
-                    submission.save()
                     if decision == 'approved':
-                        _apply_builtin_action(submission)
+                        _mark_submission_approved(submission, request.user, comment)
+                    else:
+                        _mark_submission_rejected(submission, request.user, comment, request.POST)
             except BusinessActionError as exc:
                 messages.error(request, str(exc))
             else:
-                messages.success(request, '审核结果已保存')
+                if decision == 'approved':
+                    approved_count = submission.approved_review_count()
+                    required_count = submission.required_approval_count
+                    if submission.status == 'approved':
+                        messages.success(request, f'审核结果已保存，已达到 {approved_count}/{required_count} 次通过')
+                    else:
+                        messages.success(request, f'已记录本次通过，当前通过进度 {approved_count}/{required_count}')
+                else:
+                    messages.success(request, '审核结果已保存，提交已打回')
+                if decision == 'approved' and (_show_word_downloads(submission) or _show_zip_download(submission)):
+                    return redirect('clubs:staff_review_form_submission', submission_key=submission.public_id)
                 return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
-    return render(request, 'clubs/staff/dynamic_submission_review.html', {
+    context = {
         'submission': submission,
-        'rows': _submission_context(submission),
-    })
+    }
+    context.update(_submission_common_context(submission, request=request))
+    context['user_has_reviewed_current_attempt'] = submission.reviews.filter(
+        reviewer=request.user,
+        submission_attempt=submission.resubmission_count,
+    ).exists()
+    return render(request, 'clubs/staff/dynamic_submission_review.html', context)
 
 
 @login_required(login_url=settings.LOGIN_URL)
 @require_POST
-def delete_audit_request(request, tab, item_id):
+def delete_audit_request(request, tab, item_key):
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以删除审核请求')
         return redirect('clubs:staff_audit_center', tab=tab)
-    submission = get_object_or_404(FormSubmission, pk=item_id)
+    submission = get_object_or_404(FormSubmission, public_id=item_key)
     slug = submission.channel.slug
     for uploaded in submission.uploaded_files.all():
         if uploaded.file:
@@ -4301,6 +4815,7 @@ def manage_form_channels(request, channel_id=None):
     is_creating = request.GET.get('new') == '1'
     current = None if is_creating else (get_object_or_404(FormChannel, pk=channel_id) if channel_id else channels.first())
     missing_fields = missing_required_field_keys(current) if current else []
+    locked_field_keys = locked_business_field_keys(current) if current else set()
     return render(request, 'clubs/admin/form_channels.html', {
         'channels': channels,
         'current': current,
@@ -4310,6 +4825,7 @@ def manage_form_channels(request, channel_id=None):
         'submission_policies': FormChannel.SUBMISSION_POLICY_CHOICES,
         'cycle_types': FormChannel.CYCLE_TYPE_CHOICES,
         'missing_required_fields': missing_fields,
+        'locked_field_keys': locked_field_keys,
     })
 
 
@@ -4327,12 +4843,17 @@ def save_form_channel(request, channel_id=None):
     channel.builtin_action = request.POST.get('builtin_action', 'none')
     channel.submission_policy = request.POST.get('submission_policy', 'repeatable')
     channel.cycle_type = request.POST.get('cycle_type', 'none')
+    try:
+        channel.required_approval_count = min(9, max(1, int(request.POST.get('required_approval_count', '1') or 1)))
+    except ValueError:
+        channel.required_approval_count = 1
     if channel.cycle_type != 'none':
         channel.submission_policy = 'once_per_cycle'
     elif channel.submission_policy == 'once_per_cycle':
         channel.submission_policy = 'repeatable'
     channel.is_active = request.POST.get('is_active') == 'on'
     channel.is_builtin = request.POST.get('is_builtin') == 'on'
+    channel.show_zip_download = request.POST.get('show_zip_download') == 'on'
     channel.show_unsubmitted_status = request.POST.get('show_unsubmitted_status') == 'on'
     channel.allow_staff_toggle = request.POST.get('allow_staff_toggle') == 'on'
     try:
@@ -4370,6 +4891,9 @@ def save_form_field(request, channel_id, field_id=None):
         return redirect('clubs:index')
     channel = get_object_or_404(FormChannel, pk=channel_id)
     field = get_object_or_404(FormField, pk=field_id, channel=channel) if field_id else FormField(channel=channel)
+    if field_id and is_locked_business_field(field):
+        messages.error(request, '这个字段已绑定内置业务逻辑，不能修改')
+        return redirect('clubs:manage_form_channels_detail', channel_id=channel.id)
     field.label = request.POST.get('label', '').strip()
     field.field_key = request.POST.get('field_key', '').strip()
     field.field_type = request.POST.get('field_type', 'text')
@@ -4378,6 +4902,12 @@ def save_form_field(request, channel_id, field_id=None):
     field.placeholder = request.POST.get('placeholder', '').strip()
     field.options = _parse_options(request.POST.get('options', ''))
     field.validation = _parse_validation(field.field_type, request.POST)
+    if (
+        field.field_type == 'file'
+        and request.POST.get('merge_to_word') == 'on'
+        and not field.validation.get('merge_to_word')
+    ):
+        messages.warning(request, '合并 Word 只支持开启多文件后，且允许后缀全部为图片、PDF 或 Word（.docx）的文件字段')
     field.is_active = request.POST.get('is_active') == 'on'
     try:
         field.order = int(request.POST.get('order', '0') or 0)
@@ -4405,6 +4935,9 @@ def delete_form_field(request, channel_id, field_id):
         messages.error(request, '仅管理员可以删除字段')
         return redirect('clubs:index')
     field = get_object_or_404(FormField, pk=field_id, channel_id=channel_id)
+    if is_locked_business_field(field):
+        messages.error(request, '这个字段已绑定内置业务逻辑，不能删除')
+        return redirect('clubs:manage_form_channels_detail', channel_id=channel_id)
     field.delete()
     messages.success(request, '字段已删除')
     return redirect('clubs:manage_form_channels_detail', channel_id=channel_id)
@@ -4447,10 +4980,41 @@ def admin_dashboard(request):
     pending_registrations = FormSubmission.objects.filter(status='pending').count()
     published_announcements = Announcement.objects.filter(status='published').count()
     pending_staff_count = UserProfile.objects.filter(role='staff', status='pending').count()
-    recent_announcements = Announcement.objects.all().order_by('-created_at')[:5]
+    announcements = Announcement.objects.all().order_by('-created_at')[:5]
     total_applications = FormSubmission.objects.count()
     pending_all = FormSubmission.objects.filter(status='pending').count()
     channels_count = FormChannel.objects.count()
+
+    today = timezone.localdate()
+    date_range = [today - timezone.timedelta(days=offset) for offset in range(13, -1, -1)]
+    daily_stats = {
+        item.date: item.visits
+        for item in DailyStat.objects.filter(date__range=(date_range[0], date_range[-1]))
+    }
+    visit_dates = [item.isoformat() for item in date_range]
+    visit_counts = [daily_stats.get(item, 0) for item in date_range]
+
+    status_rows = FormSubmission.objects.values('channel_id', 'channel__name', 'status').annotate(total=Count('id'))
+    status_map = {
+        (row['channel_id'], row['status']): row['total']
+        for row in status_rows
+    }
+    chart_channels = list(FormChannel.objects.order_by('order', 'id').values('id', 'name'))
+    known_channel_ids = {channel['id'] for channel in chart_channels}
+    for row in status_rows:
+        if row['channel_id'] not in known_channel_ids:
+            chart_channels.append({'id': row['channel_id'], 'name': row['channel__name'] or '未知通道'})
+    type_labels = [channel['name'] for channel in chart_channels]
+    type_pending = [status_map.get((channel['id'], 'pending'), 0) for channel in chart_channels]
+    type_approved = [status_map.get((channel['id'], 'approved'), 0) for channel in chart_channels]
+    type_rejected = [status_map.get((channel['id'], 'rejected'), 0) for channel in chart_channels]
+
+    approved_total = FormSubmission.objects.filter(status='approved').count()
+    rejected_total = FormSubmission.objects.filter(status='rejected').count()
+    decided_total = approved_total + rejected_total
+    overall_approval_rate = round(approved_total / decided_total * 100, 1) if decided_total else 0
+    overall_rejection_rate = round(rejected_total / decided_total * 100, 1) if decided_total else 0
+
     return render(request, 'clubs/admin/dashboard.html', {
         'total_clubs': total_clubs,
         'total_users': total_users,
@@ -4461,13 +5025,21 @@ def admin_dashboard(request):
         'staff_count': UserProfile.objects.filter(role='staff').count(),
         'admins_count': UserProfile.objects.filter(role='admin').count(),
         'members_count': UserProfile.objects.filter(role='member').count(),
-        'recent_announcements': recent_announcements,
+        'announcements': announcements,
         'total_applications': total_applications,
         'pending_all': pending_all,
         'channels_count': channels_count,
-        'visit_dates': [],
-        'visit_counts': [],
-        'total_visits_14d': 0,
+        'overall_approval_rate': overall_approval_rate,
+        'overall_rejection_rate': overall_rejection_rate,
+        'visit_dates': visit_dates,
+        'visit_counts': visit_counts,
+        'visit_dates_json': json.dumps(visit_dates, ensure_ascii=False),
+        'visit_counts_json': json.dumps(visit_counts, ensure_ascii=False),
+        'total_visits_14d': sum(visit_counts),
+        'type_labels_json': json.dumps(type_labels, ensure_ascii=False),
+        'type_pending_json': json.dumps(type_pending, ensure_ascii=False),
+        'type_approved_json': json.dumps(type_approved, ensure_ascii=False),
+        'type_rejected_json': json.dumps(type_rejected, ensure_ascii=False),
         'redis_info': None,
     })
 
@@ -4571,8 +5143,8 @@ def notification_counts(request):
 
 @login_required(login_url=settings.LOGIN_URL)
 @require_POST
-def cancel_submission(request, submission_id):
-    submission = get_object_or_404(FormSubmission, pk=submission_id, status='pending')
+def cancel_submission(request, submission_key):
+    submission = get_object_or_404(FormSubmission, public_id=submission_key, status='pending')
     if not _is_president_of_club(request.user, submission.club):
         messages.error(request, '无权取消此提交')
         return redirect('clubs:user_dashboard')

@@ -3,16 +3,29 @@
     <div class="field-label">
         <span class="material-icons">{% if row.field.field_type == 'file' %}attach_file{% else %}notes{% endif %}</span>
         {{ row.field.label }}
+        {% if row.field.field_type != 'file' and row.review_status %}
+        <span class="item-status {{ row.review_status }}">{{ row.value_obj.get_review_status_display }}</span>
+        {% endif %}
     </div>
     <div class="field-value">
         {% if row.field.field_type == 'file' %}
             {% for uploaded in row.files %}
-            <a class="file-link" href="{{ uploaded.file.url }}" target="_blank" rel="noopener">
-                <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
-            </a>{% if not forloop.last %}<br>{% endif %}
+            <div class="file-entry">
+                <a class="file-link" href="{{ uploaded.file.url }}" target="_blank" rel="noopener">
+                    <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
+                </a>
+                {% if uploaded.office_preview_url %}
+                <button class="file-preview-button js-office-preview" type="button" data-office-preview-url="{{ uploaded.office_preview_url }}" data-office-file-name="{{ uploaded.original_name|default:uploaded.file.name }}">
+                    <span class="material-icons">visibility</span>预览
+                </button>
+                {% endif %}
+                <span class="item-status {{ uploaded.review_status }}">{{ uploaded.get_review_status_display }}</span>
+                {% if uploaded.review_comment %}<span class="item-comment">{{ uploaded.review_comment }}</span>{% endif %}
+            </div>
             {% empty %}未上传{% endfor %}
         {% else %}
             {{ row.value|default:"-" }}
+            {% if row.review_comment %}<div class="item-comment">{{ row.review_comment }}</div>{% endif %}
         {% endif %}
     </div>
 </div>

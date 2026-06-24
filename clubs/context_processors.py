@@ -1,7 +1,6 @@
 """上下文处理器：动态表单导航、审核数量和站点设置。"""
 import os
 from django.conf import settings
-from django.core.cache import cache
 from .models import FormChannel, FormSubmission, Officer
 
 
@@ -60,11 +59,6 @@ def audit_center_counts(request):
     except Exception:
         return empty
 
-    cache_key = f"dynamic_nav_counts:{request.user.id}:{role}:{int(request.user.is_superuser)}"
-    cached = cache.get(cache_key)
-    if cached is not None:
-        return cached
-
     channels = list(
         FormChannel.objects.filter(is_active=True)
         .exclude(slug='')
@@ -110,7 +104,6 @@ def audit_center_counts(request):
         'sidebar_primary_club': primary_club,
         'sidebar_president_clubs': [item.club for item in president_clubs],
     }
-    cache.set(cache_key, result, timeout=10)
     return result
 
 

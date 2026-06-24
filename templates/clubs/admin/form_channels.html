@@ -319,6 +319,32 @@
         background: var(--md3-primary);
     }
 
+    .question-card.is-locked {
+        border-color: color-mix(in srgb, var(--md3-primary) 28%, var(--md3-outline-variant));
+        background: var(--md3-surface-container-low);
+    }
+
+    .question-card.is-locked input,
+    .question-card.is-locked select,
+    .question-card.is-locked textarea,
+    .question-card.is-locked .js-add-option {
+        pointer-events: none;
+        opacity: 0.72;
+    }
+
+    .locked-field-note {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        margin: 0 0 var(--md3-spacing-md);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        font-size: 0.88rem;
+        font-weight: 700;
+    }
+
     .question-head {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 230px auto;
@@ -358,6 +384,11 @@
         color: var(--md3-on-surface-variant);
         font-size: 0.82rem;
         line-height: 1.45;
+    }
+
+    .helper-text.is-warning {
+        color: var(--md3-error);
+        font-weight: 700;
     }
 
     .js-options-raw {
@@ -603,6 +634,11 @@
                         <label>排序</label>
                         <input class="field-control" name="order" type="number" value="{{ current.order }}" placeholder="0">
                     </div>
+                    <div class="field-group">
+                        <label>所需通过次数</label>
+                        <input class="field-control" name="required_approval_count" type="number" min="1" max="9" value="{{ current.required_approval_count|default:1 }}">
+                        <p class="field-help">设置为 2 或以上时，需要不同审核人累计通过达到该次数，请求才会最终通过。</p>
+                    </div>
                     <div class="field-group span-2">
                         <label>通道说明</label>
                         <textarea class="field-control" name="description" rows="3" placeholder="给管理员看的说明，也会作为社长侧提交提示">{{ current.description }}</textarea>
@@ -635,6 +671,7 @@
                     <div class="toggle-row span-2">
                         <label><input type="checkbox" name="is_active" {% if current.is_active %}checked{% endif %}>启用通道</label>
                         <label><input type="checkbox" name="is_builtin" {% if current.is_builtin %}checked{% endif %}>标记为内置默认</label>
+                        <label><input type="checkbox" name="show_zip_download" {% if current.show_zip_download %}checked{% endif %}>显示打包 ZIP 下载</label>
                         <label><input type="checkbox" name="show_unsubmitted_status" {% if current.show_unsubmitted_status %}checked{% endif %}>在我的社团显示未提交</label>
                         <label><input type="checkbox" name="allow_staff_toggle" {% if current.allow_staff_toggle %}checked{% endif %}>允许社团管理页开关</label>
                     </div>
@@ -685,24 +722,34 @@
             </div>
 
             {% for field in current.fields.all %}
-            <section class="question-card js-question-card">
+            <section class="question-card js-question-card{% if field.field_key in locked_field_keys %} is-locked{% endif %}">
                 <div class="question-head">
-                    <input form="field-form-{{ field.id }}" class="field-control question-title-input js-label-input" name="label" value="{{ field.label }}" required placeholder="问题标题">
-                    <select form="field-form-{{ field.id }}" class="field-control js-field-type" name="field_type">
+                    <input form="field-form-{{ field.id }}" class="field-control question-title-input js-label-input" name="label" value="{{ field.label }}" required placeholder="问题标题" {% if field.field_key in locked_field_keys %}disabled{% endif %}>
+                    <select form="field-form-{{ field.id }}" class="field-control js-field-type" name="field_type" {% if field.field_key in locked_field_keys %}disabled{% endif %}>
                         {% for value,label in field_types %}
                         <option value="{{ value }}" {% if field.field_type == value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
+                    {% if field.field_key in locked_field_keys %}
+                    <span class="state-pill">业务锁定</span>
+                    {% else %}
                     <form method="post" action="{% url 'clubs:delete_form_field' current.id field.id %}">
                         {% csrf_token %}
                         <button class="btn btn-soft-danger" type="submit" onclick="return confirm('确定删除这个字段吗？')">
                             <span class="material-icons">delete</span>删除
                         </button>
                     </form>
+                    {% endif %}
                 </div>
 
                 <form id="field-form-{{ field.id }}" method="post" enctype="multipart/form-data" action="{% url 'clubs:edit_form_field' current.id field.id %}">
                     {% csrf_token %}
+                    {% if field.field_key in locked_field_keys %}
+                    <div class="locked-field-note">
+                        <span class="material-icons">lock</span>
+                        这个字段已连接内置业务逻辑，不能修改或删除。
+                    </div>
+                    {% endif %}
                     <div class="field-key-row">
                         <div class="field-group">
                             <label>字段标识 field_key</label>
@@ -762,11 +809,19 @@
                     <div class="type-section js-type-section" data-types="file">
                         <div class="field-group">
                             <label>允许后缀</label>
-                            <input class="field-control" name="allowed_extensions" placeholder=".docx,.pdf,.png" value="{{ field.validation.allowed_extensions|join:',' }}">
+                            <input class="field-control js-allowed-ext" name="allowed_extensions" placeholder=".docx,.pdf,.png" value="{{ field.validation.allowed_extensions|join:',' }}">
                         </div>
                         <div class="field-group">
                             <label>最大文件大小 MB</label>
                             <input class="field-control" name="max_size_mb" type="number" min="1" value="{{ field.max_size_mb }}">
+                        </div>
+                        <div class="field-group span-2">
+                            <label class="switch-label"><input class="js-allow-multiple" type="checkbox" name="allow_multiple" {% if field.allow_multiple_files %}checked{% endif %}>允许一次上传多个文件</label>
+                            <span class="helper-text">开启后，社长可以在同一个上传组件里选择或拖拽多个文件。</span>
+                        </div>
+                        <div class="field-group span-2">
+                            <label class="switch-label"><input class="js-merge-to-word" type="checkbox" name="merge_to_word" {% if field.merge_files_to_word %}checked{% endif %} {% if not field.supports_word_merge %}disabled{% endif %}>将本字段上传的多个文件合并成一个 Word 文档</label>
+                            <span class="helper-text js-merge-hint">仅当允许后缀全部为图片、PDF 或 Word（.docx）且已开启多文件上传时可用；系统会把图片直接插入，把 PDF 转成图片后插入。</span>
                         </div>
                         <div class="field-group span-2">
                             <label>示例文件</label>
@@ -784,9 +839,11 @@
                             <label><input type="checkbox" name="required" {% if field.required %}checked{% endif %}>必填</label>
                             <label><input type="checkbox" name="is_active" {% if field.is_active %}checked{% endif %}>启用</label>
                         </div>
+                        {% if field.field_key not in locked_field_keys %}
                         <button class="btn btn-primary" type="submit">
                             <span class="material-icons">save</span>保存字段
                         </button>
+                        {% endif %}
                     </div>
                 </form>
             </section>
@@ -867,11 +924,19 @@
                     <div class="type-section js-type-section" data-types="file">
                         <div class="field-group">
                             <label>允许后缀</label>
-                            <input class="field-control" name="allowed_extensions" placeholder=".docx,.pdf,.png">
+                            <input class="field-control js-allowed-ext" name="allowed_extensions" placeholder=".jpg,.jpeg,.png,.pdf,.docx">
                         </div>
                         <div class="field-group">
                             <label>最大文件大小 MB</label>
                             <input class="field-control" name="max_size_mb" type="number" min="1" value="10">
+                        </div>
+                        <div class="field-group span-2">
+                            <label class="switch-label"><input class="js-allow-multiple" type="checkbox" name="allow_multiple">允许一次上传多个文件</label>
+                            <span class="helper-text">开启后，社长可以在同一个上传组件里选择或拖拽多个文件。</span>
+                        </div>
+                        <div class="field-group span-2">
+                            <label class="switch-label"><input class="js-merge-to-word" type="checkbox" name="merge_to_word" disabled>将本字段上传的多个文件合并成一个 Word 文档</label>
+                            <span class="helper-text js-merge-hint">仅当允许后缀全部为图片、PDF 或 Word（.docx）且已开启多文件上传时可用；系统会把图片直接插入，把 PDF 转成图片后插入。</span>
                         </div>
                         <div class="field-group span-2">
                             <label>示例文件</label>
@@ -911,6 +976,11 @@
                         <label>排序</label>
                         <input class="field-control" name="order" type="number" value="0">
                     </div>
+                    <div class="field-group">
+                        <label>所需通过次数</label>
+                        <input class="field-control" name="required_approval_count" type="number" min="1" max="9" value="1">
+                        <p class="field-help">需要不同审核人累计通过达到该次数后才最终通过。</p>
+                    </div>
                     <div class="field-group span-2">
                         <label>通道说明</label>
                         <textarea class="field-control" name="description" rows="3" placeholder="这个通道用于收集什么内容"></textarea>
@@ -942,6 +1012,7 @@
                     <div class="toggle-row span-2">
                         <label><input type="checkbox" name="is_active" checked>启用通道</label>
                         <label><input type="checkbox" name="is_builtin">标记为内置默认</label>
+                        <label><input type="checkbox" name="show_zip_download" checked>显示打包 ZIP 下载</label>
                         <label><input type="checkbox" name="show_unsubmitted_status">在我的社团显示未提交</label>
                         <label><input type="checkbox" name="allow_staff_toggle">允许社团管理页开关</label>
                     </div>
@@ -983,6 +1054,47 @@
             card.querySelectorAll('.js-type-section').forEach(function (section) {
                 const types = (section.dataset.types || '').split(/\s+/);
                 section.classList.toggle('is-hidden', !types.includes(type));
+            });
+        }
+
+        const wordMergeExtensions = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp', '.pdf', '.docx']);
+
+        function parseExtensions(value) {
+            return (value || '')
+                .split(/[\s,，;；]+/)
+                .map(function (item) {
+                    const normalized = item.trim().toLowerCase();
+                    if (!normalized) return '';
+                    return normalized.startsWith('.') ? normalized : '.' + normalized;
+                })
+                .filter(Boolean);
+        }
+
+        function syncWordMergeOption(card) {
+            const allowMultiple = card.querySelector('.js-allow-multiple');
+            const mergeOption = card.querySelector('.js-merge-to-word');
+            const allowedInput = card.querySelector('.js-allowed-ext');
+            const hint = card.querySelector('.js-merge-hint');
+            if (!allowMultiple || !mergeOption || !allowedInput) return;
+
+            const extensions = parseExtensions(allowedInput.value);
+            const supported = extensions.length > 0 && extensions.every(function (ext) {
+                return wordMergeExtensions.has(ext);
+            });
+            const enabled = allowMultiple.checked && supported;
+            mergeOption.disabled = !enabled;
+            if (!enabled) {
+                mergeOption.checked = false;
+            }
+            if (hint) {
+                hint.classList.toggle('is-warning', allowMultiple.checked && !supported);
+            }
+        }
+
+        function lockBusinessField(card) {
+            if (!card.classList.contains('is-locked')) return;
+            card.querySelectorAll('input, select, textarea, button').forEach(function (control) {
+                control.disabled = true;
             });
         }
 
@@ -1052,11 +1164,22 @@
             const keyInput = card.querySelector('.js-key-input');
             syncTypeSections(card);
             initOptionEditor(card);
+            syncWordMergeOption(card);
+            lockBusinessField(card);
             if (typeSelect) {
                 typeSelect.addEventListener('change', function () {
                     syncTypeSections(card);
+                    syncWordMergeOption(card);
                 });
             }
+            card.querySelectorAll('.js-allow-multiple, .js-allowed-ext').forEach(function (control) {
+                control.addEventListener('input', function () {
+                    syncWordMergeOption(card);
+                });
+                control.addEventListener('change', function () {
+                    syncWordMergeOption(card);
+                });
+            });
             if (labelInput && keyInput) {
                 labelInput.addEventListener('input', function () {
                     if (!keyInput.dataset.touched && !keyInput.value) {

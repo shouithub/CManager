@@ -42,20 +42,21 @@ urlpatterns = [
     path('dashboard/', auth_views.user_dashboard, name='user_dashboard'),
     path('president/members/', views.president_member_management, name='president_member_management'),
     path('forms/<slug:channel_slug>/<int:club_id>/submit/', views.submit_dynamic_form, name='submit_dynamic_form'),
+    path('forms/submissions/<str:submission_key>/revise/', views.revise_dynamic_submission, name='revise_dynamic_submission'),
     # 统一修改材料页面的URL
 
 
 
     path('approval-center/<str:tab>/', views.approval_center_tabs, name='approval_center'),  # 审批中心
-    path('approval-center-detail/<str:item_type>/<int:item_id>/', views.approval_detail, name='approval_detail'),  # 审批详情
-    path('submission/<int:submission_id>/cancel/', views.cancel_submission, name='cancel_submission'),
+    path('approval-center-detail/<str:item_type>/<str:submission_key>/', views.approval_detail, name='approval_detail'),  # 审批详情
+    path('submission/<str:submission_key>/cancel/', views.cancel_submission, name='cancel_submission'),
 
 
 
     
     # 干事审核
     path('staff/audit-center/<str:tab>/', views.staff_audit_center, name='staff_audit_center'),  # 干事审核中心
-    path('staff/audit-center/<str:tab>/<int:item_id>/delete/', views.delete_audit_request, name='delete_audit_request'),
+    path('staff/audit-center/<str:tab>/<str:item_key>/delete/', views.delete_audit_request, name='delete_audit_request'),
     path('api/clubs/list/', views.get_clubs_list, name='get_clubs_list'),
     path('api/department/<int:department_id>/members/', views.get_department_members, name='get_department_members'),
     # path('staff/home/', auth_views.staff_dashboard_home, name='staff_dashboard_home'),
@@ -72,7 +73,7 @@ urlpatterns = [
     # 强制重置密码路由已移除，使用管理员重置密码表单：admin-panel/reset-user-password/
     path('staff/manage-clubs/', auth_views.manage_staff_clubs, name='manage_staff_clubs'),
     path('staff/view-users/', views.staff_view_users, name='staff_view_users'),
-    path('staff/form-submission/<int:submission_id>/review/', views.staff_review_form_submission, name='staff_review_form_submission'),
+    path('staff/form-submission/<str:submission_key>/review/', views.staff_review_form_submission, name='staff_review_form_submission'),
 
     # 统一压缩下载路由：/zip-download/?type=<type>&id=<id>
     path('zip-download/', views.zip_download, name='zip_download'),

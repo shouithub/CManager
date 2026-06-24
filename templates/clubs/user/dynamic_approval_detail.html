@@ -5,16 +5,16 @@
 {% block extra_css %}
 <style>
     .detail-page {
-        max-width: 980px;
+        max-width: 1180px;
         margin: 0 auto;
-        padding: var(--md3-spacing-2xl);
-        padding-bottom: calc(var(--md3-spacing-2xl) + 110px);
+        padding: 32px;
+        padding-bottom: calc(32px + 96px);
         box-sizing: border-box;
     }
 
     .page-header,
     .content-card {
-        background: var(--md3-surface-container);
+        background: var(--md3-surface-container-lowest);
         border: 1px solid var(--md3-outline-variant);
         border-radius: var(--md3-radius-xl);
         box-shadow: var(--md3-elevation-1);
@@ -23,15 +23,20 @@
 
     .page-header {
         display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-lg);
-        padding: var(--md3-spacing-xl);
-        margin-bottom: var(--md3-spacing-xl);
+        align-items: flex-start;
+        gap: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .page-header > div {
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .page-icon {
-        width: 52px;
-        height: 52px;
+        width: 48px;
+        height: 48px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -46,25 +51,62 @@
     }
 
     .page-header h1 {
-        margin: 0 0 var(--md3-spacing-xs);
+        margin: 0 0 10px;
+        color: var(--md3-on-surface);
         font-size: 1.45rem;
         font-weight: 700;
         letter-spacing: 0;
+        line-height: 1.25;
     }
 
     .meta-row {
         display: flex;
         flex-wrap: wrap;
-        gap: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        gap: 8px 18px;
         color: var(--md3-on-surface-variant);
-        font-size: 0.92rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .meta-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 30px;
+        padding: 0 10px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface-variant);
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .meta-chip.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+
+    .meta-chip.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .meta-chip.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .meta-chip.progress {
+        background: var(--md3-info-container);
+        color: var(--md3-on-info-container);
     }
 
     .review-comment {
-        margin-top: var(--md3-spacing-lg);
-        padding: var(--md3-spacing-md);
+        margin-top: 16px;
+        padding: 14px 16px;
+        border: 1px solid var(--md3-outline-variant);
         border-radius: var(--md3-radius-lg);
-        background: var(--md3-surface-container-high);
+        background: var(--md3-surface-container-low);
         color: var(--md3-on-surface);
         line-height: 1.6;
     }
@@ -72,9 +114,9 @@
     .card-header {
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-sm);
-        padding: var(--md3-spacing-lg) var(--md3-spacing-xl);
-        background: var(--md3-surface-container-high);
+        gap: 10px;
+        padding: 16px 20px;
+        background: var(--md3-surface-container-low);
         border-bottom: 1px solid var(--md3-outline-variant);
         font-weight: 700;
     }
@@ -82,22 +124,156 @@
     .field-list {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--md3-spacing-md);
-        padding: var(--md3-spacing-xl);
+        gap: 14px;
+        padding: 20px;
+    }
+
+    .file-entry {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+        margin: 0 0 8px;
+    }
+
+    .item-status {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        padding: 0 8px;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: var(--md3-surface-container-high);
+        color: var(--md3-on-surface-variant);
+    }
+
+    .item-status.approved {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .item-status.pending {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+    }
+
+    .item-status.rejected {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .item-comment {
+        display: block;
+        margin-top: 4px;
+        color: var(--md3-error);
+        font-size: 0.84rem;
+        font-weight: 650;
+    }
+
+    .detail-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        gap: 12px;
+        max-width: 560px;
+        margin-top: 18px;
+    }
+
+    .detail-actions > .btn {
+        justify-self: start;
+    }
+
+    .download-button {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 72px;
+        padding: 12px 16px;
+        border: 1px solid transparent;
+        border-radius: var(--md3-radius-lg);
+        text-decoration: none;
+        box-sizing: border-box;
+        transition: box-shadow 160ms ease, transform 160ms ease, background-color 160ms ease;
+    }
+
+    .download-button:hover {
+        box-shadow: var(--md3-elevation-2);
+        transform: translateY(-1px);
+        text-decoration: none;
+    }
+
+    .download-button .material-icons {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--md3-radius-full);
+        flex: 0 0 auto;
+        font-size: 1.35rem;
+    }
+
+    .download-action-text {
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    .download-action-text strong,
+    .download-action-text small {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .download-action-text strong {
+        font-size: 0.98rem;
+        line-height: 1.25;
+    }
+
+    .download-action-text small {
+        color: inherit;
+        opacity: 0.76;
+        font-size: 0.78rem;
+        line-height: 1.3;
+    }
+
+    .download-button-primary {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .download-button-primary .material-icons {
+        background: color-mix(in srgb, var(--md3-on-primary) 18%, transparent);
+        color: var(--md3-on-primary);
+    }
+
+    .download-button-tonal {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        border-color: color-mix(in srgb, var(--md3-outline-variant) 70%, transparent);
+    }
+
+    .download-button-tonal .material-icons {
+        background: var(--md3-surface-container-lowest);
+        color: var(--md3-primary);
     }
 
     .field-item {
-        padding: var(--md3-spacing-md);
+        min-width: 0;
+        padding: 16px;
         border: 1px solid var(--md3-outline-variant);
         border-radius: var(--md3-radius-lg);
-        background: var(--md3-surface-container-low);
+        background: var(--md3-surface);
     }
 
     .field-label {
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-sm);
-        margin-bottom: var(--md3-spacing-sm);
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
         color: var(--md3-on-surface-variant);
         font-size: 0.84rem;
         font-weight: 700;
@@ -111,25 +287,152 @@
     .file-link {
         display: inline-flex;
         align-items: center;
-        gap: var(--md3-spacing-xs);
-        min-height: 40px;
-        padding: 0 var(--md3-spacing-md);
+        gap: 6px;
+        min-height: 36px;
+        max-width: 100%;
+        padding: 0 12px;
         border-radius: var(--md3-radius-full);
         background: var(--md3-primary-container);
         color: var(--md3-on-primary-container);
         text-decoration: none;
         font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .file-preview-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 36px;
+        padding: 0 12px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-low);
+        color: var(--md3-primary);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .file-preview-button:hover {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+
+    .review-history {
+        display: grid;
+        gap: 10px;
+        padding: 20px;
+    }
+
+    .review-history-card {
+        margin-top: 32px;
+    }
+
+    .review-history-row {
+        display: grid;
+        grid-template-columns: minmax(120px, 1fr) auto auto;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 14px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface);
+    }
+
+    .review-history-comment {
+        grid-column: 1 / -1;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.88rem;
+        line-height: 1.5;
+    }
+
+    .empty-state {
+        padding: 18px;
+        text-align: center;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .office-preview-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 28px;
+        background: color-mix(in srgb, var(--md3-scrim) 46%, transparent);
+        box-sizing: border-box;
+    }
+
+    .office-preview-modal.active {
+        display: flex;
+    }
+
+    .office-preview-surface {
+        width: min(1120px, 100%);
+        height: min(760px, 90vh);
+        display: grid;
+        grid-template-rows: auto 1fr;
+        border-radius: var(--md3-radius-xl);
+        overflow: hidden;
+        background: var(--md3-surface);
+        box-shadow: var(--md3-elevation-4);
+    }
+
+    .office-preview-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container-low);
+    }
+
+    .office-preview-title {
+        min-width: 0;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 750;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .office-preview-close {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: var(--md3-radius-full);
+        background: transparent;
+        color: var(--md3-on-surface-variant);
+        cursor: pointer;
+    }
+
+    .office-preview-close:hover {
+        background: var(--md3-surface-container-high);
+    }
+
+    .office-preview-frame {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: var(--md3-surface-container-lowest);
     }
 
     @media (max-width: 768px) {
         .detail-page {
-            padding: var(--md3-spacing-lg);
-            padding-bottom: 110px;
+            padding: 16px;
+            padding-bottom: 104px;
         }
 
         .page-header {
             align-items: flex-start;
-            padding: var(--md3-spacing-lg);
+            padding: 18px;
         }
 
         .page-header h1 {
@@ -138,7 +441,12 @@
 
         .field-list {
             grid-template-columns: 1fr;
-            padding: var(--md3-spacing-lg);
+            padding: 16px;
+        }
+
+        .detail-actions {
+            grid-template-columns: 1fr;
+            max-width: none;
         }
     }
 </style>
@@ -152,12 +460,45 @@
             <h1>{{ submission.channel.name }} · {{ submission.display_title }}</h1>
             <div class="meta-row">
                 <span>{{ submission.club.name }}</span>
-                <span>{{ submission.get_status_display }}</span>
+                <span>请求编号：{{ submission.public_id }}</span>
+                <span class="meta-chip {{ submission.status }}">{{ submission.get_status_display }}</span>
                 <span>{{ submission.submitted_at|date:"Y-m-d H:i" }}</span>
+                <span class="meta-chip">第 {{ submission.resubmission_count }} 次提交</span>
+                <span class="meta-chip progress">通过 {{ approval_progress }}</span>
+                {% if remaining_approval_count > 0 and submission.status == 'pending' %}
+                <span class="meta-chip pending">还需 {{ remaining_approval_count }} 次通过</span>
+                {% endif %}
             </div>
             {% if submission.review_comment %}
             <div class="review-comment"><strong>审核意见：</strong>{{ submission.review_comment }}</div>
             {% endif %}
+            <div class="detail-actions">
+                {% if show_word_downloads or show_zip_download %}
+                    {% for merged in generated_merge_files %}
+                    <a class="download-button download-button-primary" href="{{ merged.file.url }}" target="_blank" rel="noopener">
+                        <span class="material-icons">description</span>
+                        <span class="download-action-text">
+                            <strong>下载合并 Word</strong>
+                            <small>已通过发票合并文档</small>
+                        </span>
+                    </a>
+                    {% endfor %}
+                    {% if show_zip_download %}
+                    <a class="download-button download-button-tonal" href="{% url 'clubs:zip_download' %}?id={{ submission.public_id }}">
+                        <span class="material-icons">folder_zip</span>
+                        <span class="download-action-text">
+                            <strong>下载压缩包</strong>
+                            <small>全部原始附件</small>
+                        </span>
+                    </a>
+                    {% endif %}
+                {% endif %}
+                {% if submission.status == 'rejected' %}
+                <a class="btn btn-primary" href="{% url 'clubs:revise_dynamic_submission' submission.public_id %}">
+                    <span class="material-icons">edit</span>修改被打回内容
+                </a>
+                {% endif %}
+            </div>
         </div>
     </section>
 
@@ -169,5 +510,72 @@
             {% include 'clubs/components/_dynamic_submission_fields.html' with rows=rows %}
         </div>
     </section>
+
+    <section class="content-card review-history-card">
+        <div class="card-header">
+            <span class="material-icons">history</span>审核记录
+        </div>
+        <div class="review-history">
+            {% for review in current_reviews %}
+            <div class="review-history-row">
+                <strong>{{ review.reviewer.username }}</strong>
+                <span class="item-status {{ review.status }}">{{ review.get_status_display }}</span>
+                <span>第 {{ review.submission_attempt }} 次提交 · {{ review.reviewed_at|date:"Y-m-d H:i" }}</span>
+                {% if review.comment %}<div class="review-history-comment">{{ review.comment }}</div>{% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-state">暂无审核记录</div>
+            {% endfor %}
+        </div>
+    </section>
 </div>
+
+<div class="office-preview-modal" id="officePreviewModal" aria-hidden="true">
+    <div class="office-preview-surface" role="dialog" aria-modal="true" aria-labelledby="officePreviewTitle">
+        <div class="office-preview-header">
+            <h2 class="office-preview-title" id="officePreviewTitle">在线预览</h2>
+            <button class="office-preview-close" type="button" id="officePreviewClose" aria-label="关闭预览">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <iframe class="office-preview-frame" id="officePreviewFrame" title="Office 在线预览" allowfullscreen></iframe>
+    </div>
+</div>
+
+<script>
+(function () {
+    var modal = document.getElementById('officePreviewModal');
+    var frame = document.getElementById('officePreviewFrame');
+    var title = document.getElementById('officePreviewTitle');
+    var closeBtn = document.getElementById('officePreviewClose');
+    if (!modal || !frame || !title || !closeBtn) return;
+
+    function openPreview(url, name) {
+        title.textContent = name || '在线预览';
+        frame.src = url;
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        closeBtn.focus();
+    }
+
+    function closePreview() {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        frame.src = 'about:blank';
+    }
+
+    document.querySelectorAll('.js-office-preview').forEach(function (button) {
+        button.addEventListener('click', function () {
+            openPreview(button.dataset.officePreviewUrl, button.dataset.officeFileName);
+        });
+    });
+    closeBtn.addEventListener('click', closePreview);
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) closePreview();
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal.classList.contains('active')) closePreview();
+    });
+})();
+</script>
 {% endblock %}

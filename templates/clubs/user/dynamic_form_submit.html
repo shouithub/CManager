@@ -153,6 +153,87 @@
         font-weight: 500;
     }
 
+    .file-dropzone {
+        position: relative;
+        min-height: 148px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--md3-spacing-xl);
+        border: 2px dotted var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface);
+        color: var(--md3-on-surface-variant);
+        cursor: pointer;
+        box-sizing: border-box;
+        transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .file-dropzone:hover,
+    .file-dropzone.is-dragover {
+        border-color: var(--md3-primary);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--md3-primary) 28%, transparent);
+    }
+
+    .file-input {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .file-dropzone-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        text-align: center;
+        pointer-events: none;
+    }
+
+    .file-dropzone-icon {
+        width: 52px;
+        height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid currentColor;
+        border-radius: 50%;
+        background: transparent;
+    }
+
+    .file-dropzone-icon .material-icons {
+        font-size: 1.8rem;
+    }
+
+    .file-dropzone-title {
+        color: var(--md3-on-surface);
+        font-weight: 750;
+    }
+
+    .file-dropzone:hover .file-dropzone-title,
+    .file-dropzone.is-dragover .file-dropzone-title {
+        color: inherit;
+    }
+
+    .file-dropzone-subtitle,
+    .file-selected-list {
+        font-size: 0.9rem;
+        line-height: 1.45;
+    }
+
+    .file-selected-list {
+        max-width: 100%;
+        color: var(--md3-primary);
+        font-weight: 650;
+        word-break: break-word;
+    }
+
     .form-actions {
         display: flex;
         justify-content: flex-end;
@@ -214,19 +295,37 @@
         <div>
             <h1>{{ channel.name }}</h1>
             <p>{{ club.name }}</p>
+            {% if revision_mode %}
+            <p>补交请求：{{ submission.public_id }}。这里只显示被打回的内容。</p>
+            {% endif %}
             {% if channel.description %}<p>{{ channel.description }}</p>{% endif %}
         </div>
     </section>
 
     <form method="post" enctype="multipart/form-data" class="form-card">
         {% csrf_token %}
-        {% for field in fields %}
+        {% for item in field_items %}
+        {% with field=item.field %}
         <section class="field-block">
             <label class="field-label">
                 <span class="material-icons">{% if field.field_type == 'file' %}attach_file{% elif field.field_type == 'date' %}event{% elif field.field_type == 'time' %}schedule{% else %}edit_note{% endif %}</span>
                 {{ field.label }}{% if field.required %}<span class="required">*</span>{% endif %}
             </label>
             {% if field.help_text %}<div class="field-help">{{ field.help_text }}</div>{% endif %}
+            {% if revision_mode %}
+                {% if field.field_type == 'file' and item.files %}
+                <div class="field-help">
+                    被打回文件：
+                    {% for uploaded in item.files %}
+                        {% if uploaded.review_status == 'rejected' %}
+                        <strong>{{ uploaded.original_name }}</strong>{% if uploaded.review_comment %}（{{ uploaded.review_comment }}）{% endif %}{% if not forloop.last %}、{% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% elif item.value %}
+                <div class="field-help">原内容：{{ item.value }}{% if item.review_comment %}（{{ item.review_comment }}）{% endif %}</div>
+                {% endif %}
+            {% endif %}
             {% if field.example_file %}
             <a class="example-link" href="{{ field.example_file.url }}" target="_blank" rel="noopener">
                 <span class="material-icons">download</span>示例文件
@@ -234,39 +333,48 @@
             {% endif %}
 
             {% if field.field_type == 'textarea' %}
-            <textarea name="field_{{ field.id }}" class="field-control" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %}></textarea>
+            <textarea name="field_{{ field.id }}" class="field-control" placeholder="{{ field.placeholder }}" {% if field.required or revision_mode %}required{% endif %}>{{ item.value }}</textarea>
             {% elif field.field_type == 'number' %}
-            <input type="number" name="field_{{ field.id }}" class="field-control" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %}>
+            <input type="number" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" placeholder="{{ field.placeholder }}" {% if field.required or revision_mode %}required{% endif %}>
             {% elif field.field_type == 'date' %}
-            <input type="date" name="field_{{ field.id }}" class="field-control" {% if field.required %}required{% endif %}>
+            <input type="date" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" {% if field.required or revision_mode %}required{% endif %}>
             {% elif field.field_type == 'time' %}
-            <input type="time" name="field_{{ field.id }}" class="field-control" {% if field.required %}required{% endif %}>
+            <input type="time" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" {% if field.required or revision_mode %}required{% endif %}>
             {% elif field.field_type == 'select' %}
-            <select name="field_{{ field.id }}" class="field-control" {% if field.required %}required{% endif %}>
+            <select name="field_{{ field.id }}" class="field-control" {% if field.required or revision_mode %}required{% endif %}>
                 <option value="">请选择</option>
-                {% for option in field.options %}<option value="{{ option }}">{{ option }}</option>{% endfor %}
+                {% for option in field.options %}<option value="{{ option }}" {% if option == item.value %}selected{% endif %}>{{ option }}</option>{% endfor %}
             </select>
             {% elif field.field_type == 'radio' %}
             <div class="option-grid">
                 {% for option in field.options %}
-                <label class="option-chip"><input type="radio" name="field_{{ field.id }}" value="{{ option }}" {% if field.required %}required{% endif %}>{{ option }}</label>
+                <label class="option-chip"><input type="radio" name="field_{{ field.id }}" value="{{ option }}" {% if option == item.value %}checked{% endif %} {% if field.required or revision_mode %}required{% endif %}>{{ option }}</label>
                 {% endfor %}
             </div>
             {% elif field.field_type == 'checkbox' %}
             <div class="option-grid">
                 {% for option in field.options %}
-                <label class="option-chip"><input type="checkbox" name="field_{{ field.id }}" value="{{ option }}">{{ option }}</label>
+                <label class="option-chip"><input type="checkbox" name="field_{{ field.id }}" value="{{ option }}" {% if option in item.selected_options %}checked{% endif %}>{{ option }}</label>
                 {% endfor %}
             </div>
             {% elif field.field_type == 'file' %}
-            <input type="file" name="field_{{ field.id }}" class="field-control" {% if field.required %}required{% endif %}>
+            <label class="file-dropzone" data-file-dropzone>
+                <input type="file" name="field_{{ field.id }}" class="file-input" {% if field.required or revision_mode %}required{% endif %} {% if field.allow_multiple_files %}multiple{% endif %}>
+                <span class="file-dropzone-content">
+                    <span class="file-dropzone-icon"><span class="material-icons">upload_file</span></span>
+                    <span class="file-dropzone-title">拖拽文件到这里，或点击选择</span>
+                    <span class="file-dropzone-subtitle">{% if field.allow_multiple_files %}可一次选择多个文件{% else %}仅可上传 1 个文件{% endif %}</span>
+                    <span class="file-selected-list" data-file-list>尚未选择文件</span>
+                </span>
+            </label>
             <div class="file-hint">
                 <span class="material-icons">info</span>允许：{{ field.allowed_extensions|join:", " }}；最大 {{ field.max_size_mb }}MB
             </div>
             {% else %}
-            <input type="text" name="field_{{ field.id }}" class="field-control" placeholder="{{ field.placeholder }}" {% if field.required %}required{% endif %}>
+            <input type="text" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" placeholder="{{ field.placeholder }}" {% if field.required or revision_mode %}required{% endif %}>
             {% endif %}
         </section>
+        {% endwith %}
         {% empty %}
         <div class="empty-state">该通道还没有启用字段，请联系管理员配置。</div>
         {% endfor %}
@@ -276,9 +384,40 @@
                 <span class="material-icons">arrow_back</span>返回
             </a>
             <button type="submit" class="btn btn-primary">
-                <span class="material-icons">send</span>提交
+                <span class="material-icons">send</span>{% if revision_mode %}提交修改{% else %}提交{% endif %}
             </button>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('[data-file-dropzone]').forEach((dropzone) => {
+    const input = dropzone.querySelector('.file-input');
+    const fileList = dropzone.querySelector('[data-file-list]');
+    const renderFiles = () => {
+        const names = Array.from(input.files || []).map((file) => file.name);
+        fileList.textContent = names.length ? names.join('、') : '尚未选择文件';
+    };
+
+    input.addEventListener('change', renderFiles);
+
+    ['dragenter', 'dragover'].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+            event.preventDefault();
+            dropzone.classList.add('is-dragover');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach((eventName) => {
+        dropzone.addEventListener(eventName, () => {
+            dropzone.classList.remove('is-dragover');
+            if (eventName === 'drop') {
+                window.setTimeout(renderFiles, 0);
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
