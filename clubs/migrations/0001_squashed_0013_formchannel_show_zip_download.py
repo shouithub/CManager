@@ -388,7 +388,7 @@ def populate_public_ids(apps, schema_editor):
 # From 0009_submission_public_id_item_review
 def populate_value_updated_at(apps, schema_editor):
     FormFieldValue = apps.get_model('clubs', 'FormFieldValue')
-    FormFieldValue.objects.filter(updated_at__isnull=True).update(updated_at=timezone.now())
+    FormFieldValue.objects.filter(updated_at__isnull=True).update(updated_at=django.utils.timezone.now())
 
 # From 0009_submission_public_id_item_review
 def sync_default_dynamic_fields(apps, schema_editor):
