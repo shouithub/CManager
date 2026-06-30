@@ -1124,6 +1124,115 @@ class SiteSettings(models.Model):
         return obj
 
 
+class StorageConfig(models.Model):
+    """存储后端配置（单例，pk=1）。
+
+    控制全局 ``FileField`` 的存储位置：本地文件系统或 S3 兼容对象存储。
+    所有业务代码面向 ``clubs.storage_backends.ClubStorage`` 抽象层编程，
+    切换后端时只需修改本表 ``backend_type`` 字段。
+    """
+    BACKEND_CHOICES = [
+        ('local', '本地存储'),
+        ('s3', 'S3 兼容对象存储（AWS S3 / MinIO / 阿里云 OSS / 腾讯云 COS 等）'),
+    ]
+    ADDRESSING_CHOICES = [
+        ('auto', '自动（推荐）'),
+        ('path', 'Path Style（适用于 MinIO / 自建）'),
+        ('virtual', 'Virtual Hosted Style（适用于 AWS S3）'),
+    ]
+
+    backend_type = models.CharField(
+        max_length=20, choices=BACKEND_CHOICES, default='local',
+        verbose_name='后端类型',
+        help_text='选择文件存储位置。切换后立即生效，已存文件不会自动迁移。',
+    )
+    is_active = models.BooleanField(
+        default=True, verbose_name='是否启用',
+        help_text='关闭后强制降级到本地存储（紧急回退用）',
+    )
+
+    # ============ S3 配置 ============
+    s3_endpoint_url = models.CharField(
+        max_length=500, blank=True, default='',
+        verbose_name='S3 Endpoint URL',
+        help_text='AWS S3 留空；MinIO/阿里云/腾讯云等填兼容端点，如 https://s3.cn-north-1.amazonaws.com.cn',
+    )
+    s3_region = models.CharField(
+        max_length=100, blank=True, default='',
+        verbose_name='Region',
+        help_text='AWS S3 必填，如 us-east-1；MinIO 可留空',
+    )
+    s3_bucket_name = models.CharField(
+        max_length=255, blank=True, default='',
+        verbose_name='Bucket 名称',
+        help_text='需提前在 S3 控制台创建；Office Online 预览要求 bucket 可公网匿名访问',
+    )
+    s3_access_key_id = models.CharField(
+        max_length=255, blank=True, default='',
+        verbose_name='AccessKey ID',
+    )
+    s3_secret_access_key = models.CharField(
+        max_length=500, blank=True, default='',
+        verbose_name='Secret Access Key',
+        help_text='明文存储，请确保数据库访问权限严格受控',
+    )
+    s3_custom_domain = models.CharField(
+        max_length=500, blank=True, default='',
+        verbose_name='自定义域名 / CDN',
+        help_text='如已配置 CDN，填写 CDN 域名（如 https://cdn.example.com）。'
+                  '留空则使用 S3 默认 URL。',
+    )
+    s3_addressing_style = models.CharField(
+        max_length=20, choices=ADDRESSING_CHOICES, default='auto',
+        verbose_name='地址风格',
+        help_text='MinIO / 自建 S3 通常选 Path Style；AWS S3 选 Virtual Hosted',
+    )
+    s3_use_path_style = models.BooleanField(
+        default=True, verbose_name='强制 Path Style',
+        help_text='与 address_style 互补，兼容部分 MinIO 版本',
+    )
+
+    presigned_url_expiration = models.IntegerField(
+        default=3600, verbose_name='预签名 URL 有效期（秒）',
+        help_text='私密 bucket 下载链接的有效时长，默认 1 小时',
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
+    class Meta:
+        verbose_name = '存储配置'
+        verbose_name_plural = '存储配置'
+
+    def __str__(self):
+        backend_label = dict(self.BACKEND_CHOICES).get(self.backend_type, self.backend_type)
+        return '存储配置（当前：%s）' % backend_label
+
+    @classmethod
+    def get_active_config(cls):
+        """获取激活的存储配置（单例，pk=1）。
+
+        若不存在则用默认值创建；表缺失等异常由调用方处理。
+        """
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @classmethod
+    def is_s3_active(cls):
+        """快速判断当前是否使用 S3。"""
+        try:
+            cfg = cls.get_active_config()
+            return (
+                cfg.backend_type == 's3'
+                and cfg.is_active
+                and cfg.s3_bucket_name
+                and cfg.s3_access_key_id
+                and cfg.s3_secret_access_key
+            )
+        except Exception:
+            return False
+
+
 class DailyStat(models.Model):
     """每日访问统计"""
     date = models.DateField(unique=True, verbose_name='日期')
