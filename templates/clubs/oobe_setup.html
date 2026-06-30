@@ -288,9 +288,10 @@
 
     /* ===== 文件上传 ===== */
     .oobe-file {
+        position: relative;
         border: 1.5px dashed var(--md3-outline);
         border-radius: 12px;
-        padding: 24px 16px;
+        padding: 28px 16px;
         background: var(--md3-surface);
         text-align: center;
         transition: all .15s;
@@ -300,16 +301,48 @@
         border-color: var(--md3-primary);
         background: var(--md3-primary-container);
     }
-    .oobe-file input[type="file"] {
-        width: 100%;
-        border: none;
-        background: transparent;
-        padding: 0;
-        margin: 8px 0 0;
-        font-size: 0.85rem;
-        cursor: pointer;
+    .oobe-file.dragover {
+        border-color: var(--md3-primary);
+        background: var(--md3-primary-container);
+        border-style: solid;
     }
-    .oobe-file-icon { font-size: 32px; color: var(--md3-on-surface-variant); opacity: 0.6; }
+    /* 隐藏原生 file input，但保留可点击性 */
+    .oobe-file input[type="file"] {
+        position: absolute;
+        width: 1px; height: 1px;
+        padding: 0; margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+        opacity: 0;
+    }
+    .oobe-file-icon { font-size: 36px; color: var(--md3-on-surface-variant); opacity: 0.6; }
+    .oobe-file-text {
+        margin-top: 8px;
+        font-size: 0.86rem;
+        color: var(--md3-on-surface-variant);
+    }
+    .oobe-file-name {
+        margin-top: 6px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--md3-primary);
+        word-break: break-all;
+    }
+    .oobe-file-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 14px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        font-size: 0.84rem;
+        font-weight: 600;
+        pointer-events: none;
+    }
+    .oobe-file-btn .material-icons { font-size: 16px; }
     .oobe-crop-wrap {
         margin-top: 16px;
         text-align: center;
@@ -725,10 +758,12 @@
 
         <div class="oobe-field">
             <label>上传 Logo</label>
-            <div class="oobe-file">
+            <div class="oobe-file" id="logoDropZone">
                 <div class="oobe-file-icon"><span class="material-icons">cloud_upload</span></div>
+                <div class="oobe-file-text">将文件拖到此处，或</div>
+                <div class="oobe-file-btn"><span class="material-icons">folder_open</span>选择文件</div>
                 <input type="file" id="site_logo" name="site_logo" accept=".ico,.png,.jpg,.jpeg,.webp">
-                <div id="logoFileName" class="oobe-field-hint">点击选择文件</div>
+                <div id="logoFileName" class="oobe-file-name" style="display:none;"></div>
             </div>
             <div class="oobe-crop-wrap" id="logoCropWrap">
                 <canvas id="logoCropCanvas" class="oobe-crop-canvas" width="256" height="256"></canvas>
@@ -947,6 +982,40 @@
             let offsetX = 0;
             let offsetY = 0;
 
+            const dropZone = section.querySelector('#logoDropZone');
+
+            // 点击上传区域触发文件选择
+            dropZone.addEventListener('click', (e) => {
+                // 避免在拖拽 canvas 内的元素时误触发
+                if (e.target.closest('#logoCropWrap')) return;
+                logoInput.click();
+            });
+
+            // 拖拽上传
+            ['dragenter', 'dragover'].forEach((evtName) => {
+                dropZone.addEventListener(evtName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.add('dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach((evtName) => {
+                dropZone.addEventListener(evtName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (evtName === 'dragleave' && dropZone.contains(e.relatedTarget)) return;
+                    dropZone.classList.remove('dragover');
+                });
+            });
+            dropZone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer && e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    logoInput.files = files;
+                    // 手动触发 change 事件
+                    logoInput.dispatchEvent(new Event('change'));
+                }
+            });
+
             function clampOffsets() {
                 let maxX = 0;
                 let maxY = 0;
@@ -994,7 +1063,12 @@
 
             logoInput.addEventListener('change', () => {
                 const file = logoInput.files && logoInput.files[0] ? logoInput.files[0] : null;
-                fileName.textContent = file ? file.name : '点击选择文件';
+                if (file) {
+                    fileName.textContent = file.name;
+                    fileName.style.display = 'block';
+                } else {
+                    fileName.style.display = 'none';
+                }
                 if (!file) {
                     cropWrap.style.display = 'none';
                     imgReady = false;
@@ -1068,6 +1142,7 @@
                     dt.items.add(croppedFile);
                     logoInput.files = dt.files;
                     fileName.textContent = 'site_logo.png（已裁剪）';
+                    fileName.style.display = 'block';
                 }
 
                 if (!validateStep(section)) return;
