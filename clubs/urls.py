@@ -152,7 +152,8 @@ urlpatterns = [
     path('admin-panel/change-user-role/<int:user_id>/', views.change_user_role, name='change_user_role'),
     path('admin-panel/change-staff-attributes/<int:user_id>/', views.change_staff_attributes, name='change_staff_attributes'),
     path('admin-panel/smtp-config/', views.manage_smtp_config, name='manage_smtp_config'),
-    
+    path('admin-panel/storage-config/', views.manage_storage_config, name='manage_storage_config'),
+
     # 自定义文件下载路由
     path('download/', views.download_file, name='download_file'),
 ]

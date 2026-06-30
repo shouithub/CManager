@@ -16,12 +16,37 @@ def site_settings(request):
     base_media_url = f"/{settings.MEDIA_URL.lstrip('/')}"
     if not base_media_url.endswith('/'):
         base_media_url = f"{base_media_url}/"
-    favicon_path = os.path.join(settings.MEDIA_ROOT, 'site', 'favicon.ico')
-    favicon_preview_path = os.path.join(settings.MEDIA_ROOT, 'site', 'favicon.png')
     import time
     cache_buster = int(time.time())
-    site_favicon_url = f"{base_media_url}site/favicon.ico?v={cache_buster}" if os.path.exists(favicon_path) else None
-    site_favicon_preview_url = f"{base_media_url}site/favicon.png?v={cache_buster}" if os.path.exists(favicon_preview_path) else None
+
+    # favicon URL 通过存储抽象层生成：
+    # - 本地模式：仍走 MEDIA_URL（相对路径），由 nginx/static serve 提供
+    # - S3 模式：返回 S3/CDN 直链（绝对 URL），不经本站代理
+    site_favicon_url = None
+    site_favicon_preview_url = None
+    try:
+        from .storage_backends import ClubStorage
+        from .models import StorageConfig
+        storage = ClubStorage()
+        # 探测是否存在 favicon
+        if storage.exists('site/favicon.ico'):
+            url = storage.get_public_url('site/favicon.ico')
+            if not url.startswith(('http://', 'https://')):
+                # 本地模式相对 URL，补 cache buster
+                site_favicon_url = f"{url}?v={cache_buster}"
+            else:
+                site_favicon_url = f"{url}?v={cache_buster}"
+        if storage.exists('site/favicon.png'):
+            url = storage.get_public_url('site/favicon.png')
+            site_favicon_preview_url = f"{url}?v={cache_buster}"
+    except Exception:
+        # 兜底：尝试用本地文件系统
+        favicon_path = os.path.join(settings.MEDIA_ROOT, 'site', 'favicon.ico')
+        favicon_preview_path = os.path.join(settings.MEDIA_ROOT, 'site', 'favicon.png')
+        if os.path.exists(favicon_path):
+            site_favicon_url = f"{base_media_url}site/favicon.ico?v={cache_buster}"
+        if os.path.exists(favicon_preview_path):
+            site_favicon_preview_url = f"{base_media_url}site/favicon.png?v={cache_buster}"
 
     try:
         from .models import SiteSettings

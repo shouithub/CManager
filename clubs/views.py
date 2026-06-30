@@ -1004,9 +1004,7 @@ def edit_carousel(request, carousel_id):
             # 删除旧图片文件
             if carousel.image:
                 try:
-                    import os
-                    if os.path.isfile(carousel.image.path):
-                        os.remove(carousel.image.path)
+                    carousel.image.delete(save=False)
                 except:
                     pass
             carousel.image = new_image
@@ -1033,9 +1031,7 @@ def delete_carousel(request, carousel_id):
         # 删除图片文件
         if carousel.image:
             try:
-                import os
-                if os.path.isfile(carousel.image.path):
-                    os.remove(carousel.image.path)
+                carousel.image.delete(save=False)
             except:
                 pass
 
@@ -2434,6 +2430,123 @@ def manage_smtp_config(request):
             return redirect('clubs:manage_smtp_config')
 
     return render(request, 'clubs/admin/smtp_config.html', {'configs': SMTPConfig.objects.all()})
+
+
+
+
+def manage_storage_config(request):
+    """存储后端配置页（S3 / 本地切换）。
+
+    支持操作：
+      * save         保存当前配置
+      * test         测试 S3 连接（不持久化）
+      * reset_local  紧急回退到本地存储
+    """
+    if not _is_admin(request.user):
+        messages.error(request, '只有管理员可以管理存储配置')
+        return redirect('clubs:index')
+
+    from .models import StorageConfig
+    from .storage_backends import ClubStorage, cleanup_temp_files
+
+    config = StorageConfig.get_active_config()
+    test_result = None
+    errors = []
+
+    if request.method == 'POST':
+        action = request.POST.get('action', 'save')
+
+        if action == 'reset_local':
+            config.backend_type = 'local'
+            config.is_active = True
+            config.save()
+            messages.success(request, '已紧急回退到本地存储')
+            return redirect('clubs:manage_storage_config')
+
+        if action == 'test':
+            # 仅测试，不保存
+            test_cfg = {
+                's3_endpoint_url': request.POST.get('s3_endpoint_url', '').strip(),
+                's3_region': request.POST.get('s3_region', '').strip(),
+                's3_bucket_name': request.POST.get('s3_bucket_name', '').strip(),
+                's3_access_key_id': request.POST.get('s3_access_key_id', '').strip(),
+                's3_secret_access_key': request.POST.get('s3_secret_access_key', '').strip(),
+                's3_addressing_style': request.POST.get('s3_addressing_style', 'auto').strip(),
+            }
+            if not test_cfg['s3_bucket_name'] or not test_cfg['s3_access_key_id'] \
+                    or not test_cfg['s3_secret_access_key']:
+                errors.append('测试 S3 连接时必须填写 bucket / AK / SK')
+                test_result = (False, '缺少必填字段')
+            else:
+                storage = ClubStorage()
+                ok, msg = storage.test_s3_connection(test_cfg)
+                test_result = (ok, msg)
+                if ok:
+                    messages.success(request, msg)
+                else:
+                    errors.append(msg)
+                # 回显表单
+                return render(request, 'clubs/admin/storage_config.html', {
+                    'config': config,
+                    'test_result': test_result,
+                    'errors': errors,
+                    'test_form': test_cfg,
+                })
+
+        if action == 'save':
+            backend_type = request.POST.get('backend_type', 'local').strip()
+            if backend_type not in ('local', 's3'):
+                errors.append('后端类型必须是 local 或 s3')
+            else:
+                config.backend_type = backend_type
+                config.is_active = request.POST.get('is_active') == 'on'
+                config.s3_endpoint_url = request.POST.get('s3_endpoint_url', '').strip()
+                config.s3_region = request.POST.get('s3_region', '').strip()
+                config.s3_bucket_name = request.POST.get('s3_bucket_name', '').strip()
+                config.s3_access_key_id = request.POST.get('s3_access_key_id', '').strip()
+                # SK 留空表示保持原值
+                new_sk = request.POST.get('s3_secret_access_key', '').strip()
+                if new_sk:
+                    config.s3_secret_access_key = new_sk
+                elif not config.s3_secret_access_key and backend_type == 's3':
+                    errors.append('切换到 S3 时必须填写 Secret Access Key')
+                config.s3_custom_domain = request.POST.get('s3_custom_domain', '').strip()
+                config.s3_addressing_style = request.POST.get('s3_addressing_style', 'auto').strip()
+                config.s3_use_path_style = request.POST.get('s3_use_path_style') == 'on'
+                try:
+                    config.presigned_url_expiration = int(
+                        request.POST.get('presigned_url_expiration', '3600') or 3600
+                    )
+                except ValueError:
+                    errors.append('预签名有效期必须是数字')
+
+                # 切换到 S3 前先测试连接，避免配置错误导致后续保存失败
+                if backend_type == 's3' and not errors:
+                    storage = ClubStorage()
+                    ok, msg = storage.test_s3_connection({
+                        's3_endpoint_url': config.s3_endpoint_url,
+                        's3_region': config.s3_region,
+                        's3_bucket_name': config.s3_bucket_name,
+                        's3_access_key_id': config.s3_access_key_id,
+                        's3_secret_access_key': config.s3_secret_access_key,
+                        's3_addressing_style': config.s3_addressing_style,
+                    })
+                    if not ok:
+                        errors.append('S3 连接测试失败：%s' % msg)
+                    else:
+                        messages.success(request, 'S3 连接测试通过')
+
+                if not errors:
+                    config.save()
+                    messages.success(request, '存储配置已保存')
+                    return redirect('clubs:manage_storage_config')
+
+    return render(request, 'clubs/admin/storage_config.html', {
+        'config': config,
+        'test_result': test_result,
+        'errors': errors,
+        'test_form': None,
+    })
 
 
 
@@ -4236,6 +4349,7 @@ def _build_merged_word_file(field, uploaded_records):
         heading_run._element.rPr.rFonts.set(qn('w:eastAsia'), '微软雅黑')
         heading_run.font.size = Pt(12)
         try:
+            # path() 在 S3 模式下会自动下载到临时文件并返回路径
             path = uploaded.file.path
             if ext in image_exts:
                 _add_image_to_document(document, path)
@@ -4249,6 +4363,13 @@ def _build_merged_word_file(field, uploaded_records):
                 document.add_paragraph('该文件类型不支持合并进 Word，原文件已随提交一并保存。')
         except Exception as exc:
             document.add_paragraph(f'合并该文件时遇到问题：{exc}')
+        finally:
+            # S3 模式下 path() 会下载到 /tmp，用完立即释放
+            try:
+                from .storage_backends import cleanup_temp_files
+                cleanup_temp_files()
+            except Exception:
+                pass
 
     buffer = BytesIO()
     document.save(buffer)
@@ -4345,7 +4466,22 @@ def _office_preview_url(request, uploaded):
     ext = os.path.splitext(filename)[1].lower()
     if ext not in {'.doc', '.docx', '.ppt', '.pptx'}:
         return ''
-    absolute_file_url = request.build_absolute_uri(uploaded.file.url) if request else uploaded.file.url
+    # 走存储抽象层：S3 模式返回 S3/CDN 直链（不经本站代理），
+    # 本地模式返回相对 MEDIA_URL，再由 build_absolute_uri 补全为绝对 URL。
+    from .storage_backends import ClubStorage
+    storage = ClubStorage()
+    try:
+        direct_url = storage.get_public_url(uploaded.file.name)
+    except Exception:
+        # 兜底：用 Django 默认 storage.url
+        direct_url = uploaded.file.url
+
+    # 如果是本地存储的相对 URL，再用 request 补全为绝对 URL（让 Microsoft 服务器能访问到）
+    if direct_url.startswith('/'):
+        absolute_file_url = request.build_absolute_uri(direct_url) if request else direct_url
+    else:
+        # S3 直链已经是绝对 URL，不再包装
+        absolute_file_url = direct_url
     encoded_file_url = urllib.parse.quote(absolute_file_url, safe='')
     return f'https://view.officeapps.live.com/op/embed.aspx?src={encoded_file_url}'
 

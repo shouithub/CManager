@@ -339,6 +339,17 @@ STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# 存储：通过抽象层 ClubStorage 实现 Local / S3 后端动态切换
+# 业务代码所有 FileField 自动走该 storage；切换后端时只需修改 StorageConfig 表
+STORAGES = {
+    "default": {
+        "BACKEND": "clubs.storage_backends.ClubStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

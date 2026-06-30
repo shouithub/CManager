@@ -46,6 +46,12 @@ urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # 媒体文件服务 - 确保在所有环境下都能访问媒体文件
 # 注意：要确保这个配置不会与应用中的路由冲突
+#
+# 存储抽象层说明：
+# * 本地存储模式：所有 FileField.url 返回 "/media/<path>"，由该路由代理到 MEDIA_ROOT
+# * S3 存储模式：FileField.url 返回 S3/CDN 直链（绝对 URL，如 https://cdn.example.com/...），
+#   完全绕过本站代理。/media/ 路由仅在用户误访问旧 URL 时提供 404 兜底
+# * Office Online 预览链接在 S3 模式下也是直链，避免代理消耗本站带宽
 from django.views.static import serve
 from django.urls import re_path
 
