@@ -96,8 +96,7 @@
     .record-list {
         display: flex;
         flex-direction: column;
-        gap: var(--md3-spacing-md);
-        padding: var(--md3-spacing-md);
+        padding: 0 var(--md3-spacing-lg);
     }
 
     .record-card {
@@ -105,17 +104,18 @@
         grid-template-columns: minmax(0, 1fr) auto;
         gap: var(--md3-spacing-lg);
         align-items: center;
-        padding: var(--md3-spacing-lg);
-        border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
-        background: var(--md3-surface);
-        transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        padding: var(--md3-spacing-lg) 0;
+        border-bottom: 1px solid var(--md3-outline-variant);
+        background: transparent;
+        transition: background 0.18s ease;
+    }
+
+    .record-card:last-child {
+        border-bottom: none;
     }
 
     .record-card:hover {
-        border-color: var(--md3-primary);
-        box-shadow: var(--md3-elevation-2);
-        transform: translateY(-1px);
+        background: var(--md3-surface-container-high);
     }
 
     .record-title {
@@ -303,15 +303,15 @@
         }
 
         .record-list {
-            gap: var(--md3-spacing-sm);
-            padding: var(--md3-spacing-sm);
+            gap: 0;
+            padding: 0 var(--md3-spacing-md);
         }
 
         .record-card {
             grid-template-columns: 1fr;
             gap: var(--md3-spacing-md);
-            padding: var(--md3-spacing-md);
-            border-radius: var(--md3-radius-md);
+            padding: var(--md3-spacing-md) 0;
+            border-radius: 0;
         }
 
         .record-title {
