@@ -256,22 +256,39 @@
         }
 
         .page-header {
-            align-items: flex-start;
+            display: flex;
+            align-items: center;
+            gap: var(--md3-spacing-md);
             margin-bottom: var(--md3-spacing-md);
-            padding: var(--md3-spacing-md);
-            border-radius: var(--md3-radius-lg);
+            padding: 0 0 var(--md3-spacing-sm);
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
         }
 
         .page-header .page-title-icon {
-            font-size: 2rem;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: var(--md3-radius-lg);
+            background: var(--md3-primary-container);
+            color: var(--md3-primary);
+            font-size: 1.5rem;
         }
 
         .page-header h1 {
-            font-size: 1.18rem;
+            margin: 0;
+            font-size: 1.45rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
         }
 
         .page-header p {
-            font-size: 0.86rem;
+            margin: 4px 0 0;
+            font-size: 0.84rem;
+            color: var(--md3-on-surface-variant);
         }
 
         .content-card {
