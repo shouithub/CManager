@@ -4,120 +4,109 @@
 
 {% block extra_css %}
 <style>
-    /* ===== OOBE 全局容器 ===== */
-    .oobe-wrap {
-        max-width: 980px;
-        margin: 0 auto;
-        padding: 32px 20px 96px;
+    :root {
+        --oobe-radius: 16px;
+        --oobe-transition: cubic-bezier(0.2, 0, 0, 1);
     }
 
-    /* ===== Hero 卡片 ===== */
-    .oobe-hero {
-        position: relative;
-        overflow: hidden;
-        border-radius: var(--md3-radius-2xl);
-        background:
-            radial-gradient(120% 140% at 0% 0%, var(--md3-primary-container) 0%, transparent 55%),
-            radial-gradient(120% 140% at 100% 0%, var(--md3-secondary-container) 0%, transparent 50%),
-            linear-gradient(135deg, var(--md3-surface-container-low), var(--md3-surface-container));
-        border: 1px solid var(--md3-outline-variant);
-        box-shadow: var(--md3-elevation-2);
-        padding: 28px 28px 24px;
-        color: var(--md3-on-surface);
+    .oobe-wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 40px 20px 96px;
     }
-    .oobe-hero::before {
-        content: '';
-        position: absolute;
-        top: -40px; right: -40px;
-        width: 220px; height: 220px;
-        background: radial-gradient(circle, var(--md3-primary) 0%, transparent 70%);
-        opacity: 0.08;
-        pointer-events: none;
-    }
-    .oobe-hero-head {
+
+    /* ===== 顶部品牌条 ===== */
+    .oobe-topbar {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 10px;
+        margin-bottom: 28px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.82rem;
     }
-    .oobe-hero-icon {
-        flex-shrink: 0;
-        width: 56px; height: 56px;
-        border-radius: var(--md3-radius-lg);
+    .oobe-topbar-logo {
+        width: 28px; height: 28px;
+        border-radius: 8px;
         background: var(--md3-primary);
         color: var(--md3-on-primary);
         display: grid;
         place-items: center;
-        box-shadow: var(--md3-elevation-2);
     }
-    .oobe-hero-icon .material-icons { font-size: 30px; }
-    .oobe-hero-text { flex: 1; min-width: 0; }
+    .oobe-topbar-logo .material-icons { font-size: 18px; }
+    .oobe-topbar-name { font-weight: 600; color: var(--md3-on-surface); }
+    .oobe-topbar-sep { opacity: 0.4; }
+    .oobe-topbar-stage { color: var(--md3-primary); font-weight: 600; }
+
+    /* ===== Hero ===== */
+    .oobe-hero { margin-bottom: 24px; }
     .oobe-title {
         margin: 0;
-        font-size: 1.6rem;
+        font-size: 1.85rem;
         font-weight: 700;
-        letter-spacing: -0.01em;
-        line-height: 1.2;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
     }
     .oobe-subtitle {
-        margin: 6px 0 0;
+        margin: 10px 0 0;
         color: var(--md3-on-surface-variant);
         font-size: 0.92rem;
-        line-height: 1.5;
+        line-height: 1.55;
+        max-width: 560px;
     }
 
-    /* ===== 步骤进度指示器（带标签和连接线） ===== */
-    .oobe-progress { margin-top: 22px; }
-    .oobe-progress-track {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
+    /* ===== 紧凑步骤条 ===== */
+    .oobe-steps {
+        display: flex;
+        align-items: center;
         gap: 4px;
-        position: relative;
-    }
-    .oobe-progress-track::before {
-        content: '';
-        position: absolute;
-        top: 14px;
-        left: 10%;
-        right: 10%;
-        height: 2px;
-        background: var(--md3-outline-variant);
-        z-index: 0;
+        margin: 24px 0;
+        padding: 14px 16px;
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--oobe-radius);
     }
     .oobe-step {
-        position: relative;
-        z-index: 1;
+        flex: 1;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
+        min-width: 0;
     }
     .oobe-step-dot {
-        width: 28px; height: 28px;
+        flex-shrink: 0;
+        width: 26px; height: 26px;
         border-radius: 50%;
         background: var(--md3-surface-container-highest);
-        border: 2px solid var(--md3-outline-variant);
+        border: 1.5px solid var(--md3-outline-variant);
         color: var(--md3-on-surface-variant);
         display: grid;
         place-items: center;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
-        transition: all .25s ease;
+        transition: all .2s var(--oobe-transition);
     }
-    .oobe-step-label {
-        font-size: 0.72rem;
+    .oobe-step-name {
+        font-size: 0.82rem;
         color: var(--md3-on-surface-variant);
-        text-align: center;
-        line-height: 1.2;
         font-weight: 500;
-        transition: color .25s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: color .2s var(--oobe-transition);
+    }
+    .oobe-step-line {
+        flex-shrink: 0;
+        width: 16px;
+        height: 1.5px;
+        background: var(--md3-outline-variant);
+        transition: background .2s var(--oobe-transition);
     }
     .oobe-step.active .oobe-step-dot {
         background: var(--md3-primary);
         border-color: var(--md3-primary);
         color: var(--md3-on-primary);
-        box-shadow: 0 0 0 4px var(--md3-primary-container);
     }
-    .oobe-step.active .oobe-step-label {
+    .oobe-step.active .oobe-step-name {
         color: var(--md3-primary);
         font-weight: 700;
     }
@@ -129,149 +118,95 @@
     .oobe-step.done .oobe-step-dot::after {
         content: 'check';
         font-family: 'Material Icons';
-        font-size: 16px;
+        font-size: 14px;
     }
-    .oobe-step.done .oobe-step-dot .oobe-step-num { display: none; }
-    .oobe-progress-label {
-        margin-top: 10px;
-        text-align: center;
-        font-size: 0.82rem;
-        color: var(--md3-on-surface-variant);
-        font-weight: 500;
-    }
-    .oobe-progress-label strong {
-        color: var(--md3-primary);
-        font-weight: 700;
-    }
-
-    /* 隐藏旧的 dots（向后兼容 JS 仍可工作） */
-    .oobe-progress-track [data-step-dot].oobe-dot { display: none; }
+    .oobe-step.done .oobe-step-dot .num { display: none; }
+    .oobe-step.done + .oobe-step-line { background: var(--md3-primary); }
 
     /* ===== 错误提示 ===== */
     .oobe-alert {
-        margin-top: 18px;
-        border-radius: var(--md3-radius-lg);
+        margin-bottom: 16px;
+        border-radius: var(--oobe-radius);
         border: 1px solid var(--md3-error);
         background: var(--md3-error-container);
         color: var(--md3-on-error-container);
-        padding: 14px 16px;
+        padding: 12px 14px;
         display: flex;
-        gap: 12px;
+        gap: 10px;
         align-items: flex-start;
     }
-    .oobe-alert .material-icons { flex-shrink: 0; margin-top: 2px; }
-    .oobe-alert ul { margin: 0; padding-left: 18px; }
-    .oobe-alert li { line-height: 1.6; }
-    .oobe-alert li + li { margin-top: 4px; }
+    .oobe-alert .material-icons { flex-shrink: 0; margin-top: 1px; font-size: 18px; }
+    .oobe-alert ul { margin: 0; padding-left: 18px; line-height: 1.55; }
+    .oobe-alert li + li { margin-top: 2px; }
 
-    /* ===== 表单与 Stage 卡片 ===== */
-    .oobe-form { margin-top: 18px; }
+    /* ===== Stage 卡片 ===== */
+    .oobe-form { position: relative; }
     .oobe-stage {
         background: var(--md3-surface-container-low);
         border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-2xl);
-        box-shadow: var(--md3-elevation-2);
+        border-radius: var(--oobe-radius);
+        box-shadow: var(--md3-elevation-1);
         padding: 28px;
-        animation: oobeIn .3s cubic-bezier(0.2, 0, 0, 1);
+        animation: oobeIn .25s var(--oobe-transition);
     }
     @keyframes oobeIn {
-        from { opacity: 0; transform: translateY(12px) scale(0.99); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    .oobe-stage-head {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding-bottom: 18px;
-        margin-bottom: 22px;
-        border-bottom: 1px solid var(--md3-outline-variant);
-    }
-    .oobe-stage-icon {
-        flex-shrink: 0;
-        width: 44px; height: 44px;
-        border-radius: var(--md3-radius-md);
-        background: var(--md3-secondary-container);
-        color: var(--md3-on-secondary-container);
-        display: grid;
-        place-items: center;
-    }
-    .oobe-stage-icon .material-icons { font-size: 24px; }
-    .oobe-stage-headtext { flex: 1; min-width: 0; }
+    .oobe-stage-head { margin-bottom: 24px; }
     .oobe-stage-title {
         margin: 0;
-        font-size: 1.15rem;
+        font-size: 1.25rem;
         font-weight: 700;
-        line-height: 1.3;
+        letter-spacing: -0.01em;
     }
     .oobe-stage-desc {
-        margin: 4px 0 0;
+        margin: 6px 0 0;
         color: var(--md3-on-surface-variant);
-        font-size: 0.85rem;
-    }
-    .oobe-stage-stepnum {
-        flex-shrink: 0;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: var(--md3-on-surface-variant);
-        background: var(--md3-surface-container-high);
-        padding: 4px 10px;
-        border-radius: 999px;
-        border: 1px solid var(--md3-outline-variant);
+        font-size: 0.88rem;
+        line-height: 1.5;
     }
 
-    /* ===== 字段分组（sub-section） ===== */
-    .oobe-group {
-        margin-bottom: 22px;
-    }
-    .oobe-group:last-of-type { margin-bottom: 0; }
-    .oobe-group-title {
+    /* ===== 提示横幅 ===== */
+    .oobe-tip {
         display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--md3-primary);
-        margin: 0 0 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        font-size: 0.82rem;
+        line-height: 1.5;
+        margin-bottom: 20px;
     }
-    .oobe-group-title .material-icons { font-size: 16px; }
-    .oobe-group-title::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: var(--md3-outline-variant);
+    .oobe-tip .material-icons { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ===== 字段分组 ===== */
+    .oobe-section { margin-bottom: 24px; }
+    .oobe-section:last-of-type { margin-bottom: 0; }
+    .oobe-section-title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0 0 14px;
     }
 
-    .oobe-grid-2 {
+    .oobe-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 14px;
     }
-    .oobe-grid-3 {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-    }
 
-    /* ===== 字段 ===== */
-    .oobe-field {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
+    /* ===== MD3 outlined 字段 ===== */
+    .oobe-field { display: flex; flex-direction: column; gap: 6px; }
     .oobe-field label {
         font-size: 0.82rem;
         color: var(--md3-on-surface-variant);
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .oobe-field label .material-icons {
-        font-size: 14px;
-        opacity: 0.6;
+        font-weight: 500;
     }
     .oobe-field input,
     .oobe-field select,
@@ -279,47 +214,87 @@
         width: 100%;
         box-sizing: border-box;
         border: 1px solid var(--md3-outline);
-        border-radius: var(--md3-radius-sm);
-        background: var(--md3-surface-container-highest);
+        border-radius: 10px;
+        background: var(--md3-surface);
         color: var(--md3-on-surface);
         padding: 11px 14px;
         font-size: 0.92rem;
         font-family: inherit;
-        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+        transition: border-color .15s, box-shadow .15s;
     }
     .oobe-field input:hover,
-    .oobe-field select:hover,
-    .oobe-field textarea:hover {
-        border-color: var(--md3-on-surface);
-    }
+    .oobe-field select:hover { border-color: var(--md3-on-surface); }
     .oobe-field input:focus,
     .oobe-field select:focus,
     .oobe-field textarea:focus {
         outline: none;
         border-color: var(--md3-primary);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 18%, transparent);
-        background: var(--md3-surface);
+        border-width: 2px;
+        padding: 10px 13px;
+        box-shadow: none;
     }
-    .oobe-field input::placeholder {
+    .oobe-field input::placeholder { color: var(--md3-on-surface-variant); opacity: 0.6; }
+    .oobe-field-hint {
+        font-size: 0.76rem;
         color: var(--md3-on-surface-variant);
-        opacity: 0.7;
-    }
-    .oobe-hint {
-        color: var(--md3-on-surface-variant);
-        font-size: 0.78rem;
         line-height: 1.4;
     }
 
-    /* ===== 文件上传区 ===== */
-    .oobe-file {
-        border: 2px dashed var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
-        padding: 24px 16px;
-        background: var(--md3-surface-container-highest);
-        text-align: center;
-        transition: all .2s ease;
+    /* ===== 高级选项折叠区 ===== */
+    .oobe-advanced {
+        margin-top: 8px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--md3-surface-container);
+    }
+    .oobe-advanced-toggle {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        background: transparent;
+        border: none;
         cursor: pointer;
-        position: relative;
+        font-family: inherit;
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        text-align: left;
+    }
+    .oobe-advanced-toggle:hover { background: var(--md3-surface-container-high); }
+    .oobe-advanced-toggle .left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .oobe-advanced-toggle .material-icons { font-size: 18px; color: var(--md3-on-surface-variant); }
+    .oobe-advanced-toggle .chev {
+        transition: transform .2s var(--oobe-transition);
+    }
+    .oobe-advanced.open .chev { transform: rotate(180deg); }
+    .oobe-advanced-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height .25s var(--oobe-transition);
+    }
+    .oobe-advanced.open .oobe-advanced-body { max-height: 1200px; }
+    .oobe-advanced-inner {
+        padding: 4px 14px 16px;
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+    .oobe-advanced-inner .oobe-grid { margin-top: 14px; }
+
+    /* ===== 文件上传 ===== */
+    .oobe-file {
+        border: 1.5px dashed var(--md3-outline);
+        border-radius: 12px;
+        padding: 24px 16px;
+        background: var(--md3-surface);
+        text-align: center;
+        transition: all .15s;
+        cursor: pointer;
     }
     .oobe-file:hover {
         border-color: var(--md3-primary);
@@ -327,41 +302,32 @@
     }
     .oobe-file input[type="file"] {
         width: 100%;
-        box-sizing: border-box;
         border: none;
         background: transparent;
         padding: 0;
-        margin: 0;
+        margin: 8px 0 0;
         font-size: 0.85rem;
         cursor: pointer;
     }
-    .oobe-file .oobe-hint {
-        margin-top: 8px;
-    }
-    .oobe-file-icon {
-        font-size: 36px;
-        color: var(--md3-on-surface-variant);
-        margin-bottom: 6px;
-        opacity: 0.7;
-    }
+    .oobe-file-icon { font-size: 32px; color: var(--md3-on-surface-variant); opacity: 0.6; }
     .oobe-crop-wrap {
         margin-top: 16px;
-        display: none;
         text-align: center;
+        display: none;
     }
     .oobe-crop-canvas {
         width: 100%;
-        max-width: 320px;
+        max-width: 280px;
         height: auto;
-        border-radius: var(--md3-radius-lg);
+        border-radius: 12px;
         border: 1px solid var(--md3-outline-variant);
-        background: var(--md3-surface-container-highest);
+        background: var(--md3-surface);
         box-shadow: var(--md3-elevation-1);
     }
 
-    /* ===== 操作按钮组 ===== */
-    .oobe-action-row {
-        margin-top: 24px;
+    /* ===== 操作按钮 ===== */
+    .oobe-actions {
+        margin-top: 28px;
         padding-top: 20px;
         border-top: 1px solid var(--md3-outline-variant);
         display: flex;
@@ -369,11 +335,11 @@
         gap: 10px;
         flex-wrap: wrap;
     }
-    .oobe-action-row.right { justify-content: flex-end; }
+    .oobe-actions.right { justify-content: flex-end; }
     .oobe-btn {
         border: 1px solid transparent;
         border-radius: 999px;
-        padding: 11px 20px;
+        padding: 11px 22px;
         font-weight: 600;
         font-size: 0.9rem;
         display: inline-flex;
@@ -381,7 +347,7 @@
         gap: 8px;
         cursor: pointer;
         font-family: inherit;
-        transition: all .15s ease;
+        transition: all .15s var(--oobe-transition);
         min-height: 44px;
     }
     .oobe-btn .material-icons { font-size: 18px; }
@@ -391,172 +357,107 @@
         box-shadow: var(--md3-elevation-1);
     }
     .oobe-btn.primary:hover {
-        box-shadow: var(--md3-elevation-3);
-        filter: brightness(1.05);
+        box-shadow: var(--md3-elevation-2);
+        filter: brightness(1.06);
     }
     .oobe-btn.tonal {
         background: var(--md3-secondary-container);
         color: var(--md3-on-secondary-container);
     }
-    .oobe-btn.tonal:hover { filter: brightness(0.97); }
+    .oobe-btn.tonal:hover { filter: brightness(0.96); }
     .oobe-btn.outlined {
         background: transparent;
-        color: var(--md3-primary);
+        color: var(--md3-on-surface);
         border-color: var(--md3-outline-variant);
     }
     .oobe-btn.outlined:hover {
-        background: var(--md3-primary-container);
-        color: var(--md3-on-primary-container);
-    }
-    .oobe-btn.text {
-        background: transparent;
-        color: var(--md3-on-surface-variant);
-    }
-    .oobe-btn.text:hover {
         background: var(--md3-surface-container-high);
     }
-    .oobe-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+    .oobe-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* ===== 邮件测试结果 ===== */
-    .oobe-mail-test-result {
+    .oobe-mail-test {
         margin-top: 14px;
         font-size: 0.86rem;
-        padding: 12px 14px;
-        border-radius: var(--md3-radius-md);
+        padding: 11px 14px;
+        border-radius: 10px;
         display: none;
         align-items: flex-start;
         gap: 8px;
+        line-height: 1.5;
     }
-    .oobe-mail-test-result.ok {
-        display: flex;
-        background: var(--md3-success-container);
-        color: var(--md3-on-success-container);
-    }
-    .oobe-mail-test-result.err {
-        display: flex;
-        background: var(--md3-error-container);
-        color: var(--md3-on-error-container);
-    }
+    .oobe-mail-test.ok { display: flex; background: var(--md3-success-container); color: var(--md3-on-success-container); }
+    .oobe-mail-test.err { display: flex; background: var(--md3-error-container); color: var(--md3-on-error-container); }
+    .oobe-mail-test .material-icons { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 
-    /* ===== Summary 卡片 ===== */
-    .oobe-summary {
-        display: grid;
-        gap: 8px;
-        margin-top: 16px;
-    }
+    /* ===== Summary ===== */
+    .oobe-summary { display: grid; gap: 8px; margin-top: 16px; }
     .oobe-summary-item {
-        border: 1px solid var(--md3-outline-variant);
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 11px 14px;
+        border-radius: 10px;
         background: var(--md3-surface-container-high);
-        border-radius: var(--md3-radius-md);
-        padding: 12px 14px;
-        font-size: 0.85rem;
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
+        font-size: 0.84rem;
         line-height: 1.5;
     }
-    .oobe-summary-item .material-icons {
-        font-size: 18px;
-        color: var(--md3-primary);
-        flex-shrink: 0;
-        margin-top: 1px;
-    }
-    .oobe-summary-key {
-        color: var(--md3-on-surface-variant);
-        font-weight: 600;
-        margin-right: 4px;
-    }
-
-    /* ===== 数据库 / 缓存步骤的提示横幅 ===== */
-    .oobe-tip {
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
-        padding: 10px 14px;
-        border-radius: var(--md3-radius-md);
-        background: var(--md3-info-container);
-        color: var(--md3-on-info-container);
-        font-size: 0.82rem;
-        margin-bottom: 16px;
-        line-height: 1.5;
-    }
-    .oobe-tip .material-icons { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .oobe-summary-item .material-icons { font-size: 18px; color: var(--md3-primary); flex-shrink: 0; margin-top: 1px; }
+    .oobe-summary-key { color: var(--md3-on-surface-variant); font-weight: 600; }
 
     /* ===== 响应式 ===== */
-    @media (max-width: 720px) {
-        .oobe-wrap { padding: 16px 12px 80px; }
-        .oobe-hero { padding: 20px 16px; }
-        .oobe-stage { padding: 18px 16px; }
-        .oobe-stage-head {
-            flex-wrap: wrap;
-            gap: 10px;
-            padding-bottom: 14px;
-            margin-bottom: 16px;
-        }
-        .oobe-stage-icon { width: 38px; height: 38px; }
-        .oobe-stage-icon .material-icons { font-size: 20px; }
-        .oobe-title { font-size: 1.3rem; }
-        .oobe-grid-2,
-        .oobe-grid-3 { grid-template-columns: 1fr; }
-        .oobe-step-label { font-size: 0.65rem; }
-        .oobe-progress-track::before { left: 6%; right: 6%; }
-        .oobe-action-row {
-            flex-direction: column-reverse;
-        }
-        .oobe-btn {
-            width: 100%;
-            justify-content: center;
-        }
+    @media (max-width: 640px) {
+        .oobe-wrap { padding: 20px 14px 80px; }
+        .oobe-stage { padding: 20px 16px; }
+        .oobe-title { font-size: 1.45rem; }
+        .oobe-grid { grid-template-columns: 1fr; }
+        .oobe-steps { flex-wrap: wrap; gap: 8px; padding: 12px; }
+        .oobe-step { flex: 1 1 40%; }
+        .oobe-step-line { display: none; }
+        .oobe-actions { flex-direction: column-reverse; }
+        .oobe-btn { width: 100%; justify-content: center; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="oobe-wrap">
+    <div class="oobe-topbar">
+        <div class="oobe-topbar-logo"><span class="material-icons">flag</span></div>
+        <span class="oobe-topbar-name">CManager</span>
+        <span class="oobe-topbar-sep">/</span>
+        <span class="oobe-topbar-stage">系统初始化</span>
+    </div>
+
     <div class="oobe-hero">
-        <div class="oobe-hero-head">
-            <div class="oobe-hero-icon">
-                <span class="material-icons">rocket_launch</span>
-            </div>
-            <div class="oobe-hero-text">
-                <h1 class="oobe-title">首次启动初始化向导</h1>
-                <p class="oobe-subtitle">按步骤完成管理员、数据库、缓存、品牌与邮箱配置。每一步确认后会自动进入下一步。</p>
-            </div>
+        <h1 class="oobe-title">欢迎使用 CManager</h1>
+        <p class="oobe-subtitle">请按步骤完成首次部署配置。整个过程约需 2 分钟，配置完成后系统会自动重启并应用所有设置。</p>
+    </div>
+
+    <div class="oobe-steps" id="oobeSteps">
+        <div class="oobe-step" data-step-visual="0">
+            <div class="oobe-step-dot"><span class="num">1</span></div>
+            <div class="oobe-step-name">管理员</div>
         </div>
-        <div class="oobe-progress">
-            <div class="oobe-progress-track" id="oobeProgressTrack">
-                <!-- 兼容 JS 的旧 dots（隐藏） -->
-                <span class="oobe-dot" data-step-dot="0" style="display:none;"></span>
-                <span class="oobe-dot" data-step-dot="1" style="display:none;"></span>
-                <span class="oobe-dot" data-step-dot="2" style="display:none;"></span>
-                <span class="oobe-dot" data-step-dot="3" style="display:none;"></span>
-                <span class="oobe-dot" data-step-dot="4" style="display:none;"></span>
-                <!-- 新的带标签进度步骤 -->
-                <div class="oobe-step" data-step-visual="0">
-                    <div class="oobe-step-dot"><span class="oobe-step-num">1</span></div>
-                    <div class="oobe-step-label">管理员</div>
-                </div>
-                <div class="oobe-step" data-step-visual="1">
-                    <div class="oobe-step-dot"><span class="oobe-step-num">2</span></div>
-                    <div class="oobe-step-label">数据库</div>
-                </div>
-                <div class="oobe-step" data-step-visual="2">
-                    <div class="oobe-step-dot"><span class="oobe-step-num">3</span></div>
-                    <div class="oobe-step-label">缓存</div>
-                </div>
-                <div class="oobe-step" data-step-visual="3">
-                    <div class="oobe-step-dot"><span class="oobe-step-num">4</span></div>
-                    <div class="oobe-step-label">Logo</div>
-                </div>
-                <div class="oobe-step" data-step-visual="4">
-                    <div class="oobe-step-dot"><span class="oobe-step-num">5</span></div>
-                    <div class="oobe-step-label">邮箱</div>
-                </div>
-            </div>
-            <div class="oobe-progress-label" id="oobeProgressLabel">第 <strong>1</strong> / 5 步</div>
+        <div class="oobe-step-line"></div>
+        <div class="oobe-step" data-step-visual="1">
+            <div class="oobe-step-dot"><span class="num">2</span></div>
+            <div class="oobe-step-name">数据库</div>
+        </div>
+        <div class="oobe-step-line"></div>
+        <div class="oobe-step" data-step-visual="2">
+            <div class="oobe-step-dot"><span class="num">3</span></div>
+            <div class="oobe-step-name">缓存</div>
+        </div>
+        <div class="oobe-step-line"></div>
+        <div class="oobe-step" data-step-visual="3">
+            <div class="oobe-step-dot"><span class="num">4</span></div>
+            <div class="oobe-step-name">Logo</div>
+        </div>
+        <div class="oobe-step-line"></div>
+        <div class="oobe-step" data-step-visual="4">
+            <div class="oobe-step-dot"><span class="num">5</span></div>
+            <div class="oobe-step-name">邮箱</div>
         </div>
     </div>
 
@@ -581,27 +482,23 @@
 <template id="step-admin">
     <section class="oobe-stage" data-step-section="0">
         <div class="oobe-stage-head">
-            <div class="oobe-stage-icon"><span class="material-icons">admin_panel_settings</span></div>
-            <div class="oobe-stage-headtext">
-                <h3 class="oobe-stage-title">管理员账户</h3>
-                <p class="oobe-stage-desc">创建首个管理员账号，并配置系统运行安全参数</p>
-            </div>
-            <span class="oobe-stage-stepnum">1 / 5</span>
+            <h2 class="oobe-stage-title">创建管理员账户</h2>
+            <p class="oobe-stage-desc">这是系统的首个超级管理员账号，拥有全部权限。请妥善保管密码。</p>
         </div>
 
-        <div class="oobe-group">
-            <h4 class="oobe-group-title"><span class="material-icons">person</span>账户信息</h4>
-            <div class="oobe-grid-2">
-                <div class="oobe-field"><label><span class="material-icons">badge</span>管理员用户名</label><input type="text" name="admin_username" value="{{ form_data.admin_username }}" required></div>
-                <div class="oobe-field"><label><span class="material-icons">person_outline</span>管理员真名</label><input type="text" name="admin_real_name" value="{{ form_data.admin_real_name }}" placeholder="建议填写真实姓名"></div>
-                <div class="oobe-field"><label><span class="material-icons">mail</span>管理员邮箱（推荐）</label><input type="email" name="admin_email" value="{{ form_data.admin_email }}" placeholder="admin@example.com"></div>
-                <div class="oobe-field"><label><span class="material-icons">school</span>管理员学号</label><input type="text" name="admin_student_id" value="{{ form_data.admin_student_id }}" placeholder="可选"></div>
-                <div class="oobe-field"><label><span class="material-icons">lock</span>管理员密码</label><input type="password" name="admin_password" required></div>
-                <div class="oobe-field"><label><span class="material-icons">lock_reset</span>确认密码</label><input type="password" name="admin_password_confirm" required></div>
-                <div class="oobe-field"><label><span class="material-icons">call</span>联系电话</label><input type="text" name="admin_phone" value="{{ form_data.admin_phone }}" placeholder="可选"></div>
-                <div class="oobe-field"><label><span class="material-icons">chat</span>微信号</label><input type="text" name="admin_wechat" value="{{ form_data.admin_wechat }}" placeholder="可选"></div>
+        <div class="oobe-section">
+            <h3 class="oobe-section-title">账户信息</h3>
+            <div class="oobe-grid">
+                <div class="oobe-field"><label>管理员用户名</label><input type="text" name="admin_username" value="{{ form_data.admin_username }}" required></div>
+                <div class="oobe-field"><label>管理员真名</label><input type="text" name="admin_real_name" value="{{ form_data.admin_real_name }}" placeholder="建议填写真实姓名"></div>
+                <div class="oobe-field"><label>管理员邮箱（推荐）</label><input type="email" name="admin_email" value="{{ form_data.admin_email }}" placeholder="admin@example.com"></div>
+                <div class="oobe-field"><label>管理员学号</label><input type="text" name="admin_student_id" value="{{ form_data.admin_student_id }}" placeholder="可选"></div>
+                <div class="oobe-field"><label>管理员密码</label><input type="password" name="admin_password" required></div>
+                <div class="oobe-field"><label>确认密码</label><input type="password" name="admin_password_confirm" required></div>
+                <div class="oobe-field"><label>联系电话</label><input type="text" name="admin_phone" value="{{ form_data.admin_phone }}" placeholder="可选"></div>
+                <div class="oobe-field"><label>微信号</label><input type="text" name="admin_wechat" value="{{ form_data.admin_wechat }}" placeholder="可选"></div>
                 <div class="oobe-field">
-                    <label><span class="material-icons">how_to_vote</span>政治面貌</label>
+                    <label>政治面貌</label>
                     <select name="admin_political_status">
                         {% for value, label in political_status_choices %}
                         <option value="{{ value }}" {% if form_data.admin_political_status == value %}selected{% endif %}>{{ label }}</option>
@@ -609,7 +506,7 @@
                     </select>
                 </div>
                 <div class="oobe-field">
-                    <label><span class="material-icons">visibility</span>是否公开个人信息</label>
+                    <label>是否公开个人信息</label>
                     <select name="admin_is_info_public">
                         <option value="no" {% if form_data.admin_is_info_public != 'yes' %}selected{% endif %}>否</option>
                         <option value="yes" {% if form_data.admin_is_info_public == 'yes' %}selected{% endif %}>是</option>
@@ -618,59 +515,72 @@
             </div>
         </div>
 
-        <div class="oobe-group">
-            <h4 class="oobe-group-title"><span class="material-icons">security</span>系统安全参数</h4>
-            <div class="oobe-grid-2">
-                <div class="oobe-field"><label><span class="material-icons">key</span>SECRET_KEY</label><input type="text" name="secret_key" value="{{ form_data.secret_key }}" required></div>
+        <div class="oobe-section">
+            <h3 class="oobe-section-title">站点配置</h3>
+            <div class="oobe-grid">
+                <div class="oobe-field"><label>SECRET_KEY</label><input type="text" name="secret_key" value="{{ form_data.secret_key }}" required><span class="oobe-field-hint">已自动生成，无需修改</span></div>
                 <div class="oobe-field">
-                    <label><span class="material-icons">build</span>DEBUG 模式</label>
+                    <label>DEBUG 调试模式</label>
                     <select name="debug">
                         <option value="no" {% if form_data.debug != 'yes' %}selected{% endif %}>False（生产推荐）</option>
                         <option value="yes" {% if form_data.debug == 'yes' %}selected{% endif %}>True（仅开发）</option>
                     </select>
                 </div>
-                <div class="oobe-field"><label><span class="material-icons">dns</span>ALLOWED_HOSTS（逗号分隔）</label><input type="text" name="allowed_hosts" value="{{ form_data.allowed_hosts }}" placeholder="localhost,127.0.0.1" required></div>
-                <div class="oobe-field"><label><span class="material-icons">verified_user</span>CSRF_TRUSTED_ORIGINS</label><input type="text" name="csrf_trusted_origins" value="{{ form_data.csrf_trusted_origins }}" placeholder="http://127.0.0.1,http://localhost" required></div>
-                <div class="oobe-field">
-                    <label><span class="material-icons">shield</span>SECURE_BROWSER_XSS_FILTER</label>
-                    <select name="secure_browser_xss_filter">
-                        <option value="yes" {% if form_data.secure_browser_xss_filter != 'no' %}selected{% endif %}>True</option>
-                        <option value="no" {% if form_data.secure_browser_xss_filter == 'no' %}selected{% endif %}>False</option>
-                    </select>
-                </div>
-                <div class="oobe-field">
-                    <label><span class="material-icons">shield</span>SECURE_CONTENT_TYPE_NOSNIFF</label>
-                    <select name="secure_content_type_nosniff">
-                        <option value="yes" {% if form_data.secure_content_type_nosniff != 'no' %}selected{% endif %}>True</option>
-                        <option value="no" {% if form_data.secure_content_type_nosniff == 'no' %}selected{% endif %}>False</option>
-                    </select>
-                </div>
-                <div class="oobe-field">
-                    <label><span class="material-icons">cookie</span>SESSION_COOKIE_SECURE</label>
-                    <select name="session_cookie_secure">
-                        <option value="no" {% if form_data.session_cookie_secure != 'yes' %}selected{% endif %}>False（HTTP 兼容）</option>
-                        <option value="yes" {% if form_data.session_cookie_secure == 'yes' %}selected{% endif %}>True（HTTPS 推荐）</option>
-                    </select>
-                </div>
-                <div class="oobe-field">
-                    <label><span class="material-icons">cookie</span>CSRF_COOKIE_SECURE</label>
-                    <select name="csrf_cookie_secure">
-                        <option value="no" {% if form_data.csrf_cookie_secure != 'yes' %}selected{% endif %}>False（HTTP 兼容）</option>
-                        <option value="yes" {% if form_data.csrf_cookie_secure == 'yes' %}selected{% endif %}>True（HTTPS 推荐）</option>
-                    </select>
-                </div>
-                <div class="oobe-field">
-                    <label><span class="material-icons">crop_free</span>X_FRAME_OPTIONS</label>
-                    <select name="x_frame_options" required>
-                        {% for value in frame_option_choices %}
-                        <option value="{{ value }}" {% if form_data.x_frame_options == value %}selected{% endif %}>{{ value }}</option>
-                        {% endfor %}
-                    </select>
+                <div class="oobe-field"><label>ALLOWED_HOSTS</label><input type="text" name="allowed_hosts" value="{{ form_data.allowed_hosts }}" placeholder="localhost,127.0.0.1" required><span class="oobe-field-hint">逗号分隔的允许访问域名</span></div>
+                <div class="oobe-field"><label>CSRF_TRUSTED_ORIGINS</label><input type="text" name="csrf_trusted_origins" value="{{ form_data.csrf_trusted_origins }}" placeholder="http://127.0.0.1,http://localhost" required><span class="oobe-field-hint">逗号分隔的可信来源</span></div>
+            </div>
+        </div>
+
+        <div class="oobe-advanced" data-advanced>
+            <button type="button" class="oobe-advanced-toggle">
+                <span class="left"><span class="material-icons">shield</span>安全响应头（高级）</span>
+                <span class="material-icons chev">expand_more</span>
+            </button>
+            <div class="oobe-advanced-body">
+                <div class="oobe-advanced-inner">
+                    <div class="oobe-grid">
+                        <div class="oobe-field">
+                            <label>SECURE_BROWSER_XSS_FILTER</label>
+                            <select name="secure_browser_xss_filter">
+                                <option value="yes" {% if form_data.secure_browser_xss_filter != 'no' %}selected{% endif %}>True</option>
+                                <option value="no" {% if form_data.secure_browser_xss_filter == 'no' %}selected{% endif %}>False</option>
+                            </select>
+                        </div>
+                        <div class="oobe-field">
+                            <label>SECURE_CONTENT_TYPE_NOSNIFF</label>
+                            <select name="secure_content_type_nosniff">
+                                <option value="yes" {% if form_data.secure_content_type_nosniff != 'no' %}selected{% endif %}>True</option>
+                                <option value="no" {% if form_data.secure_content_type_nosniff == 'no' %}selected{% endif %}>False</option>
+                            </select>
+                        </div>
+                        <div class="oobe-field">
+                            <label>SESSION_COOKIE_SECURE</label>
+                            <select name="session_cookie_secure">
+                                <option value="no" {% if form_data.session_cookie_secure != 'yes' %}selected{% endif %}>False（HTTP 兼容）</option>
+                                <option value="yes" {% if form_data.session_cookie_secure == 'yes' %}selected{% endif %}>True（HTTPS 推荐）</option>
+                            </select>
+                        </div>
+                        <div class="oobe-field">
+                            <label>CSRF_COOKIE_SECURE</label>
+                            <select name="csrf_cookie_secure">
+                                <option value="no" {% if form_data.csrf_cookie_secure != 'yes' %}selected{% endif %}>False（HTTP 兼容）</option>
+                                <option value="yes" {% if form_data.csrf_cookie_secure == 'yes' %}selected{% endif %}>True（HTTPS 推荐）</option>
+                            </select>
+                        </div>
+                        <div class="oobe-field">
+                            <label>X_FRAME_OPTIONS</label>
+                            <select name="x_frame_options" required>
+                                {% for value in frame_option_choices %}
+                                <option value="{{ value }}" {% if form_data.x_frame_options == value %}selected{% endif %}>{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="oobe-action-row right">
+        <div class="oobe-actions right">
             <button class="oobe-btn primary" type="button" data-next-step="1">继续<span class="material-icons">arrow_forward</span></button>
         </div>
     </section>
@@ -679,21 +589,17 @@
 <template id="step-db">
     <section class="oobe-stage" data-step-section="1">
         <div class="oobe-stage-head">
-            <div class="oobe-stage-icon"><span class="material-icons">storage</span></div>
-            <div class="oobe-stage-headtext">
-                <h3 class="oobe-stage-title">数据库</h3>
-                <p class="oobe-stage-desc">开发建议 SQLite；生产建议 PostgreSQL / MySQL</p>
-            </div>
-            <span class="oobe-stage-stepnum">2 / 5</span>
+            <h2 class="oobe-stage-title">数据库配置</h2>
+            <p class="oobe-stage-desc">开发环境推荐 SQLite（无需额外服务）；生产环境推荐 PostgreSQL 或 MySQL。</p>
         </div>
 
         <div class="oobe-tip">
             <span class="material-icons">lightbulb</span>
-            <span>SQLite 适合单机部署，无需额外服务；如需高并发请选择 PostgreSQL 或 MySQL，并填写完整的连接信息。</span>
+            <span>SQLite 适合单机部署，零配置；如需高并发请选择 PostgreSQL / MySQL 并填写完整连接信息。</span>
         </div>
 
-        <div class="oobe-group">
-            <h4 class="oobe-group-title"><span class="material-icons">settings_input_component</span>数据库类型</h4>
+        <div class="oobe-section">
+            <h3 class="oobe-section-title">数据库类型</h3>
             <div class="oobe-field">
                 <select name="db_type" id="db_type" required>
                     {% for value, label in db_choices %}
@@ -703,38 +609,45 @@
             </div>
         </div>
 
-        <div class="oobe-group">
-            <h4 class="oobe-group-title"><span class="material-icons">tune</span>连接参数</h4>
-            <div class="oobe-grid-2" id="db_advanced">
-                <div class="oobe-field"><label>DB_NAME</label><input type="text" name="db_name" value="{{ form_data.db_name }}" placeholder="sqlite 可留空，默认 db.sqlite3"></div>
+        <div class="oobe-section">
+            <h3 class="oobe-section-title">连接参数</h3>
+            <div class="oobe-grid" id="db_advanced">
+                <div class="oobe-field"><label>DB_NAME</label><input type="text" name="db_name" value="{{ form_data.db_name }}" placeholder="sqlite 可留空"></div>
                 <div class="oobe-field db-server-only"><label>DB_USER</label><input type="text" name="db_user" value="{{ form_data.db_user }}"></div>
                 <div class="oobe-field db-server-only"><label>DB_PASSWORD</label><input type="password" name="db_password" value="{{ form_data.db_password }}"></div>
                 <div class="oobe-field db-server-only"><label>DB_HOST</label><input type="text" name="db_host" value="{{ form_data.db_host }}" placeholder="127.0.0.1"></div>
                 <div class="oobe-field db-server-only"><label>DB_PORT</label><input type="text" name="db_port" value="{{ form_data.db_port }}" placeholder="5432 / 3306"></div>
-                <div class="oobe-field"><label>DB_CONN_MAX_AGE（秒）</label><input type="number" min="0" name="db_conn_max_age" value="{{ form_data.db_conn_max_age }}"></div>
             </div>
         </div>
 
-        <div class="oobe-group">
-            <h4 class="oobe-group-title"><span class="material-icons">memory</span>SQLite 调优</h4>
-            <div class="oobe-grid-2">
-                <div class="oobe-field"><label>SQLITE_CONN_MAX_AGE（秒）</label><input type="number" min="0" name="sqlite_conn_max_age" value="{{ form_data.sqlite_conn_max_age }}"></div>
-                <div class="oobe-field"><label>SQLITE_TIMEOUT（秒）</label><input type="number" min="1" name="sqlite_timeout" value="{{ form_data.sqlite_timeout }}"></div>
-                <div class="oobe-field">
-                    <label>SQLITE_SYNCHRONOUS</label>
-                    <select name="sqlite_synchronous">
-                        <option value="OFF" {% if form_data.sqlite_synchronous == 'OFF' %}selected{% endif %}>OFF</option>
-                        <option value="NORMAL" {% if form_data.sqlite_synchronous == 'NORMAL' or not form_data.sqlite_synchronous %}selected{% endif %}>NORMAL</option>
-                        <option value="FULL" {% if form_data.sqlite_synchronous == 'FULL' %}selected{% endif %}>FULL</option>
-                        <option value="EXTRA" {% if form_data.sqlite_synchronous == 'EXTRA' %}selected{% endif %}>EXTRA</option>
-                    </select>
+        <div class="oobe-advanced" data-advanced>
+            <button type="button" class="oobe-advanced-toggle">
+                <span class="left"><span class="material-icons">tune</span>SQLite 调优（高级）</span>
+                <span class="material-icons chev">expand_more</span>
+            </button>
+            <div class="oobe-advanced-body">
+                <div class="oobe-advanced-inner">
+                    <div class="oobe-grid">
+                        <div class="oobe-field"><label>DB_CONN_MAX_AGE（秒）</label><input type="number" min="0" name="db_conn_max_age" value="{{ form_data.db_conn_max_age }}"></div>
+                        <div class="oobe-field"><label>SQLITE_CONN_MAX_AGE（秒）</label><input type="number" min="0" name="sqlite_conn_max_age" value="{{ form_data.sqlite_conn_max_age }}"></div>
+                        <div class="oobe-field"><label>SQLITE_TIMEOUT（秒）</label><input type="number" min="1" name="sqlite_timeout" value="{{ form_data.sqlite_timeout }}"></div>
+                        <div class="oobe-field">
+                            <label>SQLITE_SYNCHRONOUS</label>
+                            <select name="sqlite_synchronous">
+                                <option value="OFF" {% if form_data.sqlite_synchronous == 'OFF' %}selected{% endif %}>OFF</option>
+                                <option value="NORMAL" {% if form_data.sqlite_synchronous == 'NORMAL' or not form_data.sqlite_synchronous %}selected{% endif %}>NORMAL</option>
+                                <option value="FULL" {% if form_data.sqlite_synchronous == 'FULL' %}selected{% endif %}>FULL</option>
+                                <option value="EXTRA" {% if form_data.sqlite_synchronous == 'EXTRA' %}selected{% endif %}>EXTRA</option>
+                            </select>
+                        </div>
+                        <div class="oobe-field"><label>SQLITE_CACHE_SIZE</label><input type="number" name="sqlite_cache_size" value="{{ form_data.sqlite_cache_size }}"></div>
+                        <div class="oobe-field"><label>SQLITE_MMAP_SIZE</label><input type="number" min="0" name="sqlite_mmap_size" value="{{ form_data.sqlite_mmap_size }}"></div>
+                    </div>
                 </div>
-                <div class="oobe-field"><label>SQLITE_CACHE_SIZE</label><input type="number" name="sqlite_cache_size" value="{{ form_data.sqlite_cache_size }}"></div>
-                <div class="oobe-field"><label>SQLITE_MMAP_SIZE</label><input type="number" min="0" name="sqlite_mmap_size" value="{{ form_data.sqlite_mmap_size }}"></div>
             </div>
         </div>
 
-        <div class="oobe-action-row">
+        <div class="oobe-actions">
             <button class="oobe-btn outlined" type="button" data-prev-step="0"><span class="material-icons">arrow_back</span>上一步</button>
             <button class="oobe-btn primary" type="button" data-next-step="2">继续<span class="material-icons">arrow_forward</span></button>
         </div>
@@ -744,22 +657,18 @@
 <template id="step-cache">
     <section class="oobe-stage" data-step-section="2">
         <div class="oobe-stage-head">
-            <div class="oobe-stage-icon"><span class="material-icons">bolt</span></div>
-            <div class="oobe-stage-headtext">
-                <h3 class="oobe-stage-title">缓存</h3>
-                <p class="oobe-stage-desc">完整缓存参数配置，影响系统并发性能</p>
-            </div>
-            <span class="oobe-stage-stepnum">3 / 5</span>
+            <h2 class="oobe-stage-title">缓存配置</h2>
+            <p class="oobe-stage-desc">缓存影响系统并发性能。单机推荐文件缓存，生产推荐 Redis。</p>
         </div>
 
         <div class="oobe-tip">
             <span class="material-icons">lightbulb</span>
-            <span>单机部署推荐「文件缓存」；生产环境推荐「Redis 缓存」以获得最佳性能。</span>
+            <span>不确定选什么？保持默认「文件缓存」即可，后续可在管理后台修改。</span>
         </div>
 
-        <div class="oobe-group">
-            <h4 class="oobe-group-title"><span class="material-icons">settings_input_component</span>缓存后端</h4>
-            <div class="oobe-grid-2">
+        <div class="oobe-section">
+            <h3 class="oobe-section-title">缓存后端</h3>
+            <div class="oobe-grid">
                 <div class="oobe-field">
                     <label>CACHE_BACKEND</label>
                     <select name="cache_backend" id="cache_backend">
@@ -769,20 +678,33 @@
                     </select>
                 </div>
                 <div class="oobe-field" id="redis_url_group"><label>REDIS_URL</label><input type="text" name="redis_url" value="{{ form_data.redis_url }}" placeholder="redis://127.0.0.1:6379/1"></div>
-                <div class="oobe-field" id="cache_location_group"><label>CACHE_LOCATION（locmem 时必填）</label><input type="text" name="cache_location" value="{{ form_data.cache_location }}" placeholder="cmanager-default-cache"></div>
-                <div class="oobe-field"><label>CACHE_TIMEOUT（秒）</label><input type="number" min="0" name="cache_timeout" value="{{ form_data.cache_timeout }}"></div>
-                <div class="oobe-field"><label>CACHE_KEY_PREFIX</label><input type="text" name="cache_key_prefix" value="{{ form_data.cache_key_prefix }}"></div>
-                <div class="oobe-field">
-                    <label>SESSION_USE_CACHED_DB</label>
-                    <select name="session_use_cached_db">
-                        <option value="yes" {% if form_data.session_use_cached_db != 'no' %}selected{% endif %}>True（推荐）</option>
-                        <option value="no" {% if form_data.session_use_cached_db == 'no' %}selected{% endif %}>False</option>
-                    </select>
+                <div class="oobe-field" id="cache_location_group"><label>CACHE_LOCATION</label><input type="text" name="cache_location" value="{{ form_data.cache_location }}" placeholder="cmanager-default-cache"></div>
+            </div>
+        </div>
+
+        <div class="oobe-advanced" data-advanced>
+            <button type="button" class="oobe-advanced-toggle">
+                <span class="left"><span class="material-icons">tune</span>缓存调优（高级）</span>
+                <span class="material-icons chev">expand_more</span>
+            </button>
+            <div class="oobe-advanced-body">
+                <div class="oobe-advanced-inner">
+                    <div class="oobe-grid">
+                        <div class="oobe-field"><label>CACHE_TIMEOUT（秒）</label><input type="number" min="0" name="cache_timeout" value="{{ form_data.cache_timeout }}"></div>
+                        <div class="oobe-field"><label>CACHE_KEY_PREFIX</label><input type="text" name="cache_key_prefix" value="{{ form_data.cache_key_prefix }}"></div>
+                        <div class="oobe-field">
+                            <label>SESSION_USE_CACHED_DB</label>
+                            <select name="session_use_cached_db">
+                                <option value="yes" {% if form_data.session_use_cached_db != 'no' %}selected{% endif %}>True（推荐）</option>
+                                <option value="no" {% if form_data.session_use_cached_db == 'no' %}selected{% endif %}>False</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="oobe-action-row">
+        <div class="oobe-actions">
             <button class="oobe-btn outlined" type="button" data-prev-step="1"><span class="material-icons">arrow_back</span>上一步</button>
             <button class="oobe-btn primary" type="button" data-next-step="3">继续<span class="material-icons">arrow_forward</span></button>
         </div>
@@ -792,36 +714,32 @@
 <template id="step-logo">
     <section class="oobe-stage" data-step-section="3">
         <div class="oobe-stage-head">
-            <div class="oobe-stage-icon"><span class="material-icons">branding_watermark</span></div>
-            <div class="oobe-stage-headtext">
-                <h3 class="oobe-stage-title">网站 Logo</h3>
-                <p class="oobe-stage-desc">可选上传，系统会自动生成 favicon</p>
-            </div>
-            <span class="oobe-stage-stepnum">4 / 5</span>
+            <h2 class="oobe-stage-title">网站 Logo</h2>
+            <p class="oobe-stage-desc">可选步骤。上传后系统会自动裁剪并生成 favicon。</p>
         </div>
 
         <div class="oobe-tip">
             <span class="material-icons">lightbulb</span>
-            <span>支持 .ico / .png / .jpg / .jpeg / .webp，建议上传正方形图片以便裁剪。本步骤可跳过。</span>
+            <span>支持 .ico / .png / .jpg / .jpeg / .webp，建议正方形图片。本步骤可跳过。</span>
         </div>
 
         <div class="oobe-field">
-            <label>上传 Logo（可跳过）</label>
+            <label>上传 Logo</label>
             <div class="oobe-file">
                 <div class="oobe-file-icon"><span class="material-icons">cloud_upload</span></div>
                 <input type="file" id="site_logo" name="site_logo" accept=".ico,.png,.jpg,.jpeg,.webp">
-                <div id="logoFileName" class="oobe-hint">点击选择文件或将文件拖入此处</div>
+                <div id="logoFileName" class="oobe-field-hint">点击选择文件</div>
             </div>
             <div class="oobe-crop-wrap" id="logoCropWrap">
                 <canvas id="logoCropCanvas" class="oobe-crop-canvas" width="256" height="256"></canvas>
-                <div class="oobe-field" style="margin-top:12px; max-width:320px; margin-left:auto; margin-right:auto;">
+                <div class="oobe-field" style="margin-top:12px; max-width:280px; margin-left:auto; margin-right:auto;">
                     <label>缩放</label>
                     <input type="range" id="logoCropZoom" min="1" max="3" step="0.01" value="1">
                 </div>
             </div>
         </div>
 
-        <div class="oobe-action-row">
+        <div class="oobe-actions">
             <button class="oobe-btn outlined" type="button" data-prev-step="2"><span class="material-icons">arrow_back</span>上一步</button>
             <button class="oobe-btn primary" type="button" data-next-step="4">继续<span class="material-icons">arrow_forward</span></button>
         </div>
@@ -831,21 +749,17 @@
 <template id="step-email">
     <section class="oobe-stage" data-step-section="4">
         <div class="oobe-stage-head">
-            <div class="oobe-stage-icon"><span class="material-icons">mail</span></div>
-            <div class="oobe-stage-headtext">
-                <h3 class="oobe-stage-title">邮箱配置</h3>
-                <p class="oobe-stage-desc">支持测试邮件，确认可用后完成初始化</p>
-            </div>
-            <span class="oobe-stage-stepnum">5 / 5</span>
+            <h2 class="oobe-stage-title">邮箱配置</h2>
+            <p class="oobe-stage-desc">配置 SMTP 邮件服务，用于发送通知与验证邮件。可先跳过，后续在后台配置。</p>
         </div>
 
-        <div class="oobe-group">
-            <h4 class="oobe-group-title"><span class="material-icons">settings_input_component</span>SMTP 设置</h4>
-            <div class="oobe-grid-2">
+        <div class="oobe-section">
+            <h3 class="oobe-section-title">SMTP 设置</h3>
+            <div class="oobe-grid">
                 <div class="oobe-field">
                     <label>是否启用 SMTP 邮箱</label>
                     <select name="enable_email" id="enable_email">
-                        <option value="no" {% if form_data.enable_email != 'yes' %}selected{% endif %}>否（仅控制台）</option>
+                        <option value="no" {% if form_data.enable_email != 'yes' %}selected{% endif %}>否（仅控制台输出）</option>
                         <option value="yes" {% if form_data.enable_email == 'yes' %}selected{% endif %}>是（启用真实发信）</option>
                     </select>
                 </div>
@@ -858,7 +772,7 @@
                     </select>
                 </div>
             </div>
-            <div id="smtp_detail" class="oobe-grid-2" style="margin-top: 14px;">
+            <div id="smtp_detail" class="oobe-grid" style="margin-top: 14px;">
                 <div class="oobe-field"><label>SMTP 服务器地址</label><input type="text" name="smtp_host" id="smtp_host" value="{{ form_data.smtp_host }}" placeholder="smtp.qq.com"></div>
                 <div class="oobe-field"><label>SMTP 端口</label><input type="number" name="smtp_port" id="smtp_port" value="{{ form_data.smtp_port }}" placeholder="587"></div>
                 <div class="oobe-field"><label>发送邮箱</label><input type="email" name="sender_email" id="sender_email" value="{{ form_data.sender_email }}" placeholder="no-reply@example.com"></div>
@@ -868,7 +782,7 @@
             </div>
         </div>
 
-        <div class="oobe-mail-test-result" id="mailTestResult"></div>
+        <div class="oobe-mail-test" id="mailTestResult"></div>
 
         <div class="oobe-summary">
             <div class="oobe-summary-item">
@@ -881,11 +795,11 @@
             </div>
         </div>
 
-        <div class="oobe-action-row">
+        <div class="oobe-actions">
             <button class="oobe-btn outlined" type="button" data-prev-step="3"><span class="material-icons">arrow_back</span>上一步</button>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <button class="oobe-btn tonal" type="button" id="btnTestMail"><span class="material-icons">outgoing_mail</span>发送测试邮件</button>
-                <button class="oobe-btn primary" type="submit"><span class="material-icons">rocket_launch</span>保存配置</button>
+                <button class="oobe-btn primary" type="submit"><span class="material-icons">rocket_launch</span>保存并完成</button>
             </div>
         </div>
     </section>
@@ -896,8 +810,6 @@
     const form = document.querySelector('.oobe-form');
     const host = document.getElementById('wizardHost');
     const retained = document.getElementById('retainedInputs');
-    const progressLabel = document.getElementById('oobeProgressLabel');
-    const dots = Array.from(document.querySelectorAll('[data-step-dot]'));
     const visualSteps = Array.from(document.querySelectorAll('[data-step-visual]'));
 
     const stepTemplateIds = ['step-admin', 'step-db', 'step-cache', 'step-logo', 'step-email'];
@@ -910,19 +822,20 @@
     };
 
     let currentStep = 0;
-    const stepHistory = [];
 
     function updateProgress() {
-        progressLabel.innerHTML = `第 <strong>${currentStep + 1}</strong> / ${stepTemplateIds.length} 步`;
-        // 同步旧 dots（保持 JS 兼容）
-        dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === currentStep);
-            dot.classList.toggle('done', index < currentStep);
-        });
-        // 同步新的可视化进度步骤
         visualSteps.forEach((step, index) => {
             step.classList.toggle('active', index === currentStep);
             step.classList.toggle('done', index < currentStep);
+        });
+    }
+
+    function bindAdvancedToggles(section) {
+        section.querySelectorAll('[data-advanced]').forEach((box) => {
+            const toggle = box.querySelector('.oobe-advanced-toggle');
+            toggle.addEventListener('click', () => {
+                box.classList.toggle('open');
+            });
         });
     }
 
@@ -961,6 +874,7 @@
         const requiredControls = Array.from(section.querySelectorAll('[required]'));
         for (const control of requiredControls) {
             if (control.closest('[style*="display: none"]')) continue;
+            // 高级折叠区内的必填项也需要验证（字段仍存在于 DOM）
             if (control.type === 'file') {
                 if (!(control.files && control.files.length > 0)) {
                     control.reportValidity();
@@ -987,6 +901,8 @@
 
     function bindStepInteractions(section) {
         const step = Number(section.dataset.stepSection || '0');
+
+        bindAdvancedToggles(section);
 
         if (step === 1) {
             const dbType = section.querySelector('#db_type');
@@ -1078,7 +994,7 @@
 
             logoInput.addEventListener('change', () => {
                 const file = logoInput.files && logoInput.files[0] ? logoInput.files[0] : null;
-                fileName.textContent = file ? file.name : '点击选择文件或将文件拖入此处';
+                fileName.textContent = file ? file.name : '点击选择文件';
                 if (!file) {
                     cropWrap.style.display = 'none';
                     imgReady = false;
@@ -1130,7 +1046,6 @@
             const nextBtn = section.querySelector('[data-next-step]');
             nextBtn.dataset.customNext = '1';
             nextBtn.addEventListener('click', async (e) => {
-                // Logo 可选：未选文件时直接跳过本步
                 if (!(logoInput.files && logoInput.files[0])) {
                     if (!validateStep(section)) return;
                     e.preventDefault();
@@ -1141,7 +1056,6 @@
                     return;
                 }
 
-                // 文件已选但图片尚未加载完成，等待
                 if (!imgReady) return;
                 e.preventDefault();
 
@@ -1191,12 +1105,12 @@
             testBtn.addEventListener('click', async () => {
                 const testToEmail = section.querySelector('#test_to_email').value.trim();
                 if (!testToEmail) {
-                    result.className = 'oobe-mail-test-result err';
+                    result.className = 'oobe-mail-test err';
                     result.innerHTML = '<span class="material-icons">error</span><span>请先填写测试收件邮箱</span>';
                     return;
                 }
                 if (enableEmail.value !== 'yes') {
-                    result.className = 'oobe-mail-test-result err';
+                    result.className = 'oobe-mail-test err';
                     result.innerHTML = '<span class="material-icons">error</span><span>请先启用 SMTP 邮箱</span>';
                     return;
                 }
@@ -1213,7 +1127,7 @@
                 payload.append('test_to_email', testToEmail);
 
                 testBtn.disabled = true;
-                result.className = 'oobe-mail-test-result';
+                result.className = 'oobe-mail-test';
                 result.style.display = 'flex';
                 result.innerHTML = '<span class="material-icons">hourglass_top</span><span>正在发送测试邮件...</span>';
 
@@ -1225,14 +1139,14 @@
                     });
                     const data = await resp.json();
                     if (resp.ok && data.ok) {
-                        result.className = 'oobe-mail-test-result ok';
+                        result.className = 'oobe-mail-test ok';
                         result.innerHTML = `<span class="material-icons">check_circle</span><span>${data.message || '测试邮件发送成功'}</span>`;
                     } else {
-                        result.className = 'oobe-mail-test-result err';
+                        result.className = 'oobe-mail-test err';
                         result.innerHTML = `<span class="material-icons">error</span><span>${data.message || '测试邮件发送失败'}</span>`;
                     }
                 } catch (err) {
-                    result.className = 'oobe-mail-test-result err';
+                    result.className = 'oobe-mail-test err';
                     result.innerHTML = '<span class="material-icons">wifi_off</span><span>网络异常，测试邮件发送失败</span>';
                 } finally {
                     testBtn.disabled = false;
@@ -1243,12 +1157,10 @@
             fillProviderDefaults();
         }
 
-        // 继续按钮
         section.querySelectorAll('[data-next-step]').forEach((btn) => {
             if (btn.dataset.customNext === '1') return;
             btn.addEventListener('click', () => {
                 if (!validateStep(section)) return;
-                stepHistory.push(currentStep);
                 retainCurrentStepInputs(section);
                 section.remove();
                 currentStep = Number(btn.getAttribute('data-next-step'));
@@ -1256,7 +1168,6 @@
             });
         });
 
-        // 上一步按钮
         section.querySelectorAll('[data-prev-step]').forEach((btn) => {
             btn.addEventListener('click', () => {
                 const prevStep = Number(btn.getAttribute('data-prev-step'));
@@ -1277,7 +1188,6 @@
         const section = host.querySelector('[data-step-section]');
         bindStepInteractions(section);
         updateProgress();
-        // 滚动到顶部
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
