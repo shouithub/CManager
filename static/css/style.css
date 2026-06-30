@@ -2348,16 +2348,16 @@ body {
     justify-content: center;
     border-radius: 8px;
     overflow: hidden;
-    padding: 3px;
+    padding: 0;
     box-sizing: border-box;
-    background: color-mix(in srgb, var(--md3-surface) 85%, var(--md3-on-surface) 6%);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--md3-outline-variant) 70%, transparent) inset;
-    border: 1px solid color-mix(in srgb, var(--md3-outline-variant) 60%, transparent);
+    background: transparent;
+    box-shadow: none;
+    border: none;
 }
 [data-theme="dark"] .sidebar-header .logo-icon {
-    background: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 .sidebar-header .logo-icon img {
     width: 100%;
