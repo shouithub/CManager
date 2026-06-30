@@ -217,13 +217,32 @@
         }
 
         .page-header {
-            align-items: flex-start;
+            flex-wrap: wrap;
+            align-items: center;
             margin-bottom: var(--md3-spacing-md);
             padding: var(--md3-spacing-md);
             border: 1px solid var(--md3-outline-variant);
             border-radius: var(--md3-radius-lg);
             background: var(--md3-surface-container);
             box-shadow: var(--md3-elevation-1);
+        }
+
+        .page-header .page-title-icon {
+            flex: 0 0 auto;
+        }
+
+        .page-header-content {
+            flex: 1 1 calc(100% - 2.5rem);
+            min-width: 0;
+        }
+
+        .channel-tabs {
+            flex: 1 1 100%;
+            order: 1;
+            margin-top: var(--md3-spacing-sm);
+            margin-left: 0;
+            margin-right: 0;
+            padding-bottom: 2px;
         }
 
         .page-header h1 {
@@ -246,13 +265,11 @@
         .channel-tabs {
             display: flex;
             flex-flow: row nowrap;
-            flex-basis: 100%;
             gap: 8px;
             overflow-x: auto;
             overscroll-behavior-x: contain;
             scrollbar-width: none;
-            margin: 0 calc(-1 * var(--md3-spacing-md));
-            padding: 0 var(--md3-spacing-md) 2px;
+            padding-bottom: 2px;
         }
 
         .channel-tabs::-webkit-scrollbar {
