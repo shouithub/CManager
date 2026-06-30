@@ -16,7 +16,6 @@
         background: var(--md3-surface-container-low);
         border: 1px solid var(--md3-outline-variant);
         border-radius: var(--md3-radius-xl);
-        box-shadow: var(--md3-elevation-1);
     }
 
     .page-header {
@@ -135,8 +134,7 @@
     .record-list {
         display: flex;
         flex-direction: column;
-        gap: var(--md3-spacing-md);
-        padding: var(--md3-spacing-md);
+        padding: 0 var(--md3-spacing-lg);
     }
 
     .record-card {
@@ -144,19 +142,20 @@
         grid-template-columns: minmax(0, 1fr) auto;
         gap: var(--md3-spacing-lg);
         align-items: center;
-        padding: var(--md3-spacing-lg);
-        border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
-        background: var(--md3-surface);
+        padding: var(--md3-spacing-lg) 0;
+        border-bottom: 1px solid var(--md3-outline-variant);
+        background: transparent;
         text-decoration: none;
         color: inherit;
-        transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        transition: background 0.18s ease;
+    }
+
+    .record-card:last-child {
+        border-bottom: none;
     }
 
     .record-card:hover {
-        border-color: var(--md3-primary);
-        box-shadow: var(--md3-elevation-2);
-        transform: translateY(-1px);
+        background: var(--md3-surface-container-high);
     }
 
     .record-title {
@@ -257,22 +256,39 @@
         }
 
         .page-header {
-            align-items: flex-start;
+            display: flex;
+            align-items: center;
+            gap: var(--md3-spacing-md);
             margin-bottom: var(--md3-spacing-md);
-            padding: var(--md3-spacing-md);
-            border-radius: var(--md3-radius-lg);
+            padding: 0 0 var(--md3-spacing-sm);
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
         }
 
         .page-header .page-title-icon {
-            font-size: 2rem;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: var(--md3-radius-lg);
+            background: var(--md3-primary-container);
+            color: var(--md3-primary);
+            font-size: 1.5rem;
         }
 
         .page-header h1 {
-            font-size: 1.18rem;
+            margin: 0;
+            font-size: 1.45rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
         }
 
         .page-header p {
-            font-size: 0.86rem;
+            margin: 4px 0 0;
+            font-size: 0.84rem;
+            color: var(--md3-on-surface-variant);
         }
 
         .content-card {
@@ -289,15 +305,15 @@
         }
 
         .record-list {
-            gap: var(--md3-spacing-sm);
-            padding: var(--md3-spacing-sm);
+            gap: 0;
+            padding: 0 var(--md3-spacing-md);
         }
 
         .record-card {
             grid-template-columns: 1fr;
             gap: var(--md3-spacing-md);
-            padding: var(--md3-spacing-md);
-            border-radius: var(--md3-radius-md);
+            padding: var(--md3-spacing-md) 0;
+            border-radius: 0;
         }
 
         .record-meta {
