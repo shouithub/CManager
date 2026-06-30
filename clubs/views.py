@@ -2055,6 +2055,25 @@ def admin_edit_user_account(request, user_id):
                 )
                 success_messages.append(f'已为用户 {target_user.username} 设置电话：{phone}')
 
+        # 修改学号
+        elif action == 'change_student_id':
+            student_id = request.POST.get('student_id', '').strip()
+
+            try:
+                profile = target_user.profile
+                profile.student_id = student_id
+                profile.save()
+                success_messages.append(f'已更新用户 {target_user.username} 的学号：{student_id or "（已清空）"}')
+            except UserProfile.DoesNotExist:
+                import uuid
+                unique_student_id = student_id or f"USER_{target_user.username}_{str(uuid.uuid4())[:8]}"
+                profile = UserProfile.objects.create(
+                    user=target_user,
+                    role='member',
+                    student_id=unique_student_id
+                )
+                success_messages.append(f'已为用户 {target_user.username} 设置学号：{student_id}')
+
         # 修改QQ
         elif action == 'change_qq':
             qq = request.POST.get('qq', '').strip()
