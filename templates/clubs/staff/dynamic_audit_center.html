@@ -265,18 +265,11 @@
             grid-column: 1 / -1;
             grid-row: 2;
             display: flex;
-            flex-flow: row nowrap;
+            flex-flow: row wrap;
             gap: 8px;
             margin-top: var(--md3-spacing-sm);
             padding: 0 0 var(--md3-spacing-sm);
-            overflow-x: auto;
-            overscroll-behavior-x: contain;
-            scrollbar-width: none;
             border-bottom: 1px solid var(--md3-outline-variant);
-        }
-
-        .channel-tabs::-webkit-scrollbar {
-            display: none;
         }
 
         .tab-chip {
