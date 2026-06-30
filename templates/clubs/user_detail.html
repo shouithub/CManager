@@ -296,7 +296,19 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
+                <div class="contact-item">
+                    <span class="material-icons">badge</span>
+                    <div>
+                        <div style="font-size: 12px; color: var(--md3-outline);">学号</div>
+                        {% if target_user.profile.is_info_public or request.user.profile.role == 'admin' or request.user.profile.role == 'staff' or is_staff_of_viewing_president %}
+                            {{ target_user.profile.student_id|default:"未公开" }}
+                        {% else %}
+                            <span style="color: var(--md3-on-surface-variant); opacity: 0.7;">已隐藏</span>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <div class="contact-item">
                     <span class="material-icons">chat</span>
                     <div>

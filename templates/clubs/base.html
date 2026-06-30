@@ -15,14 +15,24 @@
     <link rel="icon" type="image/png" sizes="128x128" href="{{ site_favicon_preview_url }}">
     <link rel="apple-touch-icon" sizes="128x128" href="{{ site_favicon_preview_url }}">
     {% endif %}
-    <!-- 阻止页面闪烁：在CSS加载前立即设置主题 -->
+    <!-- 阻止页面闪烁：在CSS加载前立即设置主题，并同步背景色与 color-scheme -->
     <script>
         (function() {
-            var theme = localStorage.getItem('md3-theme-mode');
-            if (!theme) {
+            var stored = localStorage.getItem('md3-theme-mode');
+            var theme;
+            // 支持三种模式：light / dark / auto（跟随系统）
+            if (stored === 'light' || stored === 'dark') {
+                theme = stored;
+            } else {
+                // 'auto' 或未设置时跟随系统偏好
                 theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             }
-            document.documentElement.setAttribute('data-theme', theme);
+            var root = document.documentElement;
+            root.setAttribute('data-theme', theme);
+            // 同步 color-scheme，让浏览器原生控件与画布色一致
+            root.style.colorScheme = theme;
+            // 立即设置背景色，避免 CSS 解析前出现白色闪屏（黑夜模式刷新闪白的根因）
+            root.style.backgroundColor = theme === 'dark' ? '#141218' : '#fffbfe';
         })();
     </script>
     <!-- 字体导入 -->
