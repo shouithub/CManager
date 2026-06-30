@@ -1,0 +1,3 @@
+﻿用户名,真实姓名,邮箱,电话,微信,学号,角色,密码,部门,政治面貌
+﻿demo_president,示例社长,demo@example.com,13800138000,demo_wechat,20260001,president,123456,,non_member
+﻿demo_staff,示例干事,staff@example.com,13900139000,staff_wechat,20260002,staff,123456,组织部,non_member
