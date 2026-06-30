@@ -211,7 +211,7 @@
 
     @media (max-width: 768px) {
         .audit-page {
-            padding: var(--md3-spacing-md);
+            padding: 12px;
             padding-bottom: 92px;
         }
 
@@ -219,10 +219,10 @@
             display: grid;
             grid-template-columns: auto 1fr;
             grid-template-rows: auto auto;
-            gap: var(--md3-spacing-md);
+            gap: 10px;
             align-items: center;
-            margin-bottom: var(--md3-spacing-md);
-            padding: 0 0 var(--md3-spacing-sm);
+            margin-bottom: 8px;
+            padding: 0;
             border: none;
             border-radius: 0;
             background: transparent;
@@ -236,7 +236,7 @@
             height: 40px;
             display: grid;
             place-items: center;
-            border-radius: var(--md3-radius-lg);
+            border-radius: 10px;
             background: var(--md3-primary-container);
             color: var(--md3-primary);
             font-size: 1.5rem;
@@ -250,7 +250,7 @@
 
         .page-header h1 {
             margin: 0;
-            font-size: 1.45rem;
+            font-size: 1.35rem;
             line-height: 1.2;
             font-weight: 700;
             letter-spacing: -0.01em;
@@ -268,12 +268,12 @@
             display: flex;
             flex-flow: row nowrap;
             gap: 8px;
-            margin-top: var(--md3-spacing-sm);
-            padding: 0 24px var(--md3-spacing-sm) 0;
+            margin-top: 8px;
+            padding: 0 24px 8px 0;
             overflow-x: auto;
             overscroll-behavior-x: contain;
             scrollbar-width: none;
-            border-bottom: 1px solid var(--md3-outline-variant);
+            border-bottom: 0.5px solid var(--md3-outline-variant);
         }
 
         .channel-tabs::-webkit-scrollbar {
@@ -285,7 +285,7 @@
             position: absolute;
             top: 0;
             right: 0;
-            bottom: var(--md3-spacing-sm);
+            bottom: 8px;
             width: 40px;
             pointer-events: none;
             background: linear-gradient(to right, transparent, var(--md3-surface));
@@ -302,7 +302,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            bottom: var(--md3-spacing-sm);
+            bottom: 8px;
             width: 40px;
             pointer-events: none;
             background: linear-gradient(to right, var(--md3-surface), transparent);
@@ -314,7 +314,7 @@
         }
 
         .tab-chip {
-            min-height: 28px;
+            min-height: 26px;
             display: inline-flex;
             flex: 0 0 auto;
             align-items: center;
@@ -326,7 +326,7 @@
             background: var(--md3-surface-container-high);
             color: var(--md3-on-surface-variant);
             text-decoration: none;
-            font-size: 0.78rem;
+            font-size: 0.76rem;
             font-weight: 700;
             white-space: nowrap;
             width: fit-content !important;
@@ -335,7 +335,7 @@
         }
 
         .tab-chip .material-icons {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .tab-chip.active {
@@ -349,39 +349,73 @@
         }
 
         .content-card {
-            margin-bottom: var(--md3-spacing-md);
-            border-radius: var(--md3-radius-lg);
+            margin-bottom: 12px;
+            background: var(--md3-surface-container-low);
+            border: 0.5px solid var(--md3-outline-variant);
+            border-radius: 16px;
+            overflow: hidden;
         }
 
         .section-header {
-            padding: var(--md3-spacing-md);
+            padding: 12px 14px;
+            background: transparent;
+            border-bottom: 0.5px solid var(--md3-outline-variant);
         }
 
         .section-header h2 {
-            font-size: 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .count-badge {
+            min-width: 24px;
+            height: 24px;
+            font-size: 0.82rem;
         }
 
         .record-list {
-            gap: 0;
-            padding: 0 var(--md3-spacing-md);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
         }
 
         .record-card {
             grid-template-columns: 1fr;
-            gap: var(--md3-spacing-md);
-            padding: var(--md3-spacing-md) 0;
+            gap: 10px;
+            padding: 12px 14px;
+            border-bottom: 0.5px solid var(--md3-outline-variant);
             border-radius: 0;
         }
 
+        .record-card:last-child {
+            border-bottom: none;
+        }
+
+        .record-card:hover {
+            background: transparent;
+        }
+
         .record-title {
-            font-size: 0.98rem;
+            font-size: 0.92rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .record-title .material-icons {
+            font-size: 1.1rem;
         }
 
         .record-meta {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 4px;
-            font-size: 0.84rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 0.78rem;
+            line-height: 1.4;
+        }
+
+        .record-meta > span {
+            display: inline-flex;
+            align-items: center;
         }
 
         .record-actions {
@@ -399,7 +433,11 @@
 
         .empty-state {
             min-height: 120px;
-            padding: var(--md3-spacing-lg);
+            padding: 20px;
+        }
+
+        .empty-state .material-icons {
+            font-size: 1.8rem;
         }
     }
 </style>
