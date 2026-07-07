@@ -312,6 +312,23 @@
 
         <hr class="form-sep">
 
+        <!-- 学号 -->
+        <div class="form-block">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_student_id">
+                <label class="f-label">学号</label>
+                <div class="f-inline">
+                    <input class="f-input" name="student_id" value="{{ target_user.profile.student_id|default:'' }}" placeholder="请输入学号">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <hr class="form-sep">
+
         <!-- QQ -->
         <div class="form-block">
             <form method="post">

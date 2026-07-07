@@ -3,7 +3,8 @@ from .models import (
     Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission,
     FormFieldValue, FormUploadedFile, Template, Announcement,
     EmailVerificationCode, SMTPConfig, CarouselImage, Department, Room,
-    TimeSlot, RoomBooking, PublishedActivity, ActivityRegistration
+    TimeSlot, RoomBooking, PublishedActivity, ActivityRegistration,
+    StorageConfig,
 )
 
 
@@ -160,6 +161,13 @@ class SMTPConfigAdmin(admin.ModelAdmin):
     list_display = ('provider', 'sender_email', 'is_active', 'created_at')
     list_filter = ('provider', 'is_active', 'created_at')
     search_fields = ('sender_email', 'smtp_host')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(StorageConfig)
+class StorageConfigAdmin(admin.ModelAdmin):
+    list_display = ('backend_type', 'is_active', 's3_bucket_name', 's3_endpoint_url', 'updated_at')
+    list_filter = ('backend_type', 'is_active')
     readonly_fields = ('created_at', 'updated_at')
 
 

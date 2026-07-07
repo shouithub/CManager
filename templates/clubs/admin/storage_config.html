@@ -1,0 +1,444 @@
+{% extends 'clubs/admin/base.html' %}
+
+{% block title %}存储设置 - 管理员{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex; align-items: center; gap: 16px;
+        margin-bottom: 24px;
+    }
+    .page-header-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .page-header h1 {
+        margin: 0; font-size: 24px; font-weight: 500; color: var(--md3-on-surface);
+    }
+    .page-header .subtitle {
+        margin: 4px 0 0; font-size: 14px; color: var(--md3-on-surface-variant);
+    }
+
+    .sc-card {
+        background: var(--md3-surface-container-low);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: var(--md3-elevation-1);
+        margin-bottom: 20px;
+    }
+    .sc-card-title {
+        display: flex; align-items: center; gap: 10px;
+        margin: 0 0 20px 0; font-size: 1.05rem; font-weight: 600;
+        color: var(--md3-on-surface);
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+    .sc-card-title .material-icons {
+        font-size: 1.4rem; color: var(--md3-primary);
+    }
+
+    .sc-status-bar {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; padding: 16px 20px;
+        background: var(--md3-surface-container-high);
+        border-radius: 12px; margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .sc-status-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .sc-status-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 14px; border-radius: 999px;
+        font-size: 0.85rem; font-weight: 600;
+    }
+    .sc-status-badge.local { background: var(--md3-surface-container-highest); color: var(--md3-on-surface-variant); }
+    .sc-status-badge.s3 { background: var(--md3-primary-container); color: var(--md3-on-primary-container); }
+    .sc-status-badge.disabled { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+    .sc-status-meta { font-size: 0.85rem; color: var(--md3-on-surface-variant); }
+
+    .sc-backend-tabs {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
+    }
+    .sc-backend-tab {
+        position: relative; cursor: pointer;
+        padding: 16px; border: 2px solid var(--md3-outline-variant);
+        border-radius: 12px; background: var(--md3-surface);
+        transition: all 0.2s; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .sc-backend-tab:hover { border-color: var(--md3-primary); }
+    .sc-backend-tab input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+    .sc-backend-tab.selected {
+        border-color: var(--md3-primary);
+        background: var(--md3-primary-container);
+    }
+    .sc-backend-tab .material-icons {
+        font-size: 1.6rem; color: var(--md3-primary); flex-shrink: 0;
+    }
+    .sc-backend-tab-body h3 {
+        margin: 0 0 4px 0; font-size: 0.95rem; font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+    .sc-backend-tab-body p {
+        margin: 0; font-size: 0.8rem; color: var(--md3-on-surface-variant);
+        line-height: 1.5;
+    }
+
+    .sc-field { margin-bottom: 18px; }
+    .sc-field-label {
+        display: block; font-size: 0.85rem; font-weight: 600;
+        color: var(--md3-on-surface-variant); margin-bottom: 6px;
+        text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .sc-field-label .req { color: var(--md3-error); margin-left: 2px; }
+    .sc-field-label .hint {
+        font-weight: 400; text-transform: none; letter-spacing: 0;
+        font-size: 0.78rem; color: var(--md3-on-surface-variant);
+        opacity: 0.85; margin-left: 4px;
+    }
+    .sc-input {
+        width: 100%; padding: 10px 14px;
+        border: 1px solid var(--md3-outline);
+        border-radius: 10px;
+        background: var(--md3-surface-container-highest);
+        font-family: inherit; font-size: 0.95rem;
+        color: var(--md3-on-surface); box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .sc-input:focus {
+        outline: none; border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px var(--md3-primary-container);
+    }
+    .sc-input::placeholder { color: var(--md3-on-surface-variant); opacity: 0.6; }
+    .sc-grid-2 {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .sc-checkbox-row {
+        display: flex; align-items: center; gap: 8px;
+        padding: 10px 0; cursor: pointer;
+    }
+    .sc-checkbox-row input { width: 18px; height: 18px; cursor: pointer; }
+    .sc-checkbox-row label { cursor: pointer; font-size: 0.9rem; color: var(--md3-on-surface); }
+
+    .sc-actions {
+        display: flex; gap: 12px; padding-top: 16px;
+        border-top: 1px solid var(--md3-outline-variant);
+        flex-wrap: wrap;
+    }
+    .sc-btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 10px 22px; border: none; border-radius: 10px;
+        font-weight: 600; font-size: 0.9rem; cursor: pointer;
+        font-family: inherit; text-decoration: none;
+        transition: all 0.2s;
+    }
+    .sc-btn .material-icons { font-size: 1.1rem; }
+    .sc-btn-primary { background: var(--md3-primary); color: var(--md3-on-primary); }
+    .sc-btn-primary:hover { box-shadow: var(--md3-elevation-3); transform: translateY(-1px); }
+    .sc-btn-secondary {
+        background: var(--md3-surface-container-high);
+        color: var(--md3-primary); border: 1px solid var(--md3-outline);
+    }
+    .sc-btn-danger {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container); border: 1px solid var(--md3-error);
+    }
+    .sc-btn-danger:hover { background: var(--md3-error); color: var(--md3-on-error); }
+
+    .sc-alert {
+        padding: 12px 16px; border-radius: 10px; margin-bottom: 16px;
+        display: flex; gap: 10px; align-items: flex-start;
+        font-size: 0.88rem; line-height: 1.6;
+    }
+    .sc-alert .material-icons { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+    .sc-alert.info {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+    .sc-alert.success {
+        background: #d4edda; color: #155724;
+    }
+    .sc-alert.error {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+    .sc-alert.warning {
+        background: #fff3cd; color: #856404;
+    }
+
+    .sc-section-divider {
+        margin: 24px 0 20px 0;
+        padding: 0;
+        border-top: 1px dashed var(--md3-outline-variant);
+    }
+    .sc-section-divider-label {
+        position: relative;
+        display: inline-block;
+        background: var(--md3-surface-container-low);
+        padding: 0 12px; margin-top: -10px;
+        font-size: 0.78rem; font-weight: 600;
+        color: var(--md3-on-surface-variant);
+        text-transform: uppercase; letter-spacing: 0.6px;
+    }
+
+    .sc-test-result {
+        margin-top: 12px; padding: 12px 16px;
+        border-radius: 10px; font-size: 0.88rem;
+    }
+    .sc-test-result.ok { background: #d4edda; color: #155724; }
+    .sc-test-result.fail { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+
+    .sc-readonly { background: var(--md3-surface-container); opacity: 0.7; }
+
+    @media (max-width: 700px) {
+        .sc-backend-tabs { grid-template-columns: 1fr; }
+        .sc-grid-2 { grid-template-columns: 1fr; }
+        .sc-actions { flex-direction: column; }
+        .sc-btn { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block admin_main %}
+<div class="page-header">
+    <div class="page-header-icon">
+        <span class="material-icons">cloud_sync</span>
+    </div>
+    <div>
+        <h1>存储设置</h1>
+        <p class="subtitle">配置文件存储后端（本地存储 / S3 兼容对象存储）</p>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="sc-alert {% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}">
+        <span class="material-icons">{% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error_outline{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}</span>
+        <div>{{ message }}</div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+{% if errors %}
+<div class="sc-alert error">
+    <span class="material-icons">error_outline</span>
+    <div>
+        {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- 当前状态 -->
+<div class="sc-card">
+    <h3 class="sc-card-title">
+        <span class="material-icons">info</span>
+        当前状态
+    </h3>
+    <div class="sc-status-bar">
+        <div class="sc-status-info">
+            {% if not config.is_active %}
+                <span class="sc-status-badge disabled">
+                    <span class="material-icons" style="font-size:1rem;">block</span>
+                    存储已禁用（紧急降级到本地）
+                </span>
+            {% elif config.backend_type == 's3' %}
+                <span class="sc-status-badge s3">
+                    <span class="material-icons" style="font-size:1rem;">cloud</span>
+                    S3 对象存储
+                </span>
+            {% else %}
+                <span class="sc-status-badge local">
+                    <span class="material-icons" style="font-size:1rem;">folder</span>
+                    本地存储
+                </span>
+            {% endif %}
+            <span class="sc-status-meta">
+                {% if config.backend_type == 's3' and config.is_active %}
+                    Bucket：<strong>{{ config.s3_bucket_name }}</strong>
+                    {% if config.s3_custom_domain %} · CDN：<strong>{{ config.s3_custom_domain }}</strong>{% endif %}
+                {% else %}
+                    路径：<strong>{{ MEDIA_ROOT }}</strong>
+                {% endif %}
+                · 更新于 {{ config.updated_at|date:"Y-m-d H:i" }}
+            </span>
+        </div>
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reset_local">
+            <button type="submit" class="sc-btn sc-btn-danger"
+                    onclick="return confirm('确定紧急回退到本地存储吗？已存文件不会自动迁移。');">
+                <span class="material-icons">restore</span>紧急回退本地
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- 主配置表单 -->
+<div class="sc-card">
+    <h3 class="sc-card-title">
+        <span class="material-icons">settings</span>
+        后端配置
+    </h3>
+
+    <!-- 后端类型选择 -->
+    <div class="sc-field">
+        <label class="sc-field-label">后端类型</label>
+        <div class="sc-backend-tabs">
+            <label class="sc-backend-tab {% if config.backend_type == 'local' %}selected{% endif %}" id="tab-local">
+                <input type="radio" name="backend_type" value="local" form="mainForm"
+                       {% if config.backend_type == 'local' %}checked{% endif %}>
+                <span class="material-icons">folder</span>
+                <div class="sc-backend-tab-body">
+                    <h3>本地存储</h3>
+                    <p>文件保存在服务器本地磁盘。适合单机部署或带宽充足场景。</p>
+                </div>
+            </label>
+            <label class="sc-backend-tab {% if config.backend_type == 's3' %}selected{% endif %}" id="tab-s3">
+                <input type="radio" name="backend_type" value="s3" form="mainForm"
+                       {% if config.backend_type == 's3' %}checked{% endif %}>
+                <span class="material-icons">cloud</span>
+                <div class="sc-backend-tab-body">
+                    <h3>S3 对象存储</h3>
+                    <p>兼容 AWS S3 / MinIO / 阿里云 OSS / 腾讯云 COS。提升大文件上传下载速度，降低服务器带宽压力。</p>
+                </div>
+            </label>
+        </div>
+    </div>
+
+    <div class="sc-checkbox-row">
+        <input type="checkbox" id="is_active" name="is_active" form="mainForm" {% if config.is_active %}checked{% endif %}>
+        <label for="is_active">启用存储抽象层（关闭后强制降级到本地存储，用于紧急回退）</label>
+    </div>
+
+    <hr class="sc-section-divider">
+    <div class="sc-section-divider-label">S3 连接参数</div>
+
+    <form id="mainForm" method="post">
+        {% csrf_token %}
+
+        <div class="sc-grid-2">
+            <div class="sc-field">
+                <label class="sc-field-label">Endpoint URL <span class="hint">AWS S3 留空</span></label>
+                <input type="text" class="sc-input" name="s3_endpoint_url"
+                       value="{{ test_form.s3_endpoint_url|default:config.s3_endpoint_url }}"
+                       placeholder="https://s3.cn-north-1.amazonaws.com.cn 或 MinIO 端点">
+            </div>
+            <div class="sc-field">
+                <label class="sc-field-label">Region <span class="hint">AWS S3 必填</span></label>
+                <input type="text" class="sc-input" name="s3_region"
+                       value="{{ test_form.s3_region|default:config.s3_region }}"
+                       placeholder="us-east-1 / cn-north-1 等">
+            </div>
+        </div>
+
+        <div class="sc-field">
+            <label class="sc-field-label">Bucket 名称 <span class="req">*</span></label>
+            <input type="text" class="sc-input" name="s3_bucket_name"
+                   value="{{ test_form.s3_bucket_name|default:config.s3_bucket_name }}"
+                   placeholder="my-club-bucket">
+        </div>
+
+        <div class="sc-grid-2">
+            <div class="sc-field">
+                <label class="sc-field-label">AccessKey ID <span class="req">*</span></label>
+                <input type="text" class="sc-input" name="s3_access_key_id"
+                       value="{{ test_form.s3_access_key_id|default:config.s3_access_key_id }}"
+                       placeholder="AKIAIOSFODNN7EXAMPLE">
+            </div>
+            <div class="sc-field">
+                <label class="sc-field-label">Secret Access Key <span class="hint">留空保持不变</span></label>
+                <input type="password" class="sc-input" name="s3_secret_access_key"
+                       value="{{ test_form.s3_secret_access_key|default:'' }}"
+                       placeholder="{% if config.s3_secret_access_key %}（已配置，留空保持不变）{% else %}wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY{% endif %}">
+            </div>
+        </div>
+
+        <hr class="sc-section-divider">
+        <div class="sc-section-divider-label">访问域名 / 预签名</div>
+
+        <div class="sc-field">
+            <label class="sc-field-label">自定义域名 / CDN <span class="hint">用于直链访问</span></label>
+            <input type="text" class="sc-input" name="s3_custom_domain"
+                   value="{{ test_form.s3_custom_domain|default:config.s3_custom_domain }}"
+                   placeholder="https://cdn.example.com">
+            <p style="margin: 6px 0 0; font-size: 0.78rem; color: var(--md3-on-surface-variant);">
+                Office Online 预览必须能公网匿名访问该域名；建议通过 CDN 加速，否则直链仍走 S3 默认 URL。
+            </p>
+        </div>
+
+        <div class="sc-grid-2">
+            <div class="sc-field">
+                <label class="sc-field-label">地址风格</label>
+                <select name="s3_addressing_style" class="sc-input">
+                    {% for value, label in config.ADDRESSING_CHOICES %}
+                    <option value="{{ value }}" {% if config.s3_addressing_style == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="sc-field">
+                <label class="sc-field-label">预签名 URL 有效期（秒）</label>
+                <input type="number" class="sc-input" name="presigned_url_expiration"
+                       value="{{ config.presigned_url_expiration }}"
+                       min="60" max="604800" step="60">
+            </div>
+        </div>
+
+        <div class="sc-checkbox-row">
+            <input type="checkbox" id="s3_use_path_style" name="s3_use_path_style"
+                   {% if config.s3_use_path_style %}checked{% endif %}>
+            <label for="s3_use_path_style">强制 Path Style（兼容 MinIO / 自建 S3；AWS S3 不要勾选）</label>
+        </div>
+
+        <div class="sc-actions">
+            <button type="submit" formaction="" name="action" value="save" class="sc-btn sc-btn-primary" form="mainForm">
+                <span class="material-icons">save</span>保存配置
+            </button>
+            <button type="submit" formaction="" name="action" value="test" class="sc-btn sc-btn-secondary" form="mainForm">
+                <span class="material-icons">network_check</span>测试连接
+            </button>
+            <a href="{% url 'clubs:admin_dashboard' %}" class="sc-btn sc-btn-secondary">
+                <span class="material-icons">arrow_back</span>返回
+            </a>
+        </div>
+    </form>
+
+    {% if test_result %}
+    <div class="sc-test-result {% if test_result.0 %}ok{% else %}fail{% endif %}">
+        <strong>{% if test_result.0 %}连接成功{% else %}连接失败{% endif %}</strong>：{{ test_result.1 }}
+    </div>
+    {% endif %}
+</div>
+
+<!-- 注意事项 -->
+<div class="sc-card">
+    <h3 class="sc-card-title">
+        <span class="material-icons">help_outline</span>
+        说明与注意事项
+    </h3>
+    <div style="font-size: 0.88rem; line-height: 1.7; color: var(--md3-on-surface-variant);">
+        <p><strong>1. 切换后端不会自动迁移历史文件。</strong>切换到 S3 前，建议先停止写入新文件，手动迁移后再启用。</p>
+        <p><strong>2. Office Online 预览依赖直链。</strong>S3 模式下，传给 Office Online embedding 的 URL 必须能被微软服务器公网匿名访问，因此：</p>
+        <ul style="margin: 4px 0 12px 24px;">
+            <li>Bucket ACL 必须允许匿名读取（或为对应文件设置公开读取）；</li>
+            <li>建议配置 <strong>自定义域名 / CDN</strong> 加速预览，避免 S3 跨地域拉取慢；</li>
+            <li>未配置 CDN 时使用 S3 默认 URL，需保证 endpoint 域名可公网解析。</li>
+        </ul>
+        <p><strong>3. Secret Access Key 明文存储。</strong>请确保数据库访问权限严格受控；建议在 S3 后端为该 AK/SK 配置最小权限策略（仅 bucket 读写）。</p>
+        <p><strong>4. 切换后端立即生效，无需重启服务。</strong>所有 FileField 自动走新后端，但已存文件链接（如 <code>/media/form_submissions/...</code>）不会自动重写为 S3 直链。</p>
+        <p><strong>5. 使用 S3 的核心收益：</strong>本站带宽仅 3 Mbps，大文件（合并 Word、PDF、图片）通过 S3 直链可以绕开本站带宽瓶颈，显著提升用户上传/下载/预览速度。</p>
+    </div>
+</div>
+
+<script>
+    // 后端切换 tab 视觉同步
+    document.querySelectorAll('input[name="backend_type"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            document.querySelectorAll('.sc-backend-tab').forEach(function(t) {
+                t.classList.remove('selected');
+            });
+            this.closest('.sc-backend-tab').classList.add('selected');
+        });
+    });
+</script>
+{% endblock %}
