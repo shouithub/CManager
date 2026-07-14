@@ -359,11 +359,16 @@ class FormChannel(models.Model):
     ]
 
     CYCLE_TYPE_CHOICES = [
-        ('none', 'No cycle'),
-        ('count', 'Round count'),
-        ('year', 'Year'),
-        ('month', 'Month'),
-        ('day', 'Day'),
+        ('none', '无周期'),
+        ('count', '按轮次'),
+        ('year', '按年份'),
+        ('month', '按月份'),
+        ('day', '按日期'),
+    ]
+
+    PUBLISH_STATUS_CHOICES = [
+        ('draft', '草稿'),
+        ('published', '已发布'),
     ]
 
     name = models.CharField(max_length=100, verbose_name='通道名称')
@@ -372,6 +377,7 @@ class FormChannel(models.Model):
     description = models.TextField(blank=True, verbose_name='说明')
     order = models.IntegerField(default=0, verbose_name='排序')
     is_active = models.BooleanField(default=True, verbose_name='启用')
+    publish_status = models.CharField(max_length=20, choices=PUBLISH_STATUS_CHOICES, default='draft', verbose_name='发布状态')
     is_builtin = models.BooleanField(default=False, verbose_name='内置通道')
     builtin_action = models.CharField(max_length=50, choices=BUILTIN_ACTION_CHOICES, default='none', verbose_name='内置动作')
     submission_policy = models.CharField(max_length=20, choices=SUBMISSION_POLICY_CHOICES, default='repeatable', verbose_name='提交策略')
@@ -379,7 +385,7 @@ class FormChannel(models.Model):
     show_zip_download = models.BooleanField(default=True, verbose_name='显示打包 ZIP 下载')
     show_unsubmitted_status = models.BooleanField(default=False, verbose_name='show unsubmitted status')
     allow_staff_toggle = models.BooleanField(default=False, verbose_name='allow staff toggle')
-    cycle_type = models.CharField(max_length=20, choices=CYCLE_TYPE_CHOICES, default='none', verbose_name='cycle type')
+    cycle_type = models.CharField(max_length=20, choices=CYCLE_TYPE_CHOICES, default='none', verbose_name='周期判断方式')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
@@ -748,6 +754,12 @@ class Announcement(models.Model):
     published_at = models.DateTimeField(null=True, blank=True, verbose_name='发布时间')
     expires_at = models.DateTimeField(null=True, blank=True, verbose_name='过期时间')
     attachment = models.FileField(upload_to='announcements/%Y/%m/', blank=True, null=True, verbose_name='附件')
+    link_url = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name='跳转链接',
+        help_text='可填写站内路径（如 /clubs/）或 http(s) 完整地址'
+    )
     
     class Meta:
         verbose_name = '公告'
@@ -1074,7 +1086,12 @@ class RoomBooking(models.Model):
         if self.user == user:
             return True
         # 社团社长可以删除本社团的预约
-        if self.club and self.club.president == user:
+        if self.club and Officer.objects.filter(
+            club=self.club,
+            user_profile__user=user,
+            position='president',
+            is_current=True,
+        ).exists():
             return True
         return False
 
@@ -1087,7 +1104,12 @@ class RoomBooking(models.Model):
         if self.user == user:
             return True
         # 社团社长可以编辑本社团的预约
-        if self.club and self.club.president == user:
+        if self.club and Officer.objects.filter(
+            club=self.club,
+            user_profile__user=user,
+            position='president',
+            is_current=True,
+        ).exists():
             return True
         return False
 

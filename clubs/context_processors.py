@@ -2,6 +2,14 @@
 import os
 from django.conf import settings
 from .models import FormChannel, FormSubmission, Officer
+from .business_forms import externally_available_channels
+from .identity import (
+    active_identity_label,
+    available_identities,
+    get_active_identity,
+    has_president_officer,
+    IDENTITY_PRESIDENT,
+)
 
 
 def _get_president_club_ids(user):
@@ -75,6 +83,11 @@ def audit_center_counts(request):
         'active_form_channels': [],
         'sidebar_primary_club': None,
         'sidebar_president_clubs': [],
+        'active_identity': 'primary',
+        'active_identity_label': '',
+        'available_identities': [],
+        'has_president_identity': False,
+        'is_president_identity': False,
     }
     if not request.user.is_authenticated:
         return empty
@@ -84,9 +97,14 @@ def audit_center_counts(request):
     except Exception:
         return empty
 
-    channels = list(
+    active_identity = get_active_identity(request)
+    is_president_identity = active_identity == IDENTITY_PRESIDENT
+    identities = available_identities(request)
+
+    channels = externally_available_channels(
         FormChannel.objects.filter(is_active=True)
         .exclude(slug='')
+        .prefetch_related('fields')
         .order_by('order', 'id')
     )
     audit_channels = {}
@@ -94,7 +112,7 @@ def audit_center_counts(request):
     audit_total = 0
     approval_total = 0
 
-    if role in ['staff', 'admin'] or request.user.is_superuser:
+    if not is_president_identity and (role in ['staff', 'admin'] or request.user.is_superuser):
         for channel in channels:
             count = FormSubmission.objects.filter(channel=channel, status='pending').count()
             audit_channels[channel.slug] = count
@@ -102,7 +120,7 @@ def audit_center_counts(request):
 
     president_clubs = []
     primary_club = None
-    if role == 'president':
+    if is_president_identity:
         president_clubs = list(Officer.objects.filter(
             user_profile__user=request.user,
             position='president',
@@ -128,6 +146,11 @@ def audit_center_counts(request):
         'active_form_channels': channels,
         'sidebar_primary_club': primary_club,
         'sidebar_president_clubs': [item.club for item in president_clubs],
+        'active_identity': active_identity,
+        'active_identity_label': active_identity_label(request),
+        'available_identities': identities,
+        'has_president_identity': has_president_officer(request.user) or role == 'president',
+        'is_president_identity': is_president_identity,
     }
     return result
 

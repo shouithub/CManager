@@ -422,6 +422,20 @@
                     placeholder="输入公告内容"
                 >{{ content }}</textarea>
             </div>
+
+            <div class="form-group">
+                <label for="link_url" class="form-label">跳转链接（可选）</label>
+                <input
+                    type="text"
+                    id="link_url"
+                    name="link_url"
+                    class="form-input"
+                    maxlength="500"
+                    placeholder="/clubs/ 或 https://example.com"
+                    value="{{ link_url }}"
+                >
+                <small class="form-hint">填写后，首页公告会显示跳转入口。支持站内路径或 http(s) 完整地址。</small>
+            </div>
             
             <div class="form-group">
                 <label for="expires_at" class="form-label">失效时间（可选）</label>
@@ -502,6 +516,12 @@
                     <a href="{{ announcement.attachment.url }}" class="attachment-link" target="_blank">
                         <span class="material-icons">attach_file</span>
                         {{ announcement.attachment.name|slice:"-30:" }}
+                    </a>
+                    {% endif %}
+                    {% if announcement.link_url %}
+                    <a href="{{ announcement.link_url }}" class="attachment-link" target="_blank" rel="noopener">
+                        <span class="material-icons">open_in_new</span>
+                        {{ announcement.link_url|truncatechars:40 }}
                     </a>
                     {% endif %}
                 </div>

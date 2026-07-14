@@ -52,11 +52,12 @@
     }
 
     .content-card {
-        overflow: hidden;
         margin-bottom: var(--md3-spacing-xl);
-        background: var(--md3-surface-container);
+        background: var(--md3-surface-container-low);
         border: 1px solid var(--md3-outline-variant);
         border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+        overflow: clip;
     }
 
     .section-header {
@@ -93,28 +94,37 @@
     }
 
     .record-list {
-        display: flex;
-        flex-direction: column;
-        padding: 0 var(--md3-spacing-lg);
+        display: grid;
+        gap: 12px;
+        padding: var(--md3-spacing-lg);
     }
 
     .record-card {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) max-content;
         gap: var(--md3-spacing-lg);
         align-items: center;
-        padding: var(--md3-spacing-lg) 0;
-        border-bottom: 1px solid var(--md3-outline-variant);
-        background: transparent;
-        transition: background 0.18s ease;
+        min-width: 0;
+        padding: 18px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+        transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
     .record-card:last-child {
-        border-bottom: none;
+        border-bottom: 1px solid var(--md3-outline-variant);
     }
 
     .record-card:hover {
         background: var(--md3-surface-container-high);
+        border-color: var(--md3-outline);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .record-main {
+        min-width: 0;
     }
 
     .record-title {
@@ -131,6 +141,14 @@
     .record-title .material-icons {
         color: var(--md3-primary);
         font-size: 1.25rem;
+        flex: 0 0 auto;
+    }
+
+    .record-title-text {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .record-meta {
@@ -145,6 +163,21 @@
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-sm);
+        justify-content: flex-end;
+        min-width: 0;
+        flex-wrap: nowrap;
+    }
+
+    .record-actions form {
+        display: flex;
+        margin: 0;
+    }
+
+    .record-actions .btn {
+        min-height: 44px;
+        padding: 0 22px;
+        white-space: nowrap;
+        border-radius: var(--md3-radius-full);
     }
 
     .status-pill {
@@ -209,6 +242,18 @@
         list-style: none;
     }
 
+    @media (max-width: 1120px) {
+        .record-card {
+            grid-template-columns: 1fr;
+            align-items: stretch;
+        }
+
+        .record-actions {
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+    }
+
     @media (max-width: 768px) {
         .audit-page {
             padding: 12px;
@@ -253,7 +298,7 @@
             font-size: 1.35rem;
             line-height: 1.2;
             font-weight: 700;
-            letter-spacing: -0.01em;
+            letter-spacing: 0;
             color: var(--md3-on-surface);
         }
 
@@ -352,7 +397,7 @@
             margin-bottom: 12px;
             background: var(--md3-surface-container-low);
             border: 0.5px solid var(--md3-outline-variant);
-            border-radius: 16px;
+            border-radius: var(--md3-radius-xl);
             overflow: hidden;
         }
 
@@ -374,21 +419,22 @@
         }
 
         .record-list {
-            display: flex;
-            flex-direction: column;
-            padding: 0;
+            display: grid;
+            gap: 10px;
+            padding: 10px;
         }
 
         .record-card {
             grid-template-columns: 1fr;
             gap: 10px;
-            padding: 12px 14px;
-            border-bottom: 0.5px solid var(--md3-outline-variant);
-            border-radius: 0;
+            padding: 12px;
+            border: 0.5px solid var(--md3-outline-variant);
+            border-radius: var(--md3-radius-lg);
+            background: var(--md3-surface-container);
         }
 
         .record-card:last-child {
-            border-bottom: none;
+            border-bottom: 0.5px solid var(--md3-outline-variant);
         }
 
         .record-card:hover {
@@ -471,10 +517,10 @@
         <div class="record-list">
             {% for item in pending_items|slice:":3" %}
             <article class="record-card">
-                <div>
+                <div class="record-main">
                     <div class="record-title">
                         <span class="material-icons">{{ item.channel.icon }}</span>
-                        <span>{{ item.display_title }}</span>
+                        <span class="record-title-text">{{ item.display_title }}</span>
                     </div>
                     <div class="record-meta">
                         <span>{{ item.channel.name }}</span>
@@ -512,10 +558,10 @@
                 <summary>还有 {{ pending_items|length|add:"-3" }} 条待审核</summary>
                 {% for item in pending_items|slice:"3:" %}
                 <article class="record-card">
-                    <div>
+                    <div class="record-main">
                         <div class="record-title">
                             <span class="material-icons">{{ item.channel.icon }}</span>
-                            <span>{{ item.display_title }}</span>
+                            <span class="record-title-text">{{ item.display_title }}</span>
                         </div>
                         <div class="record-meta">
                             <span>{{ item.channel.name }}</span>
@@ -546,10 +592,10 @@
         <div class="record-list">
             {% for item in completed_items|slice:":3" %}
             <article class="record-card">
-                <div>
+                <div class="record-main">
                     <div class="record-title">
                         <span class="material-icons">{{ item.channel.icon }}</span>
-                        <span>{{ item.display_title }}</span>
+                        <span class="record-title-text">{{ item.display_title }}</span>
                     </div>
                     <div class="record-meta">
                         <span>{{ item.channel.name }}</span>
@@ -583,10 +629,10 @@
                 <summary>还有 {{ completed_items|length|add:"-3" }} 条已处理</summary>
                 {% for item in completed_items|slice:"3:" %}
                 <article class="record-card">
-                    <div>
+                    <div class="record-main">
                         <div class="record-title">
                             <span class="material-icons">{{ item.channel.icon }}</span>
-                            <span>{{ item.display_title }}</span>
+                            <span class="record-title-text">{{ item.display_title }}</span>
                         </div>
                         <div class="record-meta">
                             <span>{{ item.channel.name }}</span>

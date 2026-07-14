@@ -29,6 +29,10 @@
             }
             var root = document.documentElement;
             root.setAttribute('data-theme', theme);
+            var sidebarWidth = parseInt(localStorage.getItem('sidebar-width') || '', 10);
+            if (sidebarWidth >= 220 && sidebarWidth <= 420) {
+                root.style.setProperty('--sidebar-width', sidebarWidth + 'px');
+            }
             // 同步 color-scheme，让浏览器原生控件与画布色一致
             root.style.colorScheme = theme;
             // 立即设置背景色，避免 CSS 解析前出现白色闪屏（黑夜模式刷新闪白的根因）
@@ -42,7 +46,7 @@
     <link rel="preload" href="{{ body_font_url }}" as="style">
     <link href="{{ body_font_url }}" rel="stylesheet">
     {% endif %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20251207">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260714b">
     {% if body_font_family %}
     <style>body, html { font-family: {{ body_font_family }}; }</style>
     {% endif %}
@@ -58,6 +62,111 @@
         }
     </style>
     {% block extra_css %}{% endblock %}
+    <style>
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: clamp(18px, 3vw, 36px);
+            min-height: 148px;
+            margin: 0 0 24px;
+            padding: clamp(24px, 3.5vw, 40px);
+            border: 1px solid var(--md3-outline-variant);
+            border-radius: 32px;
+            background: var(--md3-surface-container-low, #f7f2fb);
+            color: var(--md3-on-surface);
+            box-shadow: none;
+            box-sizing: border-box;
+        }
+
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > :first-child:not(.material-icons):not(.page-header-icon):not(.page-title-icon):not(.ia-header-icon) {
+            min-width: 0;
+        }
+
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.page-header-content, .page-header-text, .page-title, .page-header-left, .profile-header-info) {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(h1, .page-title h1, .profile-name) {
+            margin: 0;
+            color: var(--md3-on-surface);
+            font-size: clamp(1.75rem, 3.1vw, 2.35rem);
+            line-height: 1.12;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(p, .subtitle, .ia-subtitle, .page-header-desc, .profile-meta) {
+            margin: 12px 0 0;
+            color: var(--md3-on-surface-variant);
+            font-size: clamp(0.92rem, 1.4vw, 1.08rem);
+            line-height: 1.5;
+        }
+
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header) > .material-icons,
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.page-header-icon, .page-title-icon, .ia-header-icon) {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--md3-primary);
+            background: transparent;
+            box-shadow: none;
+            font-size: 2.55rem;
+        }
+
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.page-header-icon, .page-title-icon, .ia-header-icon) .material-icons {
+            color: var(--md3-primary);
+            font-size: 2.55rem;
+        }
+
+        .main-content .builder-header::before {
+            content: "dynamic_form";
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--md3-primary);
+            font-family: "Material Icons";
+            font-size: 2.55rem;
+            font-weight: normal;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            -webkit-font-feature-settings: "liga";
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.btn, .btn-action, .action-btn, .header-back) {
+            flex: 0 0 auto;
+            border-radius: var(--md3-radius-full);
+        }
+
+        @media (max-width: 760px) {
+            .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) {
+                min-height: 0;
+                padding: 22px;
+                border-radius: 24px;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(h1, .page-title h1, .profile-name) {
+                font-size: 1.65rem;
+            }
+
+            .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.btn, .btn-action, .action-btn, .header-back) {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
     <script src="{% static 'js/theme-toggle.js' %}"></script>
     <script>
         if ('serviceWorker' in navigator) {
@@ -113,7 +222,7 @@
                             <span>活动</span>
                         </a>
                         
-                        {% if user.profile.role == 'admin' %}
+                        {% if not is_president_identity and user.profile.role == 'admin' %}
                             <a href="{% url 'clubs:admin_dashboard' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">settings</span></span>
                                 <span>管理后台</span>
@@ -126,7 +235,7 @@
                                 <span class="icon"><span class="material-icons">business_center</span></span>
                                 <span>社团管理</span>
                             </a>
-                        {% elif user.profile.role == 'staff' %}
+                        {% elif not is_president_identity and user.profile.role == 'staff' %}
                             <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">business_center</span></span>
                                 <span>社团管理</span>
@@ -139,14 +248,14 @@
                             {% endif %}
                         {% endif %}
                         
-                        {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
+                        {% if not is_president_identity and user.profile.role == 'staff' or not is_president_identity and user.profile.role == 'admin' %}
                             <a href="{% url 'clubs:admin_booking_management' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">calendar_month</span></span>
                                 <span>预约管理</span>
                             </a>
                         {% endif %}
 
-                        {% if user.profile.role == 'president' %}
+                        {% if is_president_identity %}
                             <a href="{% url 'clubs:user_dashboard' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">folder</span></span>
                                 <span>我的社团</span>
@@ -159,7 +268,7 @@
                     </div>
                 </div>
                 
-                {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
+                {% if not is_president_identity and user.profile.role == 'staff' or not is_president_identity and user.profile.role == 'admin' %}
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
                         <span>审核中心</span>
@@ -179,7 +288,7 @@
                 </div>
                 {% endif %}
 
-                {% if user.profile.role == 'president' %}
+                {% if is_president_identity %}
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
                         <span>审批记录</span>
@@ -232,19 +341,27 @@
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name">{{ user.username }}</div>
                     <div class="sidebar-user-role">
-                        {% if user.profile.role == 'admin' %}
-                            管理员
-                        {% elif user.profile.role == 'staff' %}
-                            干事
-                        {% elif user.profile.role == 'president' %}
-                            社长
-                        {% endif %}
+                        当前身份：{{ active_identity_label }}
                     </div>
                 </div>
                 <span class="dropdown-arrow"></span>
             </div>
             
             <div class="sidebar-user-dropdown" id="userDropdown">
+                {% if available_identities|length > 1 %}
+                    {% for identity in available_identities %}
+                    {% if identity.key != active_identity %}
+                    <form method="post" action="{% url 'clubs:switch_identity' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="identity" value="{{ identity.key }}">
+                        <button type="submit" style="width: 100%; border: 0; background: transparent; color: inherit; display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; text-align: left; font: inherit;">
+                            <span><span class="material-icons" style="vertical-align: middle;">switch_account</span></span>
+                            <span>切换到{{ identity.label }}身份</span>
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% endfor %}
+                {% endif %}
                 <a href="{% url 'clubs:user_detail' user.id %}">
                     <span><span class="material-icons" style="vertical-align: middle;">account_circle</span></span>
                     <span>查看个人主页</span>
@@ -265,6 +382,7 @@
             </div>
         </div>
         {% endif %}
+        <div class="sidebar-resizer" id="sidebarResizer" title="拖拽调整侧边栏宽度" aria-hidden="true"></div>
     </nav>
     <script>
         (function() {
@@ -375,7 +493,7 @@
                 <span>首页</span>
             </a>
             
-            {% if user.profile.role == 'admin' %}
+            {% if not is_president_identity and user.profile.role == 'admin' %}
                 <a href="{% url 'clubs:admin_dashboard' %}" class="bottom-nav-item">
                     <span class="icon"><span class="material-icons">settings</span></span>
                     <span>管理</span>
@@ -395,7 +513,7 @@
                     <span class="icon"><span class="material-icons">business_center</span></span>
                     <span>社团</span>
                 </a>
-            {% elif user.profile.role == 'staff' %}
+            {% elif not is_president_identity and user.profile.role == 'staff' %}
                 <a href="{% url 'clubs:staff_audit_center' 'all' %}" class="bottom-nav-item">
                     <span class="icon">
                         <span class="material-icons">check_circle</span>
@@ -411,7 +529,7 @@
                     <span class="icon"><span class="material-icons">business_center</span></span>
                     <span>社团</span>
                 </a>
-            {% elif user.profile.role == 'president' %}
+            {% elif is_president_identity %}
                 <a href="{% url 'clubs:user_dashboard' %}" class="bottom-nav-item">
                     <span class="icon"><span class="material-icons">folder</span></span>
                     <span>我的</span>
@@ -496,6 +614,47 @@
             document.addEventListener('DOMContentLoaded', function() {
                 checkOverflow();
                 window.addEventListener('resize', checkOverflow);
+
+                (function initSidebarResize() {
+                    const resizer = document.getElementById('sidebarResizer');
+                    const root = document.documentElement;
+                    if (!resizer) return;
+
+                    const minWidth = 220;
+                    const maxWidth = 420;
+
+                    function isDesktop() {
+                        return window.matchMedia('(min-width: 769px)').matches;
+                    }
+
+                    function setSidebarWidth(width) {
+                        const clamped = Math.min(maxWidth, Math.max(minWidth, Math.round(width)));
+                        root.style.setProperty('--sidebar-width', clamped + 'px');
+                        localStorage.setItem('sidebar-width', String(clamped));
+                    }
+
+                    resizer.addEventListener('pointerdown', function(event) {
+                        if (!isDesktop()) return;
+                        event.preventDefault();
+                        document.body.classList.add('sidebar-resizing');
+                        resizer.setPointerCapture(event.pointerId);
+
+                        function onPointerMove(moveEvent) {
+                            setSidebarWidth(moveEvent.clientX);
+                        }
+
+                        function stopResize() {
+                            document.body.classList.remove('sidebar-resizing');
+                            resizer.removeEventListener('pointermove', onPointerMove);
+                            resizer.removeEventListener('pointerup', stopResize);
+                            resizer.removeEventListener('pointercancel', stopResize);
+                        }
+
+                        resizer.addEventListener('pointermove', onPointerMove);
+                        resizer.addEventListener('pointerup', stopResize);
+                        resizer.addEventListener('pointercancel', stopResize);
+                    });
+                })();
 
                 // 高亮当前页面
                 const currentPath = window.location.pathname;

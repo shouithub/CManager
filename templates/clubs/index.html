@@ -688,16 +688,26 @@
         flex-wrap: wrap;
     }
     
+    .announcement-link,
     .announcement-attachment {
         display: inline-flex;
         align-items: center;
         gap: var(--md3-spacing-xs);
         font-size: 0.8125rem;
-        color: var(--md3-primary);
         text-decoration: none;
         padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
-        background: var(--md3-primary-container);
         border-radius: var(--md3-radius-full);
+    }
+
+    .announcement-link {
+        color: var(--md3-on-primary);
+        background: var(--md3-primary);
+        font-weight: 600;
+    }
+
+    .announcement-attachment {
+        color: var(--md3-primary);
+        background: var(--md3-primary-container);
     }
     
     /* ===== 空状态 ===== */
@@ -926,6 +936,12 @@
                     <p class="announcement-content">{{ announcement.content|truncatewords:50 }}</p>
                     {% endif %}
                     <div class="announcement-footer">
+                        {% if announcement.link_url %}
+                        <a href="{{ announcement.link_url }}" class="announcement-link" target="_blank" rel="noopener">
+                            <span class="material-icons">open_in_new</span>
+                            查看详情
+                        </a>
+                        {% endif %}
                         {% if announcement.attachment %}
                         <a href="{{ announcement.attachment.url }}" class="announcement-attachment" target="_blank" rel="noopener">
                             <span class="material-icons">attach_file</span>

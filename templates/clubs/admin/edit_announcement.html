@@ -5,115 +5,90 @@
 {% block extra_css %}
 <style>
     .edit-announcement-container {
-        max-width: 900px;
+        max-width: 1180px;
         margin: 0 auto;
-        padding: var(--md3-spacing-2xl);
-        padding-bottom: calc(var(--md3-spacing-2xl) + 100px);
+        padding: 28px 24px calc(36px + 90px);
     }
 
     .page-header {
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-2xl);
-        padding: var(--md3-spacing-2xl);
-        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
-        border-radius: var(--md3-radius-xl);
-        box-shadow: var(--md3-elevation-2);
-    }
-
-    .page-header .material-icons {
-        font-size: 2.5rem;
-        color: var(--md3-primary);
-    }
-
-    .page-header h1 {
-        margin: 0;
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-    }
-
-    .md3-card {
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 22px;
+        padding: 24px 28px;
         background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-xl);
         border: 1px solid var(--md3-outline-variant);
-        padding: var(--md3-spacing-2xl);
+        border-radius: var(--md3-radius-xl);
         box-shadow: var(--md3-elevation-1);
     }
 
-    .md3-field {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-xs);
-        margin-bottom: var(--md3-spacing-xl);
-    }
-
-    .md3-field label {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-    }
-
-    .md3-field .required {
-        color: var(--md3-error);
-        margin-left: var(--md3-spacing-xs);
-    }
-
-    .md3-input,
-    .md3-textarea,
-    .md3-select {
-        width: 100%;
-        border-radius: var(--md3-radius-lg);
-        border: 1px solid var(--md3-outline-variant);
-        padding: var(--md3-spacing-md);
-        font-size: 0.95rem;
-        background: var(--md3-surface);
-        color: var(--md3-on-surface);
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .md3-input:focus,
-    .md3-textarea:focus,
-    .md3-select:focus {
-        outline: none;
-        border-color: var(--md3-primary);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 20%, transparent);
-    }
-
-    .md3-hint {
-        font-size: 0.8rem;
-        color: var(--md3-on-surface-variant);
-    }
-
-    .md3-attachment {
+    .page-title {
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-xs);
-        margin-top: var(--md3-spacing-xs);
-        font-size: 0.85rem;
+        gap: 14px;
+        min-width: 0;
     }
 
-    .md3-attachment a {
-        color: var(--md3-primary);
-        text-decoration: none;
+    .page-title-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: var(--md3-radius-lg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        color: var(--md3-on-primary-container);
         background: var(--md3-primary-container);
-        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
+    }
+
+    .page-title-icon .material-icons {
+        font-size: 30px;
+    }
+
+    .page-title h1 {
+        margin: 0;
+        font-size: 1.55rem;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+    }
+
+    .page-title p {
+        margin: 4px 0 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.9rem;
+    }
+
+    .header-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 42px;
+        padding: 0 18px;
         border-radius: var(--md3-radius-full);
+        color: var(--md3-primary);
+        background: var(--md3-surface-container-high);
+        border: 1px solid var(--md3-outline-variant);
+        text-decoration: none;
+        font-weight: 600;
+        flex: 0 0 auto;
     }
 
     .md3-messages {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-sm);
-        margin-bottom: var(--md3-spacing-xl);
+        display: grid;
+        gap: 10px;
+        margin-bottom: 18px;
     }
 
     .md3-message {
-        padding: var(--md3-spacing-md);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
         border-radius: var(--md3-radius-lg);
         background: var(--md3-surface-container-highest);
         border: 1px solid var(--md3-outline-variant);
+        color: var(--md3-on-surface);
         font-size: 0.9rem;
     }
 
@@ -123,26 +98,199 @@
         border-color: transparent;
     }
 
-    .md3-actions {
+    .announcement-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+        gap: 20px;
+        align-items: start;
+    }
+
+    .form-panel,
+    .side-panel {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .form-panel {
+        padding: 24px;
+    }
+
+    .side-panel {
+        padding: 22px;
+        position: sticky;
+        top: 18px;
+    }
+
+    .section-title {
         display: flex;
-        flex-wrap: wrap;
-        gap: var(--md3-spacing-md);
-        justify-content: flex-end;
-        margin-top: var(--md3-spacing-lg);
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 18px;
+        color: var(--md3-on-surface);
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .section-title .material-icons {
+        color: var(--md3-primary);
+    }
+
+    .md3-field {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .md3-field:last-child {
+        margin-bottom: 0;
+    }
+
+    .md3-field label {
+        font-size: 0.9rem;
+        font-weight: 650;
+        color: var(--md3-on-surface);
+    }
+
+    .required {
+        color: var(--md3-error);
+        margin-left: 4px;
+    }
+
+    .md3-input,
+    .md3-textarea,
+    .md3-select {
+        width: 100%;
+        min-height: 46px;
+        border-radius: var(--md3-radius-md);
+        border: 1px solid var(--md3-outline-variant);
+        padding: 12px 14px;
+        font-size: 0.95rem;
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .md3-textarea {
+        min-height: 260px;
+        line-height: 1.65;
+        resize: vertical;
+    }
+
+    .md3-input:focus,
+    .md3-textarea:focus,
+    .md3-select:focus {
+        outline: none;
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 18%, transparent);
+        background: var(--md3-surface-container-lowest, #fff);
+    }
+
+    .md3-hint {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+
+    .expires-control {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .clear-date-btn {
+        height: 46px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-full);
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        color: var(--md3-error);
+        background: var(--md3-error-container);
+        font-weight: 650;
+        cursor: pointer;
+    }
+
+    .clear-date-btn:hover {
+        box-shadow: var(--md3-elevation-1);
+    }
+
+    .clear-date-btn .material-icons {
+        font-size: 18px;
+    }
+
+    .attachment-current {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        margin-top: 2px;
+        color: var(--md3-on-secondary-container);
+        background: var(--md3-secondary-container);
+        border-radius: var(--md3-radius-full);
+        padding: 8px 12px;
+        font-size: 0.84rem;
+    }
+
+    .attachment-current a {
+        color: inherit;
+        text-decoration: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .meta-list {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .meta-item {
+        display: grid;
+        gap: 4px;
+        padding: 12px;
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-high);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .meta-label {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.76rem;
+        font-weight: 650;
+    }
+
+    .meta-value {
+        color: var(--md3-on-surface);
+        font-size: 0.9rem;
+        word-break: break-word;
+    }
+
+    .md3-actions {
+        display: grid;
+        gap: 10px;
+        margin-top: 22px;
     }
 
     .md3-btn {
+        min-height: 46px;
         display: inline-flex;
         align-items: center;
-        gap: var(--md3-spacing-xs);
+        justify-content: center;
+        gap: 8px;
         border: none;
         border-radius: var(--md3-radius-full);
-        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
-        font-weight: 600;
-        font-size: 0.875rem;
+        padding: 0 20px;
+        font-weight: 700;
+        font-size: 0.92rem;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.2s ease;
+        transition: box-shadow 0.18s ease, transform 0.18s ease;
     }
 
     .md3-btn-primary {
@@ -161,23 +309,43 @@
         color: var(--md3-on-secondary-container);
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 980px) {
+        .announcement-form {
+            grid-template-columns: 1fr;
+        }
+
+        .side-panel {
+            position: static;
+        }
+    }
+
+    @media (max-width: 680px) {
         .edit-announcement-container {
-            padding: var(--md3-spacing-lg);
+            padding: 16px 12px calc(28px + 90px);
         }
 
         .page-header {
+            align-items: stretch;
             flex-direction: column;
-            text-align: center;
+            padding: 18px;
         }
 
-        .md3-actions {
-            justify-content: stretch;
-        }
-
-        .md3-btn {
-            width: 100%;
+        .header-back {
             justify-content: center;
+            width: 100%;
+        }
+
+        .form-panel,
+        .side-panel {
+            padding: 18px;
+        }
+
+        .expires-control {
+            grid-template-columns: 1fr;
+        }
+
+        .clear-date-btn {
+            width: 100%;
         }
     }
 </style>
@@ -186,96 +354,161 @@
 {% block content %}
 <div class="edit-announcement-container">
     <div class="page-header">
-        <span class="material-icons">edit_note</span>
-        <h1>编辑公告</h1>
+        <div class="page-title">
+            <span class="page-title-icon"><span class="material-icons">edit_note</span></span>
+            <div>
+                <h1>编辑公告</h1>
+                <p>{{ announcement.title }}</p>
+            </div>
+        </div>
+        <a href="{% url 'clubs:admin_dashboard' %}" class="header-back">
+            <span class="material-icons">arrow_back</span>
+            返回后台
+        </a>
     </div>
-    
+
     {% if messages %}
     <div class="md3-messages">
         {% for message in messages %}
-        <div class="md3-message {{ message.tags }}">{{ message }}</div>
+        <div class="md3-message {{ message.tags }}">
+            <span class="material-icons">info</span>
+            <span>{{ message }}</span>
+        </div>
         {% endfor %}
     </div>
     {% endif %}
-    
+
     {% if errors %}
     <div class="md3-messages">
         {% for error in errors %}
-        <div class="md3-message error">{{ error }}</div>
+        <div class="md3-message error">
+            <span class="material-icons">error</span>
+            <span>{{ error }}</span>
+        </div>
         {% endfor %}
     </div>
     {% endif %}
-    
-    <div class="md3-card">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            
+
+    <form method="post" enctype="multipart/form-data" class="announcement-form">
+        {% csrf_token %}
+        <div class="form-panel">
+            <h2 class="section-title">
+                <span class="material-icons">article</span>
+                公告内容
+            </h2>
+
             <div class="md3-field">
                 <label for="title">公告标题<span class="required">*</span></label>
-                <input 
-                    type="text" 
-                    id="title" 
-                    name="title" 
-                    required 
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    required
                     maxlength="200"
                     placeholder="输入公告标题"
-                    value="{{ announcement.title }}"
+                    value="{% if submitted %}{{ title }}{% else %}{{ announcement.title }}{% endif %}"
                     class="md3-input"
                 >
             </div>
-            
+
             <div class="md3-field">
-                <label for="content">公告内容<span class="required">*</span></label>
-                <textarea 
-                    id="content" 
-                    name="content" 
-                    required 
-                    rows="8"
+                <label for="content">公告正文<span class="required">*</span></label>
+                <textarea
+                    id="content"
+                    name="content"
+                    required
+                    rows="10"
                     placeholder="输入公告内容"
                     class="md3-textarea"
-                >{{ announcement.content }}</textarea>
+                >{% if submitted %}{{ content }}{% else %}{{ announcement.content }}{% endif %}</textarea>
             </div>
-            
+
             <div class="md3-field">
-                <label for="expires_at">失效时间（可选）</label>
-                <input 
-                    type="datetime-local" 
-                    id="expires_at" 
-                    name="expires_at"
-                    class="md3-input"
-                    {% if announcement.expires_at %}
-                    value="{{ announcement.expires_at|date:'Y-m-d\TH:i' }}"
-                    {% endif %}
-                >
-                <small class="md3-hint">公告将在指定时间后自动归档。如不填写，公告将一直有效。</small>
-            </div>
-            
-            <div class="md3-field">
-                <label for="attachment">附件（可选）</label>
-                <input 
-                    type="file" 
-                    id="attachment" 
-                    name="attachment"
+                <label for="link_url">跳转链接</label>
+                <input
+                    type="text"
+                    id="link_url"
+                    name="link_url"
+                    maxlength="500"
+                    placeholder="/clubs/ 或 https://example.com"
+                    value="{% if submitted %}{{ link_url }}{% else %}{{ announcement.link_url }}{% endif %}"
                     class="md3-input"
                 >
-                <small class="md3-hint">支持上传各种类型的文件，如文档、图片等。</small>
-                {% if announcement.attachment %}
-                <div class="md3-attachment">
-                    <span class="material-icons">attach_file</span>
-                    当前附件：<a href="{{ announcement.attachment.url }}" target="_blank" rel="noopener">{{ announcement.attachment.name }}</a>
+                <small class="md3-hint">支持站内路径或 http(s) 完整地址。</small>
+            </div>
+        </div>
+
+        <aside class="side-panel">
+            <h2 class="section-title">
+                <span class="material-icons">tune</span>
+                发布设置
+            </h2>
+
+            <div class="meta-list">
+                <div class="meta-item">
+                    <span class="meta-label">创建时间</span>
+                    <span class="meta-value">{{ announcement.created_at|date:"Y-m-d H:i" }}</span>
                 </div>
-                {% endif %}
+                <div class="meta-item">
+                    <span class="meta-label">发布时间</span>
+                    <span class="meta-value">{{ announcement.published_at|date:"Y-m-d H:i"|default:"未发布" }}</span>
+                </div>
             </div>
-            
+
             <div class="md3-field">
                 <label for="status">发布状态<span class="required">*</span></label>
                 <select id="status" name="status" required class="md3-select">
-                    <option value="draft" {% if announcement.status == 'draft' %}selected{% endif %}>草稿（保存但不显示）</option>
-                    <option value="published" {% if announcement.status == 'published' %}selected{% endif %}>发布（立即显示在首页）</option>
-                    <option value="archived" {% if announcement.status == 'archived' %}selected{% endif %}>归档（不再显示在首页）</option>
+                    {% if submitted %}
+                    <option value="draft" {% if status == 'draft' %}selected{% endif %}>草稿</option>
+                    <option value="published" {% if status == 'published' %}selected{% endif %}>发布</option>
+                    <option value="archived" {% if status == 'archived' %}selected{% endif %}>归档</option>
+                    {% else %}
+                    <option value="draft" {% if announcement.status == 'draft' %}selected{% endif %}>草稿</option>
+                    <option value="published" {% if announcement.status == 'published' %}selected{% endif %}>发布</option>
+                    <option value="archived" {% if announcement.status == 'archived' %}selected{% endif %}>归档</option>
+                    {% endif %}
                 </select>
             </div>
-            
+
+            <div class="md3-field">
+                <label for="expires_at">失效时间</label>
+                <div class="expires-control">
+                    <input
+                        type="datetime-local"
+                        id="expires_at"
+                        name="expires_at"
+                        class="md3-input"
+                        {% if submitted %}
+                            {% if expires_at %}value="{{ expires_at }}"{% endif %}
+                        {% elif announcement.expires_at %}
+                            value="{{ announcement.expires_at|date:'Y-m-d\TH:i' }}"
+                        {% endif %}
+                    >
+                    <button type="button" class="clear-date-btn" id="clearExpiresBtn">
+                        <span class="material-icons">event_busy</span>
+                        清空日期
+                    </button>
+                </div>
+                <input type="hidden" id="clear_expires_at" name="clear_expires_at" value="0">
+                <small class="md3-hint">留空后公告不会自动失效。</small>
+            </div>
+
+            <div class="md3-field">
+                <label for="attachment">附件</label>
+                <input
+                    type="file"
+                    id="attachment"
+                    name="attachment"
+                    class="md3-input"
+                >
+                {% if announcement.attachment %}
+                <div class="attachment-current">
+                    <span class="material-icons">attach_file</span>
+                    <a href="{{ announcement.attachment.url }}" target="_blank" rel="noopener">{{ announcement.attachment.name }}</a>
+                </div>
+                {% endif %}
+            </div>
+
             <div class="md3-actions">
                 <button type="submit" name="action" value="update" class="md3-btn md3-btn-primary">
                     <span class="material-icons">save</span>
@@ -286,7 +519,31 @@
                     取消
                 </a>
             </div>
-        </form>
-    </div>
+        </aside>
+    </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const expiresInput = document.getElementById('expires_at');
+        const clearInput = document.getElementById('clear_expires_at');
+        const clearButton = document.getElementById('clearExpiresBtn');
+
+        if (!expiresInput || !clearInput || !clearButton) {
+            return;
+        }
+
+        clearButton.addEventListener('click', function () {
+            expiresInput.value = '';
+            clearInput.value = '1';
+            expiresInput.focus();
+        });
+
+        expiresInput.addEventListener('input', function () {
+            clearInput.value = expiresInput.value ? '0' : '1';
+        });
+    })();
+</script>
 {% endblock %}

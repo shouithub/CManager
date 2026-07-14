@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib import messages
+from django.utils.http import url_has_allowed_host_and_scheme
 from .models import UserProfile, Club, FormChannel, FormCycle, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
 from datetime import datetime
 from django.utils import timezone
@@ -16,6 +18,14 @@ from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
 from .lifecycle_utils import extend_inactive_account
+from .business_forms import externally_available_channels
+from .identity import (
+    IDENTITY_PRESIDENT,
+    IDENTITY_PRIMARY,
+    IDENTITY_SESSION_KEY,
+    has_president_officer,
+    is_president_mode,
+)
 
 # 登录限制配置
 MAX_LOGIN_ATTEMPTS = 5
@@ -283,6 +293,39 @@ def user_logout(request):
     logout(request)
     messages.success(request, '已登出')
     return redirect('clubs:index')
+
+
+def _identity_default_url(user, identity):
+    if identity == IDENTITY_PRESIDENT:
+        return reverse('clubs:user_dashboard')
+    try:
+        role = user.profile.role
+    except UserProfile.DoesNotExist:
+        return reverse('clubs:index')
+    if role == 'admin':
+        return reverse('clubs:admin_dashboard')
+    return reverse('clubs:index')
+
+
+@login_required(login_url='clubs:login')
+@require_http_methods(['POST'])
+def switch_identity(request):
+    identity = request.POST.get('identity', IDENTITY_PRIMARY)
+    next_url = request.POST.get('next') or ''
+    if next_url and not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        next_url = ''
+
+    if identity == IDENTITY_PRESIDENT:
+        if not has_president_officer(request.user):
+            messages.error(request, '当前账号没有现任社长身份，无法切换')
+            return redirect(next_url or _identity_default_url(request.user, IDENTITY_PRIMARY))
+        request.session[IDENTITY_SESSION_KEY] = IDENTITY_PRESIDENT
+        messages.success(request, '已切换到社长身份')
+        return redirect(next_url or _identity_default_url(request.user, IDENTITY_PRESIDENT))
+
+    request.session[IDENTITY_SESSION_KEY] = IDENTITY_PRIMARY
+    messages.success(request, '已切换回主身份')
+    return redirect(next_url or _identity_default_url(request.user, IDENTITY_PRIMARY))
 
 
 
@@ -918,17 +961,30 @@ def user_dashboard(request):
     user = request.user
     try:
         profile = user.profile
-        if profile.role == 'staff':
-            return redirect('clubs:index')
     except UserProfile.DoesNotExist:
         return redirect('clubs:login')
+
+    if not is_president_mode(request):
+        if has_president_officer(user):
+            return render(request, 'clubs/user/president_identity_prompt.html', {
+                'user': user,
+                'president_club_count': Officer.objects.filter(
+                    user_profile=profile,
+                    position='president',
+                    is_current=True,
+                ).values('club_id').distinct().count(),
+            })
+        messages.error(request, '您当前没有可管理的社团')
+        return redirect('clubs:index')
 
     clubs = Club.objects.filter(
         officers__user_profile__user=user,
         officers__position='president',
         officers__is_current=True
     ).prefetch_related('responsible_staff', 'responsible_staff__staff')
-    channels = list(FormChannel.objects.filter(is_active=True).prefetch_related('cycles').order_by('order', 'id'))
+    channels = externally_available_channels(
+        FormChannel.objects.filter(is_active=True).prefetch_related('cycles', 'fields').order_by('order', 'id')
+    )
     club_ids = [club.id for club in clubs]
     unread_total = FormSubmission.objects.filter(club_id__in=club_ids, status__in=['pending', 'rejected']).count()
 

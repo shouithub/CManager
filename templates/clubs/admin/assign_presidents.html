@@ -286,7 +286,7 @@
                                 {% for pu in president_users %}
                                 <option value="{{ pu.id }}"
                                     {% if item.current_president and item.current_president.id == pu.id %}selected{% endif %}>
-                                    {{ pu.profile.real_name|default:pu.username }}（{{ pu.username }}）
+                                    {{ pu.profile.real_name|default:pu.username }} / {{ pu.username }} / {{ pu.profile.get_role_display }}
                                 </option>
                                 {% endfor %}
                             </select>

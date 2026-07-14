@@ -32,6 +32,7 @@ urlpatterns = [
     path('login/', auth_views.user_login, name='login'),
     path('register/', auth_views.register, name='register'),
     path('logout/', auth_views.user_logout, name='logout'),
+    path('identity/switch/', auth_views.switch_identity, name='switch_identity'),
     path('change-account-settings/', auth_views.change_account_settings, name='change_account_settings'),
     path('extend-inactive-period/', auth_views.extend_inactive_period, name='extend_inactive_period'),
     path('edit-profile/', auth_views.edit_profile, name='edit_profile'),

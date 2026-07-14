@@ -5,61 +5,67 @@
 {% block extra_css %}
 <style>
     .forms-admin-page {
-        max-width: 1320px;
+        max-width: 1360px;
         margin: 0 auto;
-        padding: var(--md3-spacing-2xl);
+        padding: 24px 28px 40px;
         padding-bottom: calc(var(--md3-spacing-2xl) + 110px);
         box-sizing: border-box;
     }
 
     .builder-header {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
         gap: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-xl);
-        padding: var(--md3-spacing-xl);
-        background: var(--md3-surface-container-low);
-        border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-xl);
-        box-shadow: var(--md3-elevation-1);
+        margin-bottom: 20px;
+        padding: 0 2px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
     }
 
     .builder-header h1 {
         margin: 0;
         color: var(--md3-on-surface);
-        font-size: 1.75rem;
+        font-size: 1.65rem;
         line-height: 1.2;
         font-weight: 750;
         letter-spacing: 0;
     }
 
     .builder-header p {
-        margin: 6px 0 0;
+        margin: 4px 0 0;
         color: var(--md3-on-surface-variant);
         line-height: 1.55;
+        max-width: 760px;
+    }
+
+    .builder-header .btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
     }
 
     .builder-grid {
         display: grid;
-        grid-template-columns: 300px minmax(0, 1fr);
-        gap: var(--md3-spacing-xl);
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 18px;
         align-items: start;
     }
 
     .channel-rail,
     .builder-card,
     .question-card {
-        background: var(--md3-surface);
+        background: var(--md3-surface-container-low);
         border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
-        box-shadow: var(--md3-elevation-1);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: none;
     }
 
     .channel-rail {
         position: sticky;
         top: var(--md3-spacing-lg);
-        overflow: hidden;
+        overflow: visible;
     }
 
     .rail-header {
@@ -67,9 +73,10 @@
         align-items: center;
         justify-content: space-between;
         gap: var(--md3-spacing-md);
-        padding: var(--md3-spacing-lg);
+        padding: 16px 18px;
         border-bottom: 1px solid var(--md3-outline-variant);
         background: var(--md3-surface-container);
+        border-radius: var(--md3-radius-xl) var(--md3-radius-xl) 0 0;
     }
 
     .rail-title {
@@ -84,19 +91,19 @@
     .rail-list {
         display: flex;
         flex-direction: column;
-        gap: 4px;
-        max-height: calc(100vh - 270px);
-        overflow-y: auto;
-        padding: var(--md3-spacing-sm);
+        gap: 6px;
+        max-height: none;
+        overflow: visible;
+        padding: 10px;
     }
 
     .channel-item {
         display: grid;
-        grid-template-columns: 36px minmax(0, 1fr) auto;
+        grid-template-columns: 38px minmax(0, 1fr) auto;
         align-items: center;
         gap: var(--md3-spacing-sm);
-        padding: 10px;
-        border-radius: var(--md3-radius-md);
+        padding: 10px 12px;
+        border-radius: var(--md3-radius-lg);
         color: var(--md3-on-surface);
         text-decoration: none;
         border: 1px solid transparent;
@@ -115,7 +122,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: var(--md3-radius-md);
+        border-radius: var(--md3-radius-lg);
         background: var(--md3-surface-container-high);
         color: var(--md3-primary);
     }
@@ -164,26 +171,46 @@
         white-space: nowrap;
     }
 
+    .state-pill.published {
+        color: var(--md3-on-primary-container);
+        background: var(--md3-primary-container);
+    }
+
+    .state-pill.draft {
+        color: var(--md3-on-secondary-container);
+        background: var(--md3-secondary-container);
+    }
+
+    .state-pill.blocked {
+        color: var(--md3-on-error-container);
+        background: var(--md3-error-container);
+    }
+
+    .state-pill.disabled {
+        color: var(--md3-on-surface-variant);
+        background: var(--md3-surface-container-highest);
+    }
+
     .rail-actions {
         padding: var(--md3-spacing-md) var(--md3-spacing-lg) var(--md3-spacing-lg);
         border-top: 1px solid var(--md3-outline-variant);
-        background: var(--md3-surface-container-low);
+        background: transparent;
     }
 
     .builder-stack {
         display: flex;
         flex-direction: column;
-        gap: var(--md3-spacing-lg);
+        gap: 18px;
     }
 
     .form-cover {
         position: relative;
         overflow: hidden;
-        padding: var(--md3-spacing-xl);
-        background: var(--md3-surface);
-        border-radius: var(--md3-radius-lg);
+        padding: 22px;
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
         border: 1px solid var(--md3-outline-variant);
-        box-shadow: var(--md3-elevation-1);
+        box-shadow: none;
     }
 
     .form-cover::before,
@@ -192,23 +219,162 @@
         position: absolute;
         inset: 0 auto auto 0;
         width: 100%;
-        height: 8px;
+        height: 6px;
         background: var(--md3-primary);
     }
 
     .form-cover h2 {
         margin: 6px 0 var(--md3-spacing-sm);
         color: var(--md3-on-surface);
-        font-size: 1.55rem;
+        font-size: 1.45rem;
         line-height: 1.25;
         font-weight: 750;
         letter-spacing: 0;
     }
 
     .form-cover-subtitle {
-        margin: 0 0 var(--md3-spacing-lg);
+        margin: 0 0 18px;
         color: var(--md3-on-surface-variant);
         line-height: 1.55;
+    }
+
+    .form-cover-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .form-cover-top > div {
+        min-width: 0;
+    }
+
+    .channel-action-bar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 16px;
+        padding: 14px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container);
+    }
+
+    .channel-action-copy {
+        min-width: 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.86rem;
+        line-height: 1.45;
+    }
+
+    .channel-action-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .channel-action-buttons form {
+        margin: 0;
+    }
+
+    .publish-guard-alert,
+    .missing-required-alert {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+        margin-top: 14px;
+        padding: 14px 16px;
+        border: 1px solid color-mix(in srgb, var(--md3-error) 34%, var(--md3-outline-variant));
+        border-radius: var(--md3-radius-lg);
+        background: color-mix(in srgb, var(--md3-error-container) 58%, var(--md3-surface));
+        color: var(--md3-on-error-container);
+    }
+
+    .publish-guard-alert {
+        border-color: color-mix(in srgb, var(--md3-primary) 30%, var(--md3-outline-variant));
+        background: color-mix(in srgb, var(--md3-primary-container) 62%, var(--md3-surface));
+        color: var(--md3-on-primary-container);
+    }
+
+    .publish-guard-alert .material-icons,
+    .missing-required-alert .material-icons {
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-error);
+        color: var(--md3-on-error);
+        font-size: 1rem;
+    }
+
+    .publish-guard-alert .material-icons {
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+    }
+
+    .publish-guard-alert strong,
+    .missing-required-alert strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 0.92rem;
+    }
+
+    .publish-guard-alert p,
+    .missing-required-alert p {
+        margin: 0;
+        line-height: 1.55;
+    }
+
+    .missing-field-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+    }
+
+    .missing-field-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 9px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface);
+        color: var(--md3-error);
+        font-size: 0.82rem;
+        font-weight: 750;
+    }
+
+    .cycle-panel {
+        margin-top: 16px;
+        padding: 14px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container);
+    }
+
+    .cycle-panel > label {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--md3-on-surface);
+        font-size: 0.9rem;
+        font-weight: 750;
+    }
+
+    .cycle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.86rem;
     }
 
     .form-grid {
@@ -230,31 +396,33 @@
 
     .field-group label {
         color: var(--md3-on-surface-variant);
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         font-weight: 700;
     }
 
     .field-control {
         width: 100%;
-        min-height: 46px;
-        padding: 11px 13px;
+        min-height: 42px;
+        padding: 9px 12px;
         border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-sm);
-        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface);
         color: var(--md3-on-surface);
         box-sizing: border-box;
         font: inherit;
+        transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
     }
 
     textarea.field-control {
-        min-height: 88px;
+        min-height: 82px;
         resize: vertical;
     }
 
     .field-control:focus {
-        outline: 2px solid color-mix(in srgb, var(--md3-primary) 20%, transparent);
+        outline: none;
         border-color: var(--md3-primary);
-        background: var(--md3-surface);
+        background: var(--md3-surface-container-lowest);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 18%, transparent);
     }
 
     .toggle-row,
@@ -271,7 +439,8 @@
         align-items: center;
         gap: var(--md3-spacing-sm);
         color: var(--md3-on-surface);
-        font-weight: 700;
+        font-size: 0.88rem;
+        font-weight: 650;
     }
 
     .toggle-row input,
@@ -284,7 +453,7 @@
     .btn-soft-danger {
         color: var(--md3-error);
         border-color: var(--md3-error-container);
-        background: var(--md3-surface);
+        background: var(--md3-error-container);
     }
 
     .section-title {
@@ -307,11 +476,14 @@
     .question-card {
         position: relative;
         overflow: hidden;
-        padding: var(--md3-spacing-lg);
+        padding: 16px;
+        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-xl);
+        box-shadow: none;
     }
 
     .question-card::before {
-        height: 5px;
+        height: 4px;
         background: var(--md3-primary-container);
     }
 
@@ -321,7 +493,7 @@
 
     .question-card.is-locked {
         border-color: color-mix(in srgb, var(--md3-primary) 28%, var(--md3-outline-variant));
-        background: var(--md3-surface-container-low);
+        background: var(--md3-surface-container);
     }
 
     .question-card.is-locked input,
@@ -347,19 +519,19 @@
 
     .question-head {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 230px auto;
-        gap: var(--md3-spacing-md);
-        align-items: start;
+        grid-template-columns: minmax(0, 1fr) 190px auto;
+        gap: 10px;
+        align-items: center;
         margin-bottom: var(--md3-spacing-md);
         padding-top: 4px;
     }
 
     .question-title-input {
-        min-height: 48px;
-        border-width: 0 0 1px;
-        border-radius: 0;
-        background: transparent;
-        font-size: 1.05rem;
+        min-height: 42px;
+        border-width: 1px;
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface);
+        font-size: 1rem;
         font-weight: 700;
     }
 
@@ -372,8 +544,8 @@
     .type-section {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--md3-spacing-md);
-        margin-top: var(--md3-spacing-md);
+        gap: 12px;
+        margin-top: 12px;
     }
 
     .type-section.is-hidden {
@@ -398,10 +570,10 @@
     .option-editor {
         display: grid;
         gap: var(--md3-spacing-sm);
-        padding: var(--md3-spacing-md);
+        padding: 10px;
         border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-md);
-        background: var(--md3-surface-container-low);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface);
     }
 
     .option-chip-list {
@@ -466,7 +638,7 @@
         align-items: center;
         justify-content: space-between;
         gap: var(--md3-spacing-md);
-        margin-top: var(--md3-spacing-lg);
+        margin-top: 14px;
         padding-top: var(--md3-spacing-md);
         border-top: 1px solid var(--md3-outline-variant);
     }
@@ -537,6 +709,24 @@
             border-radius: var(--md3-radius-md);
         }
 
+        .form-cover-top,
+        .channel-action-bar,
+        .cycle-row {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .channel-action-buttons {
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .channel-action-buttons form,
+        .channel-action-buttons .btn {
+            width: 100%;
+        }
+
         .form-cover h2 {
             font-size: 1.22rem;
         }
@@ -593,9 +783,15 @@
                     <span class="channel-icon"><span class="material-icons">{{ channel.icon }}</span></span>
                     <span class="channel-main">
                         <span class="channel-name">{{ channel.name }}</span>
-                        <span class="channel-meta">{{ channel.slug }} · {{ channel.fields.count }} 个字段</span>
+                        <span class="channel-meta">
+                            {{ channel.fields.count }} 个字段
+                            {% if channel.publish_status == 'draft' %} · 草稿{% endif %}
+                            {% if channel.missing_required_fields %} · 未就绪{% endif %}
+                        </span>
                     </span>
-                    <span class="state-pill">{% if channel.is_active %}开{% else %}关{% endif %}</span>
+                    <span class="state-pill {% if not channel.is_active %}disabled{% elif channel.publish_status == 'draft' %}draft{% elif channel.missing_required_fields %}blocked{% else %}published{% endif %}">
+                        {% if not channel.is_active %}停用{% elif channel.publish_status == 'draft' %}草稿{% elif channel.missing_required_fields %}未就绪{% else %}发布{% endif %}
+                    </span>
                 </a>
                 {% empty %}
                 <div class="empty-state">
@@ -614,9 +810,16 @@
         <main class="builder-stack">
             {% if current %}
             <section class="form-cover">
-                <h2>{{ current.name }}</h2>
-                <p class="form-cover-subtitle">编辑通道名称、入口标识、排序和通过审核后的业务动作。修改后会立即影响社长侧入口和审核中心。</p>
-                <form method="post" action="{% url 'clubs:edit_form_channel' current.id %}" class="form-grid">
+                <div class="form-cover-top">
+                    <div>
+                        <h2>{{ current.name }}</h2>
+                        <p class="form-cover-subtitle">编辑通道名称、入口标识、排序和通过审核后的业务动作。只有启用、已发布且业务字段完整的通道才会出现在社长侧提交入口。</p>
+                    </div>
+                    <span class="state-pill {% if not current.is_active %}disabled{% elif current.publish_status == 'draft' %}draft{% elif missing_required_fields %}blocked{% else %}published{% endif %}">
+                        {% if not current.is_active %}已停用{% elif current.publish_status == 'draft' %}草稿{% elif missing_required_fields %}未就绪{% else %}已发布{% endif %}
+                    </span>
+                </div>
+                <form id="channel-settings-form" method="post" action="{% url 'clubs:edit_form_channel' current.id %}" class="form-grid">
                     {% csrf_token %}
                     <div class="field-group">
                         <label>通道名称</label>
@@ -644,6 +847,15 @@
                         <textarea class="field-control" name="description" rows="3" placeholder="给管理员看的说明，也会作为社长侧提交提示">{{ current.description }}</textarea>
                     </div>
                     <div class="field-group span-2">
+                        <label>发布状态</label>
+                        <select class="field-control" name="publish_status">
+                            {% for value,label in publish_statuses %}
+                            <option value="{{ value }}" {% if current.publish_status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="field-help">草稿不会出现在社长侧；已发布但字段未补齐时，也会自动隐藏。</p>
+                    </div>
+                    <div class="field-group span-2">
                         <label>内置业务动作</label>
                         <select class="field-control" name="builtin_action">
                             {% for value,label in builtin_actions %}
@@ -669,30 +881,63 @@
                         <p class="field-help">选择年份、月份、日期或轮次后，该通道会自动按每周期提交一次处理。</p>
                     </div>
                     <div class="toggle-row span-2">
-                        <label><input type="checkbox" name="is_active" {% if current.is_active %}checked{% endif %}>启用通道</label>
+                        <label><input type="checkbox" name="is_active" {% if current.is_active %}checked{% endif %}>运行启用</label>
                         <label><input type="checkbox" name="is_builtin" {% if current.is_builtin %}checked{% endif %}>标记为内置默认</label>
                         <label><input type="checkbox" name="show_zip_download" {% if current.show_zip_download %}checked{% endif %}>显示打包 ZIP 下载</label>
                         <label><input type="checkbox" name="show_unsubmitted_status" {% if current.show_unsubmitted_status %}checked{% endif %}>在我的社团显示未提交</label>
                         <label><input type="checkbox" name="allow_staff_toggle" {% if current.allow_staff_toggle %}checked{% endif %}>允许社团管理页开关</label>
                     </div>
-                    <div class="button-row span-2">
-                        <button class="btn btn-primary" type="submit">
+                </form>
+                <div class="channel-action-bar">
+                    <div class="channel-action-copy">保存后，只有“运行启用 + 已发布 + 业务字段完整”的通道会对社长开放；删除会移除通道、字段和相关提交记录。</div>
+                    <div class="channel-action-buttons">
+                        <button class="btn btn-primary" type="submit" form="channel-settings-form">
                             <span class="material-icons">save</span>保存通道
                         </button>
+                        <form method="post" action="{% url 'clubs:delete_form_channel' current.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-soft-danger" type="submit" onclick="return confirm('确定删除这个通道、字段和所有提交记录吗？')">
+                                <span class="material-icons">delete</span>删除通道
+                            </button>
+                        </form>
                     </div>
-                </form>
-                <form method="post" action="{% url 'clubs:delete_form_channel' current.id %}" class="button-row">
-                    {% csrf_token %}
-                    <button class="btn btn-soft-danger" type="submit" onclick="return confirm('确定删除这个通道、字段和所有提交记录吗？')">
-                        <span class="material-icons">delete</span>删除通道
-                    </button>
-                </form>
-                {% if missing_required_fields %}
-                <div class="empty-state" style="text-align:left;color:var(--md3-error);">
-                    业务动作缺少字段：{{ missing_required_fields|join:", " }}。补齐字段前，审核通过会被阻止。
+                </div>
+                {% if not current.is_externally_available %}
+                <div class="publish-guard-alert">
+                    <span class="material-icons">visibility_off</span>
+                    <div>
+                        <strong>当前通道不会出现在社长侧</strong>
+                        <p>
+                            {% if not current.is_active %}
+                            通道已停用。
+                            {% elif current.publish_status == 'draft' %}
+                            通道仍是草稿。
+                            {% elif missing_required_fields %}
+                            通道已发布，但内置业务动作缺少必要字段。
+                            {% else %}
+                            通道尚未满足外露条件。
+                            {% endif %}
+                        </p>
+                    </div>
                 </div>
                 {% endif %}
-                <div class="field-group span-2">
+                {% if missing_required_fields %}
+                <div class="missing-required-alert">
+                    <span class="material-icons">priority_high</span>
+                    <div>
+                        <strong>业务动作缺少必要字段</strong>
+                        <p>补齐以下字段前，通道不会出现在社长侧提交入口，直达提交 URL 也会被阻止。</p>
+                        <div class="missing-field-list">
+                            {% for field in missing_required_field_infos %}
+                            <span class="missing-field-chip">
+                                {{ field.label }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="cycle-panel">
                     <label>周期管理</label>
                     <form method="post" action="{% url 'clubs:create_form_channel_cycle' current.id %}" class="button-row">
                         {% csrf_token %}
@@ -700,7 +945,7 @@
                         <button class="btn btn-outlined" type="submit"><span class="material-icons">add</span>新建周期</button>
                     </form>
                     {% for cycle in current.cycles.all %}
-                    <div class="channel-meta" style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+                    <div class="cycle-row">
                         <span>{{ cycle.name }} · 第{{ cycle.sequence }}期 · {% if cycle.is_active %}开启{% else %}已关闭{% endif %}</span>
                         {% if cycle.is_active %}
                         <form method="post" action="{% url 'clubs:close_form_channel_cycle' current.id cycle.id %}">
@@ -957,7 +1202,7 @@
             {% else %}
             <section class="form-cover">
                 <h2>新增通道</h2>
-                <p class="form-cover-subtitle">创建后会出现在社长侧“提交通道”和审核中心里。之后可以继续添加字段。</p>
+                <p class="form-cover-subtitle">新通道默认保存为草稿，配置字段并发布后才会出现在社长侧提交入口。</p>
                 <form method="post" action="{% url 'clubs:add_form_channel' %}" class="form-grid">
                     {% csrf_token %}
                     <div class="field-group">
@@ -986,6 +1231,15 @@
                         <textarea class="field-control" name="description" rows="3" placeholder="这个通道用于收集什么内容"></textarea>
                     </div>
                     <div class="field-group span-2">
+                        <label>发布状态</label>
+                        <select class="field-control" name="publish_status">
+                            {% for value,label in publish_statuses %}
+                            <option value="{{ value }}" {% if value == 'draft' %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="field-help">建议先保持草稿，字段配置完整后再发布。</p>
+                    </div>
+                    <div class="field-group span-2">
                         <label>内置业务动作</label>
                         <select class="field-control" name="builtin_action">
                             {% for value,label in builtin_actions %}
@@ -1010,7 +1264,7 @@
                         </select>
                     </div>
                     <div class="toggle-row span-2">
-                        <label><input type="checkbox" name="is_active" checked>启用通道</label>
+                        <label><input type="checkbox" name="is_active" checked>运行启用</label>
                         <label><input type="checkbox" name="is_builtin">标记为内置默认</label>
                         <label><input type="checkbox" name="show_zip_download" checked>显示打包 ZIP 下载</label>
                         <label><input type="checkbox" name="show_unsubmitted_status">在我的社团显示未提交</label>

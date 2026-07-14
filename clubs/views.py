@@ -14,6 +14,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from django.conf import settings
@@ -37,8 +38,11 @@ from .business_forms import (
     BusinessActionError,
     apply_business_action,
     create_form_cycle,
+    externally_available_channels,
     is_locked_business_field,
+    is_channel_externally_available,
     locked_business_field_keys,
+    missing_required_field_infos,
     missing_required_field_keys,
     seed_business_form_channels,
 )
@@ -48,6 +52,7 @@ from PIL import Image
 from .context_processors import audit_center_counts as get_audit_center_counts
 from .site_assets import process_site_logo
 from .lifecycle_utils import mark_profile_inactive
+from .identity import is_president_mode
 
 
 def rename_uploaded_file(file, club_name, request_type, material_type):
@@ -81,6 +86,28 @@ def rename_uploaded_file(file, club_name, request_type, material_type):
     # 修改文件名
     file.name = new_filename
     return file
+
+
+def _validate_announcement_link(link_url):
+    """允许站内绝对路径或 http(s) 地址，避免危险协议进入 href。"""
+    link_url = (link_url or '').strip()
+    if not link_url:
+        return '', None
+
+    parsed = urllib.parse.urlparse(link_url)
+    if link_url.startswith('/'):
+        if link_url.startswith('//'):
+            return link_url, '站内链接不能以 // 开头'
+        return link_url, None
+
+    if parsed.scheme in ('http', 'https') and parsed.netloc:
+        return link_url, None
+
+    return link_url, '跳转链接需填写站内路径（如 /clubs/）或 http(s) 完整地址'
+
+
+def _clear_announcement_cache():
+    cache.delete('index:announcements')
 
 
 def _is_president(user):
@@ -1102,12 +1129,15 @@ def publish_announcement(request):
         status = request.POST.get('status', 'published')
         expires_at = request.POST.get('expires_at', '')
         attachment = request.FILES.get('attachment')
+        link_url, link_error = _validate_announcement_link(request.POST.get('link_url', ''))
 
         errors = []
         if not title:
             errors.append('公告标题不能为空')
         if not content:
             errors.append('公告内容不能为空')
+        if link_error:
+            errors.append(link_error)
 
         if errors:
             announcements = Announcement.objects.all().order_by('-created_at')[:10]
@@ -1115,6 +1145,7 @@ def publish_announcement(request):
                 'errors': errors,
                 'title': title,
                 'content': content,
+                'link_url': link_url,
                 'announcements': announcements,
             }
             return render(request, 'clubs/admin/publish_announcement.html', context)
@@ -1127,8 +1158,10 @@ def publish_announcement(request):
             published_at=timezone.now() if status == 'published' else None,
             expires_at=expires_at if expires_at else None,
             attachment=attachment,
+            link_url=link_url,
         )
 
+        _clear_announcement_cache()
         messages.success(request, '公告发布成功！')
         return redirect('clubs:admin_dashboard')
 
@@ -1152,6 +1185,7 @@ def delete_announcement(request, announcement_id):
     if request.method == 'POST':
         announcement_title = announcement.title
         announcement.delete()
+        _clear_announcement_cache()
         messages.success(request, f'公告"{announcement_title}"已删除')
         return redirect('clubs:admin_dashboard')
 
@@ -1180,37 +1214,49 @@ def edit_announcement(request, announcement_id):
         content = request.POST.get('content', '').strip()
         status = request.POST.get('status', 'published')
         expires_at = request.POST.get('expires_at', '')
+        clear_expires_at = request.POST.get('clear_expires_at') == '1'
         attachment = request.FILES.get('attachment')
+        link_url, link_error = _validate_announcement_link(request.POST.get('link_url', ''))
 
         errors = []
         if not title:
             errors.append('公告标题不能为空')
         if not content:
             errors.append('公告内容不能为空')
+        if link_error:
+            errors.append(link_error)
 
         if errors:
             context = {
                 'errors': errors,
                 'title': title,
                 'content': content,
+                'link_url': link_url,
+                'expires_at': '' if clear_expires_at else expires_at,
+                'status': status,
+                'submitted': True,
+                'clear_expires_at': clear_expires_at,
                 'announcement': announcement,
             }
             return render(request, 'clubs/admin/edit_announcement.html', context)
 
+        old_status = announcement.status
         announcement.title = title
         announcement.content = content
         announcement.status = status
-        announcement.expires_at = expires_at if expires_at else None
+        announcement.expires_at = None if clear_expires_at else (expires_at if expires_at else None)
+        announcement.link_url = link_url
 
         # 如果有新附件，则更新附件
         if attachment:
             announcement.attachment = attachment
 
         # 如果状态从非发布状态变为发布状态，更新发布时间
-        if status == 'published' and announcement.status != 'published':
+        if status == 'published' and old_status != 'published':
             announcement.published_at = timezone.now()
 
         announcement.save()
+        _clear_announcement_cache()
 
         messages.success(request, '公告修改成功！')
         return redirect('clubs:admin_dashboard')
@@ -1729,52 +1775,103 @@ def manage_users(request):
         messages.error(request, '仅管理员可以管理用户')
         return redirect('clubs:index')
 
-    if request.method == 'POST' and request.POST.get('action') == 'delete_user':
+    if request.method == 'POST' and request.POST.get('action') in ('delete_user', 'toggle_active'):
+        action = request.POST.get('action')
         user_id = request.POST.get('user_id', '').strip()
         target_user = get_object_or_404(User, pk=user_id)
 
-        if target_user == request.user:
-            messages.error(request, '不能删除当前登录管理员账号')
-        elif target_user.is_superuser:
-            messages.error(request, '不能删除超级管理员账号')
+        if action == 'delete_user':
+            if target_user == request.user:
+                messages.error(request, '不能删除当前登录管理员账号')
+            elif target_user.is_superuser:
+                messages.error(request, '不能删除超级管理员账号')
+            else:
+                username = target_user.username
+                target_user.delete()
+                messages.success(request, f'已删除用户账号：{username}')
         else:
-            username = target_user.username
-            target_user.delete()
-            messages.success(request, f'已删除用户账号：{username}')
+            if target_user == request.user:
+                messages.error(request, '不能在列表中禁用当前登录管理员账号')
+            elif target_user.is_superuser:
+                messages.error(request, '不能禁用超级管理员账号')
+            else:
+                target_user.is_active = not target_user.is_active
+                target_user.save(update_fields=['is_active'])
+                try:
+                    profile = target_user.profile
+                    if target_user.is_active:
+                        profile.account_status = 'active'
+                        profile.inactive_since = None
+                        if profile.status == 'inactive':
+                            profile.status = 'approved'
+                        profile.save(update_fields=['account_status', 'inactive_since', 'status', 'updated_at'])
+                    else:
+                        mark_profile_inactive(profile, reason='admin_disable')
+                except UserProfile.DoesNotExist:
+                    pass
+                messages.success(request, f'已{"启用" if target_user.is_active else "禁用"}用户账号：{target_user.username}')
 
         return redirect('clubs:manage_users')
 
-    # 获取所有用户，使用select_related加载关联的UserProfile以包含状态信息
-    # 便于管理员审核待审核的干事账号
+    context = _user_list_context(request, can_manage_users=True)
+    return render(request, 'clubs/admin/manage_users.html', context)
+
+
+def _user_list_context(request, *, can_manage_users):
     users = User.objects.select_related('profile').all()
 
-    # 搜索过滤
     search = request.GET.get('search', '').strip()
     if search:
-        from django.db.models import Q
-        users = users.filter(Q(username__icontains=search) | Q(email__icontains=search))
+        users = users.filter(
+            Q(username__icontains=search)
+            | Q(email__icontains=search)
+            | Q(first_name__icontains=search)
+            | Q(last_name__icontains=search)
+            | Q(profile__real_name__icontains=search)
+        )
 
-    # 角色过滤
     role = request.GET.get('role', '').strip()
     if role:
         users = users.filter(profile__role=role)
 
-    # 检查哪些用户被锁（用于在用户列表中显示解锁按钮）
-    from django.core.cache import cache
-    locked_usernames = set()
-    for u in User.objects.all():
-        key = f'login_lock:user:{u.username}'
-        if cache.get(key):
-            locked_usernames.add(u.username)
+    status = request.GET.get('status', '').strip()
+    if status:
+        users = users.filter(profile__status=status)
 
-    context = {
-        'users': users,
+    account_status = request.GET.get('account_status', '').strip()
+    if account_status:
+        users = users.filter(profile__account_status=account_status)
+
+    active_state = request.GET.get('active', '').strip()
+    if active_state == 'enabled':
+        users = users.filter(is_active=True)
+    elif active_state == 'disabled':
+        users = users.filter(is_active=False)
+
+    locked_usernames = set()
+    if can_manage_users:
+        for user in User.objects.all():
+            if cache.get(f'login_lock:user:{user.username}'):
+                locked_usernames.add(user.username)
+
+    return {
+        'users': users.order_by('profile__role', 'username'),
         'total_users': User.objects.count(),
         'search': search,
         'role': role,
+        'status': status,
+        'account_status': account_status,
+        'active_state': active_state,
         'locked_usernames': locked_usernames,
+        'can_manage_users': can_manage_users,
+        'page_title': '系统用户管理' if can_manage_users else '系统用户名单',
+        'page_subtitle': '管理所有用户账户和权限' if can_manage_users else '查看用户账户信息，无编辑权限',
+        'role_choices': UserProfile.ROLE_CHOICES,
+        'profile_status_choices': UserProfile.STATUS_CHOICES,
+        'account_status_choices': UserProfile.ACCOUNT_STATUS_CHOICES,
+        'staff_level_choices': UserProfile.STAFF_LEVEL_CHOICES,
+        'departments': Department.objects.all().order_by('order', 'name') if can_manage_users else [],
     }
-    return render(request, 'clubs/admin/manage_users.html', context)
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -1784,28 +1881,8 @@ def staff_view_users(request):
         messages.error(request, '仅干事可以查看用户列表')
         return redirect('clubs:index')
 
-    # 获取所有用户，但不提供编辑功能
-    users = User.objects.select_related('profile').all()
-
-    # 搜索过滤
-    search = request.GET.get('search', '').strip()
-    if search:
-        from django.db.models import Q
-        users = users.filter(Q(username__icontains=search) | Q(email__icontains=search))
-
-    # 角色过滤
-    role = request.GET.get('role', '').strip()
-    if role:
-        users = users.filter(profile__role=role)
-
-    context = {
-        'users': users,
-        'total_users': User.objects.count(),
-        'search': search,
-        'role': role,
-        'is_staff_view': True,  # 标记为干事视图
-    }
-    return render(request, 'clubs/staff/view_users.html', context)
+    context = _user_list_context(request, can_manage_users=False)
+    return render(request, 'clubs/admin/manage_users.html', context)
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -2325,6 +2402,9 @@ def change_staff_attributes(request, user_id):
     if request.method == 'POST':
         department = request.POST.get('department', '').strip()
         staff_level = request.POST.get('staff_level', '').strip()
+        next_url = request.POST.get('next') or reverse('clubs:manage_users')
+        if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            next_url = reverse('clubs:manage_users')
 
         # 验证部门和职级
         valid_levels = dict(UserProfile.STAFF_LEVEL_CHOICES).keys()
@@ -2335,11 +2415,11 @@ def change_staff_attributes(request, user_id):
                 selected_department = Department.objects.get(id=int(department))
             except (ValueError, Department.DoesNotExist):
                 messages.error(request, '部门选择无效')
-                return redirect('clubs:manage_users')
+                return redirect(next_url)
 
         if staff_level and staff_level not in valid_levels:
             messages.error(request, '职级选择无效')
-            return redirect('clubs:manage_users')
+            return redirect(next_url)
 
         try:
             old_department = profile.department_link.name if profile.department_link else (profile.department or '未设定')
@@ -2357,15 +2437,10 @@ def change_staff_attributes(request, user_id):
         except Exception as e:
             messages.error(request, f'修改失败：{str(e)}')
 
-        return redirect('clubs:manage_users')
+        return redirect(next_url)
 
-    context = {
-        'user': target_user,
-        'profile': profile,
-        'departments': Department.objects.all().order_by('order', 'name'),
-        'staff_level_choices': UserProfile.STAFF_LEVEL_CHOICES,
-    }
-    return render(request, 'clubs/admin/change_staff_attributes.html', context)
+    messages.info(request, '请在用户管理列表中使用“属性”弹窗修改部门和职级。')
+    return redirect('clubs:manage_users')
 
 
 
@@ -2829,7 +2904,7 @@ def delete_club(request, club_id):
 @require_http_methods(['GET', 'POST'])
 def president_member_management(request):
     """社长端社员管理：编辑资料、调整状态、移除社员。"""
-    if not _is_president(request.user):
+    if not is_president_mode(request):
         messages.error(request, '仅社长可访问社员管理')
         return redirect('clubs:index')
 
@@ -3464,24 +3539,25 @@ def room_calendar(request):
     week_start = view_date - timezone.timedelta(days=view_date.weekday())
 
     # 获取时间段
-    time_slots = TimeSlot.objects.filter(is_active=True).order_by('start_time')
+    time_slots = list(TimeSlot.objects.filter(is_active=True).order_by('start_time'))
 
-    # 计算整个日历的起止时间（用于计算百分比）
-    # 默认 8:00 (480min) 到 22:00 (1320min)，总长 840min
+    # 只展示可预约时段覆盖的真实时间范围；时段之间的空档仍按实际分钟比例保留。
     day_start_minutes = 8 * 60
     day_end_minutes = 22 * 60
 
-    if time_slots.exists():
-        first_slot = time_slots.first()
-        last_slot = time_slots.last()
-        day_start_minutes = min(day_start_minutes, first_slot.start_time.hour * 60 + first_slot.start_time.minute)
-        day_end_minutes = max(day_end_minutes, last_slot.end_time.hour * 60 + last_slot.end_time.minute)
+    if time_slots:
+        first_slot = time_slots[0]
+        last_slot = time_slots[-1]
+        day_start_minutes = first_slot.start_time.hour * 60 + first_slot.start_time.minute
+        day_end_minutes = last_slot.end_time.hour * 60 + last_slot.end_time.minute
 
     total_minutes = day_end_minutes - day_start_minutes
     if total_minutes <= 0:
         total_minutes = 14 * 60
 
     processed_slots = []
+    time_gaps = []
+    previous_slot_end_min = None
     for slot in time_slots:
         slot_start_min = slot.start_time.hour * 60 + slot.start_time.minute
         slot_end_min = slot.end_time.hour * 60 + slot.end_time.minute
@@ -3489,6 +3565,14 @@ def room_calendar(request):
         # 使用浮点数计算百分比，保留4位小数以确保精度
         top_percent = ((slot_start_min - day_start_minutes) / total_minutes) * 100
         height_percent = ((slot_end_min - slot_start_min) / total_minutes) * 100
+
+        if previous_slot_end_min is not None and slot_start_min > previous_slot_end_min:
+            gap_top_percent = ((previous_slot_end_min - day_start_minutes) / total_minutes) * 100
+            gap_height_percent = ((slot_start_min - previous_slot_end_min) / total_minutes) * 100
+            time_gaps.append({
+                'top_percent': f"{gap_top_percent:.4f}",
+                'height_percent': f"{gap_height_percent:.4f}",
+            })
 
         # 检查该时间段是否已有预约
         has_booking = RoomBooking.objects.filter(
@@ -3508,6 +3592,7 @@ def room_calendar(request):
             'has_booking': has_booking,
             'id': slot.id
         })
+        previous_slot_end_min = slot_end_min
 
     # 获取当天的预约
     bookings = RoomBooking.objects.filter(
@@ -3546,6 +3631,7 @@ def room_calendar(request):
         'next_date': next_date,
         'week_start': week_start,
         'time_slots': processed_slots,
+        'time_gaps': time_gaps,
         'bookings': processed_bookings,
     }
 
@@ -3683,7 +3769,7 @@ def submit_room_booking(request):
             club = get_object_or_404(Club, pk=club_id)
             # 验证用户是否有权代表该社团申请（如果是社长）
             if not is_staff_or_admin(request.user):
-                if club.president != request.user:
+                if not _is_president_of_club(request.user, club):
                     messages.error(request, '您不是该社团的社长，无法代表申请')
                     return redirect('clubs:submit_room_booking')
         else:
@@ -3740,19 +3826,96 @@ def my_room_bookings(request):
 @login_required
 def edit_room_booking(request, booking_id):
     """编辑预约"""
-    booking = get_object_or_404(RoomBooking, pk=booking_id)
+    booking = get_object_or_404(RoomBooking.objects.select_related('room', 'club', 'user'), pk=booking_id)
     if not booking.can_edit(request.user):
         messages.error(request, '您没有权限编辑此预约')
         return redirect('clubs:my_room_bookings')
 
-    if request.method == 'POST':
-        # 简单实现，实际可能需要更多逻辑
-        booking.reason = request.POST.get('reason')
-        booking.save()
-        messages.success(request, '预约已更新')
-        return redirect('clubs:my_room_bookings')
+    rooms = Room.objects.filter(status='available').order_by('name')
+    time_slots = TimeSlot.objects.filter(is_active=True).order_by('start_time')
+    user_clubs = Club.objects.filter(
+        officers__user_profile__user=request.user,
+        officers__position='president',
+        officers__is_current=True,
+        status='active',
+    ).distinct().order_by('name')
+    staff_or_admin = is_staff_or_admin(request.user)
 
-    return render(request, 'clubs/room_my_bookings.html', {'booking': booking})
+    if request.method == 'POST':
+        try:
+            room_id = request.POST.get('room_id')
+            date_str = request.POST.get('booking_date')
+            start_time_str = request.POST.get('start_time')
+            end_time_str = request.POST.get('end_time')
+            club_id = request.POST.get('club_id')
+            purpose = request.POST.get('purpose', '').strip()
+            contact_phone = request.POST.get('contact_phone', '').strip()
+            special_requirements = request.POST.get('special_requirements', '').strip()
+            participant_count = request.POST.get('participant_count')
+
+            if not all([room_id, date_str, start_time_str, end_time_str, purpose, contact_phone, participant_count]):
+                messages.error(request, '请填写所有必填项')
+                raise ValueError('missing required fields')
+
+            if not re.match(r'^1[3-9]\d{9}$', contact_phone):
+                messages.error(request, '请输入有效的11位手机号码')
+                raise ValueError('invalid phone')
+
+            room = get_object_or_404(Room, pk=room_id, status='available')
+            booking_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            start_time = datetime.strptime(start_time_str, '%H:%M').time()
+            end_time = datetime.strptime(end_time_str, '%H:%M').time()
+
+            if start_time >= end_time:
+                messages.error(request, '结束时间必须晚于开始时间')
+                raise ValueError('invalid time range')
+
+            if not TimeSlot.objects.filter(start_time=start_time, end_time=end_time, is_active=True).exists():
+                messages.error(request, '请选择有效的固定时间段')
+                raise ValueError('invalid time slot')
+
+            club = None
+            if club_id:
+                club = get_object_or_404(Club, pk=club_id)
+                if not staff_or_admin and not _is_president_of_club(request.user, club):
+                    messages.error(request, '您不是该社团的现任社长，无法代表申请')
+                    raise ValueError('invalid club')
+            elif not staff_or_admin:
+                messages.error(request, '普通用户必须选择社团进行申请')
+                raise ValueError('missing club')
+
+            participant_count_int = int(participant_count)
+            if participant_count_int < 1:
+                messages.error(request, '参与人数必须大于 0')
+                raise ValueError('invalid participant count')
+
+            booking.room = room
+            booking.club = club
+            booking.booking_date = booking_date
+            booking.start_time = start_time
+            booking.end_time = end_time
+            booking.purpose = purpose
+            booking.contact_phone = contact_phone
+            booking.special_requirements = special_requirements
+            booking.participant_count = participant_count_int
+
+            if booking.has_conflict():
+                messages.error(request, '该时间段已被预约，请选择其他时间')
+                raise ValueError('booking conflict')
+
+            booking.save()
+            messages.success(request, '预约已更新')
+            return redirect('clubs:my_room_bookings')
+        except ValueError:
+            pass
+
+    return render(request, 'clubs/edit_room_booking.html', {
+        'booking': booking,
+        'rooms': rooms,
+        'time_slots': time_slots,
+        'user_clubs': user_clubs,
+        'is_staff_or_admin': staff_or_admin,
+    })
 
 
 @login_required
@@ -4035,8 +4198,12 @@ def admin_assign_presidents(request):
         )
     ).order_by('name')
 
-    # 所有 president 角色用户，用于下拉框
-    president_users = User.objects.filter(profile__role='president').select_related('profile').order_by('profile__real_name')
+    # 所有活跃且已批准用户均可作为 Officer 表中的社长，不改变其主角色。
+    president_users = User.objects.filter(
+        is_active=True,
+        profile__status='approved',
+        profile__account_status='active',
+    ).select_related('profile').order_by('profile__real_name', 'username')
 
     clubs_data = []
     for club in clubs_qs:
@@ -4063,9 +4230,10 @@ def admin_assign_presidents(request):
 # ==================== Dynamic form system ====================
 
 def _active_channels():
-    return (
+    return externally_available_channels(
         FormChannel.objects.filter(is_active=True)
         .exclude(slug='')
+        .prefetch_related('fields')
         .order_by('order', 'id')
     )
 
@@ -4595,8 +4763,11 @@ def _form_field_items(fields, submission=None):
 @login_required(login_url=settings.LOGIN_URL)
 def submit_dynamic_form(request, channel_slug, club_id):
     channel = _get_channel(channel_slug)
+    if not is_channel_externally_available(channel):
+        messages.error(request, '该提交通道尚未发布或配置未完成，暂不能提交')
+        return redirect('clubs:user_dashboard')
     club = get_object_or_404(Club, pk=club_id)
-    if not _is_president(request.user) or not _is_president_of_club(request.user, club):
+    if not is_president_mode(request) or not _is_president_of_club(request.user, club):
         messages.error(request, '只有该社团现任社长可以提交')
         return redirect('clubs:user_dashboard')
 
@@ -4630,7 +4801,7 @@ def submit_dynamic_form(request, channel_slug, club_id):
 @login_required(login_url=settings.LOGIN_URL)
 def revise_dynamic_submission(request, submission_key):
     submission = _get_submission_or_404(submission_key)
-    if not _is_president(request.user) or not _is_president_of_club(request.user, submission.club):
+    if not is_president_mode(request) or not _is_president_of_club(request.user, submission.club):
         messages.error(request, '只有该社团现任社长可以修改补交')
         return redirect('clubs:user_dashboard')
     if submission.status != 'rejected':
@@ -4728,7 +4899,7 @@ def _redirect_builtin_submit(request, club_id, slug):
 
 @login_required(login_url=settings.LOGIN_URL)
 def approval_center_tabs(request, tab='all'):
-    if not _is_president(request.user):
+    if not is_president_mode(request):
         messages.error(request, '仅社长可以访问审批记录')
         return redirect('clubs:index')
     clubs = Club.objects.filter(officers__user_profile__user=request.user, officers__position='president', officers__is_current=True)
@@ -4762,10 +4933,10 @@ def approval_center_tabs(request, tab='all'):
 @login_required(login_url=settings.LOGIN_URL)
 def approval_detail(request, item_type, submission_key):
     submission = _get_submission_or_404(submission_key)
-    if _is_president(request.user) and not _is_president_of_club(request.user, submission.club):
+    if is_president_mode(request) and not _is_president_of_club(request.user, submission.club):
         messages.error(request, '无权查看此提交')
         return redirect('clubs:user_dashboard')
-    if not (_is_president(request.user) or is_staff_or_admin(request.user)):
+    if not (is_president_mode(request) or is_staff_or_admin(request.user)):
         messages.error(request, '无权查看此提交')
         return redirect('clubs:index')
     context = {
@@ -4968,8 +5139,16 @@ def manage_form_channels(request, channel_id=None):
         return redirect('clubs:index')
     channels = FormChannel.objects.prefetch_related('fields', 'cycles').order_by('order', 'id')
     is_creating = request.GET.get('new') == '1'
-    current = None if is_creating else (get_object_or_404(FormChannel, pk=channel_id) if channel_id else channels.first())
+    channels = list(channels)
+    for channel in channels:
+        channel.missing_required_fields = missing_required_field_keys(channel)
+        channel.is_externally_available = is_channel_externally_available(channel)
+    current = None if is_creating else (get_object_or_404(FormChannel, pk=channel_id) if channel_id else (channels[0] if channels else None))
+    if current:
+        current.missing_required_fields = missing_required_field_keys(current)
+        current.is_externally_available = is_channel_externally_available(current)
     missing_fields = missing_required_field_keys(current) if current else []
+    missing_field_infos = missing_required_field_infos(current) if current else []
     locked_field_keys = locked_business_field_keys(current) if current else set()
     return render(request, 'clubs/admin/form_channels.html', {
         'channels': channels,
@@ -4979,7 +5158,9 @@ def manage_form_channels(request, channel_id=None):
         'builtin_actions': FormChannel.BUILTIN_ACTION_CHOICES,
         'submission_policies': FormChannel.SUBMISSION_POLICY_CHOICES,
         'cycle_types': FormChannel.CYCLE_TYPE_CHOICES,
+        'publish_statuses': FormChannel.PUBLISH_STATUS_CHOICES,
         'missing_required_fields': missing_fields,
+        'missing_required_field_infos': missing_field_infos,
         'locked_field_keys': locked_field_keys,
     })
 
@@ -4998,6 +5179,9 @@ def save_form_channel(request, channel_id=None):
     channel.builtin_action = request.POST.get('builtin_action', 'none')
     channel.submission_policy = request.POST.get('submission_policy', 'repeatable')
     channel.cycle_type = request.POST.get('cycle_type', 'none')
+    publish_status = request.POST.get('publish_status', 'draft')
+    valid_publish_statuses = {value for value, _ in FormChannel.PUBLISH_STATUS_CHOICES}
+    channel.publish_status = publish_status if publish_status in valid_publish_statuses else 'draft'
     try:
         channel.required_approval_count = min(9, max(1, int(request.POST.get('required_approval_count', '1') or 1)))
     except ValueError:
@@ -5017,10 +5201,19 @@ def save_form_channel(request, channel_id=None):
         channel.order = 0
     if not channel.name or not channel.slug:
         messages.error(request, '通道名称和标识不能为空')
+    elif FormChannel.objects.filter(name__iexact=channel.name).exclude(pk=channel.pk).exists():
+        messages.error(request, '通道名称已存在，请换一个名称')
     else:
         try:
             channel.save()
-            messages.success(request, '通道已保存')
+            missing_fields = missing_required_field_keys(channel)
+            if channel.publish_status == 'published' and missing_fields:
+                missing_labels = [item['label'] for item in missing_required_field_infos(channel)]
+                messages.warning(request, f'通道已保存，但缺少必要字段：{"、".join(missing_labels)}。补齐前不会出现在社长侧提交入口。')
+            elif channel.publish_status == 'draft':
+                messages.success(request, '通道已保存为草稿，不会出现在社长侧提交入口')
+            else:
+                messages.success(request, '通道已保存并可对外显示')
         except IntegrityError:
             messages.error(request, '通道标识已存在，请换一个 slug')
     return redirect('clubs:manage_form_channels_detail', channel_id=channel.id) if channel.id else redirect('clubs:manage_form_channels')
@@ -5208,7 +5401,7 @@ def public_activities(request):
         return redirect('clubs:user_dashboard')
 
     qs = PublishedActivity.objects.select_related('club', 'source_submission').order_by('-published_at')
-    if role == 'president':
+    if is_president_mode(request):
         qs = qs.filter(club_id__in=_get_president_club_ids(request.user))
     elif role == 'member':
         member_club_ids = list(ClubMember.objects.filter(user_profile__user=request.user, status='active').values_list('club_id', flat=True))
@@ -5279,10 +5472,11 @@ def notification_counts(request):
     role = getattr(getattr(request.user, 'profile', None), 'role', '')
     audit_counts = {}
     approval_counts = {}
-    if role in ['staff', 'admin'] or request.user.is_superuser:
+    president_identity = is_president_mode(request)
+    if not president_identity and (role in ['staff', 'admin'] or request.user.is_superuser):
         for row in FormSubmission.objects.filter(status='pending').values('channel__slug').annotate(count=Count('id')):
             audit_counts[row['channel__slug']] = row['count']
-    if role == 'president':
+    if president_identity:
         club_ids = _get_president_club_ids(request.user)
         for row in FormSubmission.objects.filter(club_id__in=club_ids, status__in=['pending', 'rejected']).values('channel__slug').annotate(count=Count('id')):
             approval_counts[row['channel__slug']] = row['count']
@@ -5300,7 +5494,7 @@ def notification_counts(request):
 @require_POST
 def cancel_submission(request, submission_key):
     submission = get_object_or_404(FormSubmission, public_id=submission_key, status='pending')
-    if not _is_president_of_club(request.user, submission.club):
+    if not is_president_mode(request) or not _is_president_of_club(request.user, submission.club):
         messages.error(request, '无权取消此提交')
         return redirect('clubs:user_dashboard')
     for uploaded in submission.uploaded_files.all():

@@ -1,15 +1,17 @@
 {% extends 'clubs/base.html' %}
 
-{% block title %}用户管理{% endblock %}
+{% block title %}{{ page_title|default:"用户管理" }}{% endblock %}
 
 {% block extra_css %}
 <style>
     .users-container {
+        width: 100%;
         max-width: 1400px;
         margin: 0 auto;
-        padding: var(--md3-spacing-2xl);
-        padding-bottom: calc(var(--md3-spacing-2xl) + 120px);
+        padding: clamp(16px, 3vw, var(--md3-spacing-2xl));
+        padding-bottom: 88px;
         box-sizing: border-box;
+        container-type: inline-size;
     }
     
     /* 页面标题 */
@@ -194,7 +196,7 @@
     .search-card {
         background: var(--md3-surface-container);
         border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-2xl);
+        padding: clamp(18px, 3vw, var(--md3-spacing-2xl));
         margin-bottom: var(--md3-spacing-xl);
         border: 1px solid var(--md3-outline-variant);
         box-shadow: var(--md3-elevation-1);
@@ -202,7 +204,7 @@
     
     .search-form {
         display: grid;
-        grid-template-columns: 2fr 1fr auto;
+        grid-template-columns: minmax(220px, 2fr) minmax(180px, 1fr) auto auto;
         gap: var(--md3-spacing-md);
         align-items: center;
     }
@@ -274,59 +276,6 @@
         font-size: 1.25rem;
     }
     
-    /* 表格卡片 */
-    .table-card {
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-xl);
-        border: 1px solid var(--md3-outline-variant);
-        box-shadow: var(--md3-elevation-1);
-        overflow: hidden;
-    }
-    
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    .data-table thead {
-        background: var(--md3-surface-container-high);
-        border-bottom: 2px solid var(--md3-outline-variant);
-    }
-    
-    .data-table th {
-        padding: var(--md3-spacing-lg);
-        text-align: left;
-        font-weight: 600;
-        font-size: 0.875rem;
-        color: var(--md3-on-surface-variant);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .data-table tbody tr {
-        border-bottom: 1px solid var(--md3-outline-variant);
-        transition: background-color 0.2s ease;
-    }
-    
-    .data-table tbody tr:last-child {
-        border-bottom: none;
-    }
-    
-    .data-table tbody tr:hover {
-        background: var(--md3-surface-container-highest);
-    }
-    
-    .data-table td {
-        padding: var(--md3-spacing-lg);
-        font-size: 0.875rem;
-        color: var(--md3-on-surface);
-    }
-    
-    .data-table td strong {
-        font-weight: 600;
-        color: var(--md3-on-surface);
-    }
-    
     /* 角色徽章 */
     .role-badge {
         display: inline-flex;
@@ -396,12 +345,6 @@
     }
     
     /* 操作按钮 */
-    .action-buttons {
-        display: flex;
-        gap: var(--md3-spacing-sm);
-        flex-wrap: wrap;
-    }
-    
     .btn-action {
         display: inline-flex;
         align-items: center;
@@ -452,6 +395,282 @@
         color: var(--md3-on-error);
         box-shadow: var(--md3-elevation-1);
     }
+
+    .users-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: var(--md3-spacing-lg);
+    }
+
+    .user-card {
+        background: var(--md3-surface-container);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 24px;
+        box-shadow: var(--md3-elevation-1);
+        padding: var(--md3-spacing-lg);
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-md);
+        min-width: 0;
+    }
+
+    .user-card-header {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+    }
+
+    .user-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--md3-radius-full);
+        overflow: hidden;
+        flex-shrink: 0;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .user-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .user-main {
+        min-width: 0;
+    }
+
+    .user-name-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .user-full-name {
+        color: var(--md3-on-surface);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.25;
+        text-decoration: none;
+        overflow-wrap: anywhere;
+    }
+
+    .user-username {
+        margin-top: 3px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.82rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    .user-card-status {
+        justify-self: end;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+
+    .user-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 14px;
+        padding: var(--md3-spacing-md);
+        border-radius: 18px;
+        background: var(--md3-surface-container-low);
+        border: 1px solid var(--md3-outline-variant);
+    }
+
+    .user-meta-item {
+        min-width: 0;
+    }
+
+    .user-meta-label {
+        display: block;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.72rem;
+        font-weight: 600;
+        line-height: 1.2;
+        margin-bottom: 4px;
+    }
+
+    .user-meta-value {
+        color: var(--md3-on-surface);
+        font-size: 0.86rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    .user-card-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-top: var(--md3-spacing-sm);
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .user-card-actions .btn-action {
+        min-height: 36px;
+        justify-content: center;
+    }
+
+    .main-content .users-container > .page-header {
+        min-height: 0 !important;
+        padding: clamp(18px, 2.2vw, 28px) !important;
+        margin-bottom: 18px !important;
+        border-radius: 26px !important;
+        gap: 14px !important;
+    }
+
+    .main-content .users-container > .page-header > .material-icons {
+        font-size: clamp(2rem, 3vw, 2.6rem) !important;
+    }
+
+    .main-content .users-container > .page-header h1 {
+        font-size: clamp(1.5rem, 3vw, 2.05rem) !important;
+        font-weight: 650 !important;
+        line-height: 1.16 !important;
+    }
+
+    .main-content .users-container > .page-header .subtitle {
+        font-size: 0.92rem !important;
+        margin: 6px 0 0 0 !important;
+    }
+
+    .search-card {
+        padding: 14px !important;
+        overflow: visible;
+    }
+
+    .search-form {
+        grid-template-columns: minmax(260px, 1.6fr) repeat(4, minmax(128px, 1fr));
+        gap: 10px;
+    }
+
+    .search-form .form-input,
+    .search-form .form-select,
+    .search-form .btn-search {
+        min-height: 42px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        box-sizing: border-box;
+    }
+
+    .search-form > button.btn-search {
+        grid-column: 4;
+    }
+
+    .search-form > .btn-reset {
+        grid-column: 5;
+    }
+
+    .search-form > .btn-search {
+        justify-content: center;
+    }
+
+    .user-card-actions form {
+        display: inline-flex;
+    }
+
+    .user-card-actions .btn-action {
+        border-radius: var(--md3-radius-full);
+    }
+
+    .staff-attr-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1120;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(28, 27, 31, 0.48);
+        box-sizing: border-box;
+    }
+
+    .staff-attr-modal-card {
+        width: min(520px, 100%);
+        max-height: min(680px, calc(100vh - 36px));
+        overflow: auto;
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 28px;
+        box-shadow: var(--md3-elevation-3);
+    }
+
+    .staff-attr-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 20px 22px 14px;
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .staff-attr-modal-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .staff-attr-modal-title .material-icons {
+        color: var(--md3-primary);
+        font-size: 1.7rem;
+    }
+
+    .staff-attr-modal-title h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        line-height: 1.2;
+    }
+
+    .staff-attr-modal-user {
+        margin-top: 4px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.86rem;
+        overflow-wrap: anywhere;
+    }
+
+    .staff-attr-modal-body {
+        display: grid;
+        gap: 16px;
+        padding: 18px 22px 22px;
+    }
+
+    .staff-attr-fields {
+        display: grid;
+        gap: 14px;
+    }
+
+    .staff-attr-field label {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--md3-on-surface);
+        font-weight: 650;
+        font-size: 0.9rem;
+    }
+
+    .staff-attr-help {
+        margin: 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.84rem;
+        line-height: 1.5;
+    }
+
+    .staff-attr-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 4px;
+    }
     
     /* 空状态 */
     .empty-state {
@@ -479,7 +698,7 @@
     @media (max-width: 768px) {
         .users-container {
             padding: var(--md3-spacing-lg);
-            padding-bottom: calc(var(--md3-spacing-lg) + 80px);
+            padding-bottom: 92px;
         }
         
         .page-header {
@@ -514,19 +733,97 @@
             grid-template-columns: 1fr;
         }
         
-        .table-card {
-            overflow-x: auto;
-        }
-        
-        .data-table {
-            min-width: 1000px;
-        }
     }
 
     @media (max-width: 1120px) {
         .page-header-actions {
             width: 100%;
             justify-content: flex-start;
+        }
+
+        .search-form {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .search-form .btn-search,
+        .search-form .btn-reset {
+            justify-content: center;
+        }
+
+        .search-form > button.btn-search,
+        .search-form > .btn-reset {
+            grid-column: auto;
+        }
+    }
+
+    @container (max-width: 900px) {
+        .search-form {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .search-form > button.btn-search,
+        .search-form > .btn-reset {
+            grid-column: auto;
+        }
+
+        .page-header-actions {
+            width: 100%;
+            min-width: 0;
+            justify-content: flex-start;
+        }
+    }
+
+    @container (max-width: 620px) {
+        .users-list {
+            grid-template-columns: 1fr;
+        }
+
+        .user-card {
+            padding: var(--md3-spacing-md);
+            border-radius: 20px;
+        }
+
+        .user-card-header {
+            grid-template-columns: 44px minmax(0, 1fr);
+        }
+
+        .user-card-status {
+            grid-column: 1 / -1;
+            justify-self: stretch;
+            align-items: flex-start;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .user-meta-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .user-card-actions .btn-action {
+            flex: 1 1 130px;
+        }
+
+        .search-form {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .search-form > button.btn-search,
+        .search-form > .btn-reset {
+            grid-column: auto;
+        }
+
+        .page-header-actions .btn-action,
+        .page-header-actions .stats-badge,
+        .search-form .btn-search,
+        .search-form .btn-reset {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @container (max-width: 420px) {
+        .search-form {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -538,10 +835,11 @@
     <div class="page-header">
         <span class="material-icons">group</span>
         <div class="page-header-content">
-            <h1>系统用户管理</h1>
-            <p class="subtitle">管理所有用户账户和权限</p>
+            <h1>{{ page_title|default:"系统用户管理" }}</h1>
+            <p class="subtitle">{{ page_subtitle|default:"管理所有用户账户和权限" }}</p>
         </div>
         <div class="page-header-actions">
+            {% if can_manage_users %}
             <button type="button" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;" onclick="openBulkOpsModal()">
                 批量操作
             </button>
@@ -549,6 +847,7 @@
                 <span class="material-icons">person_add</span>
                 创建用户
             </a>
+            {% endif %}
             <div class="stats-badge">
                 <span class="material-icons">person</span>
                 <span>{{ total_users }} 个用户</span>
@@ -571,71 +870,61 @@
             </div>
             <select name="role" class="form-select">
                 <option value="">所有角色</option>
-                <option value="president" {% if role == 'president' %}selected{% endif %}>社长</option>
-                <option value="staff" {% if role == 'staff' %}selected{% endif %}>干事</option>
-                <option value="admin" {% if role == 'admin' %}selected{% endif %}>管理员</option>
-                <option value="member" {% if role == 'member' %}selected{% endif %}>社员</option>
+                {% for value, label in role_choices %}
+                    <option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="status" class="form-select">
+                <option value="">审核状态</option>
+                {% for value, label in profile_status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="account_status" class="form-select">
+                <option value="">生命周期</option>
+                {% for value, label in account_status_choices %}
+                    <option value="{{ value }}" {% if account_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="active" class="form-select">
+                <option value="">启用状态</option>
+                <option value="enabled" {% if active_state == 'enabled' %}selected{% endif %}>已启用</option>
+                <option value="disabled" {% if active_state == 'disabled' %}selected{% endif %}>已禁用</option>
             </select>
             <button type="submit" class="btn-search">
                 <span class="material-icons">search</span>
                 搜索
             </button>
+            <a href="?" class="btn-search btn-reset" style="background: var(--md3-surface-container-high); color: var(--md3-on-surface); text-decoration: none;">
+                <span class="material-icons">refresh</span>
+                重置
+            </a>
         </form>
     </div>
     
     <!-- 用户列表 -->
     {% if users %}
-    <div class="table-card">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>用户名</th>
-                    <th>邮箱</th>
-                    <th>全名</th>
-                    <th>电话</th>
-                    <th>微信</th>
-                    <th>政治面貌</th>
-                    <th>角色</th>
-                    <th>部门</th>
-                    <th>状态</th>
-                    <th>账户活跃</th>
-                    <th>加入时间</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                <tr>
-                    <td>
-                        <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                                {% if user.profile.avatar %}
-                                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                {% else %}
-                                    <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
-                                        {{ user.profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <strong>{{ user.username }}</strong>
+    <div class="users-list">
+        {% for user in users %}
+        <article class="user-card">
+            <div class="user-card-header">
+                <a href="{% url 'clubs:user_detail' user.id %}" class="user-avatar" aria-label="查看 {{ user.username }}">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="{{ user.profile.get_full_name|default:user.username }}">
+                    {% else %}
+                        {{ user.profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
+                    {% endif %}
+                </a>
+                <div class="user-main">
+                    <div class="user-name-line">
+                        <a href="{% url 'clubs:user_detail' user.id %}" class="user-full-name">
+                            {{ user.profile.get_full_name|default:user.username }}
                         </a>
-                    </td>
-                    <td>{{ user.email|default:"--" }}</td>
-                    <td>
-                        <a href="{% url 'clubs:user_detail' user.id %}" style="text-decoration: none; color: inherit;">
-                            {{ user.profile.get_full_name|default:"--" }}
-                        </a>
-                    </td>
-                    <td>{{ user.profile.phone|default:"--" }}</td>
-                    <td>{{ user.profile.wechat|default:"--" }}</td>
-                    <td>
-                        {% if user.profile.role == 'president' or user.profile.role == 'staff' %}
-                            {{ user.profile.get_political_status_display|default:"未填写" }}
-                        {% else %}
-                            --
-                        {% endif %}
-                    </td>
-                    <td>
+                    </div>
+                    <div class="user-username">{{ user.username }}{% if user.email %} · {{ user.email }}{% endif %}</div>
+                </div>
+                <div class="user-card-status">
+                    <div>
                         {% if user.profile.role == 'president' %}
                             <span class="role-badge president">社长</span>
                         {% elif user.profile.role == 'staff' %}
@@ -647,15 +936,8 @@
                         {% else %}
                             <span class="role-badge unknown">未设定</span>
                         {% endif %}
-                    </td>
-                    <td>
-                        {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
-                            {{ user.profile.department_link.name|default:user.profile.department|default:"--" }}
-                        {% else %}
-                            --
-                        {% endif %}
-                    </td>
-                    <td>
+                    </div>
+                    <div>
                         {% if user.profile.role == 'staff' %}
                             {% if user.profile.status == 'pending' %}
                                 <span class="status-badge pending">
@@ -681,8 +963,42 @@
                                 已激活
                             </span>
                         {% endif %}
-                    </td>
-                    <td>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-meta-grid">
+                <div class="user-meta-item">
+                    <span class="user-meta-label">联系电话</span>
+                    <span class="user-meta-value">{{ user.profile.phone|default:"--" }}</span>
+                </div>
+                <div class="user-meta-item">
+                    <span class="user-meta-label">微信</span>
+                    <span class="user-meta-value">{{ user.profile.wechat|default:"--" }}</span>
+                </div>
+                <div class="user-meta-item">
+                    <span class="user-meta-label">部门</span>
+                    <span class="user-meta-value">
+                        {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
+                            {{ user.profile.department_link.name|default:user.profile.department|default:"--" }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="user-meta-item">
+                    <span class="user-meta-label">政治面貌</span>
+                    <span class="user-meta-value">
+                        {% if user.profile.role == 'president' or user.profile.role == 'staff' %}
+                            {{ user.profile.get_political_status_display|default:"未填写" }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="user-meta-item">
+                    <span class="user-meta-label">账户状态</span>
+                    <span class="user-meta-value">
                         {% if user.is_active %}
                             <span class="status-badge approved">
                                 <span class="material-icons">check_circle</span>
@@ -694,58 +1010,78 @@
                                 已禁用
                             </span>
                         {% endif %}
-                    </td>
-                    <td>{{ user.date_joined|date:"Y-m-d" }}</td>
-                    <td>
-                        <div class="action-buttons">
-                            {% if user.profile.role == 'staff' and user.profile.status == 'pending' %}
-                                <a href="{% url 'clubs:review_staff_registration' user.id %}" class="btn-action review">
-                                    <span class="material-icons">assignment</span>
-                                    审核
-                                </a>
-                            {% endif %}
+                        <span class="status-badge {% if user.profile.account_status == 'active' %}approved{% else %}pending{% endif %}" style="margin-left:6px;">
+                            {{ user.profile.get_account_status_display }}
+                        </span>
+                    </span>
+                </div>
+                <div class="user-meta-item">
+                    <span class="user-meta-label">加入时间</span>
+                    <span class="user-meta-value">{{ user.date_joined|date:"Y-m-d" }}</span>
+                </div>
+            </div>
 
-                            {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
-                                <a href="{% url 'clubs:change_staff_attributes' user.id %}" class="btn-action detail">
-                                    <span class="material-icons">visibility</span>
-                                    属性
-                                </a>
-                            {% endif %}
+            {% if can_manage_users %}
+            <div class="user-card-actions">
+                {% if user.profile.role == 'staff' and user.profile.status == 'pending' %}
+                    <a href="{% url 'clubs:review_staff_registration' user.id %}" class="btn-action review">
+                        <span class="material-icons">assignment</span>
+                        审核
+                    </a>
+                {% endif %}
 
-                            {% if user.username in locked_usernames %}
-                                <form method="post" action="{% url 'clubs:unlock_account' user.username %}" style="display:inline">{% csrf_token %}
-                                    <button class="btn-action review" title="解锁">
-                                        <span class="material-icons">lock_open</span>
-                                        解锁
-                                    </button>
-                                </form>
-                            {% endif %}
+                {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
+                    <button type="button"
+                            class="btn-action detail js-open-staff-attr"
+                            data-action="{% url 'clubs:change_staff_attributes' user.id %}"
+                            data-name="{{ user.profile.get_full_name|default:user.username }}"
+                            data-username="{{ user.username }}"
+                            data-department="{{ user.profile.department_link_id|default_if_none:'' }}"
+                            data-level="{{ user.profile.staff_level|default:'member' }}">
+                        <span class="material-icons">badge</span>
+                        属性
+                    </button>
+                {% endif %}
 
+                {% if user.username in locked_usernames %}
+                    <form method="post" action="{% url 'clubs:unlock_account' user.username %}" style="display:inline">{% csrf_token %}
+                        <button class="btn-action review" title="解锁">
+                            <span class="material-icons">lock_open</span>
+                            解锁
+                        </button>
+                    </form>
+                {% endif %}
 
+                <a href="{% url 'clubs:admin_edit_user_account' user.id %}" class="btn-action detail">
+                    <span class="material-icons">visibility</span>
+                    详情
+                </a>
 
-                            <a href="{% url 'clubs:admin_edit_user_account' user.id %}" class="btn-action detail">
-                                <span class="material-icons">visibility</span>
-                                详情
-                            </a>
-
-                            {% if user != request.user and not user.is_superuser %}
-                                <form method="post" style="display:inline;"
-                                      onsubmit="return confirmDeleteUser('{{ user.username|escapejs }}')">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="delete_user">
-                                    <input type="hidden" name="user_id" value="{{ user.id }}">
-                                    <button type="submit" class="btn-action danger" title="删除账号">
-                                        <span class="material-icons">delete</span>
-                                        删除
-                                    </button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                {% if user != request.user and not user.is_superuser %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="toggle_active">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <button type="submit" class="btn-action {% if user.is_active %}review{% else %}detail{% endif %}" title="{% if user.is_active %}禁用账号{% else %}启用账号{% endif %}">
+                            <span class="material-icons">{% if user.is_active %}block{% else %}check_circle{% endif %}</span>
+                            {% if user.is_active %}禁用{% else %}启用{% endif %}
+                        </button>
+                    </form>
+                    <form method="post" style="display:inline;"
+                          onsubmit="return confirmDeleteUser('{{ user.username|escapejs }}')">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_user">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <button type="submit" class="btn-action danger" title="删除账号">
+                            <span class="material-icons">delete</span>
+                            删除
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            {% endif %}
+        </article>
+        {% endfor %}
     </div>
     {% else %}
     <div class="empty-state">
@@ -753,6 +1089,64 @@
         <p>未找到匹配的用户</p>
     </div>
     {% endif %}
+    {% if not can_manage_users %}
+    <div class="empty-state" style="margin-top: var(--md3-spacing-xl); padding: var(--md3-spacing-lg); text-align: left; display: flex; align-items: center; gap: var(--md3-spacing-md);">
+        <span class="material-icons" style="font-size: 1.5rem; margin: 0;">info</span>
+        <p>该页面为查看专用，不支持编辑。如需修改用户信息，请联系管理员。</p>
+    </div>
+    {% endif %}
+</div>
+
+{% if can_manage_users %}
+<div id="staffAttrModal" class="staff-attr-modal-overlay" aria-hidden="true">
+    <div class="staff-attr-modal-card" role="dialog" aria-modal="true" aria-labelledby="staffAttrTitle">
+        <form id="staffAttrForm" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <div class="staff-attr-modal-header">
+                <div class="staff-attr-modal-title">
+                    <span class="material-icons">badge</span>
+                    <div>
+                        <h3 id="staffAttrTitle">修改部门与职级</h3>
+                        <div id="staffAttrUser" class="staff-attr-modal-user">--</div>
+                    </div>
+                </div>
+                <button type="button" class="btn-action detail" onclick="closeStaffAttrModal()" aria-label="关闭属性弹窗">
+                    <span class="material-icons">close</span>
+                    关闭
+                </button>
+            </div>
+            <div class="staff-attr-modal-body">
+                <p class="staff-attr-help">这里只调整干事/管理员的部门归属和职级；账号、角色、实名资料请进入详情页处理。</p>
+                <div class="staff-attr-fields">
+                    <div class="staff-attr-field">
+                        <label for="staffAttrDepartment">所属部门</label>
+                        <select id="staffAttrDepartment" name="department" class="form-select">
+                            <option value="">不设定部门</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}">{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="staff-attr-field">
+                        <label for="staffAttrLevel">职级</label>
+                        <select id="staffAttrLevel" name="staff_level" class="form-select" required>
+                            {% for value, label in staff_level_choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="staff-attr-modal-actions">
+                    <button type="button" class="btn-action detail" onclick="closeStaffAttrModal()">取消</button>
+                    <button type="submit" class="btn-action detail">
+                        <span class="material-icons">save</span>
+                        保存属性
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div id="bulkOpsModal" class="bulk-modal-overlay">
@@ -795,8 +1189,10 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <script>
+{% if can_manage_users %}
 function openBulkOpsModal() {
     document.getElementById('bulkOpsModal').style.display = 'flex';
 }
@@ -804,6 +1200,33 @@ function openBulkOpsModal() {
 function closeBulkOpsModal() {
     document.getElementById('bulkOpsModal').style.display = 'none';
 }
+
+const staffAttrModal = document.getElementById('staffAttrModal');
+const staffAttrForm = document.getElementById('staffAttrForm');
+const staffAttrUser = document.getElementById('staffAttrUser');
+const staffAttrDepartment = document.getElementById('staffAttrDepartment');
+const staffAttrLevel = document.getElementById('staffAttrLevel');
+
+function openStaffAttrModal(button) {
+    staffAttrForm.action = button.dataset.action;
+    staffAttrUser.textContent = `${button.dataset.name || button.dataset.username} / ${button.dataset.username}`;
+    staffAttrDepartment.value = button.dataset.department || '';
+    staffAttrLevel.value = button.dataset.level || 'member';
+    staffAttrModal.style.display = 'flex';
+    staffAttrModal.setAttribute('aria-hidden', 'false');
+    staffAttrDepartment.focus();
+}
+
+function closeStaffAttrModal() {
+    staffAttrModal.style.display = 'none';
+    staffAttrModal.setAttribute('aria-hidden', 'true');
+}
+
+document.querySelectorAll('.js-open-staff-attr').forEach(function(button) {
+    button.addEventListener('click', function() {
+        openStaffAttrModal(button);
+    });
+});
 
 function confirmDeleteUser(username) {
     if (!confirm(`确定删除账号 ${username} 吗？此操作不可恢复。`)) {
@@ -826,6 +1249,19 @@ function confirmDeleteUser(username) {
 document.getElementById('bulkOpsModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeBulkOpsModal();
+    }
+});
+
+staffAttrModal.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeStaffAttrModal();
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeBulkOpsModal();
+        closeStaffAttrModal();
     }
 });
 
@@ -934,6 +1370,7 @@ bulkImportForm.addEventListener('submit', function(e) {
     // 注意：不在 send() 后同步调用 setImportProgress，
     // 由 upload.progress 和 upload.load 事件驱动进度更新
 });
+{% endif %}
 </script>
 
 {% endblock %}

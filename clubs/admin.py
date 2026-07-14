@@ -22,10 +22,10 @@ class FormCycleInline(admin.TabularInline):
 
 @admin.register(FormChannel)
 class FormChannelAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'builtin_action', 'submission_policy', 'cycle_type', 'show_unsubmitted_status', 'allow_staff_toggle', 'is_active', 'order', 'updated_at')
-    list_filter = ('is_active', 'is_builtin', 'builtin_action', 'submission_policy', 'cycle_type', 'show_unsubmitted_status', 'allow_staff_toggle')
+    list_display = ('name', 'slug', 'publish_status', 'builtin_action', 'submission_policy', 'cycle_type', 'show_unsubmitted_status', 'allow_staff_toggle', 'is_active', 'order', 'updated_at')
+    list_filter = ('publish_status', 'is_active', 'is_builtin', 'builtin_action', 'submission_policy', 'cycle_type', 'show_unsubmitted_status', 'allow_staff_toggle')
     search_fields = ('name', 'slug', 'description')
-    list_editable = ('is_active', 'order')
+    list_editable = ('publish_status', 'is_active', 'order')
     inlines = [FormFieldInline, FormCycleInline]
 
 
@@ -142,9 +142,9 @@ class TemplateAdmin(admin.ModelAdmin):
 
 @admin.register(Announcement)
 class AnnouncementAdmin(admin.ModelAdmin):
-    list_display = ('title', 'status', 'created_by', 'published_at', 'expires_at')
+    list_display = ('title', 'status', 'link_url', 'created_by', 'published_at', 'expires_at')
     list_filter = ('status', 'created_at', 'published_at')
-    search_fields = ('title', 'content')
+    search_fields = ('title', 'content', 'link_url')
     readonly_fields = ('created_at', 'updated_at')
 
 

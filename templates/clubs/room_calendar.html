@@ -12,7 +12,7 @@
         --calendar-surface: var(--md3-surface, #fef7ff);
         --calendar-outline: var(--md3-outline-variant, #cfc6db);
         --calendar-radius: 18px;
-        --calendar-height: clamp(700px, 70vh, 1050px);
+        --calendar-height: clamp(460px, 54vh, 680px);
         --calendar-font: 'Segoe UI', 'Noto Sans SC', 'Source Han Sans', system-ui, sans-serif;
     }
 
@@ -23,7 +23,7 @@
     .calendar-shell {
         position: relative;
         padding: 32px 24px 48px;
-        padding-bottom: calc(48px + 80px); 
+        padding-bottom: calc(36px + 56px);
         margin: 0 auto 40px;
         max-width: 1280px;
         font-family: var(--calendar-font);
@@ -159,11 +159,16 @@
 
     .time-slot {
         position: relative;
-        padding: 14px 18px 10px 12px;
+        padding: 8px 16px 6px 10px;
         color: var(--md3-on-surface-variant, #4c536b);
+        border-top: 1px solid rgba(31, 31, 31, 0.06);
         border-bottom: 1px solid rgba(31, 31, 31, 0.08);
         font-size: 12px;
         text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
     }
 
     .time-slot .period-label {
@@ -185,7 +190,35 @@
         height: var(--calendar-height);
     }
 
+    .time-gap,
+    .event-gap {
+        position: absolute;
+        width: 100%;
+        pointer-events: none;
+    }
+
+    .time-gap {
+        background: color-mix(in srgb, var(--md3-surface-container-low, #f7f2fb) 84%, #ffffff 16%);
+        border-top: 1px dashed rgba(31, 31, 31, 0.08);
+        border-bottom: 1px dashed rgba(31, 31, 31, 0.08);
+    }
+
+    .event-gap {
+        z-index: 1;
+        background:
+            repeating-linear-gradient(
+                -45deg,
+                color-mix(in srgb, var(--md3-surface-container-low, #f7f2fb) 72%, transparent),
+                color-mix(in srgb, var(--md3-surface-container-low, #f7f2fb) 72%, transparent) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+        border-top: 1px dashed color-mix(in srgb, var(--calendar-outline) 70%, transparent);
+        border-bottom: 1px dashed color-mix(in srgb, var(--calendar-outline) 70%, transparent);
+    }
+
     .grid-slot {
+        border-top: 1px solid rgba(31, 31, 31, 0.06);
         border-bottom: 1px solid rgba(31, 31, 31, 0.08);
         position: relative;
         cursor: pointer;
@@ -205,7 +238,7 @@
     .grid-slot::after {
         content: '';
         position: absolute;
-        inset: 12px 28px;
+        inset: 8px 28px;
         border-radius: 12px;
         border: 1px dashed var(--calendar-outline);
         opacity: 0.5;
@@ -221,7 +254,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 8px 16px;
+        padding: 6px 14px;
         border-radius: 999px;
         background: var(--md3-primary, #6750a4);
         color: var(--md3-on-primary, #fff);
@@ -251,33 +284,38 @@
         opacity: 0.5;
     }
 
+    .grid-slot.has-booking::after {
+        display: none;
+    }
+
     .grid-slot.has-booking .slot-hint {
         display: none;
     }
 
     .event-card {
         position: absolute;
-        left: 28px;
-        right: 28px;
-        padding: 8px 12px;
-        border-radius: 12px;
+        left: 0;
+        right: 0;
+        padding: 0 22px;
+        border-radius: 0;
         background: var(--md3-primary-container, #d7e2ff);
         color: var(--md3-on-primary-container, #001a40);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        box-shadow: inset 4px 0 0 var(--md3-primary), 0 1px 2px rgba(0,0,0,0.12);
         cursor: pointer;
         display: flex;
         flex-direction: row;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         z-index: 10;
         box-sizing: border-box;
-        min-height: 38px;
+        min-height: 0;
+        overflow: hidden;
     }
 
     .event-card:hover {
-        transform: scale(1.02);
-        box-shadow: 0 35px 45px -30px rgba(11, 95, 255, 0.85);
+        transform: none;
+        box-shadow: inset 4px 0 0 var(--md3-primary), 0 2px 6px rgba(0,0,0,0.18);
     }
 
     .event-time {
@@ -286,7 +324,7 @@
         letter-spacing: 0.04em;
         opacity: 0.95;
         white-space: nowrap;
-        padding: 4px 10px;
+        padding: 3px 10px;
         border-radius: 8px;
         background: color-mix(in srgb, var(--md3-primary) 12%, transparent);
     }
@@ -352,7 +390,7 @@
         z-index: 2000;
         align-items: center;
         justify-content: center;
-        padding: 32px;
+        padding: clamp(12px, 3vw, 28px);
     }
 
     .event-modal.active {
@@ -363,19 +401,22 @@
         background: var(--md3-surface-container-highest, #ece6f0);
         border-radius: 24px;
         width: min(520px, 92vw);
-        max-height: 85vh;
+        max-height: min(720px, calc(100dvh - 32px));
         overflow: hidden;
         border: 1px solid var(--calendar-outline);
         box-shadow: 0 8px 10px rgba(0,0,0,0.24);
+        display: flex;
+        flex-direction: column;
     }
 
     .modal-header,
     .modal-footer {
-        padding: 24px 32px;
+        padding: 18px 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
+        flex: 0 0 auto;
     }
 
     .modal-header {
@@ -383,7 +424,7 @@
     }
 
     .modal-title {
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 600;
     }
 
@@ -406,15 +447,16 @@
     }
 
     .modal-body {
-        padding: 24px 32px 32px;
+        padding: 14px 24px 18px;
         overflow-y: auto;
-        max-height: 60vh;
+        flex: 1 1 auto;
+        min-height: 0;
     }
 
     .modal-detail {
         display: flex;
         gap: 16px;
-        padding: 16px 0;
+        padding: 12px 0;
         border-bottom: 1px solid rgba(31, 31, 31, 0.08);
     }
 
@@ -444,12 +486,14 @@
         border-top: 1px solid var(--calendar-outline);
         justify-content: flex-end;
         gap: 12px;
+        background: var(--md3-surface-container-highest, #ece6f0);
     }
 
     .modal-btn {
         border: none;
         border-radius: 999px;
-        padding: 10px 22px;
+        min-height: 40px;
+        padding: 8px 20px;
         font-weight: 600;
         font-size: 14px;
         display: inline-flex;
@@ -457,6 +501,25 @@
         gap: 6px;
         cursor: pointer;
         text-decoration: none;
+    }
+
+    @media (max-height: 720px) {
+        .modal-content {
+            border-radius: 20px;
+        }
+
+        .modal-header,
+        .modal-footer {
+            padding: 14px 20px;
+        }
+
+        .modal-body {
+            padding: 10px 20px 12px;
+        }
+
+        .modal-detail {
+            padding: 10px 0;
+        }
     }
 
     .modal-btn.primary {
@@ -595,8 +658,7 @@
     @media (max-width: 900px) {
         .calendar-shell {
             padding: 24px 16px 32px;
-            /* Increase height for tablet/mobile to prevent overlap */
-            --calendar-height: 1200px;
+            --calendar-height: 720px;
         }
 
         .calendar-grid {
@@ -620,23 +682,21 @@
         }
 
         .event-card {
-            left: 20px;
-            right: 20px;
+            left: 0;
+            right: 0;
         }
     }
 
     @media (max-width: 768px) {
         .calendar-shell {
-            /* Increase bottom padding to prevent nav bar overlap */
-            padding-bottom: 180px !important;
+            padding-bottom: 104px !important;
         }
     }
 
     @media (max-width: 600px) {
         .calendar-shell {
             padding: 16px 12px 28px;
-            /* Further increase height for small screens */
-            --calendar-height: 1400px;
+            --calendar-height: 760px;
         }
 
         .calendar-toolbar {
@@ -700,10 +760,10 @@
         }
 
         .event-card {
-            left: 12px;
-            right: 12px;
-            padding: 8px 10px;
-            border-radius: 12px;
+            left: 0;
+            right: 0;
+            padding: 0 10px 0 14px;
+            border-radius: 0;
         }
 
         .event-time {
@@ -771,6 +831,9 @@
     <div class="calendar-container">
         <div class="calendar-grid">
             <div class="time-column" style="height: var(--calendar-height); position: relative;">
+                {% for gap in time_gaps %}
+                <div class="time-gap" style="top: calc(var(--calendar-height) * {{ gap.top_percent }} / 100); height: calc(var(--calendar-height) * {{ gap.height_percent }} / 100);"></div>
+                {% endfor %}
                 {% for slot in time_slots %}
                 <div class="time-slot" style="position: absolute; width: 100%; top: calc(var(--calendar-height) * {{ slot.top_percent }} / 100); height: calc(var(--calendar-height) * {{ slot.height_percent }} / 100);">
                     <span>{{ slot.start|time:'H:i' }} - {{ slot.end|time:'H:i' }}</span>
@@ -780,6 +843,9 @@
             </div>
             <div class="events-column">
                 <div class="events-grid">
+                    {% for gap in time_gaps %}
+                    <div class="event-gap" style="top: calc(var(--calendar-height) * {{ gap.top_percent }} / 100); height: calc(var(--calendar-height) * {{ gap.height_percent }} / 100);"></div>
+                    {% endfor %}
                     {% for slot in time_slots %}
                     <div class="grid-slot{% if slot.has_booking %} has-booking{% endif %}" 
                          style="position: absolute; width: 100%; top: calc(var(--calendar-height) * {{ slot.top_percent }} / 100); height: calc(var(--calendar-height) * {{ slot.height_percent }} / 100);"

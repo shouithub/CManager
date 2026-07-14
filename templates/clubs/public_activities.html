@@ -631,7 +631,7 @@
                                 <span class="material-icons">business</span>
                                 社团名称
                             </label>
-                            {% if user.is_authenticated and user.profile.role == 'president' %}
+                            {% if user.is_authenticated and is_president_identity %}
                             {% if all_clubs.exists %}
                                 {% with only_club=all_clubs.first %}
                                 <select id="club" name="club" class="filter-select" disabled aria-disabled="true" title="仅允许选择本社团">

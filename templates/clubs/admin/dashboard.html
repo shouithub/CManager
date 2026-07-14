@@ -5,11 +5,14 @@
 {% block extra_css %}
 <style>
     .dashboard-container {
+        width: 100%;
         max-width: 1400px;
         margin: 0 auto;
-        padding: var(--md3-spacing-2xl);
-        padding-bottom: calc(var(--md3-spacing-2xl) + 120px);
+        padding: clamp(18px, 3vw, var(--md3-spacing-2xl));
+        padding-bottom: 88px;
         box-sizing: border-box;
+        container-type: inline-size;
+        overflow-x: hidden;
     }
     
     /* 页面标题 */
@@ -50,6 +53,7 @@
         grid-template-columns: minmax(0, 1fr) 360px;
         gap: var(--md3-spacing-xl);
         align-items: start;
+        min-width: 0;
     }
 
     .dashboard-main,
@@ -57,6 +61,7 @@
         display: flex;
         flex-direction: column;
         gap: var(--md3-spacing-xl);
+        min-width: 0;
     }
     
     /* 统计卡片网格 */
@@ -95,7 +100,7 @@
     .card {
         background: var(--md3-surface-container);
         border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-2xl);
+        padding: clamp(18px, 3vw, var(--md3-spacing-2xl));
         margin-bottom: 0;
         border: 1px solid var(--md3-outline-variant);
         box-shadow: var(--md3-elevation-1);
@@ -119,9 +124,10 @@
     /* 快速操作网格 */
     .actions-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: var(--md3-spacing-lg);
         padding: var(--md3-spacing-xs);
+        min-width: 0;
     }
 
     .actions-grid.compact {
@@ -131,7 +137,7 @@
     }
 
     .actions-grid.compact .action-btn {
-        min-height: 88px;
+        min-height: 84px;
         padding: var(--md3-spacing-md);
         border-radius: var(--md3-radius-lg);
     }
@@ -159,6 +165,8 @@
         min-height: 100px;
         gap: var(--md3-spacing-sm);
         text-align: center;
+        min-width: 0;
+        box-sizing: border-box;
     }
     
     .action-btn .material-icons {
@@ -171,6 +179,8 @@
         font-size: 0.9rem;
         font-weight: 500;
         line-height: 1.4;
+        min-width: 0;
+        overflow-wrap: anywhere;
     }
     
     .action-btn:hover {
@@ -188,15 +198,15 @@
     /* 角色分布 */
     .role-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--md3-spacing-lg);
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--md3-spacing-md);
     }
     
     .role-item {
         display: flex;
         flex-direction: column;
         gap: var(--md3-spacing-sm);
-        padding: var(--md3-spacing-lg);
+        padding: var(--md3-spacing-md);
         background: var(--md3-surface-container-highest);
         border-radius: var(--md3-radius-lg);
         border-left: 4px solid var(--md3-primary);
@@ -400,22 +410,34 @@
         flex-wrap: wrap;
     }
     
+    .announcement-link,
     .attachment-link {
         display: inline-flex;
         align-items: center;
         gap: var(--md3-spacing-xs);
         font-size: 0.8125rem;
-        color: var(--md3-primary);
         text-decoration: none;
         padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
-        background: var(--md3-primary-container);
         border-radius: var(--md3-radius-full);
     }
+
+    .announcement-link {
+        color: var(--md3-on-primary);
+        background: var(--md3-primary);
+        font-weight: 600;
+    }
+
+    .attachment-link {
+        color: var(--md3-primary);
+        background: var(--md3-primary-container);
+    }
     
+    .announcement-link:hover,
     .attachment-link:hover {
         box-shadow: var(--md3-elevation-1);
     }
     
+    .announcement-link .material-icons,
     .attachment-link .material-icons {
         font-size: 1rem;
     }
@@ -466,11 +488,115 @@
         box-shadow: var(--md3-elevation-1);
     }
     
+    .rate-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--md3-spacing-md);
+    }
+
+    @media (max-width: 1500px) {
+        .dashboard-container {
+            padding: clamp(16px, 2.5vw, 28px);
+            padding-bottom: 76px;
+        }
+
+        .dashboard-layout {
+            grid-template-columns: 1fr;
+            gap: var(--md3-spacing-lg);
+        }
+
+        .dashboard-side {
+            order: -1;
+        }
+
+        .dashboard-main,
+        .dashboard-side {
+            gap: var(--md3-spacing-lg);
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .actions-grid.compact {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--md3-spacing-sm);
+        }
+
+        .actions-grid.compact .action-btn {
+            min-height: 72px;
+            padding: 12px;
+            flex-direction: row;
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .actions-grid.compact .action-btn .material-icons {
+            font-size: 1.35rem;
+            flex: 0 0 auto;
+        }
+
+        .actions-grid.compact .action-btn span:not(.material-icons) {
+            font-size: 0.8rem;
+            line-height: 1.25;
+        }
+
+        .role-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    @container (max-width: 1120px) {
+        .dashboard-layout {
+            grid-template-columns: 1fr;
+            gap: var(--md3-spacing-lg);
+        }
+
+        .dashboard-side {
+            order: -1;
+        }
+
+        .dashboard-main,
+        .dashboard-side {
+            gap: var(--md3-spacing-lg);
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .actions-grid.compact {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--md3-spacing-sm);
+        }
+
+        .actions-grid.compact .action-btn {
+            min-height: 72px;
+            padding: 12px;
+            flex-direction: row;
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .actions-grid.compact .action-btn .material-icons {
+            font-size: 1.35rem;
+            flex: 0 0 auto;
+        }
+
+        .actions-grid.compact .action-btn span:not(.material-icons) {
+            font-size: 0.8rem;
+            line-height: 1.25;
+        }
+
+        .role-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
     @media (max-width: 768px) {
         .dashboard-container {
             padding: var(--md3-spacing-lg);
-            /* 增加底部内边距，防止被底栏遮挡 */
-            padding-bottom: 120px;
+            padding-bottom: 96px;
         }
 
         .dashboard-layout {
@@ -486,10 +612,6 @@
         .stats-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: var(--md3-spacing-md);
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
         }
 
         .stat-card {
@@ -510,7 +632,7 @@
         }
 
         .actions-grid.compact {
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .action-btn {
@@ -527,7 +649,7 @@
         }
         
         .role-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
         
         .announcement-item {
@@ -549,6 +671,37 @@
         /* 公告列表适配 */
         .announcement-list {
             padding-bottom: 0;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .dashboard-container {
+            padding: 12px;
+            padding-bottom: 88px;
+        }
+
+        .page-header {
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .stats-grid,
+        .rate-grid,
+        .role-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .actions-grid.compact {
+            grid-template-columns: 1fr;
+        }
+
+        .actions-grid.compact .action-btn {
+            min-height: 58px;
+        }
+
+        .chart-container,
+        .chart-container[style] {
+            height: 210px !important;
         }
     }
 </style>
@@ -587,7 +740,7 @@
             </div>
 
             <!-- 申请通过率/拒绝率（含历史决策） -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--md3-spacing-md);">
+            <div class="rate-grid">
                 <div class="stat-card" style="border-left:4px solid var(--md3-tertiary);">
                     <div class="stat-value" style="color:var(--md3-tertiary);">{{ overall_approval_rate }}%</div>
                     <div class="stat-label">历史总体通过率</div>
@@ -703,6 +856,12 @@
                         <p class="announcement-excerpt">{{ announcement.content|truncatewords:28 }}</p>
                         {% endif %}
                         <div class="announcement-footer">
+                            {% if announcement.link_url %}
+                            <a href="{{ announcement.link_url }}" class="announcement-link" target="_blank" rel="noopener">
+                                <span class="material-icons">open_in_new</span>
+                                查看链接
+                            </a>
+                            {% endif %}
                             {% if announcement.attachment %}
                             <a href="{{ announcement.attachment.url }}" class="attachment-link" target="_blank" rel="noopener">
                                 <span class="material-icons">attach_file</span>

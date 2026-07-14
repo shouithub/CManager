@@ -68,6 +68,34 @@ def missing_required_field_keys(channel) -> list[str]:
     return [key for key in action.required_fields if key not in existing]
 
 
+def business_field_label_map(channel) -> dict[str, str]:
+    action = get_business_action(channel.builtin_action)
+    if not action:
+        return {}
+    return {field.key: field.label for field in action.fields}
+
+
+def missing_required_field_infos(channel) -> list[dict[str, str]]:
+    labels = business_field_label_map(channel)
+    return [
+        {'key': key, 'label': labels.get(key, key)}
+        for key in missing_required_field_keys(channel)
+    ]
+
+
+def is_channel_externally_available(channel) -> bool:
+    """True when a channel may be shown as a new-submit entrance to presidents."""
+    if not channel or not channel.is_active:
+        return False
+    if getattr(channel, 'publish_status', 'published') != 'published':
+        return False
+    return not missing_required_field_keys(channel)
+
+
+def externally_available_channels(channels):
+    return [channel for channel in channels if is_channel_externally_available(channel)]
+
+
 def locked_business_field_keys(channel) -> set[str]:
     action = get_business_action(channel.builtin_action)
     if not action or not action.on_approved:
@@ -237,6 +265,7 @@ def seed_business_form_channels(user=None):
                 'description': action.default_description,
                 'order': action.default_order,
                 'is_active': True,
+                'publish_status': 'published',
                 'is_builtin': True,
                 'builtin_action': action.key,
                 'submission_policy': action.default_policy,
