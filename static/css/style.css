@@ -236,6 +236,7 @@ html {
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
     width: 100%;
+    background-color: var(--md3-surface);
 }
 
 body {
@@ -245,8 +246,6 @@ body {
     letter-spacing: 0.5px;
     color: var(--md3-on-surface);
     background-color: var(--md3-surface);
-    transition: background-color var(--md3-motion-duration-medium2) var(--md3-motion-easing-standard),
-                color var(--md3-motion-duration-medium2) var(--md3-motion-easing-standard);
     overflow-x: hidden;
     width: 100%;
     max-width: 100%;
@@ -4115,7 +4114,7 @@ fieldset legend {
 
 /* ==========================================================================
    START: Minimal, reversible layout background fix
-   Ensures main content keeps surface color and theme transitions are smooth
+   Keeps the page canvas on the active surface color without extra compositor layers
    ========================================================================== */
 
 /* Make wrapper transparent so only main-content shows the page background */
@@ -4127,14 +4126,11 @@ fieldset legend {
 .main-content {
     background-color: var(--md3-surface) !important;
     min-height: 100vh;
-    transition: background-color var(--md3-motion-duration-medium2) var(--md3-motion-easing-standard);
-    will-change: background-color;
 }
 
 /* Sidebar and bottom-nav use container background so they contrast with main content */
 .sidebar-nav, .sidebar-header, .bottom-nav {
     background-color: var(--md3-surface-container) !important;
-    transition: background-color var(--md3-motion-duration-medium2) var(--md3-motion-easing-standard);
 }
 
 /* Reduce motion accessibility */

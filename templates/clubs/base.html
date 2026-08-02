@@ -5,7 +5,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5, user-scalable=yes">
-    <meta name="color-scheme" content="light dark">
     <meta name="format-detection" content="telephone=no">
     <title>{% block title %}社团管理系统{% endblock %}</title>
     {% if site_favicon_url %}
@@ -15,10 +14,15 @@
     <link rel="icon" type="image/png" sizes="128x128" href="{{ site_favicon_preview_url }}">
     <link rel="apple-touch-icon" sizes="128x128" href="{{ site_favicon_preview_url }}">
     {% endif %}
-    <!-- 阻止页面闪烁：在CSS加载前立即设置主题，并同步背景色与 color-scheme -->
+    <!-- 在任何阻塞资源之前确定主题，避免生产环境导航期间先绘制浅色画布。 -->
     <script>
         (function() {
-            var stored = localStorage.getItem('md3-theme-mode');
+            var stored;
+            try {
+                stored = localStorage.getItem('md3-theme-mode');
+            } catch (error) {
+                stored = 'auto';
+            }
             var theme;
             // 支持三种模式：light / dark / auto（跟随系统）
             if (stored === 'light' || stored === 'dark') {
@@ -29,14 +33,25 @@
             }
             var root = document.documentElement;
             root.setAttribute('data-theme', theme);
-            var sidebarWidth = parseInt(localStorage.getItem('sidebar-width') || '', 10);
+            var sidebarWidth;
+            try {
+                sidebarWidth = parseInt(localStorage.getItem('sidebar-width') || '', 10);
+            } catch (error) {
+                sidebarWidth = NaN;
+            }
             if (sidebarWidth >= 220 && sidebarWidth <= 420) {
                 root.style.setProperty('--sidebar-width', sidebarWidth + 'px');
             }
             // 同步 color-scheme，让浏览器原生控件与画布色一致
             root.style.colorScheme = theme;
-            // 立即设置背景色，避免 CSS 解析前出现白色闪屏（黑夜模式刷新闪白的根因）
+            // 直接设置画布背景，不等待外部 CSS 下载。
             root.style.backgroundColor = theme === 'dark' ? '#141218' : '#fffbfe';
+
+            // 浏览器切换标签页或页面导航时会使用 theme-color 绘制过渡画布。
+            var themeColor = document.createElement('meta');
+            themeColor.name = 'theme-color';
+            themeColor.content = theme === 'dark' ? '#141218' : '#fffbfe';
+            document.head.appendChild(themeColor);
         })();
     </script>
     <!-- 字体导入 -->
@@ -46,7 +61,7 @@
     <link rel="preload" href="{{ body_font_url }}" as="style">
     <link href="{{ body_font_url }}" rel="stylesheet">
     {% endif %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260714b">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260802a">
     {% if body_font_family %}
     <style>body, html { font-family: {{ body_font_family }}; }</style>
     {% endif %}

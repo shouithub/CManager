@@ -51,6 +51,12 @@
         document.documentElement.setAttribute('data-theme', effective);
         // 同步 color-scheme，保证原生控件（滚动条、表单等）与当前主题一致
         document.documentElement.style.colorScheme = effective;
+        document.documentElement.style.backgroundColor = effective === THEME_DARK ? '#141218' : '#fffbfe';
+
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) {
+            themeColor.setAttribute('content', effective === THEME_DARK ? '#141218' : '#fffbfe');
+        }
 
         // 保存用户选择（保存的是模式，而非解析后的主题）
         localStorage.setItem(THEME_KEY, theme);
