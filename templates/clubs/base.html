@@ -10,6 +10,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5, user-scalable=yes">
     <meta name="format-detection" content="telephone=no">
+    <style>
+        /*
+         * 左侧导航是完整页面跳转。支持该标准的浏览器会保留旧页面快照，
+         * 直到新文档及其阻塞样式就绪，慢速网络下也不会暴露默认白色画布。
+         */
+        @view-transition {
+            navigation: auto;
+        }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation: none;
+            mix-blend-mode: normal;
+        }
+    </style>
     <title>{% block title %}社团管理系统{% endblock %}</title>
     {% if site_favicon_url %}
     <link rel="icon" type="image/x-icon" sizes="any" href="{{ site_favicon_url }}">
