@@ -1,7 +1,11 @@
 {% load static %}
 {% load common_tags %}
 <!DOCTYPE html>
-<html lang="zh-hans">
+{% if request.COOKIES.md3_effective_theme == 'dark' %}
+<html lang="zh-hans" data-theme="dark" style="color-scheme: dark; background-color: #141218;">
+{% else %}
+<html lang="zh-hans" data-theme="light" style="color-scheme: light; background-color: #fffbfe;">
+{% endif %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5, user-scalable=yes">
@@ -45,7 +49,21 @@
             // 同步 color-scheme，让浏览器原生控件与画布色一致
             root.style.colorScheme = theme;
             // 直接设置画布背景，不等待外部 CSS 下载。
-            root.style.backgroundColor = theme === 'dark' ? '#141218' : '#fffbfe';
+            var background = theme === 'dark' ? '#141218' : '#fffbfe';
+            root.style.backgroundColor = background;
+
+            // body 尚未解析，预先写入关键样式，防止完整页面导航时出现默认白色画布。
+            var criticalThemeStyle = document.createElement('style');
+            criticalThemeStyle.id = 'critical-theme-background';
+            criticalThemeStyle.textContent = 'html,body{background-color:' + background + '!important}';
+            document.head.appendChild(criticalThemeStyle);
+            document.addEventListener('DOMContentLoaded', function() {
+                criticalThemeStyle.remove();
+            }, { once: true });
+
+            // 让下一次服务端渲染从第一个 HTML 标签起就使用正确主题。
+            var secure = window.location.protocol === 'https:' ? '; Secure' : '';
+            document.cookie = 'md3_effective_theme=' + theme + '; Path=/; Max-Age=31536000; SameSite=Lax' + secure;
 
             // 浏览器切换标签页或页面导航时会使用 theme-color 绘制过渡画布。
             var themeColor = document.createElement('meta');
@@ -182,7 +200,7 @@
             }
         }
     </style>
-    <script src="{% static 'js/theme-toggle.js' %}"></script>
+    <script src="{% static 'js/theme-toggle.js' %}?v=20260802b"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {

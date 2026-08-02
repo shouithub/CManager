@@ -53,6 +53,9 @@
         document.documentElement.style.colorScheme = effective;
         document.documentElement.style.backgroundColor = effective === THEME_DARK ? '#141218' : '#fffbfe';
 
+        const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+        document.cookie = 'md3_effective_theme=' + effective + '; Path=/; Max-Age=31536000; SameSite=Lax' + secure;
+
         const themeColor = document.querySelector('meta[name="theme-color"]');
         if (themeColor) {
             themeColor.setAttribute('content', effective === THEME_DARK ? '#141218' : '#fffbfe');
