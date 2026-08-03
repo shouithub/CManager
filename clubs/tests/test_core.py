@@ -151,7 +151,7 @@ class AvatarServiceTests(TestCase):
             avatar_path.write_bytes(b'avatar-image')
 
             with self.settings(MEDIA_ROOT=media_root):
-                response = self.client.get('/media/avatars/2026/08/avatar.jpg')
+                response = self.client.get('/media/avatars/2026/08/avatar.jpg', secure=True)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
