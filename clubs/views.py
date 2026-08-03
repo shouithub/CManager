@@ -4069,7 +4069,6 @@ def manage_favicon(request):
     cfg = SiteSettings.get_settings()
     presets = [
         {'label': '默认镜像 (fonts.font.im)',    'value': 'https://fonts.font.im/icon?family=Material+Icons'},
-        {'label': 'fonts.googleapis.com（需翻墙）', 'value': 'https://fonts.googleapis.com/icon?family=Material+Icons'},
         {'label': 'SJTUG 镜像',                 'value': 'https://google-fonts.mirrors.sjtug.sjtu.edu.cn/icon?family=Material+Icons'},
         {'label': '中科大镜像',                  'value': 'https://fonts.loli.net/icon?family=Material+Icons'},
     ]

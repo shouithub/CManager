@@ -4,6 +4,9 @@
 {% block title %}首页 - 社团管理系统{% endblock %}
 
 {% block extra_css %}
+{% if carousel_images and carousel_images|length > 1 %}
+{% include 'clubs/components/_swiper_assets.html' %}
+{% endif %}
 <style>
     /* ===== 基础容器 ===== */
     .home-container {
@@ -100,18 +103,16 @@
         height: 420px;
         overflow: hidden;
     }
-    
-    .carousel-slide {
-        position: absolute;
-        width: 100%;
+
+    .carousel-container > .swiper-wrapper {
         height: 100%;
-        opacity: 0;
-        transition: opacity 0.6s ease-in-out;
-        cursor: pointer;
     }
     
-    .carousel-slide.active {
-        opacity: 1;
+    .carousel-slide {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
     }
     
     .carousel-slide img {
@@ -159,6 +160,7 @@
         justify-content: space-between;
         padding: 0 var(--md3-spacing-md);
         pointer-events: none;
+        z-index: 10;
     }
     
     .carousel-btn {
@@ -197,7 +199,7 @@
         z-index: 10;
     }
     
-    .carousel-indicator {
+    .carousel-indicators .swiper-pagination-bullet {
         width: 10px;
         height: 10px;
         border-radius: 50%;
@@ -208,7 +210,7 @@
         padding: 0;
     }
     
-    .carousel-indicator.active {
+    .carousel-indicators .swiper-pagination-bullet-active {
         background: white;
         width: 28px;
         border-radius: 5px;
@@ -874,10 +876,10 @@
     <!-- 轮播图 -->
     {% if carousel_images %}
     <div class="carousel-section">
-        <div class="carousel-container">
+        <div class="swiper carousel-container">
+            <div class="swiper-wrapper">
             {% for image in carousel_images %}
-            <div class="carousel-slide {% if forloop.first %}active{% endif %}" 
-                 data-slide="{{ forloop.counter0 }}"
+            <div class="swiper-slide carousel-slide"
                  {% if image.link %}onclick="window.location.href='{{ image.link }}'"{% endif %}>
                 <img src="{{ image.image.url }}" alt="{{ image.title }}">
                 {% if image.title or image.description %}
@@ -888,23 +890,19 @@
                 {% endif %}
             </div>
             {% endfor %}
+            </div>
             
             {% if carousel_images|length > 1 %}
             <div class="carousel-controls">
-                <button class="carousel-btn" onclick="event.stopPropagation(); prevSlide()">
+                <button class="carousel-btn carousel-prev" type="button">
                     <span class="material-icons">chevron_left</span>
                 </button>
-                <button class="carousel-btn" onclick="event.stopPropagation(); nextSlide()">
+                <button class="carousel-btn carousel-next" type="button">
                     <span class="material-icons">chevron_right</span>
                 </button>
             </div>
             
-            <div class="carousel-indicators">
-                {% for image in carousel_images %}
-                <button class="carousel-indicator {% if forloop.first %}active{% endif %}" 
-                        onclick="event.stopPropagation(); goToSlide({{ forloop.counter0 }})"></button>
-                {% endfor %}
-            </div>
+            <div class="carousel-indicators"></div>
             {% endif %}
         </div>
     </div>
@@ -1267,62 +1265,28 @@ document.getElementById('deptMembersModal').addEventListener('click', function(e
 });
 </script>
 
-<script>
 {% if carousel_images and carousel_images|length > 1 %}
-let currentSlide = 0;
-const slides = document.querySelectorAll('.carousel-slide');
-const indicators = document.querySelectorAll('.carousel-indicator');
-const totalSlides = slides.length;
-let autoplayInterval;
-
-function showSlide(n) {
-    slides[currentSlide].classList.remove('active');
-    indicators[currentSlide].classList.remove('active');
-    
-    currentSlide = (n + totalSlides) % totalSlides;
-    
-    slides[currentSlide].classList.add('active');
-    indicators[currentSlide].classList.add('active');
-}
-
-function nextSlide() {
-    showSlide(currentSlide + 1);
-    resetAutoplay();
-}
-
-function prevSlide() {
-    showSlide(currentSlide - 1);
-    resetAutoplay();
-}
-
-function goToSlide(n) {
-    showSlide(n);
-    resetAutoplay();
-}
-
-function startAutoplay() {
-    autoplayInterval = setInterval(() => {
-        showSlide(currentSlide + 1);
-    }, 5000);
-}
-
-function resetAutoplay() {
-    clearInterval(autoplayInterval);
-    startAutoplay();
-}
-
-startAutoplay();
-
-const carouselContainer = document.querySelector('.carousel-container');
-if (carouselContainer) {
-    carouselContainer.addEventListener('mouseenter', () => {
-        clearInterval(autoplayInterval);
-    });
-    
-    carouselContainer.addEventListener('mouseleave', () => {
-        startAutoplay();
-    });
-}
-{% endif %}
+{% include 'clubs/components/_swiper_script.html' %}
+<script>
+if (window.Swiper) new Swiper('.carousel-container', {
+    loop: true,
+    speed: 600,
+    autoplay: {
+        delay: 5000,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+    },
+    navigation: {
+        prevEl: '.carousel-prev',
+        nextEl: '.carousel-next',
+    },
+    pagination: {
+        el: '.carousel-indicators',
+        clickable: true,
+    },
+    keyboard: { enabled: true },
+    a11y: { enabled: true },
+});
 </script>
+{% endif %}
 {% endblock %}

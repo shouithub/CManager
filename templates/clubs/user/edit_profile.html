@@ -4,6 +4,7 @@
 {% block title %}个人中心{% endblock %}
 
 {% block extra_css %}
+{% include 'clubs/components/_cropper_assets.html' %}
 <style>
     /* ===== MD3 完整重构 ===== */
     :root {
@@ -256,7 +257,7 @@
     }
 
     /* Cropper Styles */
-    .cropper-container {
+    .avatar-cropper-frame {
         width: 260px;
         height: 260px;
         border: 1px solid var(--md3-outline);
@@ -267,8 +268,11 @@
         background: var(--md3-surface);
         margin: 0 auto;
         overflow: hidden;
-        touch-action: none;
-        cursor: move;
+    }
+
+    .avatar-cropper-frame > img {
+        display: block;
+        max-width: 100%;
     }
     
     .cropper-controls {
@@ -403,8 +407,8 @@
                 
                 <!-- 裁剪区域 (初始隐藏) -->
                 <div id="cropper-wrapper" style="display: none; width: 100%;">
-                    <div class="cropper-container">
-                        <canvas id="cropper-canvas" width="256" height="256"></canvas>
+                    <div class="avatar-cropper-frame">
+                        <img id="cropper-image" alt="待裁剪头像">
                     </div>
                     <div class="cropper-controls">
                         <label class="form-label" style="text-align: center;">缩放图片</label>
@@ -539,6 +543,7 @@
     </div>
 </dialog>
 
+{% include 'clubs/components/_cropper_script.html' %}
 <script>
     function switchTab(tabId) {
         // 隐藏所有卡片
@@ -560,81 +565,18 @@
     (function() {
         var input = document.getElementById('avatar-input');
         var wrapper = document.getElementById('cropper-wrapper');
-        var canvas = document.getElementById('cropper-canvas');
+        var image = document.getElementById('cropper-image');
         var zoom = document.getElementById('cropper-zoom');
         var form = document.getElementById('avatar-form');
         var currentView = document.getElementById('current-avatar-view');
         var placeholder = document.getElementById('avatar-placeholder');
         var base64Input = document.getElementById('avatar-base64');
         
-        if (!input || !wrapper || !canvas || !zoom || !form) {
+        if (!input || !wrapper || !image || !zoom || !form || !window.Cropper) {
             return;
         }
-        
-        var ctx = canvas.getContext('2d');
-        var img = new Image();
-        var imgReady = false;
-        var dragging = false;
-        var lastX = 0;
-        var lastY = 0;
-        var scale = 1;
-        var minScale = 1;
-        var offsetX = 0;
-        var offsetY = 0;
-        
-        function clampOffsets() {
-            var maxX = 0;
-            var maxY = 0;
-            var minX = canvas.width - img.width * scale;
-            var minY = canvas.height - img.height * scale;
-            
-            if (img.width * scale < canvas.width) {
-                minX = maxX = (canvas.width - img.width * scale) / 2;
-            }
-            if (img.height * scale < canvas.height) {
-                minY = maxY = (canvas.height - img.height * scale) / 2;
-            }
-            
-            offsetX = Math.min(maxX, Math.max(minX, offsetX));
-            offsetY = Math.min(maxY, Math.max(minY, offsetY));
-        }
-        
-        function draw() {
-            if (!imgReady) {
-                return;
-            }
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
-        }
-        
-        function fitImage() {
-            minScale = Math.max(canvas.width / img.width, canvas.height / img.height);
-            scale = minScale;
-            offsetX = (canvas.width - img.width * scale) / 2;
-            offsetY = (canvas.height - img.height * scale) / 2;
-            
-            zoom.min = minScale.toFixed(4);
-            zoom.max = (minScale * 3).toFixed(4);
-            zoom.value = scale.toFixed(4);
-            
-            clampOffsets();
-            draw();
-        }
-        
-        function setScale(newScale) {
-            var centerX = canvas.width / 2;
-            var centerY = canvas.height / 2;
-            var imgCenterX = (centerX - offsetX) / scale;
-            var imgCenterY = (centerY - offsetY) / scale;
-            
-            scale = newScale;
-            
-            offsetX = centerX - imgCenterX * scale;
-            offsetY = centerY - imgCenterY * scale;
-            
-            clampOffsets();
-            draw();
-        }
+        var cropper = null;
+        var objectUrl = null;
         
         input.addEventListener('change', function() {
             var file = input.files && input.files[0];
@@ -642,57 +584,42 @@
                 return;
             }
             
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                img.onload = function() {
-                    imgReady = true;
-                    wrapper.style.display = 'block';
-                    if (currentView) currentView.style.display = 'none';
-                    if (placeholder) placeholder.style.display = 'none';
-                    fitImage();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+            if (cropper) cropper.destroy();
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+            objectUrl = URL.createObjectURL(file);
+            image.src = objectUrl;
+            wrapper.style.display = 'block';
+            if (currentView) currentView.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'none';
+            cropper = new Cropper(image, {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 1,
+                background: false,
+                responsive: true,
+                ready: function() {
+                    var ratio = cropper.getImageData().width / cropper.getImageData().naturalWidth;
+                    zoom.min = ratio.toFixed(4);
+                    zoom.max = (ratio * 3).toFixed(4);
+                    zoom.value = ratio.toFixed(4);
+                }
+            });
         });
         
         zoom.addEventListener('input', function() {
-            if (!imgReady) return;
-            setScale(parseFloat(zoom.value));
-        });
-        
-        canvas.addEventListener('pointerdown', function(e) {
-            if (!imgReady) return;
-            dragging = true;
-            lastX = e.clientX;
-            lastY = e.clientY;
-            canvas.setPointerCapture(e.pointerId);
-            e.preventDefault(); // 防止滚动
-        });
-        
-        canvas.addEventListener('pointermove', function(e) {
-            if (!dragging || !imgReady) return;
-            var dx = e.clientX - lastX;
-            var dy = e.clientY - lastY;
-            lastX = e.clientX;
-            lastY = e.clientY;
-            
-            offsetX += dx;
-            offsetY += dy;
-            
-            clampOffsets();
-            draw();
-        });
-        
-        canvas.addEventListener('pointerup', function(e) {
-            dragging = false;
+            if (cropper) cropper.zoomTo(parseFloat(zoom.value));
         });
         
         // 表单提交前将Canvas内容转换为Base64
         form.addEventListener('submit', function(e) {
-            if (imgReady) {
-                var dataURL = canvas.toDataURL('image/jpeg', 0.9);
-                base64Input.value = dataURL;
+            if (cropper) {
+                base64Input.value = cropper.getCroppedCanvas({
+                    width: 256,
+                    height: 256,
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high'
+                }).toDataURL('image/jpeg', 0.9);
             }
         });
     })();

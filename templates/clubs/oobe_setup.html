@@ -3,6 +3,7 @@
 {% block title %}初始化向导{% endblock %}
 
 {% block extra_css %}
+{% include 'clubs/components/_cropper_assets.html' %}
 <style>
     :root {
         --oobe-radius: 16px;
@@ -766,7 +767,7 @@
                 <div id="logoFileName" class="oobe-file-name" style="display:none;"></div>
             </div>
             <div class="oobe-crop-wrap" id="logoCropWrap">
-                <canvas id="logoCropCanvas" class="oobe-crop-canvas" width="256" height="256"></canvas>
+                <img id="logoCropImage" class="oobe-crop-canvas" alt="待裁剪网站 Logo">
                 <div class="oobe-field" style="margin-top:12px; max-width:280px; margin-left:auto; margin-right:auto;">
                     <label>缩放</label>
                     <input type="range" id="logoCropZoom" min="1" max="3" step="0.01" value="1">
@@ -840,6 +841,7 @@
     </section>
 </template>
 
+{% include 'clubs/components/_cropper_script.html' %}
 <script>
 (function() {
     const form = document.querySelector('.oobe-form');
@@ -968,19 +970,10 @@
             const logoInput = section.querySelector('#site_logo');
             const fileName = section.querySelector('#logoFileName');
             const cropWrap = section.querySelector('#logoCropWrap');
-            const canvas = section.querySelector('#logoCropCanvas');
+            const cropImage = section.querySelector('#logoCropImage');
             const zoom = section.querySelector('#logoCropZoom');
-            const ctx = canvas.getContext('2d');
-
-            const img = new Image();
-            let imgReady = false;
-            let dragging = false;
-            let lastX = 0;
-            let lastY = 0;
-            let scale = 1;
-            let minScale = 1;
-            let offsetX = 0;
-            let offsetY = 0;
+            let cropper = null;
+            let objectUrl = null;
 
             const dropZone = section.querySelector('#logoDropZone');
 
@@ -1016,51 +1009,6 @@
                 }
             });
 
-            function clampOffsets() {
-                let maxX = 0;
-                let maxY = 0;
-                let minX = canvas.width - img.width * scale;
-                let minY = canvas.height - img.height * scale;
-                if (img.width * scale < canvas.width) {
-                    minX = maxX = (canvas.width - img.width * scale) / 2;
-                }
-                if (img.height * scale < canvas.height) {
-                    minY = maxY = (canvas.height - img.height * scale) / 2;
-                }
-                offsetX = Math.min(maxX, Math.max(minX, offsetX));
-                offsetY = Math.min(maxY, Math.max(minY, offsetY));
-            }
-
-            function drawCrop() {
-                if (!imgReady) return;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
-            }
-
-            function fitImage() {
-                minScale = Math.max(canvas.width / img.width, canvas.height / img.height);
-                scale = minScale;
-                offsetX = (canvas.width - img.width * scale) / 2;
-                offsetY = (canvas.height - img.height * scale) / 2;
-                zoom.min = minScale.toFixed(4);
-                zoom.max = (minScale * 3).toFixed(4);
-                zoom.value = scale.toFixed(4);
-                clampOffsets();
-                drawCrop();
-            }
-
-            function setScale(newScale) {
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-                const imgCenterX = (centerX - offsetX) / scale;
-                const imgCenterY = (centerY - offsetY) / scale;
-                scale = newScale;
-                offsetX = centerX - imgCenterX * scale;
-                offsetY = centerY - imgCenterY * scale;
-                clampOffsets();
-                drawCrop();
-            }
-
             logoInput.addEventListener('change', () => {
                 const file = logoInput.files && logoInput.files[0] ? logoInput.files[0] : null;
                 if (file) {
@@ -1071,50 +1019,32 @@
                 }
                 if (!file) {
                     cropWrap.style.display = 'none';
-                    imgReady = false;
                     return;
                 }
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    img.onload = () => {
-                        imgReady = true;
-                        cropWrap.style.display = 'block';
-                        fitImage();
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
+                if (cropper) cropper.destroy();
+                if (objectUrl) URL.revokeObjectURL(objectUrl);
+                objectUrl = URL.createObjectURL(file);
+                cropImage.src = objectUrl;
+                cropWrap.style.display = 'block';
+                cropper = new Cropper(cropImage, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    background: false,
+                    responsive: true,
+                    ready: () => {
+                        const data = cropper.getImageData();
+                        const ratio = data.width / data.naturalWidth;
+                        zoom.min = ratio.toFixed(4);
+                        zoom.max = (ratio * 3).toFixed(4);
+                        zoom.value = ratio.toFixed(4);
+                    },
+                });
             });
 
             zoom.addEventListener('input', () => {
-                if (!imgReady) return;
-                setScale(parseFloat(zoom.value));
-            });
-
-            canvas.addEventListener('pointerdown', (e) => {
-                if (!imgReady) return;
-                dragging = true;
-                lastX = e.clientX;
-                lastY = e.clientY;
-                canvas.setPointerCapture(e.pointerId);
-            });
-            canvas.addEventListener('pointermove', (e) => {
-                if (!dragging || !imgReady) return;
-                const dx = e.clientX - lastX;
-                const dy = e.clientY - lastY;
-                lastX = e.clientX;
-                lastY = e.clientY;
-                offsetX += dx;
-                offsetY += dy;
-                clampOffsets();
-                drawCrop();
-            });
-            canvas.addEventListener('pointerup', (e) => {
-                dragging = false;
-                canvas.releasePointerCapture(e.pointerId);
-            });
-            canvas.addEventListener('pointerleave', () => {
-                dragging = false;
+                if (cropper) cropper.zoomTo(parseFloat(zoom.value));
             });
 
             const nextBtn = section.querySelector('[data-next-step]');
@@ -1130,11 +1060,16 @@
                     return;
                 }
 
-                if (!imgReady) return;
+                if (!cropper) return;
                 e.preventDefault();
 
                 const croppedBlob = await new Promise((resolve) => {
-                    canvas.toBlob((blob) => resolve(blob), 'image/png');
+                    cropper.getCroppedCanvas({
+                        width: 512,
+                        height: 512,
+                        imageSmoothingEnabled: true,
+                        imageSmoothingQuality: 'high',
+                    }).toBlob((blob) => resolve(blob), 'image/png');
                 });
                 if (croppedBlob) {
                     const dt = new DataTransfer();

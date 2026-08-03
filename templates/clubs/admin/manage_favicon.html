@@ -12,6 +12,8 @@
 
 {% block extra_css %}
 
+{% include 'clubs/components/_cropper_assets.html' %}
+
 
 <style>
 
@@ -532,7 +534,7 @@
 }
 
 
-.ia-cropper-canvas canvas {
+.ia-cropper-canvas img {
 
 
     display: block;
@@ -1099,7 +1101,7 @@
               <div class="ia-cropper-canvas">
 
 
-                <canvas id="ia-cropper-canvas" width="200" height="200"></canvas>
+                <img id="ia-cropper-image" alt="待裁剪站点图标">
 
 
               </div>
@@ -1453,216 +1455,78 @@
 
 
 
+{% include 'clubs/components/_cropper_script.html' %}
 <script>
-
-
 (function () {
-
-
-  var input  = document.getElementById('favicon-input');
-
-
-  var wrap   = document.getElementById('ia-cropper-wrap');
-
-
-  var canvas = document.getElementById('ia-cropper-canvas');
-
-
-  var zoom   = document.getElementById('ia-cropper-zoom');
-
-
-  var form   = document.getElementById('favicon-form');
-
-
-  if (!input || !wrap || !canvas || !zoom || !form) return;
-
-
-  var ctx = canvas.getContext('2d');
-
-
-  var img = new Image();
-
-
-  var ready = false, dragging = false;
-
-
-  var lx = 0, ly = 0, scale = 1, minScale = 1, ox = 0, oy = 0;
-
-
-  function clamp() {
-
-
-    var maxX = 0, maxY = 0;
-
-
-    var minX = canvas.width  - img.width  * scale;
-
-
-    var minY = canvas.height - img.height * scale;
-
-
-    if (img.width  * scale < canvas.width)  { minX = maxX = (canvas.width  - img.width  * scale) / 2; }
-
-
-    if (img.height * scale < canvas.height) { minY = maxY = (canvas.height - img.height * scale) / 2; }
-
-
-    ox = Math.min(maxX, Math.max(minX, ox));
-
-
-    oy = Math.min(maxY, Math.max(minY, oy));
-
-
-  }
-
-
-  function draw() {
-
-
-    if (!ready) return;
-
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-
-    ctx.drawImage(img, ox, oy, img.width * scale, img.height * scale);
-
-
-  }
-
-
-  function fit() {
-
-
-    minScale = Math.max(canvas.width / img.width, canvas.height / img.height);
-
-
-    scale = minScale;
-
-
-    ox = (canvas.width  - img.width  * scale) / 2;
-
-
-    oy = (canvas.height - img.height * scale) / 2;
-
-
-    zoom.min = minScale.toFixed(4); zoom.max = (minScale * 3).toFixed(4); zoom.value = scale.toFixed(4);
-
-
-    clamp(); draw();
-
-
-  }
-
-
-  function setScale(s) {
-
-
-    var cx = canvas.width / 2, cy = canvas.height / 2;
-
-
-    var ix = (cx - ox) / scale, iy = (cy - oy) / scale;
-
-
-    scale = s; ox = cx - ix * scale; oy = cy - iy * scale; clamp(); draw();
-
-
-  }
-
+  var input = document.getElementById('favicon-input');
+  var wrap = document.getElementById('ia-cropper-wrap');
+  var image = document.getElementById('ia-cropper-image');
+  var zoom = document.getElementById('ia-cropper-zoom');
+  var form = document.getElementById('favicon-form');
+  if (!input || !wrap || !image || !zoom || !form || !window.Cropper) return;
+
+  var cropper = null;
+  var objectUrl = null;
 
   input.addEventListener('change', function () {
-
-
-    var f = input.files && input.files[0]; if (!f) { wrap.style.display='none'; ready=false; return; }
-
-
-    var r = new FileReader();
-
-
-    r.onload = function (e) { img.onload = function () { ready=true; wrap.style.display='flex'; fit(); }; img.src = e.target.result; };
-
-
-    r.readAsDataURL(f);
-
-
+    var file = input.files && input.files[0];
+    if (!file) {
+      wrap.style.display = 'none';
+      return;
+    }
+    if (cropper) cropper.destroy();
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(file);
+    image.src = objectUrl;
+    wrap.style.display = 'flex';
+    cropper = new Cropper(image, {
+      aspectRatio: 1,
+      viewMode: 1,
+      dragMode: 'move',
+      autoCropArea: 1,
+      background: false,
+      ready: function () {
+        var data = cropper.getImageData();
+        var ratio = data.width / data.naturalWidth;
+        zoom.min = ratio.toFixed(4);
+        zoom.max = (ratio * 3).toFixed(4);
+        zoom.value = ratio.toFixed(4);
+      }
+    });
   });
 
-
-  zoom.addEventListener('input', function () { if (ready) setScale(parseFloat(zoom.value)); });
-
-
-  canvas.addEventListener('pointerdown', function (e) { if (!ready) return; dragging=true; lx=e.clientX; ly=e.clientY; canvas.setPointerCapture(e.pointerId); });
-
-
-  canvas.addEventListener('pointermove', function (e) {
-
-
-    if (!dragging || !ready) return;
-
-
-    ox += e.clientX - lx; oy += e.clientY - ly; lx=e.clientX; ly=e.clientY; clamp(); draw();
-
-
+  zoom.addEventListener('input', function () {
+    if (cropper) cropper.zoomTo(parseFloat(zoom.value));
   });
 
-
-  canvas.addEventListener('pointerup',    function (e) { dragging=false; canvas.releasePointerCapture(e.pointerId); });
-
-
-  canvas.addEventListener('pointerleave', function ()  { dragging=false; });
-
-
-  form.addEventListener('submit', function (e) {
-
-
-    if (!ready) return;
-
-
-    e.preventDefault();
-
-
-    canvas.toBlob(function (blob) {
-
-
-      if (!blob) { form.submit(); return; }
-
-
-      var fd = new FormData();
-
-
+  form.addEventListener('submit', function (event) {
+    if (!cropper) return;
+    event.preventDefault();
+    cropper.getCroppedCanvas({
+      width: 512,
+      height: 512,
+      imageSmoothingEnabled: true,
+      imageSmoothingQuality: 'high'
+    }).toBlob(function (blob) {
+      if (!blob) {
+        form.submit();
+        return;
+      }
+      var data = new FormData();
       var csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
-
-
-      if (csrf) fd.append('csrfmiddlewaretoken', csrf.value);
-
-
-      fd.append('favicon', blob, 'favicon.png');
-
-
+      if (csrf) data.append('csrfmiddlewaretoken', csrf.value);
+      data.append('favicon', blob, 'favicon.png');
       fetch(form.action || location.href, {
-
-
-        method: 'POST', body: fd,
-
-
+        method: 'POST',
+        body: data,
         headers: { 'X-CSRFToken': csrf ? csrf.value : '' }
-
-
-      }).then(function (r) { if (r.ok) location.reload(); else form.submit(); })
-
-
-        .catch(function () { form.submit(); });
-
-
+      }).then(function (response) {
+        if (response.ok) location.reload();
+        else form.submit();
+      }).catch(function () { form.submit(); });
     }, 'image/png');
-
-
   });
-
-
 })();
-
-
 </script>
 
 
@@ -1670,5 +1534,3 @@
 
 
 {% endblock %}
-
-
