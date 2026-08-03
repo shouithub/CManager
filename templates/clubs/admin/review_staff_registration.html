@@ -268,11 +268,11 @@
                 {% csrf_token %}
 
                 <div class="decision-grid">
-                    <button type="submit" name="review_status" value="approved" class="decision-btn approve">
+                    <button type="submit" name="decision" value="approved" class="decision-btn approve">
                         <div class="decision-title">批准申请</div>
                         <div class="decision-desc">该用户将成为干事并可立即登录使用干事功能。</div>
                     </button>
-                    <button type="submit" name="review_status" value="rejected" class="decision-btn reject">
+                    <button type="submit" name="decision" value="rejected" class="decision-btn reject">
                         <div class="decision-title">拒绝申请</div>
                         <div class="decision-desc">该用户申请被驳回，可后续重新发起注册申请。</div>
                     </button>
@@ -286,7 +286,7 @@
                         <span class="material-icons">arrow_back</span>
                         返回用户管理
                     </a>
-                    <button type="submit" name="review_status" value="approved" class="btn btn-primary">
+                    <button type="submit" name="decision" value="approved" class="btn btn-primary">
                         <span class="material-icons">check</span>
                         快速批准
                     </button>

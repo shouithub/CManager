@@ -160,6 +160,52 @@ class AvatarServiceTests(TestCase):
             )
 
 
+class StaffRegistrationReviewTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username='review-admin',
+            email='',
+            password='test-password',
+        )
+        UserProfile.objects.get_or_create(
+            user=self.admin,
+            defaults={'role': 'admin', 'status': 'approved'},
+        )
+        self.client.force_login(self.admin)
+
+    @staticmethod
+    def create_pending_staff(username):
+        user = User.objects.create_user(username=username, password='test-password')
+        UserProfile.objects.create(user=user, role='staff', status='pending')
+        return user
+
+    def test_review_accepts_current_decision_field(self):
+        staff = self.create_pending_staff('pending-current')
+
+        response = self.client.post(
+            reverse('clubs:review_staff_registration', args=[staff.pk]),
+            {'decision': 'approved'},
+            secure=True,
+        )
+
+        self.assertRedirects(response, reverse('clubs:manage_users'), fetch_redirect_response=False)
+        staff.profile.refresh_from_db()
+        self.assertEqual(staff.profile.status, 'approved')
+
+    def test_user_management_shows_pending_review_count(self):
+        self.create_pending_staff('pending-count')
+        approved = self.create_pending_staff('approved-count')
+        approved.profile.status = 'approved'
+        approved.profile.save(update_fields=['status', 'updated_at'])
+
+        response = self.client.get(reverse('clubs:manage_users'), secure=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['pending_review_users'], 1)
+        self.assertContains(response, '1 个待审核')
+        self.assertContains(response, '?role=staff&amp;status=pending')
+
+
 class BookingServiceTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_superuser('booking-admin', '', 'password')

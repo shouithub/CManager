@@ -110,12 +110,12 @@
         }
     </style>
     {% block extra_css %}{% endblock %}
-    <link rel="stylesheet" href="{% static 'css/ui-unified.css' %}?v=20260803b">
+    <link rel="stylesheet" href="{% static 'css/ui-unified.css' %}?v=20260803c">
     <style>
         .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             gap: clamp(18px, 3vw, 36px);
             min-height: 148px;
             margin: 0 0 24px;
@@ -132,7 +132,7 @@
             min-width: 0;
         }
 
-        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.page-header-content, .page-header-text, .page-title, .page-header-left, .profile-header-info) {
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.page-header-content, .page-header-text, .page-title, .page-header-left, .profile-header-info, .builder-heading) {
             min-width: 0;
             flex: 1 1 auto;
         }
@@ -197,6 +197,10 @@
             border-radius: var(--md3-radius-full);
         }
 
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action, .page-header-actions, .header-actions) {
+            margin-left: auto;
+        }
+
         @media (max-width: 760px) {
             .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) {
                 min-height: 0;
@@ -213,6 +217,10 @@
             .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.btn, .btn-action, .action-btn, .header-back) {
                 width: 100%;
                 justify-content: center;
+            }
+
+            .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action, .page-header-actions, .header-actions) {
+                margin-left: 0;
             }
         }
     </style>

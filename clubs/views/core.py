@@ -1709,10 +1709,19 @@ def _user_list_context(request, *, can_manage_users):
         locked_values = cache.get_many(key_to_username.keys())
         locked_usernames = {key_to_username[key] for key in locked_values}
 
+    user_stats = User.objects.aggregate(
+        total=Count('pk'),
+        pending_review=Count(
+            'pk',
+            filter=Q(profile__role='staff', profile__status='pending'),
+        ),
+    )
+
     return {
         'users': users_page,
         'page_obj': users_page,
-        'total_users': User.objects.count(),
+        'total_users': user_stats['total'],
+        'pending_review_users': user_stats['pending_review'],
         'search': search,
         'role': role,
         'status': status,

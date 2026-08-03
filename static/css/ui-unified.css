@@ -2,7 +2,7 @@
 .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: clamp(18px, 3vw, 36px);
     min-height: 148px;
     margin: 0 0 24px;
@@ -19,7 +19,7 @@
     min-width: 0;
 }
 
-.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.page-header-content, .page-header-text, .page-title, .page-header-left, .profile-header-info) {
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.page-header-content, .page-header-text, .page-title, .page-header-left, .profile-header-info, .builder-heading) {
     min-width: 0;
     flex: 1 1 auto;
 }
@@ -60,14 +60,13 @@
     font-size: 2.55rem;
 }
 
-/* 兼容旧模板缓存：页头图标由通用组件统一提供。 */
-.main-content .builder-header .builder-heading-icon {
-    display: none !important;
-}
-
 .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action) {
     flex: 0 0 auto;
     border-radius: var(--md3-radius-full);
+}
+
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action, .page-header-actions, .header-actions) {
+    margin-left: auto;
 }
 
 @media (max-width: 760px) {
@@ -87,5 +86,9 @@
         width: 100%;
         justify-content: center;
         box-sizing: border-box;
+    }
+
+    .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action, .page-header-actions, .header-actions) {
+        margin-left: 0;
     }
 }

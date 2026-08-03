@@ -68,6 +68,16 @@
         font-size: 1.25rem;
     }
 
+    .pending-users-badge {
+        background: var(--md3-warning-container);
+        color: var(--md3-on-warning-container);
+        text-decoration: none;
+    }
+
+    .pending-users-badge:hover {
+        box-shadow: var(--md3-elevation-2);
+    }
+
     .page-header-actions {
         display: flex;
         align-items: center;
@@ -852,6 +862,12 @@
                 <span class="material-icons">person</span>
                 <span>{{ total_users }} 个用户</span>
             </div>
+            {% if can_manage_users %}
+            <a class="stats-badge pending-users-badge" href="{% url 'clubs:manage_users' %}?role=staff&amp;status=pending">
+                <span class="material-icons">pending_actions</span>
+                <span>{{ pending_review_users }} 个待审核</span>
+            </a>
+            {% endif %}
         </div>
     </div>
     
