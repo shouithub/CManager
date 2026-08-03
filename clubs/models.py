@@ -581,13 +581,26 @@ class FormSubmission(models.Model):
             models.Index(fields=['channel', 'status', '-submitted_at'], name='fs_channel_status_idx'),
             models.Index(fields=['club', 'status', '-submitted_at'], name='fs_club_status_idx'),
             models.Index(fields=['channel', 'club', 'cycle', 'status'], name='fs_policy_scope_idx'),
+            models.Index(
+                fields=['submitter', 'club', 'channel', '-submitted_at'],
+                name='fs_submit_club_chan_date',
+            ),
         ]
 
     def __str__(self):
         return f'{self.channel.name} - {self.club.name} - {self.get_status_display()}'
 
     def field_value(self, key, default=''):
-        value = self.values.filter(field__field_key=key).first()
+        prefetched_values = getattr(self, '_prefetched_objects_cache', {}).get('values')
+        if prefetched_values is not None and all(
+            'field' in value._state.fields_cache for value in prefetched_values
+        ):
+            value = next(
+                (item for item in prefetched_values if item.field.field_key == key),
+                None,
+            )
+        else:
+            value = self.values.filter(field__field_key=key).first()
         if not value:
             return default
         if value.value_json not in (None, {}, []):

@@ -222,7 +222,7 @@
             </div>
 
             <div class="alert-list">
-                {% if clubs_with_low_members_my.count > 0 %}
+                {% if clubs_with_low_members_my_count > 0 %}
                     {% for club in clubs_with_low_members_my|slice:":3" %}
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong> ({{ club.members_count }}人)
@@ -257,11 +257,11 @@
                     </div>
                     {% endfor %}
 
-                    {% if clubs_with_low_members_my.count > 3 %}
+                    {% if clubs_with_low_members_my_count > 3 %}
                     <div class="collapsible-section">
                         <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
                             <span class="material-icons">expand_more</span>
-                            {% with remaining=clubs_with_low_members_my.count|add:"-3" %}
+                            {% with remaining=clubs_with_low_members_my_count|add:"-3" %}
                             更多 (+{{ remaining }})
                             {% endwith %}
                         </div>
@@ -303,11 +303,11 @@
                 {% endif %}
             </div>
 
-            {% if clubs_with_low_members_other.count > 0 %}
+            {% if clubs_with_low_members_other_count > 0 %}
             <div class="collapsible-section">
                 <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
                     <span class="material-icons">expand_more</span>
-                    其他干事负责的社团 ({{ clubs_with_low_members_other.count }})
+                    其他干事负责的社团 ({{ clubs_with_low_members_other_count }})
                 </div>
                 <div class="alert-list collapsible-content hidden">
                     {% for club in clubs_with_low_members_other|slice:":3" %}
@@ -340,11 +340,11 @@
                     </div>
                     {% endfor %}
 
-                    {% if clubs_with_low_members_other.count > 3 %}
+                    {% if clubs_with_low_members_other_count > 3 %}
                     <div class="collapsible-section">
                         <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
                             <span class="material-icons">expand_more</span>
-                            {% with remaining=clubs_with_low_members_other.count|add:"-3" %}
+                            {% with remaining=clubs_with_low_members_other_count|add:"-3" %}
                             更多 (+{{ remaining }})
                             {% endwith %}
                         </div>
@@ -386,12 +386,12 @@
             {% endif %}
 
             <div class="alert-buttons">
-                {% if clubs_with_low_members_my.count > 0 %}
+                {% if clubs_with_low_members_my_count > 0 %}
                 <button onclick="copyLowMemberClubsMy()" class="btn-copy-my">
                     <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
                 </button>
                 {% endif %}
-                {% if clubs_with_low_members_other.count > 0 %}
+                {% if clubs_with_low_members_other_count > 0 %}
                 <button onclick="copyLowMemberClubsAll()" class="btn-copy-all">
                     <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
                 </button>
@@ -400,15 +400,15 @@
         </div>
         {% endif %}
 
-        {% if clubs_enabled_review_not_submitted.count > 0 %}
+        {% if clubs_enabled_review_not_submitted_count > 0 %}
         <div class="alert-card warning">
             <div class="alert-header">
-                <span class="material-icons">error</span> 未提交年审预警 ({{ clubs_enabled_review_not_submitted.count }})
+                <span class="material-icons">error</span> 未提交年审预警 ({{ clubs_enabled_review_not_submitted_count }})
             </div>
             
             <!-- 我负责的社团 -->
             <div class="alert-list">
-                {% if clubs_enabled_review_not_submitted_my.count > 0 %}
+                {% if clubs_enabled_review_not_submitted_my_count > 0 %}
                     {% for club in clubs_enabled_review_not_submitted_my|slice:":3" %}
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong>
@@ -457,11 +457,11 @@
                     </div>
                     {% endfor %}
 
-                    {% if clubs_enabled_review_not_submitted_my.count > 3 %}
+                    {% if clubs_enabled_review_not_submitted_my_count > 3 %}
                     <div class="collapsible-section">
                         <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
                             <span class="material-icons">expand_more</span>
-                            {% with remaining=clubs_enabled_review_not_submitted_my.count|add:"-3" %}
+                            {% with remaining=clubs_enabled_review_not_submitted_my_count|add:"-3" %}
                             更多 (+{{ remaining }})
                             {% endwith %}
                         </div>
@@ -523,11 +523,11 @@
             </div>
 
             <!-- 其他干事负责的社团（折叠） -->
-            {% if clubs_enabled_review_not_submitted_other.count > 0 %}
+            {% if clubs_enabled_review_not_submitted_other_count > 0 %}
             <div class="collapsible-section">
                 <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
                     <span class="material-icons">expand_more</span>
-                    其他干事负责的社团 ({{ clubs_enabled_review_not_submitted_other.count }})
+                    其他干事负责的社团 ({{ clubs_enabled_review_not_submitted_other_count }})
                 </div>
                 <div class="alert-list collapsible-content hidden">
                     {% for club in clubs_enabled_review_not_submitted_other|slice:":3" %}
@@ -578,11 +578,11 @@
                     </div>
                     {% endfor %}
 
-                    {% if clubs_enabled_review_not_submitted_other.count > 3 %}
+                    {% if clubs_enabled_review_not_submitted_other_count > 3 %}
                     <div class="collapsible-section">
                         <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
                             <span class="material-icons">expand_more</span>
-                            {% with remaining=clubs_enabled_review_not_submitted_other.count|add:"-3" %}
+                            {% with remaining=clubs_enabled_review_not_submitted_other_count|add:"-3" %}
                             更多 (+{{ remaining }})
                             {% endwith %}
                         </div>
@@ -643,12 +643,12 @@
 
             <!-- 复制按钮 -->
             <div class="alert-buttons">
-                {% if clubs_enabled_review_not_submitted_my.count > 0 %}
+                {% if clubs_enabled_review_not_submitted_my_count > 0 %}
                 <button onclick="copyUnsubmittedClubsMy()" class="btn-copy-my">
                     <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
                 </button>
                 {% endif %}
-                {% if clubs_enabled_review_not_submitted_other.count > 0 %}
+                {% if clubs_enabled_review_not_submitted_other_count > 0 %}
                 <button onclick="copyUnsubmittedClubsAll()" class="btn-copy-all">
                     <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
                 </button>
@@ -657,15 +657,15 @@
         </div>
         {% endif %}
 
-        {% if clubs_enabled_registration_not_submitted.count > 0 %}
+        {% if clubs_enabled_registration_not_submitted_count > 0 %}
         <div class="alert-card error">
             <div class="alert-header">
-                <span class="material-icons">error</span> 未提交注册预警 ({{ clubs_enabled_registration_not_submitted.count }})
+                <span class="material-icons">error</span> 未提交注册预警 ({{ clubs_enabled_registration_not_submitted_count }})
             </div>
             
             <!-- 我负责的社团 -->
             <div class="alert-list">
-                {% if clubs_enabled_registration_not_submitted_my.count > 0 %}
+                {% if clubs_enabled_registration_not_submitted_my_count > 0 %}
                     {% for club in clubs_enabled_registration_not_submitted_my|slice:":3" %}
                     <div class="alert-item">
                         <strong>{{ club.name }}</strong>
@@ -714,11 +714,11 @@
                     </div>
                     {% endfor %}
 
-                    {% if clubs_enabled_registration_not_submitted_my.count > 3 %}
+                    {% if clubs_enabled_registration_not_submitted_my_count > 3 %}
                     <div class="collapsible-section">
                         <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
                             <span class="material-icons">expand_more</span>
-                            {% with remaining=clubs_enabled_registration_not_submitted_my.count|add:"-3" %}
+                            {% with remaining=clubs_enabled_registration_not_submitted_my_count|add:"-3" %}
                             更多 (+{{ remaining }})
                             {% endwith %}
                         </div>
@@ -780,11 +780,11 @@
             </div>
 
             <!-- 其他干事负责的社团（折叠） -->
-            {% if clubs_enabled_registration_not_submitted_other.count > 0 %}
+            {% if clubs_enabled_registration_not_submitted_other_count > 0 %}
             <div class="collapsible-section">
                 <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
                     <span class="material-icons">expand_more</span>
-                    其他干事负责的社团 ({{ clubs_enabled_registration_not_submitted_other.count }})
+                    其他干事负责的社团 ({{ clubs_enabled_registration_not_submitted_other_count }})
                 </div>
                 <div class="alert-list collapsible-content hidden">
                     {% for club in clubs_enabled_registration_not_submitted_other|slice:":3" %}
@@ -835,11 +835,11 @@
                     </div>
                     {% endfor %}
 
-                    {% if clubs_enabled_registration_not_submitted_other.count > 3 %}
+                    {% if clubs_enabled_registration_not_submitted_other_count > 3 %}
                     <div class="collapsible-section">
                         <div class="collapsible-toggle collapsed" onclick="toggleCollapsible(this)">
                             <span class="material-icons">expand_more</span>
-                            {% with remaining=clubs_enabled_registration_not_submitted_other.count|add:"-3" %}
+                            {% with remaining=clubs_enabled_registration_not_submitted_other_count|add:"-3" %}
                             更多 (+{{ remaining }})
                             {% endwith %}
                         </div>
@@ -900,12 +900,12 @@
 
             <!-- 复制按钮 -->
             <div class="alert-buttons">
-                {% if clubs_enabled_registration_not_submitted_my.count > 0 %}
+                {% if clubs_enabled_registration_not_submitted_my_count > 0 %}
                 <button onclick="copyUnsubmittedRegistrationClubsMy()" class="btn-copy-my">
                     <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
                 </button>
                 {% endif %}
-                {% if clubs_enabled_registration_not_submitted_other.count > 0 %}
+                {% if clubs_enabled_registration_not_submitted_other_count > 0 %}
                 <button onclick="copyUnsubmittedRegistrationClubsAll()" class="btn-copy-all">
                     <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
                 </button>

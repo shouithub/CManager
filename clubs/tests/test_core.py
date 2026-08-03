@@ -5,10 +5,12 @@ from io import BytesIO
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, connection, transaction
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
 
 from ..avatar_utils import clear_avatar_settings_cache, get_profile_avatar_url
@@ -16,11 +18,18 @@ from ..models import (
     Club,
     ClubMember,
     FormChannel,
+    FormCycle,
+    FormField,
+    FormFieldValue,
+    FormSubmission,
+    Officer,
     RegistrationToken,
     Room,
     RoomBooking,
     SiteSettings,
     SMTPConfig,
+    StaffClubRelation,
+    UserProfile,
 )
 from ..services.booking_service import BookingConflictError, create_room_booking
 from ..services.registration_service import (
@@ -394,3 +403,167 @@ class StaticPageSmokeTests(TestCase):
         self.assertContains(response, 'js-material-icon-input')
         self.assertContains(response, '正在预览：description')
         self.assertContains(response, 'https://mui.com/material-ui/material-icons/')
+
+    def test_staff_management_query_count_does_not_scale_per_club(self):
+        profile = self.admin.profile
+        profile.role = 'admin'
+        profile.save(update_fields=['role'])
+        for action, slug in [('annual_review', 'query-annual'), ('club_registration', 'query-registration')]:
+            channel = FormChannel.objects.create(
+                name=slug,
+                slug=slug,
+                builtin_action=action,
+                cycle_type='count',
+                submission_policy='once_per_cycle',
+                allow_staff_toggle=True,
+            )
+            FormCycle.objects.create(channel=channel, name='性能测试周期', created_by=self.admin)
+
+        def add_clubs(start, stop):
+            for index in range(start, stop):
+                president = User.objects.create(username=f'query-president-{index}')
+                president_profile = UserProfile.objects.create(
+                    user=president,
+                    role='president',
+                    real_name=f'性能社长 {index:02d}',
+                )
+                club = Club.objects.create(
+                    name=f'查询性能社团 {index:02d}',
+                    description='查询性能测试',
+                    founded_date=date.today(),
+                    members_count=1,
+                )
+                Officer.objects.create(
+                    club=club,
+                    user_profile=president_profile,
+                    position='president',
+                    appointed_date=date.today(),
+                )
+                StaffClubRelation.objects.create(staff=profile, club=club)
+
+        def request_query_count():
+            cache.clear()
+            with CaptureQueriesContext(connection) as queries:
+                response = self.client.get(
+                    f"{reverse('clubs:staff_management')}?q=&page=1",
+                    secure=True,
+                )
+            self.assertEqual(response.status_code, 200)
+            return len(queries)
+
+        self.client.force_login(self.admin)
+        add_clubs(0, 5)
+        small_dataset_queries = request_query_count()
+        add_clubs(5, 25)
+        large_dataset_queries = request_query_count()
+
+        self.assertLessEqual(large_dataset_queries, small_dataset_queries)
+
+    def test_user_dashboard_bulk_loads_clubs_channels_and_latest_submissions(self):
+        profile = self.admin.profile
+        profile.role = 'admin'
+        profile.save(update_fields=['role'])
+        channels = [
+            FormChannel.objects.create(
+                name=f'仪表板通道 {index}',
+                slug=f'dashboard-channel-{index}',
+                publish_status='published',
+                submission_policy='once_total',
+                is_active=True,
+            )
+            for index in range(5)
+        ]
+        def add_clubs(start, stop):
+            clubs = []
+            for index in range(start, stop):
+                club = Club.objects.create(
+                    name=f'仪表板社团 {index:02d}',
+                    founded_date=date.today(),
+                    members_count=20,
+                )
+                Officer.objects.create(
+                    club=club,
+                    user_profile=profile,
+                    position='president',
+                    appointed_date=date.today(),
+                )
+                StaffClubRelation.objects.create(staff=profile, club=club)
+                clubs.append(club)
+            FormSubmission.objects.bulk_create([
+                FormSubmission(channel=channel, club=club, submitter=self.admin)
+                for club in clubs
+                for channel in channels
+            ])
+
+        def request_query_count():
+            cache.clear()
+            with CaptureQueriesContext(connection) as queries:
+                response = self.client.get(reverse('clubs:user_dashboard'), secure=True)
+            self.assertEqual(response.status_code, 200)
+            return response, len(queries)
+
+        self.client.force_login(self.admin)
+        session = self.client.session
+        session['active_identity'] = 'president'
+        session.save()
+        add_clubs(0, 5)
+        _, small_dataset_queries = request_query_count()
+        add_clubs(5, 20)
+        response, large_dataset_queries = request_query_count()
+
+        self.assertContains(response, '仪表板社团 19')
+        self.assertLessEqual(large_dataset_queries, small_dataset_queries)
+
+    def test_submission_display_title_uses_prefetched_values_without_queries(self):
+        channel = FormChannel.objects.create(name='标题预取', slug='title-prefetch')
+        field = FormField.objects.create(
+            channel=channel,
+            label='标题',
+            field_key='title',
+            field_type='text',
+        )
+        club = Club.objects.create(
+            name='标题预取社团',
+            founded_date=date.today(),
+        )
+        submission = FormSubmission.objects.create(
+            channel=channel,
+            club=club,
+            submitter=self.admin,
+        )
+        FormFieldValue.objects.create(
+            submission=submission,
+            field=field,
+            value_text='无需额外查询的标题',
+        )
+        loaded = FormSubmission.objects.prefetch_related('values__field').get(pk=submission.pk)
+
+        with CaptureQueriesContext(connection) as queries:
+            title = loaded.display_title
+
+        self.assertEqual(title, '无需额外查询的标题')
+        self.assertEqual(len(queries), 0)
+
+    def test_my_room_bookings_is_paginated(self):
+        room = Room.objects.create(name='分页测试房间')
+        RoomBooking.objects.bulk_create([
+            RoomBooking(
+                room=room,
+                user=self.admin,
+                booking_date=date.today(),
+                start_time=time(8, 0),
+                end_time=time(9, 0),
+                purpose=f'分页预约 {index:02d}',
+                participant_count=1,
+                contact_phone='13800000000',
+            )
+            for index in range(25)
+        ])
+        self.client.force_login(self.admin)
+
+        response = self.client.get(f"{reverse('clubs:my_room_bookings')}?page=2", secure=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['bookings']), 1)
+        self.assertContains(response, '预约记录分页')
+        self.assertContains(response, '第 2 / 2 页，共 25 条')

@@ -33,11 +33,16 @@ def has_president_officer(user) -> bool:
     profile = _profile(user)
     if not profile:
         return False
-    return Officer.objects.filter(
+    cached = getattr(user, '_cmanager_has_president_officer', None)
+    if cached is not None:
+        return cached
+    result = Officer.objects.filter(
         user_profile=profile,
         position='president',
         is_current=True,
     ).exists()
+    user._cmanager_has_president_officer = result
+    return result
 
 
 def president_club_count(user) -> int:

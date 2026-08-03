@@ -180,6 +180,22 @@
         opacity: 0.5;
     }
 
+    .booking-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--md3-spacing-md);
+        margin-top: var(--md3-spacing-xl);
+        padding-top: var(--md3-spacing-lg);
+        border-top: 1px solid var(--md3-outline-variant);
+        color: var(--md3-on-surface-variant);
+    }
+
+    .booking-pagination-actions {
+        display: flex;
+        gap: var(--md3-spacing-sm);
+    }
+
     @media (max-width: 600px) {
         .approval-container {
             padding: var(--md3-spacing-md);
@@ -188,6 +204,16 @@
         
         .bookings-grid {
             grid-template-columns: 1fr;
+        }
+
+        .booking-pagination {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .booking-pagination-actions .action-btn {
+            flex: 1;
+            justify-content: center;
         }
 
         .page-header {
@@ -274,6 +300,23 @@
             </div>
             {% endfor %}
         </div>
+        {% if bookings.has_other_pages %}
+        <nav class="booking-pagination" aria-label="预约记录分页">
+            <span>第 {{ bookings.number }} / {{ bookings.paginator.num_pages }} 页，共 {{ bookings.paginator.count }} 条</span>
+            <span class="booking-pagination-actions">
+                {% if bookings.has_previous %}
+                <a class="action-btn btn-edit" href="?page={{ bookings.previous_page_number }}">
+                    <span class="material-icons">chevron_left</span>上一页
+                </a>
+                {% endif %}
+                {% if bookings.has_next %}
+                <a class="action-btn btn-edit" href="?page={{ bookings.next_page_number }}">
+                    下一页<span class="material-icons">chevron_right</span>
+                </a>
+                {% endif %}
+            </span>
+        </nav>
+        {% endif %}
     {% else %}
         <div class="empty-state">
             <span class="material-icons">event_busy</span>

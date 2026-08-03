@@ -19,7 +19,8 @@ from datetime import datetime
 from django.conf import settings
 from django.http import HttpResponse, FileResponse, HttpResponseForbidden, JsonResponse, Http404
 from django.db import IntegrityError, transaction
-from django.db.models import Q, Prefetch, Count
+from django.db.models import F, Q, Prefetch, Count, Window
+from django.db.models.functions import RowNumber
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
@@ -3100,7 +3101,12 @@ def submit_room_booking(request):
 @login_required
 def my_room_bookings(request):
     """我的预约"""
-    bookings = RoomBooking.objects.filter(user=request.user).order_by('-booking_date', '-start_time')
+    bookings = Paginator(
+        RoomBooking.objects.filter(user=request.user)
+        .select_related('room', 'club')
+        .order_by('-booking_date', '-start_time'),
+        24,
+    ).get_page(request.GET.get('page'))
     return render(request, 'clubs/room_my_bookings.html', {'bookings': bookings})
 
 
@@ -4192,22 +4198,46 @@ def approval_center_tabs(request, tab='all'):
         messages.error(request, '仅社长可以访问审批记录')
         return redirect('clubs:index')
     clubs = Club.objects.filter(officers__user_profile__user=request.user, officers__position='president', officers__is_current=True)
-    items = FormSubmission.objects.filter(club__in=clubs).select_related('channel', 'club', 'reviewer').order_by('-submitted_at')
+    items = (
+        FormSubmission.objects.filter(club__in=clubs)
+        .select_related('channel', 'club', 'reviewer')
+        .prefetch_related('values__field')
+        .order_by('-submitted_at')
+    )
     if tab and tab != 'all':
         items = items.filter(channel__slug=tab.replace('_', '-'))
     active_items = Paginator(items.filter(status__in=['pending', 'rejected']), 50).get_page(request.GET.get('active_page'))
     completed_items = Paginator(items.exclude(status__in=['pending', 'rejected']), 50).get_page(request.GET.get('completed_page'))
     channels = list(_active_channels())
+    totals_by_channel = {
+        row['channel_id']: row['total']
+        for row in items.values('channel_id').annotate(total=Count('id'))
+    }
+    active_by_channel = defaultdict(list)
+    for item in items.filter(status__in=['pending', 'rejected']).annotate(
+        group_row=Window(
+            expression=RowNumber(),
+            partition_by=[F('channel_id')],
+            order_by=F('submitted_at').desc(),
+        ),
+    ).filter(group_row__lte=50):
+        active_by_channel[item.channel_id].append(item)
+    completed_by_channel = defaultdict(list)
+    for item in items.exclude(status__in=['pending', 'rejected']).annotate(
+        group_row=Window(
+            expression=RowNumber(),
+            partition_by=[F('channel_id')],
+            order_by=F('submitted_at').desc(),
+        ),
+    ).filter(group_row__lte=50):
+        completed_by_channel[item.channel_id].append(item)
     grouped_channels = []
     for channel in channels:
-        channel_items = items.filter(channel=channel)
-        channel_active = channel_items.filter(status__in=['pending', 'rejected'])
-        channel_completed = channel_items.exclude(status__in=['pending', 'rejected'])
         grouped_channels.append({
             'channel': channel,
-            'active_items': list(channel_active[:50]),
-            'completed_items': list(channel_completed[:50]),
-            'total_count': channel_items.count(),
+            'active_items': active_by_channel[channel.id],
+            'completed_items': completed_by_channel[channel.id],
+            'total_count': totals_by_channel.get(channel.id, 0),
         })
     return render(request, 'clubs/user/dynamic_approval_center.html', {
         'items': items,
@@ -4249,7 +4279,11 @@ def staff_audit_center(request, tab='all'):
     current_channel = None
     if slug != 'all':
         current_channel = FormChannel.objects.filter(slug=slug).first()
-    qs = FormSubmission.objects.select_related('channel', 'club', 'submitter', 'reviewer').prefetch_related('reviews').order_by('-submitted_at')
+    qs = (
+        FormSubmission.objects.select_related('channel', 'club', 'submitter', 'reviewer')
+        .prefetch_related('reviews', 'values__field')
+        .order_by('-submitted_at')
+    )
     if current_channel:
         qs = qs.filter(channel=current_channel)
     pending_items = Paginator(qs.filter(status='pending'), 50).get_page(request.GET.get('pending_page'))
@@ -4630,13 +4664,13 @@ def admin_dashboard(request):
         return redirect('clubs:index')
     total_clubs = Club.objects.count()
     total_users = User.objects.count()
-    pending_registrations = FormSubmission.objects.filter(status='pending').count()
     published_announcements = Announcement.objects.filter(status='published').count()
     pending_staff_count = UserProfile.objects.filter(role='staff', status='pending').count()
     announcements = Announcement.objects.all().order_by('-created_at')[:5]
-    total_applications = FormSubmission.objects.count()
-    pending_all = FormSubmission.objects.filter(status='pending').count()
-    channels_count = FormChannel.objects.count()
+    role_counts = {
+        row['role']: row['total']
+        for row in UserProfile.objects.values('role').annotate(total=Count('id'))
+    }
 
     today = timezone.localdate()
     date_range = [today - timezone.timedelta(days=offset) for offset in range(13, -1, -1)]
@@ -4647,12 +4681,15 @@ def admin_dashboard(request):
     visit_dates = [item.isoformat() for item in date_range]
     visit_counts = [daily_stats.get(item, 0) for item in date_range]
 
-    status_rows = FormSubmission.objects.values('channel_id', 'channel__name', 'status').annotate(total=Count('id'))
+    status_rows = list(
+        FormSubmission.objects.values('channel_id', 'channel__name', 'status').annotate(total=Count('id'))
+    )
     status_map = {
         (row['channel_id'], row['status']): row['total']
         for row in status_rows
     }
     chart_channels = list(FormChannel.objects.order_by('order', 'id').values('id', 'name'))
+    channels_count = len(chart_channels)
     known_channel_ids = {channel['id'] for channel in chart_channels}
     for row in status_rows:
         if row['channel_id'] not in known_channel_ids:
@@ -4662,8 +4699,15 @@ def admin_dashboard(request):
     type_approved = [status_map.get((channel['id'], 'approved'), 0) for channel in chart_channels]
     type_rejected = [status_map.get((channel['id'], 'rejected'), 0) for channel in chart_channels]
 
-    approved_total = FormSubmission.objects.filter(status='approved').count()
-    rejected_total = FormSubmission.objects.filter(status='rejected').count()
+    status_totals = {
+        status: sum(row['total'] for row in status_rows if row['status'] == status)
+        for status in ['pending', 'approved', 'rejected']
+    }
+    pending_all = status_totals['pending']
+    pending_registrations = pending_all
+    approved_total = status_totals['approved']
+    rejected_total = status_totals['rejected']
+    total_applications = sum(status_totals.values())
     decided_total = approved_total + rejected_total
     overall_approval_rate = round(approved_total / decided_total * 100, 1) if decided_total else 0
     overall_rejection_rate = round(rejected_total / decided_total * 100, 1) if decided_total else 0
@@ -4674,10 +4718,10 @@ def admin_dashboard(request):
         'pending_registrations': pending_registrations,
         'published_announcements': published_announcements,
         'pending_staff_count': pending_staff_count,
-        'presidents_count': UserProfile.objects.filter(role='president').count(),
-        'staff_count': UserProfile.objects.filter(role='staff').count(),
-        'admins_count': UserProfile.objects.filter(role='admin').count(),
-        'members_count': UserProfile.objects.filter(role='member').count(),
+        'presidents_count': role_counts.get('president', 0),
+        'staff_count': role_counts.get('staff', 0),
+        'admins_count': role_counts.get('admin', 0),
+        'members_count': role_counts.get('member', 0),
         'announcements': announcements,
         'total_applications': total_applications,
         'pending_all': pending_all,

@@ -8,10 +8,12 @@ from django.views.decorators.http import require_http_methods, require_POST
 from django.conf import settings
 from django.contrib import messages
 from django.utils.http import url_has_allowed_host_and_scheme
-from ..models import UserProfile, Club, FormChannel, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
+from ..models import UserProfile, Club, FormChannel, FormCycle, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
 from datetime import datetime
 from django.utils import timezone
-from django.db.models import Q, Prefetch
+from django.db import transaction
+from django.db.models import F, Q, Prefetch, Window
+from django.db.models.functions import RowNumber
 from django.core.paginator import Paginator
 from django.core.cache import cache
 import time
@@ -418,23 +420,18 @@ def manage_staff_clubs(request):
         # 更新StaffClubRelation
         from ..models import StaffClubRelation, Club
         
-        # 先将所有现有关联设置为inactive
-        StaffClubRelation.objects.filter(staff=profile, is_active=True).update(is_active=False)
-        
-        # 为选中的社团创建或更新关联
-        for club_id in selected_club_ids:
-            try:
-                club = Club.objects.get(id=club_id)
-                StaffClubRelation.objects.update_or_create(
-                    staff=profile,
-                    club=club,
-                    defaults={
-                        'is_active': True,
-                        'assigned_at': timezone.now().date()
-                    }
-                )
-            except Club.DoesNotExist:
-                pass
+        valid_club_ids = set(
+            Club.objects.filter(id__in=selected_club_ids).values_list('id', flat=True)
+        )
+        with transaction.atomic():
+            relations = StaffClubRelation.objects.filter(staff=profile)
+            existing_club_ids = set(relations.values_list('club_id', flat=True))
+            relations.filter(is_active=True).update(is_active=False)
+            relations.filter(club_id__in=valid_club_ids).update(is_active=True)
+            StaffClubRelation.objects.bulk_create([
+                StaffClubRelation(staff=profile, club_id=club_id, is_active=True)
+                for club_id in valid_club_ids - existing_club_ids
+            ])
         
         messages.success(request, '负责社团设置成功')
         return redirect('clubs:manage_staff_clubs')
@@ -444,8 +441,10 @@ def manage_staff_clubs(request):
     all_clubs = Club.objects.all().order_by('name')
     
     # 获取当前干事已选中的社团ID
-    active_relations = StaffClubRelation.objects.filter(staff=profile, is_active=True)
-    selected_club_ids = [relation.club.id for relation in active_relations]
+    selected_club_ids = list(
+        StaffClubRelation.objects.filter(staff=profile, is_active=True)
+        .values_list('club_id', flat=True)
+    )
     
     context = {
         'user': user,
@@ -702,22 +701,33 @@ def staff_management(request):
         return redirect('clubs:login')
     
     from ..models import Club, FormSubmission, StaffClubRelation, Officer
-    annual_channel = FormChannel.objects.filter(builtin_action='annual_review').first()
-    registration_channel = FormChannel.objects.filter(builtin_action='club_registration').first()
+
+    active_cycles = Prefetch(
+        'cycles',
+        queryset=FormCycle.objects.filter(is_active=True).order_by('-sequence', '-starts_at'),
+        to_attr='_active_cycles',
+    )
+    special_channels = {}
+    for channel in FormChannel.objects.filter(
+        builtin_action__in=['annual_review', 'club_registration'],
+    ).prefetch_related(active_cycles):
+        special_channels.setdefault(channel.builtin_action, channel)
+    annual_channel = special_channels.get('annual_review')
+    registration_channel = special_channels.get('club_registration')
     toggle_channels = list(
         FormChannel.objects.filter(allow_staff_toggle=True)
-        .prefetch_related('cycles')
+        .prefetch_related(active_cycles)
         .order_by('order', 'id')
     )
     for channel in toggle_channels:
         channel.needs_cycle = channel.cycle_type != 'none' or channel.submission_policy == 'once_per_cycle'
-        channel.active_cycle = (
-            channel.cycles.filter(is_active=True).order_by('-sequence', '-starts_at').first()
-            if channel.needs_cycle else None
-        )
+        channel.active_cycle = channel._active_cycles[0] if channel.needs_cycle and channel._active_cycles else None
         channel.global_enabled = bool(channel.active_cycle) if channel.needs_cycle else channel.is_active
-    active_review_cycle = annual_channel.cycles.filter(is_active=True).first() if annual_channel else None
-    active_registration_period = registration_channel.cycles.filter(is_active=True).first() if registration_channel else None
+    active_review_cycle = annual_channel._active_cycles[0] if annual_channel and annual_channel._active_cycles else None
+    active_registration_period = (
+        registration_channel._active_cycles[0]
+        if registration_channel and registration_channel._active_cycles else None
+    )
     all_review_enabled = bool(active_review_cycle)
     all_registration_enabled = bool(active_registration_period)
 
@@ -746,21 +756,19 @@ def staff_management(request):
     page_number = request.GET.get('page')
     clubs_page = paginator.get_page(page_number)
     page_clubs = list(clubs_page.object_list)
-    if annual_channel:
-        disabled_review_ids = set(FormChannelClubState.objects.filter(channel=annual_channel, is_enabled=False).values_list('club_id', flat=True))
-    else:
-        disabled_review_ids = set()
-    if registration_channel:
-        disabled_registration_ids = set(FormChannelClubState.objects.filter(channel=registration_channel, is_enabled=False).values_list('club_id', flat=True))
-    else:
-        disabled_registration_ids = set()
-    disabled_by_channel = {
-        channel.id: set(
-            FormChannelClubState.objects.filter(channel=channel, is_enabled=False)
-            .values_list('club_id', flat=True)
-        )
-        for channel in toggle_channels
+    state_channel_ids = {
+        channel.id
+        for channel in [annual_channel, registration_channel, *toggle_channels]
+        if channel
     }
+    disabled_by_channel = {channel_id: set() for channel_id in state_channel_ids}
+    for channel_id, club_id in FormChannelClubState.objects.filter(
+        channel_id__in=state_channel_ids,
+        is_enabled=False,
+    ).values_list('channel_id', 'club_id'):
+        disabled_by_channel[channel_id].add(club_id)
+    disabled_review_ids = disabled_by_channel.get(getattr(annual_channel, 'id', None), set())
+    disabled_registration_ids = disabled_by_channel.get(getattr(registration_channel, 'id', None), set())
     for club in page_clubs:
         club.dynamic_channel_states = [
             {
@@ -775,10 +783,10 @@ def staff_management(request):
     
     # === 预警功能数据 ===
     # 获取当前干事负责的社团ID
-    staff_club_ids = StaffClubRelation.objects.filter(
+    staff_club_ids = set(StaffClubRelation.objects.filter(
         staff=user.profile, 
         is_active=True
-    ).values_list('club_id', flat=True)
+    ).values_list('club_id', flat=True))
     
     # 获取成员数少20人的社团（排除停止状态的社团）
     _president_prefetch = Prefetch(
@@ -786,13 +794,25 @@ def staff_management(request):
         queryset=Officer.objects.filter(position='president', is_current=True).select_related('user_profile__user', 'user_profile'),
         to_attr='_president_list',
     )
-    clubs_with_low_members = Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count').prefetch_related(_president_prefetch, 'responsible_staff', 'responsible_staff__staff')
-    clubs_with_low_members_my = clubs_with_low_members.filter(id__in=staff_club_ids)
-    clubs_with_low_members_other = clubs_with_low_members.exclude(id__in=staff_club_ids)
+    _staff_prefetch = Prefetch(
+        'responsible_staff',
+        queryset=StaffClubRelation.objects.filter(is_active=True).select_related('staff__user'),
+    )
+
+    def warning_club_lists(queryset):
+        clubs = list(queryset.prefetch_related(_president_prefetch, _staff_prefetch))
+        mine = [club for club in clubs if club.id in staff_club_ids]
+        other = [club for club in clubs if club.id not in staff_club_ids]
+        return clubs, mine, other
+
+    clubs_with_low_members, clubs_with_low_members_my, clubs_with_low_members_other = warning_club_lists(
+        Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count')
+    )
     
-    current_year = datetime.now().year
-    enabled_review_clubs = Club.objects.none()
-    clubs_enabled_review_not_submitted = Club.objects.none()
+    current_year = timezone.localdate().year
+    clubs_enabled_review_not_submitted = []
+    clubs_enabled_review_not_submitted_my = []
+    clubs_enabled_review_not_submitted_other = []
     if annual_channel and active_review_cycle:
         enabled_review_clubs = Club.objects.exclude(status='suspended').exclude(id__in=disabled_review_ids)
         submitted_clubs_ids = FormSubmission.objects.filter(
@@ -801,16 +821,16 @@ def staff_management(request):
             cycle=active_review_cycle,
             status__in=['pending', 'approved'],
         ).values_list('club_id', flat=True)
-        clubs_enabled_review_not_submitted = enabled_review_clubs.exclude(id__in=submitted_clubs_ids).prefetch_related('responsible_staff')
-    
-    # 分别获取当前干事负责的和其他的未提交年审社团
-    clubs_enabled_review_not_submitted_my = clubs_enabled_review_not_submitted.filter(id__in=staff_club_ids)
-    clubs_enabled_review_not_submitted_other = clubs_enabled_review_not_submitted.exclude(id__in=staff_club_ids)
+        (
+            clubs_enabled_review_not_submitted,
+            clubs_enabled_review_not_submitted_my,
+            clubs_enabled_review_not_submitted_other,
+        ) = warning_club_lists(enabled_review_clubs.exclude(id__in=submitted_clubs_ids).order_by('name'))
     
     # 注册未交预警逻辑
-    clubs_enabled_registration_not_submitted = Club.objects.none()
-    clubs_enabled_registration_not_submitted_my = Club.objects.none()
-    clubs_enabled_registration_not_submitted_other = Club.objects.none()
+    clubs_enabled_registration_not_submitted = []
+    clubs_enabled_registration_not_submitted_my = []
+    clubs_enabled_registration_not_submitted_other = []
     
     if registration_channel and active_registration_period:
         enabled_registration_clubs = Club.objects.exclude(status='suspended').exclude(id__in=disabled_registration_ids)
@@ -820,9 +840,11 @@ def staff_management(request):
             cycle=active_registration_period,
             status__in=['pending', 'approved'],
         ).values_list('club_id', flat=True)
-        clubs_enabled_registration_not_submitted = enabled_registration_clubs.exclude(id__in=submitted_registration_ids).prefetch_related('responsible_staff')
-        clubs_enabled_registration_not_submitted_my = clubs_enabled_registration_not_submitted.filter(id__in=staff_club_ids)
-        clubs_enabled_registration_not_submitted_other = clubs_enabled_registration_not_submitted.exclude(id__in=staff_club_ids)
+        (
+            clubs_enabled_registration_not_submitted,
+            clubs_enabled_registration_not_submitted_my,
+            clubs_enabled_registration_not_submitted_other,
+        ) = warning_club_lists(enabled_registration_clubs.exclude(id__in=submitted_registration_ids).order_by('name'))
     
     context = {
         'all_review_enabled': all_review_enabled,
@@ -834,15 +856,23 @@ def staff_management(request):
         'q': q,
         # 预警数据
         'clubs_with_low_members': clubs_with_low_members,
-        'clubs_with_low_members_count': clubs_with_low_members.count(),
+        'clubs_with_low_members_count': len(clubs_with_low_members),
         'clubs_with_low_members_my': clubs_with_low_members_my,
+        'clubs_with_low_members_my_count': len(clubs_with_low_members_my),
         'clubs_with_low_members_other': clubs_with_low_members_other,
+        'clubs_with_low_members_other_count': len(clubs_with_low_members_other),
         'clubs_enabled_review_not_submitted': clubs_enabled_review_not_submitted,
+        'clubs_enabled_review_not_submitted_count': len(clubs_enabled_review_not_submitted),
         'clubs_enabled_review_not_submitted_my': clubs_enabled_review_not_submitted_my,
+        'clubs_enabled_review_not_submitted_my_count': len(clubs_enabled_review_not_submitted_my),
         'clubs_enabled_review_not_submitted_other': clubs_enabled_review_not_submitted_other,
+        'clubs_enabled_review_not_submitted_other_count': len(clubs_enabled_review_not_submitted_other),
         'clubs_enabled_registration_not_submitted': clubs_enabled_registration_not_submitted,
+        'clubs_enabled_registration_not_submitted_count': len(clubs_enabled_registration_not_submitted),
         'clubs_enabled_registration_not_submitted_my': clubs_enabled_registration_not_submitted_my,
+        'clubs_enabled_registration_not_submitted_my_count': len(clubs_enabled_registration_not_submitted_my),
         'clubs_enabled_registration_not_submitted_other': clubs_enabled_registration_not_submitted_other,
+        'clubs_enabled_registration_not_submitted_other_count': len(clubs_enabled_registration_not_submitted_other),
         'current_year': current_year,
     }
     
@@ -987,21 +1017,13 @@ def manage_department_staff(request):
 
 # ---- Dynamic form replacements -------------------------------------------------
 
-def _dashboard_channel_card(channel, club, user):
-    state = FormChannelClubState.objects.filter(channel=channel, club=club).first()
+def _dashboard_channel_card(channel, state, cycle, latest):
     enabled = True if state is None else state.is_enabled
-    cycle = None
     unavailable_reason = ''
-    submissions = FormSubmission.objects.filter(channel=channel, club=club, submitter=user)
     if channel.submission_policy == 'once_per_cycle':
-        cycle = channel.cycles.filter(is_active=True).order_by('-sequence', '-starts_at').first()
-        if cycle:
-            submissions = submissions.filter(cycle=cycle)
-        else:
+        if not cycle:
             enabled = False
             unavailable_reason = '当前未开启周期'
-            submissions = submissions.none()
-    latest = submissions.order_by('-submitted_at').first()
     blocked = latest and latest.status in ['pending', 'approved'] and channel.submission_policy in ['once_total', 'once_per_cycle']
     if not enabled and not unavailable_reason:
         unavailable_reason = '暂未开放'
@@ -1044,20 +1066,66 @@ def user_dashboard(request):
         messages.error(request, '您当前没有可管理的社团')
         return redirect('clubs:index')
 
-    clubs = Club.objects.filter(
+    staff_relations_prefetch = Prefetch(
+        'responsible_staff',
+        queryset=StaffClubRelation.objects.filter(is_active=True).select_related('staff__user'),
+    )
+    clubs = list(Club.objects.filter(
         officers__user_profile__user=user,
         officers__position='president',
         officers__is_current=True
-    ).prefetch_related('responsible_staff', 'responsible_staff__staff')
-    channels = externally_available_channels(
-        FormChannel.objects.filter(is_active=True).prefetch_related('cycles', 'fields').order_by('order', 'id')
+    ).prefetch_related(staff_relations_prefetch).distinct())
+    active_cycles_prefetch = Prefetch(
+        'cycles',
+        queryset=FormCycle.objects.filter(is_active=True).order_by('-sequence', '-starts_at'),
+        to_attr='_active_cycles',
     )
+    channels = externally_available_channels(list(
+        FormChannel.objects.filter(is_active=True)
+        .prefetch_related(active_cycles_prefetch, 'fields')
+        .order_by('order', 'id')
+    ))
     club_ids = [club.id for club in clubs]
     unread_total = FormSubmission.objects.filter(club_id__in=club_ids, status__in=['pending', 'rejected']).count()
 
+    states = {
+        (state.channel_id, state.club_id): state
+        for state in FormChannelClubState.objects.filter(
+            channel_id__in=[channel.id for channel in channels],
+            club_id__in=club_ids,
+        )
+    }
+    cycles = {
+        channel.id: channel._active_cycles[0] if channel._active_cycles else None
+        for channel in channels
+    }
+    submission_filter = Q()
+    for channel in channels:
+        if channel.submission_policy == 'once_per_cycle':
+            cycle = cycles[channel.id]
+            if cycle:
+                submission_filter |= Q(channel_id=channel.id, cycle_id=cycle.id)
+        else:
+            submission_filter |= Q(channel_id=channel.id)
+    latest_submissions = {}
+    if club_ids and submission_filter:
+        latest_submissions = {
+            (submission.channel_id, submission.club_id): submission
+            for submission in FormSubmission.objects.filter(
+                submission_filter,
+                club_id__in=club_ids,
+                submitter=user,
+            ).annotate(
+                dashboard_row=Window(
+                    expression=RowNumber(),
+                    partition_by=[F('channel_id'), F('club_id')],
+                    order_by=F('submitted_at').desc(),
+                ),
+            ).filter(dashboard_row=1)
+        }
+
     clubs_with_submission_status = []
     for club in clubs:
-        staff_relations = StaffClubRelation.objects.filter(club=club, is_active=True)
         assigned_staff = [
             {
                 'staff': relation.staff,
@@ -1066,9 +1134,17 @@ def user_dashboard(request):
                 'wechat': relation.staff.wechat or '--',
                 'assigned_at': relation.assigned_at,
             }
-            for relation in staff_relations
+            for relation in club.responsible_staff.all()
         ]
-        action_cards = [_dashboard_channel_card(channel, club, user) for channel in channels]
+        action_cards = [
+            _dashboard_channel_card(
+                channel,
+                states.get((channel.id, club.id)),
+                cycles[channel.id],
+                latest_submissions.get((channel.id, club.id)),
+            )
+            for channel in channels
+        ]
         clubs_with_submission_status.append({
             'club': club,
             'assigned_staff': assigned_staff,
@@ -1080,7 +1156,7 @@ def user_dashboard(request):
         'user': user,
         'clubs': clubs,
         'clubs_with_submission_status': clubs_with_submission_status,
-        'club_count': clubs.count(),
+        'club_count': len(clubs),
         'dynamic_channels': channels,
         'unread_approval_counts': {'total': unread_total, 'channels': {}},
     })

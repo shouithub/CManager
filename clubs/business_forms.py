@@ -60,7 +60,11 @@ def missing_required_field_keys(channel) -> list[str]:
     action = get_business_action(channel.builtin_action)
     if not action:
         return []
-    existing = set(channel.fields.filter(is_active=True).values_list('field_key', flat=True))
+    prefetched_fields = getattr(channel, '_prefetched_objects_cache', {}).get('fields')
+    if prefetched_fields is None:
+        existing = set(channel.fields.filter(is_active=True).values_list('field_key', flat=True))
+    else:
+        existing = {field.field_key for field in prefetched_fields if field.is_active}
     return [key for key in action.required_fields if key not in existing]
 
 
