@@ -2,6 +2,8 @@ import zipfile
 from datetime import date, time
 from hashlib import md5
 from io import BytesIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
@@ -141,6 +143,21 @@ class AvatarServiceTests(TestCase):
         )
         profile.refresh_from_db()
         self.assertEqual(profile.avatar_source, 'local')
+
+    def test_local_avatar_response_has_immutable_browser_cache(self):
+        with TemporaryDirectory() as media_root:
+            avatar_path = Path(media_root, 'avatars', '2026', '08', 'avatar.jpg')
+            avatar_path.parent.mkdir(parents=True)
+            avatar_path.write_bytes(b'avatar-image')
+
+            with self.settings(MEDIA_ROOT=media_root):
+                response = self.client.get('/media/avatars/2026/08/avatar.jpg')
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.headers['Cache-Control'],
+                'public, max-age=31536000, immutable',
+            )
 
 
 class BookingServiceTests(TestCase):

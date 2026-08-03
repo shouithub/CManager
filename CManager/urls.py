@@ -55,11 +55,19 @@ urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 from django.views.static import serve
 from django.urls import re_path
 
+
+def avatar_media_view(request, path):
+    """开发服务下为本站头像设置长期缓存；生产环境由 Nginx 设置同等响应头。"""
+    response = serve(request, f'avatars/{path}', document_root=settings.MEDIA_ROOT)
+    response['Cache-Control'] = 'public, max-age=31536000, immutable'
+    return response
+
+
 # 使用re_path而不是static函数，以确保正确处理中文文件名
 # 将媒体文件路由放在应用路由之后，避免冲突
 urlpatterns += [
+    re_path(r'^media/avatars/(?P<path>.*)$', avatar_media_view),
     re_path(r'^media/(?P<path>.*)$', serve, {
         'document_root': settings.MEDIA_ROOT,
     }),
 ]
-

@@ -1,10 +1,11 @@
 /**
  * CManager Service Worker
- * 缓存 Material Icons 字体资源，加快后续页面加载速度
+ * 缓存 Material Icons 字体和本站上传的用户头像，加快后续页面加载速度
  * 字体来源可由管理员配置，通过 postMessage 动态更新并持久化
  */
 
 const FONT_CACHE = 'cmanager-fonts-v1';
+const LOCAL_AVATAR_CACHE = 'cmanager-local-avatars-v1';
 const CONFIG_CACHE = 'cmanager-sw-config-v1';
 
 // 默认字体来源（管理员未配置时的回退）
@@ -12,6 +13,38 @@ const DEFAULT_FONT_ORIGINS = ['fonts.font.im', 'fonts.gstatic.com'];
 
 // 内存中缓存的字体来源（SW 重启后从 Cache API 恢复）
 let _fontOrigins = null;
+
+self.addEventListener('install', () => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+    event.waitUntil(self.clients.claim());
+});
+
+function isLocalAvatarRequest(request) {
+    if (request.method !== 'GET' || request.destination !== 'image') return false;
+
+    const url = new URL(request.url);
+    return url.origin === self.location.origin && url.pathname.startsWith('/media/avatars/');
+}
+
+async function getCachedLocalAvatar(request) {
+    const cache = await caches.open(LOCAL_AVATAR_CACHE);
+    const cached = await cache.match(request);
+    if (cached) return cached;
+
+    const response = await fetch(request);
+    if (response.ok) {
+        // 头像上传后会使用新文件名，因此可以安全地按 URL 长期复用。
+        try {
+            await cache.put(request, response.clone());
+        } catch (error) {
+            // 缓存配额不足时仍返回已下载的头像，不影响页面显示。
+        }
+    }
+    return response;
+}
 
 async function getFontOrigins() {
     if (_fontOrigins !== null) return _fontOrigins;
@@ -39,6 +72,11 @@ self.addEventListener('message', async event => {
 });
 
 self.addEventListener('fetch', event => {
+    if (isLocalAvatarRequest(event.request)) {
+        event.respondWith(getCachedLocalAvatar(event.request));
+        return;
+    }
+
     const url = event.request.url;
 
     // 快速同步预判：已加载来源配置时直接跳过非字体请求

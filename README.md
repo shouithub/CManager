@@ -187,6 +187,11 @@
     location /static/ {
         alias /path/to/CManager/staticfiles/;
     }
+    location ^~ /media/avatars/ {
+        alias /path/to/CManager/media/avatars/;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        add_header X-Content-Type-Options nosniff always;
+    }
     location /media/ {
         alias /path/to/CManager/media/;
         add_header X-Content-Type-Options nosniff always;
