@@ -60,6 +60,11 @@
     font-size: 2.55rem;
 }
 
+/* 兼容旧模板缓存：页头图标由通用组件统一提供。 */
+.main-content .builder-header .builder-heading-icon {
+    display: none !important;
+}
+
 .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action) {
     flex: 0 0 auto;
     border-radius: var(--md3-radius-full);
