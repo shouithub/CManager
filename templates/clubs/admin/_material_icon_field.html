@@ -1,0 +1,25 @@
+<div class="field-group">
+    <label for="{{ input_id }}">Material 图标</label>
+    <div class="material-icon-control js-material-icon-control">
+        <span class="material-icon-preview" aria-hidden="true">
+            <span class="material-icons js-material-icon-preview">{{ icon_value|default:"description" }}</span>
+        </span>
+        <input
+            id="{{ input_id }}"
+            class="field-control js-material-icon-input"
+            name="icon"
+            value="{{ icon_value|default:"description" }}"
+            placeholder="description"
+            autocomplete="off"
+            spellcheck="false"
+            aria-describedby="{{ input_id }}-help"
+        >
+    </div>
+    <div id="{{ input_id }}-help" class="material-icon-help">
+        <span class="js-material-icon-status">正在预览：{{ icon_value|default:"description" }}</span>
+        <a href="https://mui.com/material-ui/material-icons/" target="_blank" rel="noopener noreferrer">
+            查看 Material Icons 图标目录
+            <span class="material-icons" aria-hidden="true">open_in_new</span>
+        </a>
+    </div>
+</div>

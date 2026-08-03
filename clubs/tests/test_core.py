@@ -1,7 +1,7 @@
-from hashlib import md5
-from datetime import date, time
-from io import BytesIO
 import zipfile
+from datetime import date, time
+from hashlib import md5
+from io import BytesIO
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
@@ -12,7 +12,16 @@ from django.test import TestCase
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
 
 from ..avatar_utils import clear_avatar_settings_cache, get_profile_avatar_url
-from ..models import Club, ClubMember, FormChannel, RegistrationToken, Room, RoomBooking, SiteSettings, SMTPConfig
+from ..models import (
+    Club,
+    ClubMember,
+    FormChannel,
+    RegistrationToken,
+    Room,
+    RoomBooking,
+    SiteSettings,
+    SMTPConfig,
+)
 from ..services.booking_service import BookingConflictError, create_room_booking
 from ..services.registration_service import (
     RegistrationTokenUnavailable,
@@ -372,3 +381,14 @@ class StaticPageSmokeTests(TestCase):
         self.assertGreaterEqual(response.context['channel_summary']['published'], 1)
         self.assertContains(response, 'js-channel-search')
         self.assertContains(response, '通道状态概览')
+
+    def test_new_form_channel_page_exposes_material_icon_preview_and_reference(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(f"{reverse('clubs:manage_form_channels')}?new=1", secure=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'js-material-icon-preview')
+        self.assertContains(response, 'js-material-icon-input')
+        self.assertContains(response, '正在预览：description')
+        self.assertContains(response, 'https://mui.com/material-ui/material-icons/')

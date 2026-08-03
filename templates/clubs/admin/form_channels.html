@@ -540,6 +540,68 @@
         box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 18%, transparent);
     }
 
+    .material-icon-control {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .material-icon-preview {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .material-icon-preview .material-icons {
+        max-width: 38px;
+        overflow: hidden;
+        font-size: 1.45rem;
+        white-space: nowrap;
+    }
+
+    .material-icon-control.is-invalid .material-icon-preview {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .material-icon-help {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 4px 12px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.75rem;
+        line-height: 1.45;
+    }
+
+    .material-icon-help a {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        color: var(--md3-primary);
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .material-icon-help a:hover {
+        text-decoration: underline;
+    }
+
+    .material-icon-help a .material-icons {
+        font-size: 0.9rem;
+    }
+
+    .material-icon-control.is-invalid + .material-icon-help .js-material-icon-status {
+        color: var(--md3-error);
+    }
+
     .toggle-row,
     .button-row {
         display: flex;
@@ -1048,10 +1110,7 @@
                         <label>URL 标识 slug</label>
                         <input class="field-control" name="slug" value="{{ current.slug }}" required placeholder="reimbursement">
                     </div>
-                    <div class="field-group">
-                        <label>Material 图标</label>
-                        <input class="field-control" name="icon" value="{{ current.icon }}" placeholder="description">
-                    </div>
+                    {% include 'clubs/admin/_material_icon_field.html' with input_id='channel-icon-edit' icon_value=current.icon %}
                     <div class="field-group">
                         <label>排序</label>
                         <input class="field-control" name="order" type="number" value="{{ current.order }}" placeholder="0">
@@ -1437,10 +1496,7 @@
                         <label>URL 标识 slug</label>
                         <input class="field-control js-channel-slug" name="slug" placeholder="room-application" required>
                     </div>
-                    <div class="field-group">
-                        <label>Material 图标</label>
-                        <input class="field-control" name="icon" placeholder="description" value="description">
-                    </div>
+                    {% include 'clubs/admin/_material_icon_field.html' with input_id='channel-icon-new' icon_value='description' %}
                     <div class="field-group">
                         <label>排序</label>
                         <input class="field-control" name="order" type="number" value="0">
@@ -1715,6 +1771,31 @@
                 channelSlug.dataset.touched = '1';
             });
         }
+
+        document.querySelectorAll('.js-material-icon-control').forEach(function (control) {
+            const input = control.querySelector('.js-material-icon-input');
+            const preview = control.querySelector('.js-material-icon-preview');
+            const status = control.parentElement.querySelector('.js-material-icon-status');
+            if (!input || !preview) return;
+
+            function updateIconPreview() {
+                const iconName = input.value.trim();
+                const isValid = /^[a-z0-9]+(?:_[a-z0-9]+)*$/.test(iconName);
+                preview.textContent = isValid ? iconName : 'help_outline';
+                control.classList.toggle('is-invalid', Boolean(iconName) && !isValid);
+                if (!status) return;
+                if (!iconName) {
+                    status.textContent = '请输入图标名称，例如 description';
+                } else if (!isValid) {
+                    status.textContent = '名称只能包含小写字母、数字和下划线';
+                } else {
+                    status.textContent = '正在预览：' + iconName;
+                }
+            }
+
+            input.addEventListener('input', updateIconPreview);
+            updateIconPreview();
+        });
     })();
 </script>
 {% endblock %}
