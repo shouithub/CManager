@@ -60,25 +60,6 @@
     font-size: 2.55rem;
 }
 
-.main-content .builder-header::before {
-    content: "dynamic_form";
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--md3-primary);
-    font-family: "Material Icons";
-    font-size: 2.55rem;
-    font-weight: normal;
-    line-height: 1;
-    text-transform: none;
-    letter-spacing: normal;
-    -webkit-font-feature-settings: "liga";
-    -webkit-font-smoothing: antialiased;
-}
-
 .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action) {
     flex: 0 0 auto;
     border-radius: var(--md3-radius-full);
