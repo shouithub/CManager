@@ -1,7 +1,7 @@
 Django>=5.2,<5.3
 openpyxl>=3.1,<4
 Pillow>=12.3,<13
-django-redis>=5.4,<6
+django-redis>=7.0.0,<8
 PyMySQL>=1.1,<2
 qrcode[pil]>=8,<9
 python-docx>=1.1,<2
