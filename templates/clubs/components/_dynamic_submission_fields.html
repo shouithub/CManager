@@ -11,7 +11,7 @@
         {% if row.field.field_type == 'file' %}
             {% for uploaded in row.files %}
             <div class="file-entry">
-                <a class="file-link" href="{{ uploaded.file.url }}" target="_blank" rel="noopener">
+                <a class="file-link" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
                     <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
                 </a>
                 {% if uploaded.office_preview_url %}

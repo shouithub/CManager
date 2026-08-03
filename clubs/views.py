@@ -16,24 +16,23 @@ from django.contrib import messages
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from datetime import datetime
-from decimal import Decimal, InvalidOperation
 from django.conf import settings
 from django.http import HttpResponse, FileResponse, HttpResponseForbidden, JsonResponse, Http404
 from django.db import IntegrityError, transaction
-from django.db.models import Q, Prefetch, FileField, Count
+from django.db.models import Q, Prefetch, Count
 from django.core.cache import cache
 from django.core.files.base import ContentFile
+from django.core.paginator import Paginator
 from collections import defaultdict
 import os
 import re
 import urllib.parse
-import os
 import base64
 import tempfile
 import csv
 import io
 import json
-from .models import Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission, FormSubmissionReview, FormFieldValue, FormUploadedFile, Template, Announcement, StaffClubRelation, SMTPConfig, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken, PublishedActivity, ActivityRegistration
+from .models import Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission, FormSubmissionReview, FormFieldValue, FormUploadedFile, Announcement, StaffClubRelation, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken
 from .business_forms import (
     BusinessActionError,
     apply_business_action,
@@ -44,48 +43,27 @@ from .business_forms import (
     locked_business_field_keys,
     missing_required_field_infos,
     missing_required_field_keys,
-    seed_business_form_channels,
 )
-from django.contrib.contenttypes.models import ContentType
-import shutil
 from PIL import Image
-from .context_processors import audit_center_counts as get_audit_center_counts
 from .site_assets import process_site_logo
 from .lifecycle_utils import mark_profile_inactive
 from .identity import is_president_mode
-
-
-def rename_uploaded_file(file, club_name, request_type, material_type):
-    """
-    为上传的文件重命名为：社团名-请求类型-文件类型
-    例如：社团名-年审-自查表.docx
-
-    Args:
-        file: 上传的文件对象
-        club_name: 社团名称
-        request_type: 请求类型（'年审', '报销', '注册'等）
-        material_type: 文件类型（'自查表', '报销凭证'等）
-
-    Returns:
-        修改后的文件对象
-    """
-    if not file:
-        return file
-
-    # 获取文件扩展名
-    file_ext = os.path.splitext(file.name)[1]
-
-    # 生成新的文件名
-    new_filename = f"{club_name}-{request_type}-{material_type}{file_ext}"
-
-    # 清理特殊字符，避免文件系统问题
-    invalid_chars = '<>:"/\\|?*'
-    for char in invalid_chars:
-        new_filename = new_filename.replace(char, '_')
-
-    # 修改文件名
-    file.name = new_filename
-    return file
+from .services.booking_service import (
+    BookingConflictError,
+    create_room_booking,
+    update_room_booking,
+)
+from .services.registration_service import (
+    RegistrationTokenUnavailable,
+    register_member_with_token,
+)
+from .upload_security import validate_upload
+from .permissions import (
+    has_any_role,
+    is_president_of_club as _is_president_of_club,
+    president_club_ids as _get_president_club_ids,
+    roles_required,
+)
 
 
 def _validate_announcement_link(link_url):
@@ -107,7 +85,7 @@ def _validate_announcement_link(link_url):
 
 
 def _clear_announcement_cache():
-    cache.delete('index:announcements')
+    cache.delete('index:announcements:v1')
 
 
 def _is_president(user):
@@ -122,31 +100,12 @@ def _is_president(user):
 
 def _is_staff(user):
     """检查用户是否为干事"""
-    if not user.is_authenticated:
-        return False
-    try:
-        return user.profile.role == 'staff'
-    except UserProfile.DoesNotExist:
-        return False
+    return has_any_role(user, 'staff')
 
 
 def _is_admin(user):
     """检查用户是否为管理员"""
-    if not user.is_authenticated:
-        return False
-    try:
-        return user.profile.role == 'admin'
-    except UserProfile.DoesNotExist:
-        return False
-
-
-def _get_president_club_ids(user):
-    """获取社长可访问的社团ID（通过 Officer 表查询）。"""
-    return list(Officer.objects.filter(
-        user_profile__user=user,
-        position='president',
-        is_current=True,
-    ).values_list('club_id', flat=True))
+    return has_any_role(user, 'admin')
 
 
 def _build_external_url(request, path: str) -> str:
@@ -191,38 +150,7 @@ def _make_qr_data_uri(payload: str) -> str:
 
 def is_staff_or_admin(user):
     """返回用户是否为干事或管理员（布尔）。超级用户也视为管理员。"""
-    try:
-        # 超级用户始终有管理员权限
-        if getattr(user, 'is_superuser', False):
-            return True
-        return getattr(user, 'profile', None) and user.profile.role in ['staff', 'admin']
-    except Exception:
-        return False
-
-
-def _validate_word_file(file, field_name):
-    """验证上传文件是否为 Word 格式（.doc/.docx）。
-
-    返回: 错误消息字符串或 None
-    """
-    if not file:
-        return f"{field_name} 文件不能为空"
-    valid_extensions = ['.doc', '.docx']
-    ext = os.path.splitext(file.name)[1].lower()
-    if ext not in valid_extensions:
-        return f"{field_name} 必须为 Word 文档 (.doc 或 .docx)"
-    return None
-
-
-def _validate_file_allowed(file, field_name, allowed_extensions, allowed_mimetypes=None):
-    """通用文件类型验证函数。返回错误消息或 None。"""
-    if not file:
-        return f"{field_name} 文件不能为空"
-    ext = os.path.splitext(file.name)[1].lower()
-    if ext not in allowed_extensions:
-        return f"{field_name} 的文件类型不被允许（允许的后缀：{', '.join(allowed_extensions)}）"
-    # 可选的 mime 类型检查（如果需要）
-    return None
+    return has_any_role(user, 'staff', 'admin')
 
 
 
@@ -233,148 +161,57 @@ def _validate_file_allowed(file, field_name, allowed_extensions, allowed_mimetyp
 
 
 
-import json
+@roles_required('staff', 'admin')
+def download_file(request):
+    """Stream a media object without exposing arbitrary filesystem paths."""
+    from pathlib import PurePosixPath
+    from django.core.files.storage import default_storage
+
+    raw_path = request.GET.get('file_path', '').split('?', 1)[0].split('#', 1)[0]
+    if raw_path.startswith(settings.MEDIA_URL):
+        raw_path = raw_path[len(settings.MEDIA_URL):]
+    normalized = str(PurePosixPath(raw_path.lstrip('/')))
+    if not normalized or normalized == '.' or '..' in PurePosixPath(normalized).parts:
+        raise Http404('文件不存在')
+    if not default_storage.exists(normalized):
+        raise Http404('文件不存在')
+    filename = os.path.basename(request.GET.get('filename', '')) or os.path.basename(normalized)
+    response = FileResponse(default_storage.open(normalized, 'rb'), as_attachment=True, filename=filename)
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
+
 
 @login_required(login_url=settings.LOGIN_URL)
-def download_file(request):
-    """自定义文件下载视图，用于处理文件下载并重命名
+@require_GET
+def download_submission_file(request, file_id):
+    """Authorize a sensitive submission attachment before streaming/signing it."""
+    uploaded = get_object_or_404(
+        FormUploadedFile.objects.select_related('submission__club', 'field'),
+        pk=file_id,
+    )
+    if not (
+        is_staff_or_admin(request.user)
+        or _is_president_of_club(request.user, uploaded.submission.club)
+    ):
+        return HttpResponseForbidden('无权下载该材料')
+    if not uploaded.file:
+        raise Http404('文件不存在')
 
-    GET参数:
-        file_path: 文件的相对路径（相对于MEDIA_ROOT）
-        filename: 下载时使用的文件名
-    """
-    # 从GET请求中获取参数
-    file_path = request.GET.get('file_path', '')
-    filename = request.GET.get('filename', '')
+    from .models import StorageConfig
+    if StorageConfig.is_s3_active():
+        try:
+            url = uploaded.file.storage.get_presigned_url(
+                uploaded.file.name,
+                StorageConfig.get_active_config().presigned_url_expiration,
+            )
+            return redirect(url)
+        except Exception:
+            pass
 
-    # 添加调试信息
-    debug_info = {
-        'received_params': {
-            'file_path': file_path,
-            'filename': filename,
-        },
-        'processing_steps': [],
-        'settings_info': {
-            'MEDIA_ROOT': str(getattr(settings, 'MEDIA_ROOT', 'Not set')),
-            'MEDIA_URL': str(getattr(settings, 'MEDIA_URL', 'Not set')),
-            'BASE_DIR': str(getattr(settings, 'BASE_DIR', 'Not set')),
-        }
-    }
-
-    debug_info['processing_steps'].append(f"Received parameters - file_path: {file_path}, filename: {filename}")
-
-    # 检查必要参数
-    if not file_path:
-        debug_info['processing_steps'].append('Missing file_path parameter')
-        response = HttpResponse("缺少文件路径参数", status=400)
-        response['X-Debug-Info'] = json.dumps(debug_info, ensure_ascii=False)
-        return response
-
-    # 构建完整的文件路径
-    # 清理file_path，移除可能的查询参数或片段
-    if '?' in file_path:
-        file_path = file_path.split('?')[0]
-        debug_info['processing_steps'].append(f"Removed query parameters: {file_path}")
-    if '#' in file_path:
-        file_path = file_path.split('#')[0]
-        debug_info['processing_steps'].append(f"Removed fragment: {file_path}")
-
-    # 如果file_path包含完整URL，提取相对路径
-    if file_path.startswith('http://') or file_path.startswith('https://'):
-        # 移除域名部分，获取相对路径
-        from urllib.parse import urlparse
-        parsed_url = urlparse(file_path)
-        file_path = parsed_url.path
-        debug_info['processing_steps'].append(f"Extracted path from URL: {file_path}")
-
-        # 如果路径以MEDIA_URL开头，移除它
-        media_url = settings.MEDIA_URL
-        if file_path.startswith(media_url):
-            file_path = file_path[len(media_url):]
-            debug_info['processing_steps'].append(f"Removed MEDIA_URL prefix: {file_path}")
-        elif file_path.startswith('/' + media_url):
-            file_path = file_path[len('/' + media_url):]
-            debug_info['processing_steps'].append(f"Removed leading slash and MEDIA_URL prefix: {file_path}")
-    elif file_path.startswith('/'):
-        # 如果路径以斜杠开头，移除它
-        file_path = file_path[1:]
-        debug_info['processing_steps'].append(f"Removed leading slash: {file_path}")
-
-    # 特别处理以media/开头的路径
-    if file_path.startswith('media/'):
-        file_path = file_path[6:]  # 移除'media/'前缀
-        debug_info['processing_steps'].append(f"Removed media/ prefix: {file_path}")
-
-    full_path = os.path.join(settings.MEDIA_ROOT, file_path)
-    debug_info['processing_steps'].append(f"Constructed full path: {full_path}")
-    debug_info['processing_steps'].append(f"MEDIA_ROOT: {settings.MEDIA_ROOT}")
-
-    # 检查文件是否存在
-    if not os.path.exists(full_path):
-        debug_info['processing_steps'].append(f"File not found at primary path: {full_path}")
-        # 尝试其他可能的路径
-        alternative_path = os.path.join(settings.BASE_DIR, file_path)
-        debug_info['processing_steps'].append(f"Trying alternative path: {alternative_path}")
-        if os.path.exists(alternative_path):
-            full_path = alternative_path
-            debug_info['processing_steps'].append(f"Found file at alternative path: {full_path}")
-        else:
-            debug_info['processing_steps'].append(f"Alternative path also not found: {alternative_path}")
-            response = HttpResponse(json.dumps(debug_info, ensure_ascii=False, indent=2), content_type='application/json', status=404)
-            response['X-Debug-Info'] = json.dumps(debug_info, ensure_ascii=False)
-            return response
-
-    debug_info['processing_steps'].append(f"File exists: {full_path}")
-
-    # 获取文件大小
-    try:
-        file_size = os.path.getsize(full_path)
-        debug_info['processing_steps'].append(f"File size: {file_size} bytes")
-    except Exception as e:
-        debug_info['processing_steps'].append(f"Error getting file size: {str(e)}")
-        file_size = None
-
-    # 如果没有提供文件名，使用原始文件名
-    if not filename:
-        filename = os.path.basename(full_path)
-        debug_info['processing_steps'].append(f"Using default filename: {filename}")
-    else:
-        # 确保文件名是安全的（移除路径分隔符）
-        filename = os.path.basename(filename)
-        debug_info['processing_steps'].append(f"Using provided filename: {filename}")
-
-    # 添加最终调试信息
-    debug_info['processing_steps'].append(f"Final filename: {filename}")
-
-    # 创建文件响应
-    try:
-        # 打开文件并创建响应
-        with open(full_path, 'rb') as f:
-            response = HttpResponse(f.read(), content_type='application/octet-stream')
-
-            # 处理文件名编码以支持中文
-            ascii_filename = filename.encode('ascii', 'ignore').decode('ascii')
-            utf8_filename = filename.encode('utf-8')
-
-            # 设置Content-Disposition头以指定下载文件名
-            response['Content-Disposition'] = f"attachment; filename*=UTF-8''{urllib.parse.quote(utf8_filename)}"
-            debug_info['processing_steps'].append(f"Set Content-Disposition: attachment; filename*=UTF-8''{urllib.parse.quote(utf8_filename)}")
-
-            # 添加文件信息到响应头
-            if file_size:
-                response['Content-Length'] = str(file_size)
-                debug_info['processing_steps'].append(f"Set Content-Length: {file_size}")
-
-            # 添加调试信息到响应头
-            response['X-Debug-Info'] = json.dumps(debug_info, ensure_ascii=False)
-
-            return response
-
-    except Exception as e:
-        debug_info['processing_steps'].append(f"Error opening file: {str(e)}")
-        response = HttpResponse(json.dumps(debug_info, ensure_ascii=False, indent=2), content_type='application/json', status=500)
-        response['X-Debug-Info'] = json.dumps(debug_info, ensure_ascii=False)
-        return response
+    filename = uploaded.original_name or os.path.basename(uploaded.file.name)
+    response = FileResponse(uploaded.file.open('rb'), as_attachment=True, filename=filename)
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 
 
@@ -382,8 +219,6 @@ def download_file(request):
 def user_detail(request, user_id):
     """用户详情页 - 显示用户公开信息及关联社团/干事"""
     target_user = get_object_or_404(User, pk=user_id)
-    from .models import StaffClubRelation, Officer
-
     context = {
         'target_user': target_user,
         'responsible_clubs': [],
@@ -470,20 +305,20 @@ def index(request):
     from .models import Department
 
     # 共享数据（所有用户类型复用，缓存30秒）
-    departments = cache.get('index:departments')
+    departments = cache.get('index:departments:v1')
     if departments is None:
         departments = list(Department.objects.all().order_by('order'))
-        cache.set('index:departments', departments, 30)
+        cache.set('index:departments:v1', departments, 30)
 
-    announcements = cache.get('index:announcements')
+    announcements = cache.get('index:announcements:v1')
     if announcements is None:
         announcements = list(Announcement.objects.filter(status='published').order_by('-published_at')[:5])
-        cache.set('index:announcements', announcements, 30)
+        cache.set('index:announcements:v1', announcements, 30)
 
-    carousel_images = cache.get('index:carousel_images')
+    carousel_images = cache.get('index:carousel_images:v1')
     if carousel_images is None:
         carousel_images = list(CarouselImage.objects.filter(is_active=True).order_by('order', '-uploaded_at'))
-        cache.set('index:carousel_images', carousel_images, 30)
+        cache.set('index:carousel_images:v1', carousel_images, 30)
 
     # 未登录用户显示部门介绍和公告
     if not request.user.is_authenticated:
@@ -558,8 +393,12 @@ def index(request):
         }
         return render(request, 'clubs/index.html', context)
 
-    # 普通用户显示所有社团
-    clubs = list(Club.objects.all())
+    # 普通用户只加载当前页的活跃社团。
+    clubs_queryset = Club.objects.filter(status='active').only(
+        'id', 'name', 'description', 'members_count', 'status'
+    ).order_by('name')
+    clubs_page = Paginator(clubs_queryset, 24).get_page(request.GET.get('club_page'))
+    clubs = list(clubs_page.object_list)
     # 一次性查出当前用户担任社长的所有社团 ID，消除 N+1
     president_club_ids = set(
         Officer.objects.filter(
@@ -576,11 +415,11 @@ def index(request):
 
     context = {
         'clubs_data': clubs_data,
-        'clubs': clubs,
+        'clubs_page': clubs_page,
         'announcements': announcements,
         'carousel_images': carousel_images,
         'departments': departments,
-        'total_clubs': len(clubs),
+        'total_clubs': clubs_page.paginator.count,
     }
     return render(request, 'clubs/index.html', context)
 
@@ -606,7 +445,7 @@ def club_detail(request, club_id):
         # 检查是否为干事或管理员
         try:
             is_staff = request.user.profile.role in ['staff', 'admin']
-        except:
+        except UserProfile.DoesNotExist:
             is_staff = False
 
     context = {
@@ -807,52 +646,28 @@ def member_join_by_token(request, token_code):
                 'form_data': request.POST,
             })
 
-        if user is None:
-            user = User.objects.create_user(username=username, email=email, password=password, first_name=real_name)
-
-        profile, _created = UserProfile.objects.get_or_create(
-            user=user,
-            defaults={
-                'role': 'member',
-                'status': 'approved',
-                'account_status': 'active',
-                'real_name': real_name,
-                'student_id': student_id,
-                'gender': gender,
-                'college': college,
-                'class_name': class_name,
-                'phone': phone,
-                'qq': qq,
-                'wechat': wechat,
-            },
-        )
-
-        if not existing_account:
-            profile.role = 'member'
-            profile.status = 'approved'
-            profile.account_status = 'active'
-            profile.real_name = real_name
-            profile.student_id = student_id
-            profile.gender = gender
-            profile.college = college
-            profile.class_name = class_name
-            profile.phone = phone
-            profile.qq = qq
-            profile.wechat = wechat
-            profile.save()
-
-            user.email = email
-            user.first_name = real_name
-            user.save(update_fields=['email', 'first_name'])
-
-        ClubMember.objects.get_or_create(
-            club=token.club,
-            user_profile=profile,
-            defaults={'status': 'active'},
-        )
-
-        # 标记令牌已使用，智能处理使用次数
-        token.mark_used()
+        try:
+            user, token = register_member_with_token(
+                token_id=token.pk,
+                user=user,
+                existing_account=existing_account,
+                username=username,
+                password=password,
+                email=email,
+                profile_data={
+                    'real_name': real_name,
+                    'student_id': student_id,
+                    'gender': gender,
+                    'college': college,
+                    'class_name': class_name,
+                    'phone': phone,
+                    'qq': qq,
+                    'wechat': wechat,
+                },
+            )
+        except RegistrationTokenUnavailable as exc:
+            messages.error(request, exc.messages[0])
+            return redirect('clubs:index')
 
         messages.success(request, f'已成功加入社团「{token.club.name}」，请使用账户登录系统')
         return redirect('clubs:login')
@@ -893,12 +708,6 @@ def member_join_by_token(request, token_code):
 
 
 # ==================== 干事管理功能 ====================
-
-@login_required(login_url=settings.LOGIN_URL)
-def get_templates_by_type(template_type):
-    """根据模板类型获取活跃的模板列表"""
-    return Template.objects.filter(template_type=template_type, is_active=True).order_by('-created_at')
-
 
 
 
@@ -957,21 +766,18 @@ def review_staff_registration(request, user_id):
 
 
 @login_required(login_url=settings.LOGIN_URL)
-def admin_site_settings(request):
-    """已合并到 manage_favicon，保留此视图以兼容旧链接"""
-    return redirect('clubs:manage_favicon')
-
-
-@login_required(login_url=settings.LOGIN_URL)
 def manage_carousel(request):
     """管理轮播图列表"""
     if not _is_admin(request.user):
         messages.error(request, '仅管理员可以访问此页面')
         return redirect('clubs:index')
 
-    carousel_images = CarouselImage.objects.all().order_by('-uploaded_at')
+    carousel_images = list(CarouselImage.objects.select_related('uploaded_by__profile').order_by('order', '-uploaded_at'))
+    active_count = sum(1 for image in carousel_images if image.is_active)
     return render(request, 'clubs/admin/manage_carousel.html', {
         'carousel_images': carousel_images,
+        'active_count': active_count,
+        'inactive_count': len(carousel_images) - active_count,
     })
 
 
@@ -986,15 +792,34 @@ def add_carousel(request):
         title = request.POST.get('title', '').strip()
         description = request.POST.get('description', '').strip()
         link = request.POST.get('link', '').strip()
-        order = int(request.POST.get('order', 0))
+        try:
+            order = max(0, int(request.POST.get('order', 0)))
+        except (TypeError, ValueError):
+            return render(request, 'clubs/admin/carousel_form.html', {
+                'form_data': request.POST,
+                'form_error': '排序顺序必须是大于或等于 0 的整数。',
+            })
         is_active = request.POST.get('is_active') == 'on'
         image = request.FILES.get('image')
 
         if not image:
-            messages.error(request, '请选择要上传的图片')
-            return render(request, 'clubs/admin/carousel_form.html')
+            return render(request, 'clubs/admin/carousel_form.html', {
+                'form_data': request.POST,
+                'form_error': '请选择要上传的轮播图片。',
+            })
+        image_error = validate_upload(
+            image,
+            field_name='轮播图片',
+            allowed_extensions={'.jpg', '.jpeg', '.png', '.webp'},
+            max_bytes=10 * 1024 * 1024,
+        )
+        if image_error:
+            return render(request, 'clubs/admin/carousel_form.html', {
+                'form_data': request.POST,
+                'form_error': image_error,
+            })
 
-        carousel = CarouselImage.objects.create(
+        CarouselImage.objects.create(
             title=title,
             description=description,
             link=link,
@@ -1019,20 +844,41 @@ def edit_carousel(request, carousel_id):
     carousel = get_object_or_404(CarouselImage, id=carousel_id)
 
     if request.method == 'POST':
+        try:
+            order = max(0, int(request.POST.get('order', 0)))
+        except (TypeError, ValueError):
+            return render(request, 'clubs/admin/carousel_form.html', {
+                'carousel': carousel,
+                'form_data': request.POST,
+                'form_error': '排序顺序必须是大于或等于 0 的整数。',
+            })
+
         carousel.title = request.POST.get('title', '').strip()
         carousel.description = request.POST.get('description', '').strip()
         carousel.link = request.POST.get('link', '').strip()
-        carousel.order = int(request.POST.get('order', 0))
+        carousel.order = order
         carousel.is_active = request.POST.get('is_active') == 'on'
 
         # 如果上传了新图片，替换旧图片
         new_image = request.FILES.get('image')
         if new_image:
+            image_error = validate_upload(
+                new_image,
+                field_name='轮播图片',
+                allowed_extensions={'.jpg', '.jpeg', '.png', '.webp'},
+                max_bytes=10 * 1024 * 1024,
+            )
+            if image_error:
+                return render(request, 'clubs/admin/carousel_form.html', {
+                    'carousel': carousel,
+                    'form_data': request.POST,
+                    'form_error': image_error,
+                })
             # 删除旧图片文件
             if carousel.image:
                 try:
                     carousel.image.delete(save=False)
-                except:
+                except Exception:
                     pass
             carousel.image = new_image
 
@@ -1046,6 +892,7 @@ def edit_carousel(request, carousel_id):
 
 
 @login_required(login_url=settings.LOGIN_URL)
+@require_POST
 def delete_carousel(request, carousel_id):
     """删除轮播图"""
     if not _is_admin(request.user):
@@ -1059,7 +906,7 @@ def delete_carousel(request, carousel_id):
         if carousel.image:
             try:
                 carousel.image.delete(save=False)
-            except:
+            except Exception:
                 pass
 
         carousel.delete()
@@ -1076,27 +923,12 @@ def locked_accounts(request):
         return redirect('clubs:index')
 
     from django.core.cache import cache
-    locked = []
-    for u in User.objects.all():
-        key = f'login_lock:user:{u.username}'
-        if cache.get(key):
-            locked.append(u)
+    candidates = list(User.objects.only('id', 'username'))
+    key_to_user = {f'login_lock:user:{user.username}': user for user in candidates}
+    locked_values = cache.get_many(key_to_user.keys())
+    locked = [key_to_user[key] for key in locked_values]
 
     return render(request, 'clubs/admin/locked_accounts.html', {'locked': locked})
-
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(["GET", "POST"])
-def publish_announcement(request):
-    """发布公告 - 仅管理员可用"""
-    if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以发布公告')
-        return redirect('clubs:index')
-
-
-# admin_force_reset_password 已移除
-# 该功能由管理员界面的“重设密码”表单替代，移除以简化入口并减少重复功能。
-# 如果将来需要恢复，再添加对应的视图和路由即可。
-
 
 @login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['POST'])
@@ -1138,6 +970,14 @@ def publish_announcement(request):
             errors.append('公告内容不能为空')
         if link_error:
             errors.append(link_error)
+        if attachment:
+            attachment_error = validate_upload(
+                attachment,
+                field_name='公告附件',
+                allowed_extensions={'.jpg', '.jpeg', '.png', '.webp', '.pdf', '.doc', '.docx', '.xlsx', '.csv', '.zip'},
+            )
+            if attachment_error:
+                errors.append(attachment_error)
 
         if errors:
             announcements = Announcement.objects.all().order_by('-created_at')[:10]
@@ -1150,7 +990,7 @@ def publish_announcement(request):
             }
             return render(request, 'clubs/admin/publish_announcement.html', context)
 
-        announcement = Announcement.objects.create(
+        Announcement.objects.create(
             title=title,
             content=content,
             status=status,
@@ -1225,6 +1065,14 @@ def edit_announcement(request, announcement_id):
             errors.append('公告内容不能为空')
         if link_error:
             errors.append(link_error)
+        if attachment:
+            attachment_error = validate_upload(
+                attachment,
+                field_name='公告附件',
+                allowed_extensions={'.jpg', '.jpeg', '.png', '.webp', '.pdf', '.doc', '.docx', '.xlsx', '.csv', '.zip'},
+            )
+            if attachment_error:
+                errors.append(attachment_error)
 
         if errors:
             context = {
@@ -1350,15 +1198,13 @@ def export_all_users_and_clubs_csv(request):
 
     import zipfile
 
-    zip_buffer = io.BytesIO()
+    zip_buffer = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024, suffix='.zip')
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
         zip_file.writestr('all_users.csv', users_buffer.getvalue().encode('utf-8-sig'))
         zip_file.writestr('all_clubs.csv', clubs_buffer.getvalue().encode('utf-8-sig'))
 
     zip_buffer.seek(0)
-    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-    response['Content-Disposition'] = 'attachment; filename="all_users_and_clubs_export.zip"'
-    return response
+    return FileResponse(zip_buffer, as_attachment=True, filename='all_users_and_clubs_export.zip', content_type='application/zip')
 
 
 def _csv_value(row, aliases):
@@ -1392,10 +1238,11 @@ def import_users_csv(request):
         messages.error(request, '请选择CSV文件后再导入')
         return redirect(next_url)
 
-    if not uploaded.name.lower().endswith('.csv'):
+    upload_error = validate_upload(uploaded, field_name='CSV 文件', allowed_extensions={'.csv'}, max_bytes=10 * 1024 * 1024)
+    if upload_error:
         if is_ajax:
-            return _json_error('仅支持CSV文件导入')
-        messages.error(request, '仅支持CSV文件导入')
+            return _json_error(upload_error)
+        messages.error(request, upload_error)
         return redirect(next_url)
 
     raw_bytes = uploaded.read()
@@ -1634,6 +1481,7 @@ def download_club_import_template(request):
 
 @login_required(login_url=settings.LOGIN_URL)
 @require_http_methods(['POST'])
+@transaction.atomic
 def import_clubs_csv(request):
     """批量导入社团（仅CSV，干事/管理员可用）。"""
     if not is_staff_or_admin(request.user):
@@ -1646,8 +1494,9 @@ def import_clubs_csv(request):
         messages.error(request, '请选择CSV文件后再导入')
         return redirect(next_url)
 
-    if not uploaded.name.lower().endswith('.csv'):
-        messages.error(request, '仅支持CSV文件导入')
+    upload_error = validate_upload(uploaded, field_name='CSV 文件', allowed_extensions={'.csv'}, max_bytes=10 * 1024 * 1024)
+    if upload_error:
+        messages.error(request, upload_error)
         return redirect(next_url)
 
     raw_bytes = uploaded.read()
@@ -1848,14 +1697,20 @@ def _user_list_context(request, *, can_manage_users):
     elif active_state == 'disabled':
         users = users.filter(is_active=False)
 
+    ordered_users = users.order_by('profile__role', 'username')
+    users_page = Paginator(ordered_users, 50).get_page(request.GET.get('page'))
     locked_usernames = set()
     if can_manage_users:
-        for user in User.objects.all():
-            if cache.get(f'login_lock:user:{user.username}'):
-                locked_usernames.add(user.username)
+        key_to_username = {
+            f'login_lock:user:{user.username}': user.username
+            for user in users_page.object_list
+        }
+        locked_values = cache.get_many(key_to_username.keys())
+        locked_usernames = {key_to_username[key] for key in locked_values}
 
     return {
-        'users': users.order_by('profile__role', 'username'),
+        'users': users_page,
+        'page_obj': users_page,
         'total_users': User.objects.count(),
         'search': search,
         'role': role,
@@ -2006,7 +1861,7 @@ def admin_edit_user_account(request, user_id):
     # 确保管理员不能编辑自己的账户（使用自己的账户设置页面）
     if request.user == target_user:
         messages.error(request, '请使用您自己的账户设置页面编辑个人信息')
-        return redirect('clubs:change_account_settings')
+        return redirect('clubs:edit_profile')
 
     errors = []
     success_messages = []
@@ -2445,187 +2300,6 @@ def change_staff_attributes(request, user_id):
 
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@require_http_methods(['GET', 'POST'])
-def manage_smtp_config(request):
-    if not _is_admin(request.user):
-        messages.error(request, '只有管理员可以管理 SMTP 配置')
-        return redirect('clubs:index')
-
-    if request.method == 'POST':
-        action = request.POST.get('action', '')
-        config_id = request.POST.get('config_id', '')
-        if action in ['create', 'edit']:
-            config = get_object_or_404(SMTPConfig, pk=config_id) if action == 'edit' else SMTPConfig()
-            provider = request.POST.get('provider', '').strip()
-            smtp_host = request.POST.get('smtp_host', '').strip()
-            smtp_port = request.POST.get('smtp_port', '').strip()
-            sender_email = request.POST.get('sender_email', '').strip()
-            sender_password = request.POST.get('sender_password', '').strip()
-            if not provider or not smtp_host or not smtp_port or not sender_email:
-                messages.error(request, '请完整填写 SMTP 配置')
-                return redirect('clubs:manage_smtp_config')
-            try:
-                config.smtp_port = int(smtp_port)
-            except ValueError:
-                messages.error(request, 'SMTP 端口必须是数字')
-                return redirect('clubs:manage_smtp_config')
-            if request.POST.get('is_active') == 'on':
-                SMTPConfig.objects.all().update(is_active=False)
-            config.provider = provider
-            config.smtp_host = smtp_host
-            config.sender_email = sender_email
-            if sender_password:
-                config.sender_password = sender_password
-            config.use_tls = request.POST.get('use_tls') == 'on'
-            config.is_active = request.POST.get('is_active') == 'on'
-            config.save()
-            messages.success(request, 'SMTP 配置已保存')
-            return redirect('clubs:manage_smtp_config')
-        if action == 'delete':
-            get_object_or_404(SMTPConfig, pk=config_id).delete()
-            messages.success(request, 'SMTP 配置已删除')
-            return redirect('clubs:manage_smtp_config')
-        if action == 'activate':
-            SMTPConfig.objects.all().update(is_active=False)
-            config = get_object_or_404(SMTPConfig, pk=config_id)
-            config.is_active = True
-            config.save(update_fields=['is_active'])
-            messages.success(request, 'SMTP 配置已启用')
-            return redirect('clubs:manage_smtp_config')
-        if action == 'test_email':
-            config = get_object_or_404(SMTPConfig, pk=config_id)
-            test_email = request.POST.get('test_email', '').strip()
-            if not test_email:
-                messages.error(request, '请填写测试收件邮箱')
-                return redirect('clubs:manage_smtp_config')
-            from .email_utils import send_test_email_with_config
-            success, msg = send_test_email_with_config(config, test_email)
-            messages.success(request, msg) if success else messages.error(request, msg)
-            return redirect('clubs:manage_smtp_config')
-
-    return render(request, 'clubs/admin/smtp_config.html', {'configs': SMTPConfig.objects.all()})
-
-
-
-
-def manage_storage_config(request):
-    """存储后端配置页（S3 / 本地切换）。
-
-    支持操作：
-      * save         保存当前配置
-      * test         测试 S3 连接（不持久化）
-      * reset_local  紧急回退到本地存储
-    """
-    if not _is_admin(request.user):
-        messages.error(request, '只有管理员可以管理存储配置')
-        return redirect('clubs:index')
-
-    from .models import StorageConfig
-    from .storage_backends import ClubStorage, cleanup_temp_files
-
-    config = StorageConfig.get_active_config()
-    test_result = None
-    errors = []
-
-    if request.method == 'POST':
-        action = request.POST.get('action', 'save')
-
-        if action == 'reset_local':
-            config.backend_type = 'local'
-            config.is_active = True
-            config.save()
-            messages.success(request, '已紧急回退到本地存储')
-            return redirect('clubs:manage_storage_config')
-
-        if action == 'test':
-            # 仅测试，不保存
-            test_cfg = {
-                's3_endpoint_url': request.POST.get('s3_endpoint_url', '').strip(),
-                's3_region': request.POST.get('s3_region', '').strip(),
-                's3_bucket_name': request.POST.get('s3_bucket_name', '').strip(),
-                's3_access_key_id': request.POST.get('s3_access_key_id', '').strip(),
-                's3_secret_access_key': request.POST.get('s3_secret_access_key', '').strip(),
-                's3_addressing_style': request.POST.get('s3_addressing_style', 'auto').strip(),
-            }
-            if not test_cfg['s3_bucket_name'] or not test_cfg['s3_access_key_id'] \
-                    or not test_cfg['s3_secret_access_key']:
-                errors.append('测试 S3 连接时必须填写 bucket / AK / SK')
-                test_result = (False, '缺少必填字段')
-            else:
-                storage = ClubStorage()
-                ok, msg = storage.test_s3_connection(test_cfg)
-                test_result = (ok, msg)
-                if ok:
-                    messages.success(request, msg)
-                else:
-                    errors.append(msg)
-                # 回显表单
-                return render(request, 'clubs/admin/storage_config.html', {
-                    'config': config,
-                    'test_result': test_result,
-                    'errors': errors,
-                    'test_form': test_cfg,
-                })
-
-        if action == 'save':
-            backend_type = request.POST.get('backend_type', 'local').strip()
-            if backend_type not in ('local', 's3'):
-                errors.append('后端类型必须是 local 或 s3')
-            else:
-                config.backend_type = backend_type
-                config.is_active = request.POST.get('is_active') == 'on'
-                config.s3_endpoint_url = request.POST.get('s3_endpoint_url', '').strip()
-                config.s3_region = request.POST.get('s3_region', '').strip()
-                config.s3_bucket_name = request.POST.get('s3_bucket_name', '').strip()
-                config.s3_access_key_id = request.POST.get('s3_access_key_id', '').strip()
-                # SK 留空表示保持原值
-                new_sk = request.POST.get('s3_secret_access_key', '').strip()
-                if new_sk:
-                    config.s3_secret_access_key = new_sk
-                elif not config.s3_secret_access_key and backend_type == 's3':
-                    errors.append('切换到 S3 时必须填写 Secret Access Key')
-                config.s3_custom_domain = request.POST.get('s3_custom_domain', '').strip()
-                config.s3_addressing_style = request.POST.get('s3_addressing_style', 'auto').strip()
-                config.s3_use_path_style = request.POST.get('s3_use_path_style') == 'on'
-                try:
-                    config.presigned_url_expiration = int(
-                        request.POST.get('presigned_url_expiration', '3600') or 3600
-                    )
-                except ValueError:
-                    errors.append('预签名有效期必须是数字')
-
-                # 切换到 S3 前先测试连接，避免配置错误导致后续保存失败
-                if backend_type == 's3' and not errors:
-                    storage = ClubStorage()
-                    ok, msg = storage.test_s3_connection({
-                        's3_endpoint_url': config.s3_endpoint_url,
-                        's3_region': config.s3_region,
-                        's3_bucket_name': config.s3_bucket_name,
-                        's3_access_key_id': config.s3_access_key_id,
-                        's3_secret_access_key': config.s3_secret_access_key,
-                        's3_addressing_style': config.s3_addressing_style,
-                    })
-                    if not ok:
-                        errors.append('S3 连接测试失败：%s' % msg)
-                    else:
-                        messages.success(request, 'S3 连接测试通过')
-
-                if not errors:
-                    config.save()
-                    messages.success(request, '存储配置已保存')
-                    return redirect('clubs:manage_storage_config')
-
-    return render(request, 'clubs/admin/storage_config.html', {
-        'config': config,
-        'test_result': test_result,
-        'errors': errors,
-        'test_form': None,
-    })
-
-
-
-
 def _default_cycle_name(channel):
     today = timezone.localdate()
     if channel.cycle_type == 'year':
@@ -2705,11 +2379,10 @@ def zip_download(request):
         messages.warning(request, '这个提交没有可打包下载的文件')
         return redirect(request.META.get('HTTP_REFERER', 'clubs:staff_audit_center'))
 
-    import io
     import zipfile
     from pathlib import PurePath
 
-    buffer = io.BytesIO()
+    buffer = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024, suffix='.zip')
     used_names = set()
     with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
         for uploaded in uploaded_files:
@@ -2731,9 +2404,7 @@ def zip_download(request):
 
     buffer.seek(0)
     filename = f'{submission.club.name}-{submission.channel.name}-{submission.public_id}.zip'
-    response = HttpResponse(buffer.getvalue(), content_type='application/zip')
-    response['Content-Disposition'] = f"attachment; filename*=UTF-8''{urllib.parse.quote(filename)}"
-    return response
+    return FileResponse(buffer, as_attachment=True, filename=filename, content_type='application/zip')
 
 
 
@@ -2861,6 +2532,8 @@ def direct_edit_club_info(request, club_id):
     return render(request, 'clubs/direct_edit_club_info.html', context)
 
 
+@roles_required('staff', 'admin')
+@require_http_methods(['GET', 'POST'])
 def delete_club(request, club_id):
     """
     删除社团 - 仅干事和管理员可用
@@ -3021,333 +2694,6 @@ def president_member_management(request):
 
 
 
-# ==================== 222房间借用相关视图 ====================
-
-@login_required
-def room222_calendar(request):
-    """222房间借用日历视图 - 谷歌日历单日网格风格"""
-    # 获取日期参数，默认为今天
-    date_str = request.GET.get('date')
-
-    if date_str:
-        try:
-            from datetime import datetime
-            view_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        except ValueError:
-            view_date = timezone.now().date()
-    else:
-        view_date = timezone.now().date()
-
-    # 获取前一天和后一天
-    from datetime import timedelta
-    prev_date = view_date - timedelta(days=1)
-    next_date = view_date + timedelta(days=1)
-
-    # 获取当天所有有效的预订
-    bookings = Room222Booking.objects.filter(
-        booking_date=view_date,
-        status='active'
-    ).select_related('user__profile', 'club').order_by('start_time')
-
-    # 定义时间段（按照实际课程时间）
-    from datetime import time
-    raw_time_slots = [
-        {'start': time(8, 15), 'end': time(9, 55), 'label': '第1-2节'},
-        {'start': time(10, 5), 'end': time(11, 40), 'label': '第3-4节'},
-        {'start': time(11, 40), 'end': time(13, 0), 'label': '午休'},
-        {'start': time(13, 0), 'end': time(14, 35), 'label': '第5-6节'},
-        {'start': time(14, 45), 'end': time(16, 20), 'label': '第7-8节'},
-        {'start': time(16, 20), 'end': time(18, 0), 'label': '课外时间'},
-        {'start': time(18, 0), 'end': time(19, 0), 'label': '晚餐'},
-        {'start': time(19, 0), 'end': time(20, 0), 'label': '晚间1'},
-        {'start': time(20, 0), 'end': time(21, 0), 'label': '晚间2'},
-        {'start': time(21, 0), 'end': time(22, 0), 'label': '晚间3'},
-    ]
-
-    # 计算总分钟数（从8:15到22:00）
-    day_start_minutes = 8 * 60 + 15
-    total_minutes = (22 * 60) - day_start_minutes  # 13小时45分钟 = 825分钟
-
-    time_slots = []
-    for slot in raw_time_slots:
-        slot_start_minutes = slot['start'].hour * 60 + slot['start'].minute
-        slot_end_minutes = slot['end'].hour * 60 + slot['end'].minute
-        duration_minutes = slot_end_minutes - slot_start_minutes
-        top_percent = ((slot_start_minutes - day_start_minutes) / total_minutes) * 100
-        height_percent = (duration_minutes / total_minutes) * 100
-
-        # 检查该时间段是否有预约覆盖
-        has_booking = False
-        for booking in bookings:
-            booking_start = booking.start_time.hour * 60 + booking.start_time.minute
-            booking_end = booking.end_time.hour * 60 + booking.end_time.minute
-            # 如果预约时间与时间段有重叠
-            if booking_start < slot_end_minutes and booking_end > slot_start_minutes:
-                has_booking = True
-                break
-
-        time_slots.append({
-            'start': slot['start'],
-            'end': slot['end'],
-            'label': slot['label'],
-            'height_percent': height_percent,
-            'top_percent': top_percent,
-            'has_booking': has_booking,
-        })
-
-    # 为每个预订计算其在时间轴上的位置和高度
-    bookings_with_position = []
-    for booking in bookings:
-        # 计算开始时间在时间轴上的位置（以分钟为单位，从8:15开始）
-        start_minutes = (booking.start_time.hour * 60 + booking.start_time.minute) - day_start_minutes
-        end_minutes = (booking.end_time.hour * 60 + booking.end_time.minute) - day_start_minutes
-
-        # 确保不超出范围
-        start_minutes = max(0, start_minutes)
-        end_minutes = min(total_minutes, end_minutes)
-
-        # 计算持续时间和位置百分比
-        duration_minutes = end_minutes - start_minutes
-        top_percent = (start_minutes / total_minutes) * 100
-        height_percent = (duration_minutes / total_minutes) * 100
-
-        bookings_with_position.append({
-            'booking': booking,
-            'top_percent': top_percent,
-            'height_percent': height_percent,
-            'can_edit': booking.can_edit(request.user),
-            'can_delete': booking.can_delete(request.user),
-        })
-
-    # 计算周的起始日期（周一）
-    from datetime import datetime
-    week_start = view_date - timedelta(days=view_date.weekday())
-    week_end = week_start + timedelta(days=6)
-
-    context = {
-        'view_date': view_date,
-        'prev_date': prev_date,
-        'next_date': next_date,
-        'bookings': bookings_with_position,
-        'time_slots': time_slots,
-        'is_today': view_date == timezone.now().date(),
-        'week_start': week_start,
-        'week_end': week_end,
-    }
-    return render(request, 'clubs/room222_calendar.html', context)
-
-
-@login_required
-def submit_room222_booking(request):
-    """提交222房间借用申请 - 无需审核，直接创建"""
-    from datetime import datetime
-    if request.method == 'POST':
-        # 获取表单数据
-        club_id = request.POST.get('club_id')
-        booking_date_str = request.POST.get('booking_date')
-        start_time_str = request.POST.get('start_time')
-        end_time_str = request.POST.get('end_time')
-        purpose = request.POST.get('purpose')
-        participant_count = request.POST.get('participant_count')
-        contact_phone = request.POST.get('contact_phone')
-        special_requirements = request.POST.get('special_requirements', '')
-
-        # 验证必填字段
-        if not all([booking_date_str, start_time_str, end_time_str, purpose,
-                   participant_count, contact_phone]):
-            messages.error(request, '请填写所有必填字段')
-            return redirect('clubs:submit_room222_booking')
-
-        # 转换日期、时间字符串为对象
-        from datetime import datetime
-        try:
-            booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-            start_time = datetime.strptime(start_time_str, '%H:%M').time()
-            end_time = datetime.strptime(end_time_str, '%H:%M').time()
-        except ValueError:
-            messages.error(request, '时间格式不正确')
-            return redirect('clubs:submit_room222_booking')
-
-        # 获取社团（如果选择了）
-        club = None
-        if club_id:
-            club = get_object_or_404(Club, pk=club_id)
-            # 验证用户是否为该社团社长
-            if club.president != request.user:
-                messages.error(request, '您不是该社团的社长')
-                return redirect('clubs:submit_room222_booking')
-
-        # 创建借用记录（状态为active，无需审核）
-        booking = Room222Booking(
-            user=request.user,
-            club=club,
-            booking_date=booking_date,
-            start_time=start_time,
-            end_time=end_time,
-            purpose=purpose,
-            participant_count=participant_count,
-            contact_phone=contact_phone,
-            special_requirements=special_requirements,
-            status='active'
-        )
-
-        # 检查时间冲突
-        if booking.has_conflict():
-            messages.error(request, '该时间段已被预订，请选择其他时间')
-            return redirect('clubs:submit_room222_booking')
-
-        booking.save()
-        messages.success(request, '222房间预约成功！')
-        return redirect('clubs:room222_calendar')
-
-    # GET 请求
-    # 获取用户是社长的所有社团
-    user_clubs = Club.objects.filter(
-        officers__user_profile__user=request.user,
-        officers__position='president',
-        officers__is_current=True,
-        status='active',
-    )
-
-    # 获取日期参数（从日历页面跳转过来时）
-    selected_date = request.GET.get('date', '')
-    selected_start_time = request.GET.get('start_time', '')
-    selected_end_time = request.GET.get('end_time', '')
-
-    # 获取今天的日期
-    today = timezone.now().date().strftime('%Y-%m-%d')
-
-    # 获取当天已存在的预约，用于前端快速校验
-    booked_intervals = []
-    if selected_date:
-        try:
-            selected_date_obj = datetime.strptime(selected_date, '%Y-%m-%d').date()
-            existing = Room222Booking.objects.filter(
-                booking_date=selected_date_obj,
-                status='active'
-            ).values('start_time', 'end_time')
-            booked_intervals = [
-                {
-                    'start': item['start_time'].strftime('%H:%M'),
-                    'end': item['end_time'].strftime('%H:%M'),
-                }
-                for item in existing
-            ]
-        except ValueError:
-            booked_intervals = []
-
-    context = {
-        'user_clubs': user_clubs,
-        'selected_date': selected_date,
-        'selected_start_time': selected_start_time,
-        'selected_end_time': selected_end_time,
-        'today': today,
-        'booked_intervals': booked_intervals,
-    }
-    return render(request, 'clubs/submit_room222_booking.html', context)
-
-
-@login_required
-def my_room222_bookings(request):
-    """查看我的222房间借用记录"""
-    bookings = Room222Booking.objects.filter(
-        user=request.user
-    ).order_by('-booking_date', '-start_time')
-
-    context = {
-        'bookings': bookings,
-    }
-    return render(request, 'clubs/my_room222_bookings.html', context)
-
-
-@login_required
-def edit_room222_booking(request, booking_id):
-    """编辑222房间借用"""
-    booking = get_object_or_404(Room222Booking, pk=booking_id)
-
-    # 检查权限
-    if not booking.can_edit(request.user):
-        messages.error(request, '您没有权限编辑此预约')
-        return redirect('clubs:my_room222_bookings')
-
-    if request.method == 'POST':
-        # 获取表单数据
-        club_id = request.POST.get('club_id')
-        booking_date = request.POST.get('booking_date')
-        start_time = request.POST.get('start_time')
-        end_time = request.POST.get('end_time')
-        purpose = request.POST.get('purpose')
-        participant_count = request.POST.get('participant_count')
-        contact_phone = request.POST.get('contact_phone')
-        special_requirements = request.POST.get('special_requirements', '')
-
-        # 验证必填字段
-        if not all([booking_date, start_time, end_time, purpose,
-                   participant_count, contact_phone]):
-            messages.error(request, '请填写所有必填字段')
-            return redirect('clubs:edit_room222_booking', booking_id=booking_id)
-
-        # 获取社团（如果选择了）
-        club = None
-        if club_id:
-            club = get_object_or_404(Club, pk=club_id)
-
-        # 更新预订信息
-        booking.club = club
-        booking.booking_date = booking_date
-        booking.start_time = start_time
-        booking.end_time = end_time
-        booking.purpose = purpose
-        booking.participant_count = participant_count
-        booking.contact_phone = contact_phone
-        booking.special_requirements = special_requirements
-
-        # 检查时间冲突
-        if booking.has_conflict():
-            messages.error(request, '该时间段已被其他预订占用，请选择其他时间')
-            return redirect('clubs:edit_room222_booking', booking_id=booking_id)
-
-        booking.save()
-        messages.success(request, '预约已成功更新')
-        return redirect('clubs:my_room222_bookings')
-
-    # GET 请求
-    user_clubs = Club.objects.filter(
-        officers__user_profile__user=request.user,
-        officers__position='president',
-        officers__is_current=True,
-        status='active',
-    )
-
-    context = {
-        'booking': booking,
-        'user_clubs': user_clubs,
-    }
-    return render(request, 'clubs/edit_room222_booking.html', context)
-
-
-@login_required
-def delete_room222_booking(request, booking_id):
-    """删除/取消222房间借用"""
-    booking = get_object_or_404(Room222Booking, pk=booking_id)
-
-    # 检查权限
-    if not booking.can_delete(request.user):
-        messages.error(request, '您没有权限删除此预约')
-        return redirect('clubs:my_room222_bookings')
-
-    if request.method == 'POST':
-        booking_info = f"{booking.booking_date} {booking.start_time}-{booking.end_time}"
-        booking.status = 'cancelled'
-        booking.save()
-        messages.success(request, f'已取消预约：{booking_info}')
-        return redirect('clubs:my_room222_bookings')
-
-    context = {
-        'booking': booking,
-    }
-    return render(request, 'clubs/delete_room222_booking.html', context)
-
 
 # ==================== 活动申请功能 ====================
 
@@ -3380,63 +2726,6 @@ def delete_room222_booking(request, booking_id):
 
 
 
-AUDIT_REQUEST_MODELS = {}
-
-
-def _audit_tab_url(tab):
-    return tab.replace('_', '-')
-
-
-
-
-
-
-
-@login_required
-@require_http_methods(["GET", "POST"])
-def edit_department_introduction(request):
-    """编辑部门介绍页面 - 仅管理员可访问"""
-    # 检查权限 - 仅管理员可编辑
-    if not _is_admin(request.user) and not request.user.is_superuser:
-        messages.error(request, '您没有权限编辑部门介绍')
-        return redirect('clubs:index')
-
-    # 获取所有部门
-    departments = DepartmentIntroduction.objects.all().order_by('department')
-
-    if request.method == 'POST':
-        # 处理表单提交 - 更新每个部门的介绍
-        try:
-            for dept in departments:
-                # 获取表单数据
-                dept_key = f"dept_{dept.id}"
-                description = request.POST.get(f"{dept_key}_description", "").strip()
-                highlights = request.POST.get(f"{dept_key}_highlights", "").strip()
-                icon = request.POST.get(f"{dept_key}_icon", dept.icon).strip()
-
-                # 更新部门信息
-                if description:  # 只有在有描述时才更新
-                    dept.description = description
-                    dept.highlights = highlights
-                    dept.icon = icon
-                    dept.updated_by = request.user
-                    dept.save()
-                    messages.success(request, f'已更新{dept.get_department_display()}部门信息')
-
-            messages.success(request, '所有部门介绍已成功更新')
-            return redirect('clubs:index')
-        except Exception as e:
-            messages.error(request, f'更新部门介绍时出错: {str(e)}')
-
-    context = {
-        'departments': departments,
-        'material_icons': [
-            'work', 'assessment', 'event', 'people', 'speaker',
-            'star', 'explore', 'check', 'info', 'favorite',
-            'school', 'business', 'settings', 'security', 'trending_up'
-        ]
-    }
-    return render(request, 'clubs/edit_department_introduction.html', context)
 
 
 # ==================== 材料要求管理视图 ====================
@@ -3666,6 +2955,7 @@ def edit_department(request, dept_id):
 
 
 @login_required
+@require_POST
 def delete_department(request, dept_id):
     """删除部门"""
     if not is_staff_or_admin(request.user):
@@ -3680,7 +2970,6 @@ def delete_department(request, dept_id):
     return redirect('clubs:manage_departments')
 
 
-@login_required
 @login_required
 @require_http_methods(["GET", "POST"])
 def submit_room_booking(request):
@@ -3778,24 +3067,14 @@ def submit_room_booking(request):
                 messages.error(request, '普通用户必须选择社团进行申请')
                 return redirect('clubs:submit_room_booking')
 
-        # 检查冲突
-        existing_booking = RoomBooking.objects.filter(
-            room=room,
-            booking_date=booking_date,
-            status='active'
-        ).filter(
-            Q(start_time__lt=end_time) &
-            Q(end_time__gt=start_time)
-        ).exists()
+        participant_count_int = int(participant_count)
+        if participant_count_int < 1:
+            messages.error(request, '参与人数必须大于 0')
+            return redirect('clubs:submit_room_booking')
 
-        if existing_booking:
-            messages.error(request, '该时间段已被预约，请选择其他时间')
-            # 返回并带上参数以便重填，这里简单处理直接跳回日历
-            return redirect('clubs:room_calendar')
-
-        # 创建预约
-        RoomBooking.objects.create(
-            room=room,
+        # 锁住房间，在同一事务中检查冲突并创建，防止并发撞车。
+        create_room_booking(
+            room_id=room.pk,
             user=request.user,
             club=club,
             booking_date=booking_date,
@@ -3804,10 +3083,12 @@ def submit_room_booking(request):
             purpose=purpose,
             contact_phone=contact_phone,
             special_requirements=special_requirements,
-            participant_count=int(participant_count),
-            status='active'
+            participant_count=participant_count_int,
         )
         messages.success(request, '预约提交成功')
+    except BookingConflictError as exc:
+        messages.error(request, str(exc))
+        return redirect('clubs:room_calendar')
     except Exception as e:
         messages.error(request, f'预约失败: {str(e)}')
         # 发生错误时，最好能保留用户输入，但这里简化处理
@@ -3889,23 +3170,22 @@ def edit_room_booking(request, booking_id):
                 messages.error(request, '参与人数必须大于 0')
                 raise ValueError('invalid participant count')
 
-            booking.room = room
-            booking.club = club
-            booking.booking_date = booking_date
-            booking.start_time = start_time
-            booking.end_time = end_time
-            booking.purpose = purpose
-            booking.contact_phone = contact_phone
-            booking.special_requirements = special_requirements
-            booking.participant_count = participant_count_int
-
-            if booking.has_conflict():
-                messages.error(request, '该时间段已被预约，请选择其他时间')
-                raise ValueError('booking conflict')
-
-            booking.save()
+            update_room_booking(
+                booking_id=booking.pk,
+                room_id=room.pk,
+                club=club,
+                booking_date=booking_date,
+                start_time=start_time,
+                end_time=end_time,
+                purpose=purpose,
+                contact_phone=contact_phone,
+                special_requirements=special_requirements,
+                participant_count=participant_count_int,
+            )
             messages.success(request, '预约已更新')
             return redirect('clubs:my_room_bookings')
+        except BookingConflictError as exc:
+            messages.error(request, str(exc))
         except ValueError:
             pass
 
@@ -3919,15 +3199,18 @@ def edit_room_booking(request, booking_id):
 
 
 @login_required
+@require_http_methods(['GET', 'POST'])
 def delete_room_booking(request, booking_id):
     """取消预约"""
-    booking = get_object_or_404(RoomBooking, pk=booking_id)
+    booking = get_object_or_404(RoomBooking.objects.select_related('room', 'club'), pk=booking_id)
     if not booking.can_delete(request.user):
         messages.error(request, '您没有权限取消此预约')
-    else:
+        return redirect('clubs:my_room_bookings')
+    if request.method == 'POST':
         booking.delete()
         messages.success(request, '预约已取消')
-    return redirect('clubs:my_room_bookings')
+        return redirect('clubs:my_room_bookings')
+    return render(request, 'clubs/delete_room_booking.html', {'booking': booking})
 
 
 @login_required
@@ -3965,6 +3248,7 @@ def admin_room_edit(request, room_id):
 
 
 @login_required
+@require_POST
 def admin_room_delete(request, room_id):
     """管理员-删除房间"""
     if not is_staff_or_admin(request.user):
@@ -3980,7 +3264,10 @@ def admin_booking_management(request):
     """管理员-预约管理"""
     if not is_staff_or_admin(request.user):
         return redirect('clubs:index')
-    bookings = RoomBooking.objects.select_related('room', 'user', 'club').order_by('-booking_date', '-start_time')
+    bookings = Paginator(
+        RoomBooking.objects.select_related('room', 'user__profile', 'club').order_by('-booking_date', '-start_time'),
+        50,
+    ).get_page(request.GET.get('page'))
     rooms = Room.objects.all().order_by('name')
     slots = TimeSlot.objects.all().order_by('start_time')
     return render(
@@ -4027,6 +3314,7 @@ def admin_time_slot_edit(request, slot_id):
 
 
 @login_required
+@require_POST
 def admin_time_slot_delete(request, slot_id):
     """管理员-删除时间段"""
     if not is_staff_or_admin(request.user):
@@ -4057,10 +3345,20 @@ def manage_favicon(request):
             cfg.save()
             messages.success(request, '站点字体设置已保存，刷新页面后生效')
             return redirect('clubs:manage_favicon')
+        elif form_type == 'avatar_settings':
+            from .avatar_utils import clear_avatar_settings_cache
+            cfg = SiteSettings.get_settings()
+            cfg.cravatar_enabled = request.POST.get('cravatar_enabled') == 'on'
+            cfg.save(update_fields=['cravatar_enabled'])
+            clear_avatar_settings_cache()
+            messages.success(request, 'Cravatar 开关已保存，用户仍可随时上传本站头像')
+            return redirect('clubs:manage_favicon')
         elif 'favicon' in request.FILES:
             upload = request.FILES['favicon']
             ok, logo_message = process_site_logo(upload, allow_webp=False)
             if ok:
+                cache.set('site:asset_version:v1', int(timezone.now().timestamp()), None)
+                cache.delete('site:presentation:v1')
                 messages.success(request, logo_message)
             else:
                 messages.error(request, logo_message)
@@ -4109,7 +3407,8 @@ def get_department_members(request, department_id):
     members_data = []
 
     for member in members:
-        avatar_url = member.avatar.url if member.avatar else None
+        from .avatar_utils import get_profile_avatar_url
+        avatar_url = get_profile_avatar_url(member, request=request, size=96) or None
         item = {
             'id': member.user.id,
             'name': member.get_full_name(),
@@ -4347,19 +3646,6 @@ def _parse_validation(field_type, post):
     return validation
 
 
-def _is_president_of_club(user, club):
-    return Officer.objects.filter(
-        club=club,
-        user_profile__user=user,
-        position='president',
-        is_current=True,
-    ).exists()
-
-
-def _coerce_bool_text(value):
-    return str(value).strip() in ['是', 'true', 'True', '1', 'yes', '公开']
-
-
 def _validate_dynamic_submission(channel, post, files, fields=None, force_required_field_ids=None):
     cleaned = {}
     upload_map = {}
@@ -4379,14 +3665,18 @@ def _validate_dynamic_submission(channel, post, files, fields=None, force_requir
                 continue
             valid_uploads = []
             for uploaded in uploaded_files:
-                ext = os.path.splitext(uploaded.name)[1].lower()
                 allowed = field.allowed_extensions()
-                if ext not in allowed:
-                    errors.append(f'{field.label} 文件类型不允许，允许：{", ".join(allowed)}')
                 max_bytes = field.max_size_mb() * 1024 * 1024
-                if uploaded.size > max_bytes:
-                    errors.append(f'{field.label} 文件不能超过 {field.max_size_mb()}MB')
-                valid_uploads.append(uploaded)
+                upload_error = validate_upload(
+                    uploaded,
+                    field_name=field.label,
+                    allowed_extensions=set(allowed),
+                    max_bytes=max_bytes,
+                )
+                if upload_error:
+                    errors.append(upload_error)
+                else:
+                    valid_uploads.append(uploaded)
             if valid_uploads:
                 upload_map[field.id] = valid_uploads
             continue
@@ -4421,8 +3711,6 @@ def _validate_dynamic_submission(channel, post, files, fields=None, force_requir
 def _add_image_to_document(document, image_source):
     from io import BytesIO
     from docx.shared import Inches
-    from PIL import Image
-
     if isinstance(image_source, (str, os.PathLike)):
         image_buffer = BytesIO()
         with Image.open(image_source) as image:
@@ -4781,7 +4069,13 @@ def submit_dynamic_form(request, channel_slug, club_id):
             for error in errors:
                 messages.error(request, error)
         else:
-            submission = _save_dynamic_submission(channel, club, request.user, fields, cleaned, upload_map, cycle=cycle)
+            with transaction.atomic():
+                club = Club.objects.select_for_update().get(pk=club.pk)
+                can_submit, cycle, policy_error = _can_create_submission(channel, club, request.user)
+                if not can_submit:
+                    messages.error(request, policy_error)
+                    return redirect('clubs:user_dashboard')
+                submission = _save_dynamic_submission(channel, club, request.user, fields, cleaned, upload_map, cycle=cycle)
             messages.success(request, f'{channel.name} 已提交，等待审核')
             return redirect('clubs:approval_detail', item_type=channel.slug, submission_key=submission.public_id)
     else:
@@ -4880,10 +4174,6 @@ def revise_dynamic_submission(request, submission_key):
     })
 
 
-def _redirect_builtin_submit(request, club_id, slug):
-    return redirect('clubs:submit_dynamic_form', channel_slug=slug, club_id=club_id)
-
-
 
 
 
@@ -4905,16 +4195,18 @@ def approval_center_tabs(request, tab='all'):
     items = FormSubmission.objects.filter(club__in=clubs).select_related('channel', 'club', 'reviewer').order_by('-submitted_at')
     if tab and tab != 'all':
         items = items.filter(channel__slug=tab.replace('_', '-'))
-    active_items = items.filter(status__in=['pending', 'rejected'])
-    completed_items = items.exclude(status__in=['pending', 'rejected'])
+    active_items = Paginator(items.filter(status__in=['pending', 'rejected']), 50).get_page(request.GET.get('active_page'))
+    completed_items = Paginator(items.exclude(status__in=['pending', 'rejected']), 50).get_page(request.GET.get('completed_page'))
     channels = list(_active_channels())
     grouped_channels = []
     for channel in channels:
         channel_items = items.filter(channel=channel)
+        channel_active = channel_items.filter(status__in=['pending', 'rejected'])
+        channel_completed = channel_items.exclude(status__in=['pending', 'rejected'])
         grouped_channels.append({
             'channel': channel,
-            'active_items': channel_items.filter(status__in=['pending', 'rejected']),
-            'completed_items': channel_items.exclude(status__in=['pending', 'rejected']),
+            'active_items': list(channel_active[:50]),
+            'completed_items': list(channel_completed[:50]),
             'total_count': channel_items.count(),
         })
     return render(request, 'clubs/user/dynamic_approval_center.html', {
@@ -4960,8 +4252,8 @@ def staff_audit_center(request, tab='all'):
     qs = FormSubmission.objects.select_related('channel', 'club', 'submitter', 'reviewer').prefetch_related('reviews').order_by('-submitted_at')
     if current_channel:
         qs = qs.filter(channel=current_channel)
-    pending_items = qs.filter(status='pending')
-    completed_items = qs.exclude(status='pending')
+    pending_items = Paginator(qs.filter(status='pending'), 50).get_page(request.GET.get('pending_page'))
+    completed_items = Paginator(qs.exclude(status='pending'), 50).get_page(request.GET.get('completed_page'))
     return render(request, 'clubs/staff/dynamic_audit_center.html', {
         'channels': channels,
         'current_channel': current_channel,
@@ -5085,6 +4377,9 @@ def staff_review_form_submission(request, submission_key):
         else:
             try:
                 with transaction.atomic():
+                    submission = FormSubmission.objects.select_for_update().select_related(
+                        'channel', 'club'
+                    ).get(pk=submission.pk)
                     if decision == 'approved':
                         _mark_submission_approved(submission, request.user, comment)
                     else:
@@ -5390,79 +4685,6 @@ def admin_dashboard(request):
         'redis_info': None,
     })
 
-
-
-@login_required
-def public_activities(request):
-    role = getattr(getattr(request.user, 'profile', None), 'role', None)
-    if role not in ['staff', 'admin', 'president', 'member']:
-        messages.error(request, '您没有权限访问此页面')
-        return redirect('clubs:user_dashboard')
-
-    qs = PublishedActivity.objects.select_related('club', 'source_submission').order_by('-published_at')
-    if is_president_mode(request):
-        qs = qs.filter(club_id__in=_get_president_club_ids(request.user))
-    elif role == 'member':
-        member_club_ids = list(ClubMember.objects.filter(user_profile__user=request.user, status='active').values_list('club_id', flat=True))
-        qs = qs.filter(Q(club_id__in=member_club_ids) | Q(is_public=True)).distinct()
-
-    activities = list(qs)
-    search_query = request.GET.get('search', '').strip()
-    if search_query:
-        activities = [item for item in activities if search_query in item.activity_name or search_query in item.club.name]
-    activity_type_filter = request.GET.get('activity_type', '').strip()
-    if activity_type_filter:
-        activities = [item for item in activities if item.activity_type == activity_type_filter]
-    club_filter = request.GET.get('club', '').strip()
-    if club_filter:
-        activities = [item for item in activities if club_filter in item.club.name]
-    date_filter = request.GET.get('date', '').strip()
-    if date_filter:
-        activities = [item for item in activities if str(item.activity_date) == date_filter]
-
-    activities_by_type = defaultdict(list)
-    for activity in activities:
-        activities_by_type[activity.get_activity_type_display()].append(activity)
-
-    registered_ids = set()
-    if role == 'member':
-        registered_ids = set(ActivityRegistration.objects.filter(user_profile__user=request.user).values_list('activity_id', flat=True))
-    return render(request, 'clubs/public_activities.html', {
-        'approved_activities': activities,
-        'activities_by_type': dict(activities_by_type),
-        'all_clubs': Club.objects.all().order_by('name'),
-        'activity_type_choices': PublishedActivity.ACTIVITY_TYPE_CHOICES,
-        'club_filter': club_filter,
-        'activity_type_filter': activity_type_filter,
-        'date_filter': date_filter,
-        'search_query': search_query,
-        'user_registered_ids': registered_ids,
-    })
-
-
-@login_required
-@require_POST
-def register_activity(request, activity_id):
-    if getattr(request.user.profile, 'role', None) != 'member':
-        return JsonResponse({'success': False, 'error': '仅社员可以报名活动'}, status=403)
-    activity = get_object_or_404(PublishedActivity, pk=activity_id)
-    if not activity.is_public and not ClubMember.objects.filter(user_profile=request.user.profile, club=activity.club, status='active').exists():
-        return JsonResponse({'success': False, 'error': '您不是该社团成员，无法报名'}, status=403)
-    _, created = ActivityRegistration.objects.get_or_create(activity=activity, user_profile=request.user.profile)
-    if created:
-        return JsonResponse({'success': True, 'registered': True})
-    return JsonResponse({'success': False, 'error': '您已报名该活动'})
-
-
-@login_required
-@require_POST
-def unregister_activity(request, activity_id):
-    if getattr(request.user.profile, 'role', None) != 'member':
-        return JsonResponse({'success': False, 'error': '仅社员可以取消报名'}, status=403)
-    deleted, _ = ActivityRegistration.objects.filter(activity_id=activity_id, user_profile=request.user.profile).delete()
-    if deleted:
-        return JsonResponse({'success': True, 'registered': False})
-    return JsonResponse({'success': False, 'error': '您尚未报名该活动'})
 
 
 @login_required(login_url=settings.LOGIN_URL)

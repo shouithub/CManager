@@ -220,8 +220,8 @@
         <div class="card-body">
             <div class="user-main">
                 <div class="avatar">
-                    {% if profile.avatar %}
-                        <img src="{{ profile.avatar.url }}" alt="{{ user.username }}">
+                    {% if profile.has_display_avatar %}
+                        <img src="{{ profile.display_avatar_url }}" alt="{{ user.username }}">
                     {% else %}
                         {{ profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
                     {% endif %}

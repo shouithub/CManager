@@ -1,385 +1,419 @@
 {% extends 'clubs/base.html' %}
-{% load static %}
 
-{% block title %}管理轮播图{% endblock %}
+{% block title %}首页轮播 - 管理后台{% endblock %}
 
 {% block extra_css %}
 <style>
-    .dashboard-container {
-        max-width: 1100px;
+    .carousel-admin-shell {
+        width: min(1400px, 100%);
         margin: 0 auto;
-        padding: var(--md3-spacing-2xl);
-        padding-bottom: calc(var(--md3-spacing-2xl) + 120px);
+        padding: clamp(18px, 3vw, var(--md3-spacing-2xl));
+        padding-bottom: 120px;
         box-sizing: border-box;
     }
 
-    /* MD3 页面标题 */
     .page-header {
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        background: var(--md3-surface-container-low);
     }
-    .page-header-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: var(--md3-radius-full);
-        background: var(--md3-primary-container);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
+
+    .page-header > .material-icons {
+        flex: 0 0 auto;
+        color: var(--md3-primary);
+        font-size: 2.5rem;
     }
-    .page-header-icon .material-icons {
-        font-size: 1.75rem;
-        color: var(--md3-on-primary-container);
-    }
-    .page-header-text h1 {
-        margin: 0 0 2px;
-        font-size: 1.75rem;
-        font-weight: 700;
+
+    .page-header-content { flex: 1; min-width: 0; }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs);
         color: var(--md3-on-surface);
-        letter-spacing: -0.01em;
+        font-size: 1.75rem;
+        font-weight: 600;
     }
-    .page-header-text p {
+
+    .page-header .subtitle {
         margin: 0;
-        font-size: 0.875rem;
         color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
     }
-    .page-header-actions {
-        margin-left: auto;
+
+    .carousel-hero-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(100px, 1fr));
+        gap: 10px;
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .carousel-stat {
+        min-width: 82px;
+        padding: 16px;
+        border: 1px solid color-mix(in srgb, var(--md3-outline-variant) 75%, transparent);
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--md3-surface-container-lowest) 82%, transparent);
+        backdrop-filter: blur(10px);
+        text-align: center;
+    }
+
+    .carousel-stat strong {
+        display: block;
+        color: var(--md3-on-surface);
+        font-size: 1.55rem;
+        line-height: 1;
+    }
+
+    .carousel-stat span {
+        display: block;
+        margin-top: 7px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.72rem;
+    }
+
+    .carousel-toolbar {
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-md);
+        justify-content: space-between;
+        gap: 16px;
+        margin: 26px 0 16px;
     }
-    
-    .add-btn {
+
+    .carousel-toolbar-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .carousel-toolbar-title h2 {
+        margin: 0;
+        color: var(--md3-on-surface);
+        font-size: 1.25rem;
+    }
+
+    .carousel-toolbar-title p {
+        margin: 4px 0 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.8rem;
+    }
+
+    .carousel-primary-action,
+    .carousel-secondary-action,
+    .carousel-card-action {
         display: inline-flex;
         align-items: center;
-        gap: var(--md3-spacing-xs);
-        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: var(--md3-radius-full);
+        font: inherit;
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .carousel-primary-action {
         background: var(--md3-primary);
         color: var(--md3-on-primary);
-        border-radius: var(--md3-radius-full);
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.875rem;
         box-shadow: var(--md3-elevation-2);
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-        white-space: nowrap;
     }
-    
-    .add-btn:hover {
-        box-shadow: var(--md3-elevation-3);
-        transform: translateY(-1px);
-    }
-    
-    .add-btn .material-icons {
-        font-size: 1.125rem;
-        color: var(--md3-on-primary);
-    }
-    
-    .carousel-grid {
+
+    .carousel-primary-action:hover { transform: translateY(-1px); box-shadow: var(--md3-elevation-3); }
+    .carousel-primary-action .material-icons,
+    .carousel-secondary-action .material-icons,
+    .carousel-card-action .material-icons { font-size: 18px; }
+
+    .carousel-list {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: var(--md3-spacing-xl);
-        margin-bottom: var(--md3-spacing-2xl);
+        gap: 16px;
     }
-    
-    .carousel-card {
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-xl);
+
+    .carousel-admin-card {
+        display: grid;
+        grid-template-columns: minmax(260px, 38%) minmax(0, 1fr);
         overflow: hidden;
         border: 1px solid var(--md3-outline-variant);
+        border-radius: 24px;
+        background: var(--md3-surface-container-low);
         box-shadow: var(--md3-elevation-1);
-        transition: all 0.2s ease;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-    
-    .carousel-card:hover {
-        box-shadow: var(--md3-elevation-3);
-        transform: translateY(-2px);
-    }
-    
-    .carousel-image-preview {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        background: var(--md3-surface-container-highest);
-    }
-    
-    .carousel-card-body {
-        padding: var(--md3-spacing-lg);
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-    
-    .carousel-card-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--md3-on-surface);
-        margin: 0 0 var(--md3-spacing-sm) 0;
-    }
-    
-    .carousel-card-description {
-        font-size: 0.875rem;
-        color: var(--md3-on-surface-variant);
-        line-height: 1.6;
-        margin: 0 0 var(--md3-spacing-md) 0;
-    }
-    
-    .carousel-card-bottom {
-        margin-top: auto; /* 将元信息和操作区域固定在底部 */
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-md);
+        transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
     }
 
-    .carousel-card-meta {
-        display: flex;
-        flex-direction: column;
-        gap: var(--md3-spacing-xs);
-        font-size: 0.813rem;
-        color: var(--md3-on-surface-variant);
+    .carousel-admin-card:hover {
+        border-color: color-mix(in srgb, var(--md3-primary) 42%, var(--md3-outline-variant));
+        transform: translateY(-2px);
+        box-shadow: var(--md3-elevation-2);
     }
-    
-    .carousel-card-meta .meta-item {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-xs);
+
+    .carousel-card-media {
+        position: relative;
+        min-height: 230px;
+        margin: 0;
+        overflow: hidden;
+        background: var(--md3-surface-container-highest);
     }
-    
-    .carousel-card-meta .material-icons {
-        font-size: 1rem;
+
+    .carousel-card-media > img {
+        width: 100%;
+        height: 100%;
+        min-height: 230px;
+        display: block;
+        object-fit: cover;
+        transition: transform 320ms ease;
     }
-    
-    .carousel-card-actions {
-        display: flex;
-        gap: var(--md3-spacing-sm);
-        padding-top: var(--md3-spacing-md);
-        border-top: 1px solid var(--md3-outline-variant);
+
+    .carousel-admin-card:hover .carousel-card-media > img { transform: scale(1.025); }
+
+    .carousel-card-media::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.38));
+        pointer-events: none;
     }
-    
-    .btn {
+
+    .carousel-position,
+    .carousel-status {
+        position: absolute;
+        z-index: 1;
+        top: 14px;
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: var(--md3-spacing-xs);
-        padding: var(--md3-spacing-sm) var(--md3-spacing-lg);
-        border-radius: var(--md3-radius-md);
-        font-size: 0.875rem;
-        font-weight: 600;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
+        gap: 6px;
+        height: 30px;
+        padding: 0 11px;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.72rem;
+        font-weight: 700;
+        backdrop-filter: blur(10px);
     }
-    
-    .btn .material-icons {
-        font-size: 1.125rem;
+
+    .carousel-position { left: 14px; color: white; background: rgba(24, 20, 29, .68); }
+    .carousel-status { right: 14px; }
+    .carousel-status.active { color: #d7ffd9; background: rgba(22, 83, 35, .82); }
+    .carousel-status.inactive { color: #fff1f0; background: rgba(111, 35, 31, .82); }
+    .carousel-status .material-icons { font-size: 15px; }
+
+    .carousel-card-content {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        padding: clamp(20px, 3vw, 28px);
     }
-    
-    .btn-edit {
-        flex: 1;
+
+    .carousel-card-content h3 {
+        margin: 0;
+        color: var(--md3-on-surface);
+        font-size: 1.32rem;
+        line-height: 1.25;
+    }
+
+    .carousel-card-description {
+        display: -webkit-box;
+        min-height: 2.9em;
+        margin: 10px 0 16px;
+        overflow: hidden;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.88rem;
+        line-height: 1.5;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .carousel-card-description.muted { opacity: .68; font-style: italic; }
+
+    .carousel-link-row {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        color: var(--md3-primary);
+        font-size: 0.78rem;
+    }
+
+    .carousel-link-row .material-icons { flex: 0 0 auto; font-size: 16px; }
+    .carousel-link-row span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .carousel-card-footer {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-top: auto;
+        padding-top: 16px;
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .carousel-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.74rem;
+    }
+
+    .carousel-meta-item { display: inline-flex; align-items: center; gap: 5px; }
+    .carousel-meta-item .material-icons { font-size: 15px; }
+
+    .carousel-card-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+    .carousel-card-actions form { display: flex; margin: 0; }
+
+    .carousel-card-action {
+        min-height: 38px;
+        padding: 0 14px;
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+
+    .carousel-card-action:hover { background: var(--md3-primary-container); }
+    .carousel-card-action.danger { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+    .carousel-card-action.danger:hover { background: var(--md3-error); color: var(--md3-on-error); }
+
+    .carousel-empty {
+        display: grid;
+        justify-items: center;
+        padding: clamp(48px, 9vw, 92px) 24px;
+        border: 1px dashed var(--md3-outline);
+        border-radius: 28px;
+        background: var(--md3-surface-container-low);
+        text-align: center;
+    }
+
+    .carousel-empty-icon {
+        display: grid;
+        width: 74px;
+        height: 74px;
+        margin-bottom: 18px;
+        place-items: center;
+        border-radius: 24px;
         background: var(--md3-primary-container);
         color: var(--md3-on-primary-container);
     }
-    
-    .btn-edit:hover {
-        background: var(--md3-primary);
-        color: var(--md3-on-primary);
-        box-shadow: var(--md3-elevation-1);
-    }
-    
-    .btn-delete {
-        background: var(--md3-error-container);
-        color: var(--md3-on-error-container);
-    }
-    
-    .btn-delete:hover {
-        background: var(--md3-error);
-        color: var(--md3-on-error);
-        box-shadow: var(--md3-elevation-1);
-    }
-    
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--md3-spacing-xs);
-        padding: var(--md3-spacing-xs) var(--md3-spacing-sm);
-        border-radius: var(--md3-radius-full);
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-    
-    .status-badge.active {
-        background: var(--md3-success-container);
-        color: var(--md3-on-success-container);
-    }
-    
-    .status-badge.inactive {
-        background: var(--md3-surface-container-highest);
-        color: var(--md3-on-surface-variant);
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: var(--md3-spacing-4xl) var(--md3-spacing-2xl);
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-xl);
-        border: 2px dashed var(--md3-outline-variant);
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    
-    .empty-state .material-icons {
-        font-size: 4rem;
-        color: var(--md3-on-surface-variant);
-        opacity: 0.5;
-        margin-bottom: var(--md3-spacing-lg);
-    }
-    
-    .empty-state h3 {
-        font-size: 1.5rem;
-        color: var(--md3-on-surface);
-        margin: 0 0 var(--md3-spacing-sm) 0;
-        font-weight: 600;
-    }
-    
-    .empty-state p {
-        color: var(--md3-on-surface-variant);
-        margin: 0 0 var(--md3-spacing-2xl) 0;
-        font-size: 0.938rem;
-        line-height: 1.5;
-    }
-    
-    .empty-state .add-btn {
-        display: inline-flex;
-    }
-    
-    .empty-state .add-btn .material-icons {
-        font-size: 1.125rem;
-        color: var(--md3-on-primary);
-    }
-    
-    @media (max-width: 768px) {
-        .dashboard-container {
-            padding: var(--md3-spacing-lg);
-        }
-        
-        .page-header {
-            flex-wrap: wrap;
-            gap: var(--md3-spacing-md);
-        }
 
-        .carousel-grid {
-            grid-template-columns: 1fr;
-        }
+    .carousel-empty-icon .material-icons { font-size: 36px; }
+    .carousel-empty h2 { margin: 0; color: var(--md3-on-surface); font-size: 1.4rem; }
+    .carousel-empty p { max-width: 430px; margin: 10px 0 22px; color: var(--md3-on-surface-variant); line-height: 1.55; }
+
+    @media (max-width: 880px) {
+        .carousel-hero-stats { width: 100%; }
+        .carousel-admin-card { grid-template-columns: 1fr; }
+        .carousel-card-media, .carousel-card-media > img { min-height: 0; aspect-ratio: 16 / 6; }
+    }
+
+    @media (max-width: 600px) {
+        .carousel-admin-shell { padding: 16px; padding-bottom: 100px; }
+        .page-header { align-items: flex-start; flex-direction: column; text-align: left; }
+        .carousel-toolbar { align-items: stretch; flex-direction: column; }
+        .carousel-primary-action { width: 100%; box-sizing: border-box; }
+        .carousel-admin-card { border-radius: 20px; }
+        .carousel-card-media, .carousel-card-media > img { aspect-ratio: 16 / 8; }
+        .carousel-card-footer { align-items: stretch; flex-direction: column; }
+        .carousel-card-actions { width: 100%; }
+        .carousel-card-actions > * { flex: 1; }
+        .carousel-card-action { width: 100%; box-sizing: border-box; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <div class="page-header">
-        <div class="page-header-icon">
-            <span class="material-icons">view_carousel</span>
+<main class="carousel-admin-shell">
+    <header class="page-header">
+        <span class="material-icons" aria-hidden="true">view_carousel</span>
+        <div class="page-header-content">
+            <h1>首页轮播管理</h1>
+            <p class="subtitle">管理首页首屏展示内容、显示状态与轮播顺序</p>
         </div>
-        <div class="page-header-text">
-            <h1>管理轮播图</h1>
-            <p>管理首页轮播展示的图片、链接与排列顺序</p>
-        </div>
-        <div class="page-header-actions">
-            <a href="{% url 'clubs:add_carousel' %}" class="add-btn">
-                <span class="material-icons">add</span>
-                <span>添加轮播图</span>
-            </a>
-        </div>
+    </header>
+
+    <div class="carousel-hero-stats" aria-label="轮播统计">
+        <div class="carousel-stat"><strong>{{ carousel_images|length }}</strong><span>全部内容</span></div>
+        <div class="carousel-stat"><strong>{{ active_count }}</strong><span>正在展示</span></div>
+        <div class="carousel-stat"><strong>{{ inactive_count }}</strong><span>暂未展示</span></div>
     </div>
-    
-    {% if carousel_images %}
-    <div class="carousel-grid">
-        {% for image in carousel_images %}
-        <div class="carousel-card">
-            <img src="{{ image.image.url }}" alt="{{ image.title }}" class="carousel-image-preview">
-            <div class="carousel-card-body">
-                <h3 class="carousel-card-title">{{ image.title|default:"无标题" }}</h3>
-                
-                {% if image.description %}
-                <p class="carousel-card-description" title="{{ image.description }}">{{ image.description|truncatechars:100 }}</p>
-                {% endif %}
-                
-                <div class="carousel-card-bottom">
-                    <div class="carousel-card-meta">
-                        <div class="meta-item">
-                            <span class="material-icons">sort</span>
-                            <span>排序: {{ image.order }}</span>
-                        </div>
-                        {% if image.link %}
-                        <div class="meta-item">
-                            <span class="material-icons">link</span>
-                            <span>{{ image.link|truncatechars:40 }}</span>
-                        </div>
-                        {% endif %}
-                        <div class="meta-item">
-                            <a href="{% url 'clubs:user_detail' image.uploaded_by.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 4px;">
-                                <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                                    {% if image.uploaded_by.profile.avatar %}
-                                        <img src="{{ image.uploaded_by.profile.avatar.url }}" alt="{{ image.uploaded_by.username }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                    {% else %}
-                                        <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;">
-                                            {{ image.uploaded_by.profile.get_full_name|slice:":1"|default:image.uploaded_by.username|slice:":1"|upper }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <span>上传者: {{ image.uploaded_by.get_full_name|default:image.uploaded_by.username }}</span>
-                            </a>
-                        </div>
-                        <div class="meta-item">
-                            <span class="material-icons">schedule</span>
-                            <span>{{ image.uploaded_at|date:"Y-m-d H:i" }}</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="status-badge {% if image.is_active %}active{% else %}inactive{% endif %}">
-                                <span class="material-icons">{{ image.is_active|yesno:"check_circle,cancel" }}</span>
-                                {{ image.is_active|yesno:"已激活,未激活" }}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="carousel-card-actions">
-                        <a href="{% url 'clubs:edit_carousel' image.id %}" class="btn btn-edit">
-                            <span class="material-icons">edit</span>
-                            编辑
-                        </a>
-                        <form method="post" action="{% url 'clubs:delete_carousel' image.id %}" 
-                              onsubmit="return confirm('确定要删除这张轮播图吗？');" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-delete">
-                                <span class="material-icons">delete</span>
-                                删除
-                            </button>
-                        </form>
-                    </div>
+
+    <section aria-labelledby="carousel-queue-title">
+        <div class="carousel-toolbar">
+            <div class="carousel-toolbar-title">
+                <div>
+                    <h2 id="carousel-queue-title">展示队列</h2>
+                    <p>按排序值升序排列，相同排序值优先展示最近上传的内容</p>
                 </div>
             </div>
+            <a href="{% url 'clubs:add_carousel' %}" class="carousel-primary-action">
+                <span class="material-icons" aria-hidden="true">add_photo_alternate</span>
+                新增轮播
+            </a>
         </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <span class="material-icons">image</span>
-        <h3>还没有轮播图</h3>
-        <p>点击上方"添加轮播图"按钮创建第一张轮播图</p>
-        <a href="{% url 'clubs:add_carousel' %}" class="add-btn">
-            <span class="material-icons">add</span>
-            <span>添加轮播图</span>
-        </a>
-    </div>
-    {% endif %}
-</div>
+
+        {% if carousel_images %}
+        <div class="carousel-list" role="list">
+            {% for image in carousel_images %}
+            <article class="carousel-admin-card" role="listitem">
+                <figure class="carousel-card-media">
+                    <img src="{{ image.image.url }}" alt="{{ image.title|default:'轮播图片' }}" loading="lazy">
+                    <span class="carousel-position">展示位 #{{ forloop.counter }}</span>
+                    <span class="carousel-status {% if image.is_active %}active{% else %}inactive{% endif %}">
+                        <span class="material-icons" aria-hidden="true">{% if image.is_active %}visibility{% else %}visibility_off{% endif %}</span>
+                        {% if image.is_active %}展示中{% else %}已停用{% endif %}
+                    </span>
+                </figure>
+
+                <div class="carousel-card-content">
+                    <h3>{{ image.title|default:'无标题轮播' }}</h3>
+                    {% if image.description %}
+                    <p class="carousel-card-description" title="{{ image.description }}">{{ image.description }}</p>
+                    {% else %}
+                    <p class="carousel-card-description muted">尚未填写描述</p>
+                    {% endif %}
+
+                    {% if image.link %}
+                    <div class="carousel-link-row" title="{{ image.link }}">
+                        <span class="material-icons" aria-hidden="true">link</span>
+                        <span>{{ image.link }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="carousel-card-footer">
+                        <div class="carousel-meta">
+                            <span class="carousel-meta-item"><span class="material-icons" aria-hidden="true">sort</span>排序 {{ image.order }}</span>
+                            <span class="carousel-meta-item"><span class="material-icons" aria-hidden="true">person</span>{{ image.uploaded_by.get_full_name|default:image.uploaded_by.username }}</span>
+                            <span class="carousel-meta-item"><span class="material-icons" aria-hidden="true">schedule</span>{{ image.uploaded_at|date:'Y-m-d H:i' }}</span>
+                        </div>
+                        <div class="carousel-card-actions">
+                            <a href="{% url 'clubs:edit_carousel' image.id %}" class="carousel-card-action">
+                                <span class="material-icons" aria-hidden="true">edit</span>编辑
+                            </a>
+                            <form method="post" action="{% url 'clubs:delete_carousel' image.id %}" onsubmit="return confirm('确定删除这张轮播图吗？此操作无法撤销。');">
+                                {% csrf_token %}
+                                <button type="submit" class="carousel-card-action danger" aria-label="删除 {{ image.title|default:'此轮播图' }}">
+                                    <span class="material-icons" aria-hidden="true">delete</span>删除
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="carousel-empty">
+            <div class="carousel-empty-icon"><span class="material-icons" aria-hidden="true">view_carousel</span></div>
+            <h2>创建第一张首页轮播</h2>
+            <p>上传一张横向图片，并补充标题、描述和跳转链接，即可让首页首屏更有内容。</p>
+            <a href="{% url 'clubs:add_carousel' %}" class="carousel-primary-action">
+                <span class="material-icons" aria-hidden="true">add_photo_alternate</span>新增轮播
+            </a>
+        </div>
+        {% endif %}
+    </section>
+</main>
 {% endblock %}

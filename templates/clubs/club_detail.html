@@ -459,8 +459,8 @@
                             {% if officer.user_profile and officer.user_profile.user_id %}
                             <a href="{% url 'clubs:user_detail' officer.user_profile.user_id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
                                 <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                                    {% if officer.user_profile.avatar %}
-                                        <img src="{{ officer.user_profile.avatar.url }}" alt="{{ officer.user_profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% if officer.user_profile.has_display_avatar %}
+                                        <img src="{{ officer.user_profile.display_avatar_url }}" alt="{{ officer.user_profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;" referrerpolicy="no-referrer">
                                     {% else %}
                                         <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
                                             {{ officer.user_profile.get_full_name|slice:":1"|default:officer.user_profile.user.username|slice:":1"|upper }}
@@ -511,8 +511,8 @@
                         <td>
                             <a href="{% url 'clubs:user_detail' m.user_profile.user_id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
                                 <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                                    {% if m.user_profile.avatar %}
-                                        <img src="{{ m.user_profile.avatar.url }}" alt="{{ m.user_profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% if m.user_profile.has_display_avatar %}
+                                        <img src="{{ m.user_profile.display_avatar_url }}" alt="{{ m.user_profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;" referrerpolicy="no-referrer">
                                     {% else %}
                                         <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
                                             {{ m.user_profile.get_full_name|slice:":1"|default:m.user_profile.user.username|slice:":1"|upper }}

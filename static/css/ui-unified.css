@@ -1,0 +1,105 @@
+/* Shared page primitives loaded after page-local styles for consistent UI. */
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(18px, 3vw, 36px);
+    min-height: 148px;
+    margin: 0 0 24px;
+    padding: clamp(24px, 3.5vw, 40px);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: 32px;
+    background: var(--md3-surface-container-low, #f7f2fb);
+    color: var(--md3-on-surface);
+    box-shadow: none;
+    box-sizing: border-box;
+}
+
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > :first-child:not(.material-icons):not(.page-header-icon):not(.page-title-icon):not(.ia-header-icon) {
+    min-width: 0;
+}
+
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.page-header-content, .page-header-text, .page-title, .page-header-left, .profile-header-info) {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(h1, .page-title h1, .profile-name) {
+    margin: 0;
+    color: var(--md3-on-surface);
+    font-size: clamp(1.75rem, 3.1vw, 2.35rem);
+    line-height: 1.12;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(p, .subtitle, .ia-subtitle, .page-header-desc, .profile-meta) {
+    margin: 12px 0 0;
+    color: var(--md3-on-surface-variant);
+    font-size: clamp(0.92rem, 1.4vw, 1.08rem);
+    line-height: 1.5;
+}
+
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header) > .material-icons,
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.page-header-icon, .page-title-icon, .ia-header-icon) {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md3-primary);
+    background: transparent;
+    box-shadow: none;
+    font-size: 2.55rem;
+}
+
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.page-header-icon, .page-title-icon, .ia-header-icon) .material-icons {
+    color: var(--md3-primary);
+    font-size: 2.55rem;
+}
+
+.main-content .builder-header::before {
+    content: "dynamic_form";
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md3-primary);
+    font-family: "Material Icons";
+    font-size: 2.55rem;
+    font-weight: normal;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    -webkit-font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+}
+
+.main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action) {
+    flex: 0 0 auto;
+    border-radius: var(--md3-radius-full);
+}
+
+@media (max-width: 760px) {
+    .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) {
+        min-height: 0;
+        padding: 22px;
+        border-radius: 24px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(h1, .page-title h1, .profile-name) {
+        font-size: 1.65rem;
+    }
+
+    .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action) {
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+}

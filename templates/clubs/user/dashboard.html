@@ -404,8 +404,8 @@
                             <div class="staff-item" style="margin-bottom: 12px;">
                                 <a href="{% url 'clubs:user_detail' staff.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit; margin-bottom: 4px;">
                                     <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; margin-right: 12px; flex-shrink: 0;">
-                                        {% if staff.staff.avatar %}
-                                            <img src="{{ staff.staff.avatar.url }}" alt="{{ staff.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% if staff.staff.has_display_avatar %}
+                                            <img src="{{ staff.staff.display_avatar_url }}" alt="{{ staff.name }}" style="width: 100%; height: 100%; object-fit: cover;" referrerpolicy="no-referrer">
                                         {% else %}
                                             <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">
                                                 {{ staff.name|slice:":1" }}

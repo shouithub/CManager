@@ -639,6 +639,14 @@
                 {% endif %}
             </div>
         </section>
+        {% if active_items.paginator.num_pages > 1 or completed_items.paginator.num_pages > 1 %}
+        <nav style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px;">
+            {% if active_items.has_previous %}<a class="btn btn-outlined" href="{% querystring active_page=active_items.previous_page_number %}">进行中上一页</a>{% endif %}
+            {% if active_items.has_next %}<a class="btn btn-outlined" href="{% querystring active_page=active_items.next_page_number %}">进行中下一页</a>{% endif %}
+            {% if completed_items.has_previous %}<a class="btn btn-outlined" href="{% querystring completed_page=completed_items.previous_page_number %}">已处理上一页</a>{% endif %}
+            {% if completed_items.has_next %}<a class="btn btn-outlined" href="{% querystring completed_page=completed_items.next_page_number %}">已处理下一页</a>{% endif %}
+        </nav>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

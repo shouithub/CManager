@@ -1,13 +1,13 @@
-from django.db import models
+from django.db import models, transaction
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
-import random
+import secrets
 import string
 import os
 import uuid
 from datetime import timedelta
+from .crypto_fields import EncryptedCharField
 
 
 def generate_submission_public_id():
@@ -112,6 +112,18 @@ class UserProfile(models.Model):
     
     # 头像
     avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True, verbose_name='头像')
+    avatar_source = models.CharField(
+        max_length=20,
+        choices=[('local', '本站上传'), ('cravatar', 'Cravatar')],
+        default='local',
+        verbose_name='头像来源',
+    )
+    avatar_email = models.EmailField(
+        blank=True,
+        default='',
+        verbose_name='Cravatar 邮箱',
+        help_text='仅在用户选择 Cravatar 头像时使用，不公开显示邮箱明文。',
+    )
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
@@ -126,6 +138,15 @@ class UserProfile(models.Model):
             return f"{self.user.last_name}{self.user.first_name}"
         else:
             return self.user.username
+
+    @property
+    def display_avatar_url(self):
+        from .avatar_utils import get_profile_avatar_url
+        return get_profile_avatar_url(self)
+
+    @property
+    def has_display_avatar(self):
+        return bool(self.display_avatar_url)
     
     def __str__(self):
         return f"{self.user.username} ({self.get_full_name()}) - {self.get_role_display()}"
@@ -157,7 +178,7 @@ class ClubMember(models.Model):
     class Meta:
         verbose_name = '社团成员'
         verbose_name_plural = '社团成员'
-        unique_together = [('club', 'user_profile')]
+        constraints = [models.UniqueConstraint(fields=['club', 'user_profile'], name='unique_club_member')]
         indexes = [
             models.Index(fields=['club', 'status'], name='cm_club_status_idx'),
             models.Index(fields=['user_profile', 'status'], name='cm_user_status_idx'),
@@ -192,8 +213,7 @@ class RegistrationToken(models.Model):
 
     @staticmethod
     def generate_code(length=32):
-        alphabet = string.ascii_letters + string.digits
-        return ''.join(random.choices(alphabet, k=length))
+        return secrets.token_urlsafe(length)[:64]
 
     @classmethod
     def create_for_club(cls, club, created_by, minutes=10, max_uses=1):
@@ -241,12 +261,21 @@ class RegistrationToken(models.Model):
         return self.used_count < self.max_uses
 
     def mark_used(self):
-        """标记令牌已使用，增加使用计数。"""
-        self.used_count += 1
-        if self.max_uses is not None and self.used_count >= self.max_uses:
-            self.is_used = True
-            self.used_at = timezone.now()
-        self.save()
+        """Atomically consume one use after locking and revalidating the token."""
+        with transaction.atomic():
+            locked = type(self).objects.select_for_update().get(pk=self.pk)
+            if not locked.can_use():
+                raise ValidationError('注册链接已失效或使用次数已耗尽')
+
+            locked.used_count += 1
+            if locked.max_uses is not None and locked.used_count >= locked.max_uses:
+                locked.is_used = True
+                locked.used_at = timezone.now()
+            locked.save(update_fields=['used_count', 'is_used', 'used_at'])
+
+        self.used_count = locked.used_count
+        self.is_used = locked.is_used
+        self.used_at = locked.used_at
 
 
 class InactiveExtensionHistory(models.Model):
@@ -327,7 +356,7 @@ class Officer(models.Model):
     class Meta:
         verbose_name = '社团干部'
         verbose_name_plural = '社团干部'
-        unique_together = ['club', 'user_profile', 'position']
+        constraints = [models.UniqueConstraint(fields=['club', 'user_profile', 'position'], name='unique_club_officer_role')]
         ordering = ['-appointed_date']
         indexes = [
             models.Index(fields=['user_profile', 'position', 'is_current'], name='officer_user_pos_cur_idx'),
@@ -414,7 +443,7 @@ class FormCycle(models.Model):
         verbose_name = '表单周期'
         verbose_name_plural = '表单周期'
         ordering = ['channel', '-sequence', '-starts_at']
-        unique_together = [('channel', 'sequence')]
+        constraints = [models.UniqueConstraint(fields=['channel', 'sequence'], name='unique_channel_cycle_seq')]
 
     @property
     def period_number(self):
@@ -436,7 +465,7 @@ class FormChannelClubState(models.Model):
     class Meta:
         verbose_name = '社团通道状态'
         verbose_name_plural = '社团通道状态'
-        unique_together = [('channel', 'club')]
+        constraints = [models.UniqueConstraint(fields=['channel', 'club'], name='unique_channel_club_state')]
 
     def __str__(self):
         return f'{self.club.name} - {self.channel.name} - {"启用" if self.is_enabled else "停用"}'
@@ -482,7 +511,7 @@ class FormField(models.Model):
         verbose_name = '表单字段'
         verbose_name_plural = '表单字段'
         ordering = ['channel', 'order', 'id']
-        unique_together = [('channel', 'field_key')]
+        constraints = [models.UniqueConstraint(fields=['channel', 'field_key'], name='unique_channel_field_key')]
 
     def __str__(self):
         return f'{self.channel.name} - {self.label}'
@@ -612,7 +641,7 @@ class FormSubmissionReview(models.Model):
         verbose_name = '动态表单审核记录'
         verbose_name_plural = '动态表单审核记录'
         ordering = ['-reviewed_at']
-        unique_together = [('submission', 'reviewer', 'submission_attempt')]
+        constraints = [models.UniqueConstraint(fields=['submission', 'reviewer', 'submission_attempt'], name='unique_submission_review')]
         indexes = [
             models.Index(fields=['submission', 'submission_attempt', 'status'], name='fsr_submission_attempt_idx'),
             models.Index(fields=['reviewer', '-reviewed_at'], name='fsr_reviewer_time_idx'),
@@ -643,7 +672,7 @@ class FormFieldValue(models.Model):
     class Meta:
         verbose_name = '表单字段值'
         verbose_name_plural = '表单字段值'
-        unique_together = [('submission', 'field')]
+        constraints = [models.UniqueConstraint(fields=['submission', 'field'], name='unique_submission_field')]
 
     def __str__(self):
         return f'{self.submission_id} - {self.field.label}'
@@ -786,7 +815,7 @@ class StaffClubRelation(models.Model):
     class Meta:
         verbose_name = '干事负责社团'
         verbose_name_plural = '干事负责社团'
-        unique_together = ['staff', 'club']
+        constraints = [models.UniqueConstraint(fields=['staff', 'club'], name='unique_staff_club')]
         indexes = [
             models.Index(fields=['staff', 'is_active'], name='scr_staff_active_idx'),
             models.Index(fields=['club', 'is_active'], name='scr_club_active_idx'),
@@ -843,7 +872,7 @@ class ActivityRegistration(models.Model):
     class Meta:
         verbose_name = '活动报名'
         verbose_name_plural = '活动报名'
-        unique_together = [('activity', 'user_profile')]
+        constraints = [models.UniqueConstraint(fields=['activity', 'user_profile'], name='unique_activity_user')]
 
     def __str__(self):
         return f"{self.user_profile} 报名 {self.activity.activity_name}"
@@ -868,7 +897,7 @@ class EmailVerificationCode(models.Model):
     @staticmethod
     def generate_code():
         """生成6位随机验证码"""
-        return ''.join(random.choices(string.digits, k=6))
+        return ''.join(secrets.choice(string.digits) for _ in range(6))
     
     def is_expired(self):
         """检查验证码是否过期"""
@@ -899,7 +928,7 @@ class SMTPConfig(models.Model):
     smtp_host = models.CharField(max_length=100, verbose_name='SMTP服务器地址')
     smtp_port = models.IntegerField(verbose_name='SMTP端口')
     sender_email = models.EmailField(verbose_name='发送邮箱地址')
-    sender_password = models.CharField(max_length=255, verbose_name='邮箱密码/授权码', help_text='某些邮箱需要使用授权码而非密码')
+    sender_password = EncryptedCharField(max_length=500, verbose_name='邮箱密码/授权码', help_text='在数据库中加密存储；留空表示保持原值')
     use_tls = models.BooleanField(default=True, verbose_name='是否使用TLS加密')
     is_active = models.BooleanField(default=True, verbose_name='是否激活')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
@@ -1051,10 +1080,14 @@ class RoomBooking(models.Model):
             models.CheckConstraint(
                 condition=models.Q(end_time__gt=models.F('start_time')),
                 name='room_end_time_after_start_time'
-            )
+            ),
+            models.CheckConstraint(
+                condition=models.Q(participant_count__gt=0),
+                name='room_booking_participants_positive',
+            ),
         ]
         indexes = [
-            models.Index(fields=['room', 'booking_date', 'status'], name='rb_room_date_idx'),
+            models.Index(fields=['room', 'booking_date', 'status', 'start_time'], name='rb_conflict_idx'),
             models.Index(fields=['user', 'booking_date'], name='rb_user_date_idx'),
             models.Index(fields=['club', 'booking_date'], name='rb_club_date_idx'),
         ]
@@ -1062,21 +1095,6 @@ class RoomBooking(models.Model):
     def __str__(self) -> str:
         return f"{self.room.name} - {self.user.profile.get_full_name()} - {self.booking_date} {self.start_time}-{self.end_time}"  # type: ignore[attr-defined]
     
-    def has_conflict(self):
-        """检查是否与已有效的预订有时间冲突"""
-        # 排除自己和已取消的，查找同一房间同一天内有效的预订
-        conflicting_bookings = RoomBooking.objects.filter(
-            room=self.room,
-            booking_date=self.booking_date,
-            status='active'
-        ).exclude(pk=self.pk)
-        
-        for booking in conflicting_bookings:
-            # 检查时间是否重叠
-            if (self.start_time < booking.end_time and self.end_time > booking.start_time):
-                return True
-        return False
-
     def can_delete(self, user):
         """检查用户是否有权限删除此预约"""
         # 管理员和干事可以删除任何预约
@@ -1131,6 +1149,11 @@ class SiteSettings(models.Model):
         max_length=300, blank=True, default='',
         verbose_name='正文字体族',
         help_text='CSS font-family 值，例如：\'Noto Sans SC\', sans-serif（留空则使用系统字体）',
+    )
+    cravatar_enabled = models.BooleanField(
+        default=False,
+        verbose_name='允许使用 Cravatar',
+        help_text='开启后，用户可在本站上传头像与 Cravatar 之间自行选择。',
     )
 
     class Meta:
@@ -1193,10 +1216,10 @@ class StorageConfig(models.Model):
         max_length=255, blank=True, default='',
         verbose_name='AccessKey ID',
     )
-    s3_secret_access_key = models.CharField(
+    s3_secret_access_key = EncryptedCharField(
         max_length=500, blank=True, default='',
         verbose_name='Secret Access Key',
-        help_text='明文存储，请确保数据库访问权限严格受控',
+        help_text='在数据库中加密存储；管理页面不会回显原值',
     )
     s3_custom_domain = models.CharField(
         max_length=500, blank=True, default='',
@@ -1267,3 +1290,16 @@ class DailyStat(models.Model):
 
     def __str__(self):
         return f"{self.date} — {self.visits} 次访问"
+
+
+class ConfigChangeLog(models.Model):
+    """Minimal audit trail for sensitive service configuration changes."""
+
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='config_changes')
+    category = models.CharField(max_length=30, choices=[('smtp', 'SMTP'), ('storage', '存储')])
+    action = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['category', '-created_at'], name='cfglog_category_time_idx')]

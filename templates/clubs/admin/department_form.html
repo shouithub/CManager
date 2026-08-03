@@ -174,7 +174,10 @@
 <div class="dashboard-container">
     <div class="page-header">
         <span class="material-icons">{% if department %}edit{% else %}add{% endif %}</span>
-        <h1>{% if department %}编辑部门{% else %}添加部门{% endif %}</h1>
+        <div class="page-header-content">
+            <h1>{% if department %}编辑部门{% else %}添加部门{% endif %}</h1>
+            <p class="subtitle">配置部门名称、介绍、亮点与展示图标</p>
+        </div>
     </div>
     
     <div class="form-card">

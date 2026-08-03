@@ -1,6 +1,4 @@
-import os
 import io
-from django.conf import settings
 from PIL import Image
 
 
@@ -16,10 +14,15 @@ def process_site_logo(upload, allow_webp=True):
     if allow_webp:
         allowed_exts.append('.webp')
 
-    ext = os.path.splitext(upload.name)[1].lower()
-    if ext not in allowed_exts:
-        ext_text = ', '.join(allowed_exts)
-        return False, f'仅支持 {ext_text} 格式'
+    from .upload_security import validate_upload
+    upload_error = validate_upload(
+        upload,
+        field_name='站点图标',
+        allowed_extensions=set(allowed_exts),
+        max_bytes=10 * 1024 * 1024,
+    )
+    if upload_error:
+        return False, upload_error
 
     try:
         # 走存储抽象层：local 模式下落到 MEDIA_ROOT/site/，S3 模式下传到 bucket

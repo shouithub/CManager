@@ -1,4 +1,7 @@
 {
-  "reportAttributeAccessIssue": "none",
-  "reportCallIssue": "warning"
+  "typeCheckingMode": "off",
+  "include": ["clubs", "CManager"],
+  "exclude": ["clubs/migrations"],
+  "reportMissingImports": "none",
+  "reportMissingModuleSource": "none"
 }

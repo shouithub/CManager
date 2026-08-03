@@ -110,6 +110,7 @@
         }
     </style>
     {% block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/ui-unified.css' %}?v=20260803a">
     <style>
         .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) {
             display: flex;
@@ -378,8 +379,8 @@
         <div class="sidebar-footer">
             <div class="sidebar-user" onclick="toggleUserDropdown()">
                 <div class="sidebar-user-avatar">
-                    {% if user.profile.avatar %}
-                        <img src="{{ user.profile.avatar.url }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    {% if user.profile.has_display_avatar %}
+                        <img src="{{ user.profile.display_avatar_url }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" referrerpolicy="no-referrer">
                     {% else %}
                         <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; border-radius: 50%;">
                             {{ user.profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}

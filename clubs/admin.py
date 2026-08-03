@@ -162,6 +162,7 @@ class SMTPConfigAdmin(admin.ModelAdmin):
     list_filter = ('provider', 'is_active', 'created_at')
     search_fields = ('sender_email', 'smtp_host')
     readonly_fields = ('created_at', 'updated_at')
+    exclude = ('sender_password',)
 
 
 @admin.register(StorageConfig)
@@ -169,6 +170,7 @@ class StorageConfigAdmin(admin.ModelAdmin):
     list_display = ('backend_type', 'is_active', 's3_bucket_name', 's3_endpoint_url', 'updated_at')
     list_filter = ('backend_type', 'is_active')
     readonly_fields = ('created_at', 'updated_at')
+    exclude = ('s3_secret_access_key',)
 
 
 @admin.register(CarouselImage)

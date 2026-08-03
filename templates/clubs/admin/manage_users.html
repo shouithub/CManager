@@ -909,8 +909,8 @@
         <article class="user-card">
             <div class="user-card-header">
                 <a href="{% url 'clubs:user_detail' user.id %}" class="user-avatar" aria-label="查看 {{ user.username }}">
-                    {% if user.profile.avatar %}
-                        <img src="{{ user.profile.avatar.url }}" alt="{{ user.profile.get_full_name|default:user.username }}">
+                    {% if user.profile.has_display_avatar %}
+                        <img src="{{ user.profile.display_avatar_url }}" alt="{{ user.profile.get_full_name|default:user.username }}">
                     {% else %}
                         {{ user.profile.get_full_name|slice:":1"|default:user.username|slice:":1"|upper }}
                     {% endif %}
@@ -1088,6 +1088,13 @@
         <span class="material-icons">search_off</span>
         <p>未找到匹配的用户</p>
     </div>
+    {% endif %}
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav aria-label="用户列表分页" style="display:flex;justify-content:center;align-items:center;gap:12px;margin:24px 0;">
+        {% if page_obj.has_previous %}<a class="btn-search btn-reset" href="{% querystring page=page_obj.previous_page_number %}">上一页</a>{% endif %}
+        <span style="color:var(--md3-on-surface-variant);">第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页，共 {{ page_obj.paginator.count }} 人</span>
+        {% if page_obj.has_next %}<a class="btn-search btn-reset" href="{% querystring page=page_obj.next_page_number %}">下一页</a>{% endif %}
+    </nav>
     {% endif %}
     {% if not can_manage_users %}
     <div class="empty-state" style="margin-top: var(--md3-spacing-xl); padding: var(--md3-spacing-lg); text-align: left; display: flex; align-items: center; gap: var(--md3-spacing-md);">

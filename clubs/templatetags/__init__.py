@@ -1,3 +1,2 @@
 # 自定义模板标签和过滤器
-from . import common_tags
-
+from . import common_tags as common_tags

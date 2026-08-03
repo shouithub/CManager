@@ -224,7 +224,7 @@
         {% if request.user == target_user or request.user.profile.role == 'admin' %}
         <div style="margin-left: auto;">
             {% if request.user == target_user %}
-                <a href="{% url 'clubs:change_account_settings' %}" class="btn btn-tonal">
+                <a href="{% url 'clubs:edit_profile' %}" class="btn btn-tonal">
                     <span class="material-icons">edit</span>
                     编辑资料
                 </a>
@@ -241,8 +241,8 @@
     <div class="profile-card">
         <!-- 左侧个人信息 -->
         <div class="profile-sidebar">
-            {% if target_user.profile.avatar %}
-                <img src="{{ target_user.profile.avatar.url }}" alt="{{ target_user.username }}" class="profile-avatar-large">
+            {% if target_user.profile.has_display_avatar %}
+                <img src="{{ target_user.profile.display_avatar_url }}" alt="{{ target_user.username }}" class="profile-avatar-large" referrerpolicy="no-referrer">
             {% else %}
                 <div class="profile-avatar-large">
                     {{ target_user.profile.get_full_name|slice:":1"|default:target_user.username|slice:":1"|upper }}
@@ -375,8 +375,8 @@
                                             {% for staff in item.staff_list %}
                                                 <a href="{% url 'clubs:user_detail' staff.user.id %}" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: var(--md3-surface-container-high); border: 1px solid var(--md3-outline-variant);">
                                                     <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                                                        {% if staff.avatar %}
-                                                            <img src="{{ staff.avatar.url }}" alt="{{ staff.get_full_name|default:staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                        {% if staff.has_display_avatar %}
+                                                            <img src="{{ staff.display_avatar_url }}" alt="{{ staff.get_full_name|default:staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;" referrerpolicy="no-referrer">
                                                         {% else %}
                                                             <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px;">
                                                                 {{ staff.get_full_name|slice:":1"|default:staff.user.username|slice:":1"|upper }}

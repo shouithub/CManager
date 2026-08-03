@@ -1115,6 +1115,13 @@
             </a>
             {% endfor %}
         </div>
+        {% if clubs_page.paginator.num_pages > 1 %}
+        <nav aria-label="社团列表分页" style="display:flex;justify-content:center;align-items:center;gap:12px;margin-top:20px;">
+            {% if clubs_page.has_previous %}<a class="welcome-btn welcome-btn-secondary" href="{% querystring club_page=clubs_page.previous_page_number %}">上一页</a>{% endif %}
+            <span>第 {{ clubs_page.number }} / {{ clubs_page.paginator.num_pages }} 页</span>
+            {% if clubs_page.has_next %}<a class="welcome-btn welcome-btn-secondary" href="{% querystring club_page=clubs_page.next_page_number %}">下一页</a>{% endif %}
+        </nav>
+        {% endif %}
     </div>
     {% endif %}
 

@@ -202,8 +202,8 @@
 <!-- 用户信息横幅 -->
 <div class="user-banner">
     <a href="{% url 'clubs:user_detail' target_user.id %}" class="user-avatar-xl">
-        {% if target_user.profile.avatar %}
-            <img src="{{ target_user.profile.avatar.url }}" alt="{{ target_user.username }}">
+        {% if target_user.profile.has_display_avatar %}
+            <img src="{{ target_user.profile.display_avatar_url }}" alt="{{ target_user.username }}">
         {% else %}
             {{ target_user.profile.get_full_name|slice:":1"|default:target_user.username|slice:":1"|upper }}
         {% endif %}

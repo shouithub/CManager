@@ -475,7 +475,7 @@
             <div class="detail-actions">
                 {% if show_word_downloads or show_zip_download %}
                     {% for merged in generated_merge_files %}
-                    <a class="download-button download-button-primary" href="{{ merged.file.url }}" target="_blank" rel="noopener">
+                    <a class="download-button download-button-primary" href="{% url 'clubs:download_submission_file' merged.id %}" target="_blank" rel="noopener">
                         <span class="material-icons">description</span>
                         <span class="download-action-text">
                             <strong>下载合并 Word</strong>

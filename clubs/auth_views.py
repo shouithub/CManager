@@ -1,13 +1,14 @@
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.conf import settings
 from django.contrib import messages
 from django.utils.http import url_has_allowed_host_and_scheme
-from .models import UserProfile, Club, FormChannel, FormCycle, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
+from .models import UserProfile, Club, FormChannel, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
 from datetime import datetime
 from django.utils import timezone
 from django.db.models import Q, Prefetch
@@ -17,6 +18,7 @@ import time
 from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
+from django.core.exceptions import ObjectDoesNotExist
 from .lifecycle_utils import extend_inactive_account
 from .business_forms import externally_available_channels
 from .identity import (
@@ -134,7 +136,7 @@ def register(request):
             message_text = '注册成功，请登录！'
         
         # 创建用户扩展信息
-        profile = UserProfile.objects.create(
+        UserProfile.objects.create(
             user=user,
             role=role,
             status=status,
@@ -276,16 +278,16 @@ def extend_inactive_period(request):
 
     if profile.role == 'admin':
         messages.info(request, '管理员账号不受自动注销策略影响，无需延期')
-        return redirect('clubs:change_account_settings')
+        return redirect('clubs:edit_profile')
 
     if getattr(profile, 'account_status', 'active') != 'inactive':
         messages.info(request, '当前账号不是不活跃状态，无需延期')
-        return redirect('clubs:change_account_settings')
+        return redirect('clubs:edit_profile')
 
     new_until = extend_inactive_account(profile, days=365, reason='user_extend')
     request.session['show_inactive_prompt'] = False
     messages.success(request, f'延期成功，账号已恢复活跃状态，有效期至 {new_until.strftime("%Y-%m-%d")}。')
-    return redirect('clubs:change_account_settings')
+    return redirect('clubs:edit_profile')
 
 
 def user_logout(request):
@@ -330,6 +332,7 @@ def switch_identity(request):
 
 
 @login_required
+@require_POST
 def delete_account(request):
     """删除用户账户，根据不同角色执行差异化逻辑"""
     if request.method == 'POST':
@@ -387,17 +390,9 @@ def delete_account(request):
             messages.error(request, '用户名输入错误，账户删除失败。')
             
             # 重定向回修改账户设置页面
-            return redirect('clubs:change_account_settings')
+            return redirect('clubs:edit_profile')
     
     # 如果不是POST请求，重定向到修改账户设置页面
-    return redirect('clubs:change_account_settings')
-
-
-# 申请入口由动态表单 Dashboard 提供；带业务动作的表单通过代码注册表绑定逻辑。
-
-@login_required(login_url='clubs:login')
-def change_account_settings(request):
-    """修改用户名和密码 - 已合并到个人中心"""
     return redirect('clubs:edit_profile')
 
 
@@ -558,26 +553,84 @@ def edit_profile(request):
                 # 保持登录状态
                 login(request, user)
                 messages.success(request, '密码已修改')
+
+        elif action == 'use_cravatar':
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
+            from .avatar_utils import cravatar_exists, get_avatar_settings, normalize_avatar_email
+            if not get_avatar_settings():
+                messages.error(request, '管理员暂未开放 Cravatar')
+                return redirect(f"{reverse('clubs:edit_profile')}?tab=avatar")
+            avatar_email = normalize_avatar_email(request.POST.get('avatar_email'))
+            if avatar_email:
+                try:
+                    validate_email(avatar_email)
+                except ValidationError:
+                    messages.error(request, '请输入有效的 Cravatar 邮箱')
+                else:
+                    exists = cravatar_exists(avatar_email)
+                    if exists is True:
+                        profile.avatar_email = avatar_email
+                        profile.avatar_source = 'cravatar'
+                        profile.save(update_fields=['avatar_email', 'avatar_source', 'updated_at'])
+                        messages.success(request, '已检测到 Cravatar 头像并启用')
+                    elif exists is False:
+                        messages.error(request, '该邮箱没有可用的 Cravatar 头像，请先在 Cravatar 绑定头像或继续使用本站上传')
+                    else:
+                        messages.error(request, '暂时无法连接 Cravatar，请稍后重试；当前头像未更改')
+            else:
+                messages.error(request, '请输入已绑定 Cravatar 头像的邮箱')
+            return redirect(f"{reverse('clubs:edit_profile')}?tab=avatar")
+
+        elif action == 'use_local_avatar':
+            profile.avatar_source = 'local'
+            profile.save(update_fields=['avatar_source', 'updated_at'])
+            messages.success(request, '已切换为本站上传头像')
+            return redirect(f"{reverse('clubs:edit_profile')}?tab=avatar")
                 
         elif action == 'upload_avatar':
             import base64
             avatar_base64 = request.POST.get('avatar_base64')
             avatar_file = request.FILES.get('avatar')
+            is_async_upload = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+            def finish_avatar_upload(ok, message):
+                if is_async_upload:
+                    payload = {'ok': ok, 'message': message}
+                    if ok:
+                        from .avatar_utils import get_profile_avatar_url
+                        payload['avatar_url'] = get_profile_avatar_url(profile, request=request, size=256)
+                    return JsonResponse(payload, status=200 if ok else 400)
+                if ok:
+                    messages.success(request, message)
+                else:
+                    messages.error(request, message)
+                return redirect(f"{reverse('clubs:edit_profile')}?tab=avatar")
             
             if avatar_base64:
                 try:
-                    # 处理 Base64 数据
-                    format, imgstr = avatar_base64.split(';base64,') 
+                    if len(avatar_base64) > 28 * 1024 * 1024:
+                        raise ValueError('图片不能超过 20MB')
+                    format, imgstr = avatar_base64.split(';base64,')
                     ext = format.split('/')[-1]
-                    data = ContentFile(base64.b64decode(imgstr), name=f'avatar_{user.id}_{int(time.time())}.{ext}')
-                    
-                    # 保存头像 (Base64已经是裁剪好的)
-                    profile.avatar.save(data.name, data, save=True)
-                    messages.success(request, '头像已更新')
+                    avatar_file = ContentFile(
+                        base64.b64decode(imgstr, validate=True),
+                        name=f'avatar_{user.id}_{int(time.time())}.{ext}',
+                    )
                 except Exception as e:
-                    messages.error(request, f'头像处理失败: {str(e)}')
-            elif avatar_file:
+                    return finish_avatar_upload(False, f'头像处理失败: {str(e)}')
+
+            if avatar_file:
                 try:
+                    from .upload_security import validate_upload
+                    upload_error = validate_upload(
+                        avatar_file,
+                        field_name='头像',
+                        allowed_extensions={'.jpg', '.jpeg', '.png', '.webp'},
+                        max_bytes=20 * 1024 * 1024,
+                    )
+                    if upload_error:
+                        return finish_avatar_upload(False, upload_error)
                     img = Image.open(avatar_file)
                     # 转换为RGB（处理PNG透明背景）
                     if img.mode != 'RGB':
@@ -597,16 +650,26 @@ def edit_profile(request):
                     
                     # 保存
                     thumb_io = BytesIO()
-                    img.save(thumb_io, format='JPEG', quality=90)
+                    # 头像只用于小尺寸展示，适度压缩并移除原图元数据。
+                    img.save(
+                        thumb_io,
+                        format='JPEG',
+                        quality=82,
+                        optimize=True,
+                        progressive=True,
+                    )
                     
                     # 生成文件名
                     file_name = f'avatar_{user.id}_{int(time.time())}.jpg'
                     profile.avatar.save(file_name, ContentFile(thumb_io.getvalue()), save=True)
-                    messages.success(request, '头像已更新')
+                    if profile.avatar_source != 'local':
+                        profile.avatar_source = 'local'
+                        profile.save(update_fields=['avatar_source', 'updated_at'])
+                    return finish_avatar_upload(True, '头像已更新')
                 except Exception as e:
-                    messages.error(request, f'头像处理失败: {str(e)}')
+                    return finish_avatar_upload(False, f'头像处理失败: {str(e)}')
             else:
-                messages.error(request, '请选择图片文件')
+                return finish_avatar_upload(False, '请选择图片文件')
                 
         return redirect('clubs:edit_profile')
     
@@ -615,6 +678,11 @@ def edit_profile(request):
         'profile': profile,
         'political_status_choices': UserProfile.POLITICAL_STATUS_CHOICES,
     }
+    from .avatar_utils import get_avatar_settings, get_profile_avatar_url
+    context.update({
+        'cravatar_enabled': get_avatar_settings(),
+        'resolved_avatar_url': get_profile_avatar_url(profile, request=request, size=256),
+    })
     return render(request, 'clubs/user/edit_profile.html', context)
 
 
@@ -634,7 +702,6 @@ def staff_management(request):
         return redirect('clubs:login')
     
     from .models import Club, FormSubmission, StaffClubRelation, Officer
-    from datetime import datetime
     annual_channel = FormChannel.objects.filter(builtin_action='annual_review').first()
     registration_channel = FormChannel.objects.filter(builtin_action='club_registration').first()
     toggle_channels = list(
@@ -789,7 +856,7 @@ def verify_email(request):
     
     try:
         verification = user.email_verification
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, '邮箱验证记录不存在')
         return redirect('clubs:user_dashboard')
     
@@ -837,7 +904,7 @@ def resend_verification_code(request):
     
     try:
         verification = user.email_verification
-    except:
+    except ObjectDoesNotExist:
         messages.error(request, '邮箱验证记录不存在')
         return redirect('clubs:user_dashboard')
     

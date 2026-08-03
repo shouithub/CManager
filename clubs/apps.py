@@ -7,4 +7,4 @@ class ClubsConfig(AppConfig):
     verbose_name = '社团管理'
 
     def ready(self):
-        import clubs.signals
+        import clubs.signals as signals  # noqa: F401

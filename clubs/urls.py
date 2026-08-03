@@ -1,9 +1,11 @@
 # type: ignore
-from django.urls import path, re_path
+from django.urls import path
 from . import views
 from . import oobe_views
 from . import auth_views
 from . import export_views
+from . import activity_views
+from . import admin_settings_views
 
 app_name = 'clubs'
 
@@ -20,9 +22,9 @@ urlpatterns = [
     path('club/<int:club_id>/member-tokens/', views.list_member_tokens, name='list_member_tokens'),
     path('club/<int:club_id>/member-token/<int:token_id>/delete/', views.delete_member_token, name='delete_member_token'),
     path('member/join/<str:token_code>/', views.member_join_by_token, name='member_join_by_token'),
-    path('activities/', views.public_activities, name='public_activities'),  # 活动管理页面（仅管理员干事可见）
-    path('activities/<int:activity_id>/register/', views.register_activity, name='register_activity'),
-    path('activities/<int:activity_id>/unregister/', views.unregister_activity, name='unregister_activity'),
+    path('activities/', activity_views.public_activities, name='public_activities'),
+    path('activities/<int:activity_id>/register/', activity_views.register_activity, name='register_activity'),
+    path('activities/<int:activity_id>/unregister/', activity_views.unregister_activity, name='unregister_activity'),
     path('admin-panel/departments/', views.manage_departments, name='manage_departments'),  # 部门管理
     path('admin-panel/departments/add/', views.add_department, name='add_department'),
     path('admin-panel/departments/edit/<int:dept_id>/', views.edit_department, name='edit_department'),
@@ -33,7 +35,6 @@ urlpatterns = [
     path('register/', auth_views.register, name='register'),
     path('logout/', auth_views.user_logout, name='logout'),
     path('identity/switch/', auth_views.switch_identity, name='switch_identity'),
-    path('change-account-settings/', auth_views.change_account_settings, name='change_account_settings'),
     path('extend-inactive-period/', auth_views.extend_inactive_period, name='extend_inactive_period'),
     path('edit-profile/', auth_views.edit_profile, name='edit_profile'),
     path('user/<int:user_id>/', views.user_detail, name='user_detail'),
@@ -44,10 +45,6 @@ urlpatterns = [
     path('president/members/', views.president_member_management, name='president_member_management'),
     path('forms/<slug:channel_slug>/<int:club_id>/submit/', views.submit_dynamic_form, name='submit_dynamic_form'),
     path('forms/submissions/<str:submission_key>/revise/', views.revise_dynamic_submission, name='revise_dynamic_submission'),
-    # 统一修改材料页面的URL
-
-
-
     path('approval-center/<str:tab>/', views.approval_center_tabs, name='approval_center'),  # 审批中心
     path('approval-center-detail/<str:item_type>/<str:submission_key>/', views.approval_detail, name='approval_detail'),  # 审批详情
     path('submission/<str:submission_key>/cancel/', views.cancel_submission, name='cancel_submission'),
@@ -60,10 +57,6 @@ urlpatterns = [
     path('staff/audit-center/<str:tab>/<str:item_key>/delete/', views.delete_audit_request, name='delete_audit_request'),
     path('api/clubs/list/', views.get_clubs_list, name='get_clubs_list'),
     path('api/department/<int:department_id>/members/', views.get_department_members, name='get_department_members'),
-    # path('staff/home/', auth_views.staff_dashboard_home, name='staff_dashboard_home'),
-    # edit_department_intro has been replaced by manage_departments
-    # path('staff/edit-department-intro/<str:department>/', auth_views.edit_department_intro, name='edit_department_intro'),
-    
     path('staff/management/', auth_views.staff_management, name='staff_management'),
     path('staff/manage-department/', auth_views.manage_department_staff, name='manage_department_staff'),
     # 管理员 - 锁定账号管理
@@ -71,7 +64,6 @@ urlpatterns = [
     path('admin/unlock-account/<str:username>/', views.unlock_account, name='unlock_account'),
     path('admin/favicon/', views.manage_favicon, name='manage_favicon'),
 
-    # 强制重置密码路由已移除，使用管理员重置密码表单：admin-panel/reset-user-password/
     path('staff/manage-clubs/', auth_views.manage_staff_clubs, name='manage_staff_clubs'),
     path('staff/view-users/', views.staff_view_users, name='staff_view_users'),
     path('staff/form-submission/<str:submission_key>/review/', views.staff_review_form_submission, name='staff_review_form_submission'),
@@ -79,20 +71,12 @@ urlpatterns = [
     # 统一压缩下载路由：/zip-download/?type=<type>&id=<id>
     path('zip-download/', views.zip_download, name='zip_download'),
 
-    # 统一审核路由
-    
-    # 具体审核路由
-    
     path('club/<int:club_id>/update-description/', views.update_club_description, name='update_club_description'),
     path('staff/direct-edit-club-info/<int:club_id>/', views.direct_edit_club_info, name='direct_edit_club_info'),
     path('staff/form-channels/<int:channel_id>/toggle/', views.toggle_form_channel_cycle, name='toggle_form_channel_cycle'),
     path('staff/form-channels/<int:channel_id>/club/<int:club_id>/toggle/', views.toggle_club_form_channel, name='toggle_club_form_channel'),
     path('staff/change-club-status/<int:club_id>/', views.change_club_status, name='change_club_status'),
     path('staff/delete-club/<int:club_id>/', views.delete_club, name='delete_club'),
-    
-    # 社长换届申请路由
-    
-    # 活动申请路由
     
     # 房间借用
     path('room/calendar/', views.room_calendar, name='room_calendar'),
@@ -119,7 +103,6 @@ urlpatterns = [
     
     # 管理员功能
     path('admin-panel/dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    path('admin-panel/site-settings/', views.admin_site_settings, name='admin_site_settings'),
     path('admin-panel/carousel/', views.manage_carousel, name='manage_carousel'),
     path('admin-panel/carousel/add/', views.add_carousel, name='add_carousel'),
     path('admin-panel/carousel/edit/<int:carousel_id>/', views.edit_carousel, name='edit_carousel'),
@@ -152,9 +135,10 @@ urlpatterns = [
     path('admin-panel/edit-user-account/<int:user_id>/', views.admin_edit_user_account, name='admin_edit_user_account'),
     path('admin-panel/change-user-role/<int:user_id>/', views.change_user_role, name='change_user_role'),
     path('admin-panel/change-staff-attributes/<int:user_id>/', views.change_staff_attributes, name='change_staff_attributes'),
-    path('admin-panel/smtp-config/', views.manage_smtp_config, name='manage_smtp_config'),
-    path('admin-panel/storage-config/', views.manage_storage_config, name='manage_storage_config'),
+    path('admin-panel/smtp-config/', admin_settings_views.manage_smtp_config, name='manage_smtp_config'),
+    path('admin-panel/storage-config/', admin_settings_views.manage_storage_config, name='manage_storage_config'),
 
     # 自定义文件下载路由
     path('download/', views.download_file, name='download_file'),
+    path('download/submission-file/<int:file_id>/', views.download_submission_file, name='download_submission_file'),
 ]

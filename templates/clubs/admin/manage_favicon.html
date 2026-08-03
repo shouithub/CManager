@@ -926,6 +926,53 @@
 
 }
 
+.ia-avatar-provider-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--md3-spacing-md);
+}
+
+.ia-avatar-provider {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--md3-spacing-md);
+    padding: var(--md3-spacing-lg);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    background: var(--md3-surface-container-lowest);
+    cursor: pointer;
+}
+
+.ia-avatar-provider:has(input:checked) {
+    border-color: var(--md3-primary);
+    background: var(--md3-primary-container);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--md3-primary) 15%, transparent);
+}
+
+.ia-avatar-provider input { margin-top: 4px; accent-color: var(--md3-primary); }
+.ia-avatar-provider strong { display: block; color: var(--md3-on-surface); }
+.ia-avatar-provider span span { display: block; margin-top: 4px; color: var(--md3-on-surface-variant); font-size: .8rem; line-height: 1.5; }
+
+.ia-cravatar-preview {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: var(--md3-spacing-lg);
+    align-items: center;
+    margin-top: var(--md3-spacing-lg);
+    padding: var(--md3-spacing-lg);
+    border-radius: var(--md3-radius-lg);
+    background: var(--md3-surface-container);
+}
+
+.ia-cravatar-preview img { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; }
+.ia-cravatar-preview code { word-break: break-all; color: var(--md3-primary); }
+
+@media (max-width: 700px) {
+    .ia-avatar-provider-grid { grid-template-columns: 1fr; }
+    .ia-cravatar-preview { grid-template-columns: 1fr; text-align: center; }
+    .ia-cravatar-preview img { margin: 0 auto; }
+}
+
 
 </style>
 
@@ -960,7 +1007,7 @@
     <h1>图标与字体管理</h1>
 
 
-    <p class="ia-subtitle">管理网站 Favicon 图标、图标字体镜像和正文字体配置</p>
+    <p class="ia-subtitle">管理网站 Favicon、用户头像服务与字体资源配置</p>
 
 
   </div>
@@ -1164,7 +1211,40 @@
 
 
 
-<!-- ② 字体设置区 -->
+<!-- ② 用户头像服务 -->
+<div class="ia-section">
+  <div class="ia-section-title">
+    <span class="material-icons">account_circle</span>用户头像服务
+  </div>
+  <form method="post" id="avatar-settings-form">
+    {% csrf_token %}
+    <input type="hidden" name="form_type" value="avatar_settings">
+    <div class="ia-card">
+      <div class="ia-card-header">
+        <span class="material-icons">switch_account</span>
+        <h2>Cravatar 支持</h2>
+      </div>
+      <div class="ia-card-body">
+        <label class="ia-avatar-provider">
+          <input type="checkbox" name="cravatar_enabled" {% if cfg.cravatar_enabled %}checked{% endif %}>
+          <span>
+            <strong>允许用户使用 Cravatar</strong>
+            <span>开启后，用户可以自行选择本站上传头像或已绑定邮箱的 Cravatar 头像；本站上传功能始终保留。</span>
+          </span>
+        </label>
+        <p style="margin:16px 0 0;color:var(--md3-on-surface-variant);line-height:1.6;">系统不会生成默认邮箱。用户输入邮箱时会先检测对应头像是否存在，检测成功后才会切换。</p>
+
+        <div class="ia-actions">
+          <a href="https://cravatar.com/developer/introduction" target="_blank" rel="noopener noreferrer" class="btn btn-text">查看官方文档</a>
+          <button type="submit" class="btn btn-filled"><span class="material-icons">save</span>保存头像设置</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+
+<!-- ③ 字体设置区 -->
 
 
 <div class="ia-section">

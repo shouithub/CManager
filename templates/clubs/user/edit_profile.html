@@ -282,6 +282,57 @@
         margin-right: auto;
     }
 
+    .avatar-upload-status {
+        min-height: 20px;
+        margin-top: 10px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.8rem;
+        text-align: right;
+    }
+
+    .avatar-upload-status.is-error {
+        color: var(--md3-error);
+    }
+
+    .avatar-service-panel {
+        display: grid;
+        grid-template-columns: 96px minmax(0, 1fr);
+        gap: var(--md3-spacing-lg);
+        align-items: center;
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-lg);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-low);
+    }
+
+    .avatar-service-panel img {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .avatar-service-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 8px;
+        padding: 5px 9px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        font-size: .72rem;
+        font-weight: 700;
+    }
+
+    .avatar-service-badge .material-icons { font-size: 14px; }
+
+    @media (max-width: 560px) {
+        .avatar-service-panel { grid-template-columns: 1fr; text-align: center; }
+        .avatar-service-panel img { margin: 0 auto; }
+    }
+
     /* 移动端适配 */
     @media (max-width: 768px) {
         .page-header {
@@ -306,15 +357,16 @@
 <div class="profile-container">
     <div class="page-header">
         <span class="material-icons">account_circle</span>
-        <div class="header-content">
+        <div class="page-header-content">
             <h1>个人中心</h1>
+            <p class="subtitle">管理个人资料、头像来源与账号安全</p>
         </div>
     </div>
     
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('info')">基本信息</button>
-        <button class="tab-btn" onclick="switchTab('avatar')">头像设置</button>
-        <button class="tab-btn" onclick="switchTab('security')">账号安全</button>
+        <button class="tab-btn active" data-tab="info" onclick="switchTab('info', this)">基本信息</button>
+        <button class="tab-btn" data-tab="avatar" onclick="switchTab('avatar', this)">头像设置</button>
+        <button class="tab-btn" data-tab="security" onclick="switchTab('security', this)">账号安全</button>
     </div>
 
     <!-- 基本信息卡片 -->
@@ -387,7 +439,43 @@
             <span class="material-icons">face</span>
             <h2>修改头像</h2>
         </div>
-        
+
+        <div class="avatar-service-panel">
+            {% if resolved_avatar_url %}
+            <img src="{{ resolved_avatar_url }}" alt="当前头像服务预览" referrerpolicy="no-referrer">
+            {% else %}
+            <div class="avatar-placeholder" style="width:96px;height:96px;">{{ profile.real_name|first }}</div>
+            {% endif %}
+            <div>
+                <div class="avatar-service-badge">
+                    <span class="material-icons">{% if cravatar_enabled and profile.avatar_source == 'cravatar' %}cloud{% else %}storage{% endif %}</span>
+                    {% if cravatar_enabled and profile.avatar_source == 'cravatar' %}当前使用 Cravatar{% else %}当前使用本站上传头像{% endif %}
+                </div>
+                {% if cravatar_enabled %}
+                <form method="post" style="margin-top:12px;">
+                    {% csrf_token %}
+                    <div class="form-group" style="margin-bottom:12px;">
+                        <label class="form-label" for="avatar-email">使用 Cravatar 头像</label>
+                        <input type="email" id="avatar-email" name="avatar_email" class="form-control" value="{{ profile.avatar_email }}" placeholder="Cravatar 邮箱或 QQ号@qq.com" autocomplete="email" required>
+                        <small style="display:block;color:var(--md3-on-surface-variant);line-height:1.6;">
+                            已有 QQ 头像？输入 <strong style="color:var(--md3-primary);">QQ号@qq.com</strong>（例如 123456@qq.com）即可尝试自动获取。提交后会先检测头像，成功后才会切换；请求地址不包含邮箱明文。
+                        </small>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;">
+                        {% if profile.avatar_source == 'cravatar' %}
+                        <button type="submit" name="action" value="use_local_avatar" formnovalidate class="btn-secondary"><span class="material-icons">storage</span>改用本站头像</button>
+                        {% endif %}
+                        <button type="submit" name="action" value="use_cravatar" class="btn-primary"><span class="material-icons">search</span>检测并使用</button>
+                    </div>
+                </form>
+                {% else %}
+                <p style="margin:10px 0 0;color:var(--md3-on-surface-variant);">管理员暂未开放 Cravatar，仍可在下方上传本站头像。</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <h3 style="margin:28px 0 6px;color:var(--md3-on-surface);">上传本站头像</h3>
+        <p style="margin:0 0 16px;color:var(--md3-on-surface-variant);">上传成功后会自动切换到本站头像。</p>
         <form method="post" enctype="multipart/form-data" id="avatar-form">
             {% csrf_token %}
             <input type="hidden" name="action" value="upload_avatar">
@@ -395,13 +483,13 @@
             
             <div class="avatar-preview-container">
                 <!-- 当前头像展示 -->
-                <div id="current-avatar-view" {% if not profile.avatar %}style="display: none;"{% endif %}>
-                    <img src="{% if profile.avatar %}{{ profile.avatar.url }}{% endif %}" alt="当前头像" class="current-avatar">
+                <div id="current-avatar-view" {% if not resolved_avatar_url %}style="display: none;"{% endif %}>
+                    <img src="{{ resolved_avatar_url }}" alt="当前头像" class="current-avatar">
                     <p style="text-align: center; margin-top: 10px; color: var(--md3-on-surface-variant);">当前头像</p>
                 </div>
 
                 <!-- 默认占位符 -->
-                <div id="avatar-placeholder" class="avatar-placeholder" {% if profile.avatar %}style="display: none;"{% endif %}>
+                <div id="avatar-placeholder" class="avatar-placeholder" {% if resolved_avatar_url %}style="display: none;"{% endif %}>
                     {{ profile.real_name|first }}
                 </div>
                 
@@ -416,14 +504,14 @@
                     </div>
                 </div>
                 
-                <p style="color: var(--md3-on-surface-variant); margin: 0; text-align: center;">支持 JPG, PNG 格式，建议使用正方形图片</p>
+                <p style="color: var(--md3-on-surface-variant); margin: 0; text-align: center;">支持 JPG、PNG、WebP，上传前会自动裁剪并压缩</p>
                 
                 <div class="file-input-wrapper">
                     <div class="upload-btn">
                         <span class="material-icons">upload_file</span>
                         选择图片
                     </div>
-                    <input type="file" name="avatar" accept="image/*" id="avatar-input">
+                    <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" id="avatar-input">
                 </div>
             </div>
             
@@ -432,6 +520,7 @@
                     <span class="material-icons">cloud_upload</span>
                     上传头像
                 </button>
+                <div id="avatar-upload-status" class="avatar-upload-status" role="status" aria-live="polite"></div>
             </div>
         </form>
     </div>
@@ -545,7 +634,7 @@
 
 {% include 'clubs/components/_cropper_script.html' %}
 <script>
-    function switchTab(tabId) {
+    function switchTab(tabId, trigger) {
         // 隐藏所有卡片
         document.querySelectorAll('.card').forEach(card => {
             card.classList.remove('active');
@@ -558,8 +647,16 @@
         
         // 激活选中的标签和卡片
         document.getElementById('tab-' + tabId).classList.add('active');
-        event.currentTarget.classList.add('active');
+        var activeButton = trigger || document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
+        if (activeButton) activeButton.classList.add('active');
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var requestedTab = new URLSearchParams(window.location.search).get('tab');
+        if (requestedTab && document.getElementById('tab-' + requestedTab)) {
+            switchTab(requestedTab);
+        }
+    });
 
     // 头像裁剪逻辑
     (function() {
@@ -569,20 +666,38 @@
         var zoom = document.getElementById('cropper-zoom');
         var form = document.getElementById('avatar-form');
         var currentView = document.getElementById('current-avatar-view');
+        var currentAvatarImage = currentView ? currentView.querySelector('img') : null;
         var placeholder = document.getElementById('avatar-placeholder');
         var base64Input = document.getElementById('avatar-base64');
+        var submitButton = document.getElementById('save-avatar-btn');
+        var uploadStatus = document.getElementById('avatar-upload-status');
         
         if (!input || !wrapper || !image || !zoom || !form || !window.Cropper) {
             return;
         }
         var cropper = null;
         var objectUrl = null;
+        var isSubmitting = false;
+
+        function setUploadStatus(message, isError) {
+            if (!uploadStatus) return;
+            uploadStatus.textContent = message || '';
+            uploadStatus.classList.toggle('is-error', Boolean(isError));
+        }
         
         input.addEventListener('change', function() {
             var file = input.files && input.files[0];
             if (!file) {
                 return;
             }
+
+            if (file.size > 20 * 1024 * 1024) {
+                input.value = '';
+                setUploadStatus('图片不能超过 20 MB，请选择较小的文件。', true);
+                return;
+            }
+
+            setUploadStatus('已选择 ' + file.name + '，保存时将自动压缩。', false);
             
             if (cropper) cropper.destroy();
             if (objectUrl) URL.revokeObjectURL(objectUrl);
@@ -611,16 +726,106 @@
             if (cropper) cropper.zoomTo(parseFloat(zoom.value));
         });
         
-        // 表单提交前将Canvas内容转换为Base64
+        // 提交前把裁剪结果转换成小尺寸 JPEG Blob，并替换原始大文件。
         form.addEventListener('submit', function(e) {
-            if (cropper) {
-                base64Input.value = cropper.getCroppedCanvas({
-                    width: 256,
-                    height: 256,
-                    imageSmoothingEnabled: true,
-                    imageSmoothingQuality: 'high'
-                }).toDataURL('image/jpeg', 0.9);
+            if (!cropper || isSubmitting) return;
+            e.preventDefault();
+
+            var canvas = cropper.getCroppedCanvas({
+                width: 256,
+                height: 256,
+                fillColor: '#ffffff',
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+
+            if (!canvas) {
+                setUploadStatus('无法生成头像，请重新选择图片。', true);
+                return;
             }
+
+            if (submitButton) submitButton.disabled = true;
+            setUploadStatus('正在压缩头像…', false);
+
+            canvas.toBlob(function(blob) {
+                if (!blob) {
+                    if (submitButton) submitButton.disabled = false;
+                    setUploadStatus('头像压缩失败，请重试。', true);
+                    return;
+                }
+
+                try {
+                    var transfer = new DataTransfer();
+                    transfer.items.add(new File([blob], 'avatar.jpg', {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    }));
+                    input.files = transfer.files;
+                    base64Input.value = '';
+                } catch (error) {
+                    // 兼容不支持 DataTransfer 构造器的旧浏览器：只提交压缩后的 Base64。
+                    base64Input.value = canvas.toDataURL('image/jpeg', 0.82);
+                    input.disabled = true;
+                }
+
+                isSubmitting = true;
+                setUploadStatus('压缩完成，正在上传…', false);
+
+                var data = new FormData(form);
+                fetch(form.action || window.location.href, {
+                    method: 'POST',
+                    body: data,
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                }).then(function(response) {
+                    return response.json().then(function(payload) {
+                        if (!response.ok || !payload.ok) {
+                            throw new Error(payload.message || '头像上传失败');
+                        }
+                        return payload;
+                    });
+                }).then(function(payload) {
+                    if (currentAvatarImage && payload.avatar_url) {
+                        currentAvatarImage.src = payload.avatar_url;
+                    }
+                    if (payload.avatar_url) {
+                        document.querySelectorAll('.sidebar-user-avatar').forEach(function(container) {
+                            var sidebarImage = container.querySelector('img');
+                            if (!sidebarImage) {
+                                sidebarImage = document.createElement('img');
+                                sidebarImage.alt = '用户头像';
+                                sidebarImage.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+                                container.replaceChildren(sidebarImage);
+                            }
+                            sidebarImage.src = payload.avatar_url;
+                        });
+                    }
+                    if (currentView) currentView.style.display = 'block';
+                    if (placeholder) placeholder.style.display = 'none';
+                    wrapper.style.display = 'none';
+                    input.value = '';
+                    input.disabled = false;
+                    base64Input.value = '';
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                    if (objectUrl) {
+                        URL.revokeObjectURL(objectUrl);
+                        objectUrl = null;
+                    }
+                    setUploadStatus(payload.message || '头像上传完成。', false);
+                }).catch(function(error) {
+                    input.disabled = false;
+                    setUploadStatus(error.message || '头像上传失败，请重试。', true);
+                }).finally(function() {
+                    isSubmitting = false;
+                    if (submitButton) submitButton.disabled = false;
+                });
+            }, 'image/jpeg', 0.82);
         });
     })();
 </script>

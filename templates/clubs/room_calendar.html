@@ -997,7 +997,7 @@
             endTime: '{{ booking_data.booking.end_time|time:"H:i" }}',
             club: {% if booking_data.booking.club %}'{{ booking_data.booking.club.name|escapejs }}'{% else %}null{% endif %},
             user: '{{ booking_data.booking.user.profile.get_full_name|escapejs }}',
-            userAvatarUrl: {% if booking_data.booking.user.profile.avatar %}'{{ booking_data.booking.user.profile.avatar.url|escapejs }}'{% else %}null{% endif %},
+            userAvatarUrl: {% if booking_data.booking.user.profile.has_display_avatar %}'{{ booking_data.booking.user.profile.display_avatar_url|escapejs }}'{% else %}null{% endif %},
             userInitial: '{{ booking_data.booking.user.profile.get_full_name|slice:":1"|default:booking_data.booking.user.username|slice:":1"|upper|escapejs }}',
             userId: {{ booking_data.booking.user.id }},
             purpose: '{{ booking_data.booking.purpose|default:""|escapejs }}',

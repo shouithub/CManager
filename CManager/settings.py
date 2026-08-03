@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -108,9 +109,11 @@ def _default_csrf_trusted_origins_from_hosts(hosts):
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'unsafe-secret-key')
+CREDENTIAL_ENCRYPTION_KEY = os.environ.get('CREDENTIAL_ENCRYPTION_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = _env_bool('DEBUG', False)
+ALLOW_DERIVED_CREDENTIAL_KEY = DEBUG or 'test' in sys.argv
 
 ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', ['localhost', '127.0.0.1'])
 
@@ -123,14 +126,21 @@ CSRF_TRUSTED_ORIGINS = _env_list(
 # 生产环境安全设置
 SECURE_BROWSER_XSS_FILTER = _env_bool('SECURE_BROWSER_XSS_FILTER', True)
 SECURE_CONTENT_TYPE_NOSNIFF = _env_bool('SECURE_CONTENT_TYPE_NOSNIFF', True)
-SESSION_COOKIE_SECURE = _env_bool('SESSION_COOKIE_SECURE', False)
-CSRF_COOKIE_SECURE = _env_bool('CSRF_COOKIE_SECURE', False)
+SESSION_COOKIE_SECURE = _env_bool('SESSION_COOKIE_SECURE', not DEBUG)
+CSRF_COOKIE_SECURE = _env_bool('CSRF_COOKIE_SECURE', not DEBUG)
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE', 'Lax')
+CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE', 'Lax')
+SECURE_SSL_REDIRECT = _env_bool('SECURE_SSL_REDIRECT', not DEBUG)
+SECURE_HSTS_SECONDS = _env_int('SECURE_HSTS_SECONDS', 0 if DEBUG else 31536000)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', not DEBUG)
+SECURE_HSTS_PRELOAD = _env_bool('SECURE_HSTS_PRELOAD', not DEBUG)
 X_FRAME_OPTIONS = os.getenv('X_FRAME_OPTIONS', 'DENY')
 
 # 反向代理常见部署设置（Nginx/Caddy/Traefik 等）
-USE_X_FORWARDED_HOST = _env_bool('USE_X_FORWARDED_HOST', True)
-USE_X_FORWARDED_PORT = _env_bool('USE_X_FORWARDED_PORT', True)
-if _env_bool('USE_X_FORWARDED_PROTO', True):
+USE_X_FORWARDED_HOST = _env_bool('USE_X_FORWARDED_HOST', False)
+USE_X_FORWARDED_PORT = _env_bool('USE_X_FORWARDED_PORT', False)
+if _env_bool('USE_X_FORWARDED_PROTO', False):
     forwarded_proto_header = os.getenv('FORWARDED_PROTO_HEADER', 'HTTP_X_FORWARDED_PROTO').strip()
     forwarded_proto_value = os.getenv('FORWARDED_PROTO_VALUE', 'https').strip() or 'https'
     SECURE_PROXY_SSL_HEADER = (forwarded_proto_header, forwarded_proto_value)
@@ -283,6 +293,16 @@ else:
         }
     }
 
+if not DEBUG:
+    if SECRET_KEY == 'unsafe-secret-key' or len(SECRET_KEY) < 32:
+        raise RuntimeError('生产环境必须设置长度至少为 32 的 SECRET_KEY')
+    if not CREDENTIAL_ENCRYPTION_KEY:
+        raise RuntimeError('生产环境必须设置 CREDENTIAL_ENCRYPTION_KEY')
+    if not SESSION_COOKIE_SECURE or not CSRF_COOKIE_SECURE:
+        raise RuntimeError('生产环境必须启用 SESSION_COOKIE_SECURE 和 CSRF_COOKIE_SECURE')
+    if CACHE_BACKEND != 'redis' and not _env_bool('ALLOW_NON_REDIS_CACHE', False):
+        raise RuntimeError('生产环境必须使用 Redis 缓存；仅测试环境可设置 ALLOW_NON_REDIS_CACHE=True')
+
 if DATABASES['default']['ENGINE'] == 'django.db.backends.dummy':
     SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 elif (BASE_DIR / '.oobe_pending.json').exists():
@@ -338,6 +358,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else 
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+SECURE_RANDOMIZE_UPLOAD_NAMES = _env_bool('SECURE_RANDOMIZE_UPLOAD_NAMES', True)
 
 # 存储：通过抽象层 ClubStorage 实现 Local / S3 后端动态切换
 # 业务代码所有 FileField 自动走该 storage；切换后端时只需修改 StorageConfig 表

@@ -1,6 +1,8 @@
 """上下文处理器：动态表单导航、审核数量和站点设置。"""
 import os
 from django.conf import settings
+from django.core.cache import cache
+from django.db.models import Count
 from .models import FormChannel, FormSubmission, Officer
 from .business_forms import externally_available_channels
 from .identity import (
@@ -10,22 +12,14 @@ from .identity import (
     has_president_officer,
     IDENTITY_PRESIDENT,
 )
-
-
-def _get_president_club_ids(user):
-    return list(Officer.objects.filter(
-        user_profile__user=user,
-        position='president',
-        is_current=True
-    ).values_list('club_id', flat=True))
-
-
 def site_settings(request):
+    cached = cache.get('site:presentation:v1')
+    if cached is not None:
+        return cached
     base_media_url = f"/{settings.MEDIA_URL.lstrip('/')}"
     if not base_media_url.endswith('/'):
         base_media_url = f"{base_media_url}/"
-    import time
-    cache_buster = int(time.time())
+    cache_buster = cache.get('site:asset_version:v1', '1')
 
     # favicon URL 通过存储抽象层生成：
     # - 本地模式：仍走 MEDIA_URL（相对路径），由 nginx/static serve 提供
@@ -34,7 +28,6 @@ def site_settings(request):
     site_favicon_preview_url = None
     try:
         from .storage_backends import ClubStorage
-        from .models import StorageConfig
         storage = ClubStorage()
         # 探测是否存在 favicon
         if storage.exists('site/favicon.ico'):
@@ -67,13 +60,15 @@ def site_settings(request):
         body_font_url = ''
         body_font_family = ''
 
-    return {
+    result = {
         'site_favicon_url': site_favicon_url,
         'site_favicon_preview_url': site_favicon_preview_url,
         'font_icon_url': font_icon_url,
         'body_font_url': body_font_url,
         'body_font_family': body_font_family,
     }
+    cache.set('site:presentation:v1', result, 300)
+    return result
 
 
 def audit_center_counts(request):
@@ -113,10 +108,12 @@ def audit_center_counts(request):
     approval_total = 0
 
     if not is_president_identity and (role in ['staff', 'admin'] or request.user.is_superuser):
-        for channel in channels:
-            count = FormSubmission.objects.filter(channel=channel, status='pending').count()
-            audit_channels[channel.slug] = count
-            audit_total += count
+        counts = FormSubmission.objects.filter(
+            channel__in=channels,
+            status='pending',
+        ).values('channel__slug').annotate(total=Count('id'))
+        audit_channels = {row['channel__slug']: row['total'] for row in counts}
+        audit_total = sum(audit_channels.values())
 
     president_clubs = []
     primary_club = None
@@ -128,14 +125,13 @@ def audit_center_counts(request):
         ).select_related('club').order_by('club__name'))
         primary_club = president_clubs[0].club if president_clubs else None
         club_ids = [item.club_id for item in president_clubs]
-        for channel in channels:
-            count = FormSubmission.objects.filter(
-                channel=channel,
-                club_id__in=club_ids,
-                status__in=['pending', 'rejected'],
-            ).count()
-            approval_channels[channel.slug] = count
-            approval_total += count
+        counts = FormSubmission.objects.filter(
+            channel__in=channels,
+            club_id__in=club_ids,
+            status__in=['pending', 'rejected'],
+        ).values('channel__slug').annotate(total=Count('id'))
+        approval_channels = {row['channel__slug']: row['total'] for row in counts}
+        approval_total = sum(approval_channels.values())
 
     result = {
         'audit_center_counts': {

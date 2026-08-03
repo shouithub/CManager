@@ -242,6 +242,13 @@
                 </tbody>
             </table>
         </div>
+        {% if bookings.paginator.num_pages > 1 %}
+        <nav aria-label="预约列表分页" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:18px;">
+            {% if bookings.has_previous %}<a class="btn btn-primary" href="{% querystring page=bookings.previous_page_number %}">上一页</a>{% endif %}
+            <span>第 {{ bookings.number }} / {{ bookings.paginator.num_pages }} 页，共 {{ bookings.paginator.count }} 条</span>
+            {% if bookings.has_next %}<a class="btn btn-primary" href="{% querystring page=bookings.next_page_number %}">下一页</a>{% endif %}
+        </nav>
+        {% endif %}
         {% else %}
         <div class="empty-state">暂无预约记录</div>
         {% endif %}

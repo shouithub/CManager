@@ -1,7 +1,19 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_delete, post_save
+from django.db.models import FileField
+from django.core.cache import cache
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-from .models import UserProfile
+from .models import (
+    Announcement,
+    CarouselImage,
+    Department,
+    FormField,
+    FormUploadedFile,
+    StorageConfig,
+    SiteSettings,
+    Template,
+    UserProfile,
+)
 
 
 @receiver(post_save, sender=User)
@@ -53,3 +65,45 @@ def save_user_profile(sender, instance, **kwargs):
                 wechat=instance.username,
                 political_status='non_member'
             )
+
+
+@receiver(post_save, sender=StorageConfig)
+def invalidate_storage_config_cache(sender, **kwargs):
+    from .storage_backends import clear_storage_config_cache
+    clear_storage_config_cache()
+
+
+@receiver([post_save, post_delete], sender=Announcement)
+def invalidate_announcement_cache(sender, **kwargs):
+    cache.delete('index:announcements:v1')
+
+
+@receiver([post_save, post_delete], sender=CarouselImage)
+def invalidate_carousel_cache(sender, **kwargs):
+    cache.delete('index:carousel_images:v1')
+
+
+@receiver([post_save, post_delete], sender=Department)
+def invalidate_department_cache(sender, **kwargs):
+    cache.delete('index:departments:v1')
+
+
+@receiver([post_save, post_delete], sender=SiteSettings)
+def invalidate_site_presentation_cache(sender, **kwargs):
+    cache.delete('site:presentation:v1')
+
+
+@receiver(post_delete, sender=UserProfile)
+@receiver(post_delete, sender=FormUploadedFile)
+@receiver(post_delete, sender=Template)
+@receiver(post_delete, sender=FormField)
+@receiver(post_delete, sender=Announcement)
+@receiver(post_delete, sender=CarouselImage)
+def delete_file_fields_after_model_delete(sender, instance, **kwargs):
+    """Remove storage objects when their owning database row is deleted."""
+    for field in instance._meta.fields:
+        if not isinstance(field, FileField):
+            continue
+        file_value = getattr(instance, field.name, None)
+        if hasattr(file_value, 'delete') and getattr(file_value, 'name', ''):
+            file_value.delete(save=False)

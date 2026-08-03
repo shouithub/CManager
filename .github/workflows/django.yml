@@ -2,10 +2,10 @@ name: Django CI
 
 on:
   push:
-    branches: [ "main" ]
-    tags: [ "v*" ]
+    branches: [main]
+    tags: ["v*"]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 permissions:
   contents: write
@@ -15,55 +15,93 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEBUG: "False"
-      SECRET_KEY: "ci-secret-key"
-      DB_ENGINE: "django.db.backends.sqlite3"
-      DB_NAME: "db.sqlite3"
+      SECRET_KEY: "ci-only-9Gv2!wQ7#Lp4@Tx8$Zm6&Nr3*Kd5-Hs1+Fc0=By7_Ru"
+      CREDENTIAL_ENCRYPTION_KEY: "MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA="
+      ALLOW_NON_REDIS_CACHE: "True"
+      SESSION_COOKIE_SECURE: "True"
+      CSRF_COOKIE_SECURE: "True"
+      DB_ENGINE: ${{ matrix.db_engine }}
+      DB_NAME: ${{ matrix.db_name }}
+      DB_USER: ${{ matrix.db_user }}
+      DB_PASSWORD: ${{ matrix.db_password }}
+      DB_HOST: ${{ matrix.db_host }}
+      DB_PORT: ${{ matrix.db_port }}
       ALLOWED_HOSTS: "localhost,127.0.0.1"
-      CSRF_TRUSTED_ORIGINS: "http://127.0.0.1,http://localhost"
+      CSRF_TRUSTED_ORIGINS: "https://localhost,https://127.0.0.1"
     strategy:
-      max-parallel: 4
+      fail-fast: false
       matrix:
-        python-version: [3.12]
-
+        include:
+          - python-version: "3.12"
+            database: sqlite
+            db_engine: django.db.backends.sqlite3
+            db_name: ci.sqlite3
+            db_user: ""
+            db_password: ""
+            db_host: ""
+            db_port: ""
+          - python-version: "3.12"
+            database: mysql
+            db_engine: django.db.backends.mysql
+            db_name: cmanager
+            db_user: root
+            db_password: root
+            db_host: 127.0.0.1
+            db_port: "3306"
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: cmanager
+          MYSQL_ROOT_PASSWORD: root
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    - name: Run Tests
-      run: |
-        python manage.py test
-    - name: Run Migrations
-      run: |
-        python manage.py migrate
-    - name: Deploy Checks
-      run: |
-        python manage.py check --deploy
-    - name: Collect Static
-      run: |
-        python manage.py collectstatic --noinput
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --require-hashes -r requirements-dev.txt
+      - name: Static checks
+        run: |
+          ruff check --exclude clubs/migrations --select E9,F63,F7,F82,F811 clubs CManager
+          pyright --pythonpath "$(command -v python)"
+          python -m compileall -q clubs CManager
+          python manage.py makemigrations --check --dry-run
+          python manage.py check
+      - name: Dependency audit
+        run: pip-audit -r requirements.txt
+      - name: Migrate
+        run: python manage.py migrate
+      - name: Test
+        run: python manage.py test
+      - name: Deployment checks
+        run: python manage.py check --deploy
+      - name: Collect static
+        run: python manage.py collectstatic --noinput
 
   release:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
-    
     steps:
-    - name: Create Release (Tag)
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: softprops/action-gh-release@v1
-      with:
-        generate_release_notes: true
-
-    - name: Create Release (Nightly)
-      if: github.ref == 'refs/heads/main'
-      uses: softprops/action-gh-release@v1
-      with:
-        name: Nightly Build ${{ github.run_number }}
-        tag_name: nightly-${{ github.run_number }}
-        prerelease: true
+      - name: Create tagged release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+      - name: Create nightly release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Nightly Build ${{ github.run_number }}
+          tag_name: nightly-${{ github.run_number }}
+          prerelease: true

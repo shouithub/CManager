@@ -277,12 +277,10 @@
 
     <!-- 页面标题 -->
     <div class="page-header">
-        <div class="header-content">
-            <span class="material-icons">supervisor_account</span>
-            <div class="header-text">
-                <h1>管理部门人员</h1>
-                <p>管理 {{ department }} 的所有干事</p>
-            </div>
+        <span class="material-icons">supervisor_account</span>
+        <div class="page-header-content">
+            <h1>管理部门人员</h1>
+            <p class="subtitle">管理 {{ department }} 的所有干事</p>
         </div>
         <div class="stats-container">
             <div class="stat-badge">
@@ -338,8 +336,8 @@
                         <td>
                             <a href="{% url 'clubs:user_detail' staff.user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
                                 <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                                    {% if staff.avatar %}
-                                        <img src="{{ staff.avatar.url }}" alt="{{ staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% if staff.has_display_avatar %}
+                                        <img src="{{ staff.display_avatar_url }}" alt="{{ staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
                                     {% else %}
                                         <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
                                             {{ staff.get_full_name|slice:":1"|default:staff.user.username|slice:":1"|upper }}
@@ -392,8 +390,8 @@
                         <td>
                             <a href="{% url 'clubs:user_detail' staff.user.id %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
                                 <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                                    {% if staff.avatar %}
-                                        <img src="{{ staff.avatar.url }}" alt="{{ staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% if staff.has_display_avatar %}
+                                        <img src="{{ staff.display_avatar_url }}" alt="{{ staff.user.username }}" style="width: 100%; height: 100%; object-fit: cover;">
                                     {% else %}
                                         <div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
                                             {{ staff.get_full_name|slice:":1"|default:staff.user.username|slice:":1"|upper }}

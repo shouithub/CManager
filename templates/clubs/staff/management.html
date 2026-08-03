@@ -231,8 +231,8 @@
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                 <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
-                                    {% if club.president.profile.avatar %}
-                                        <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">
+                                    {% if club.president.profile.has_display_avatar %}
+                                        <img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">
                                     {% else %}
                                         <div style="width:100%;height:100%;background-color:var(--md3-primary-container);color:var(--md3-on-primary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}</div>
                                     {% endif %}
@@ -247,7 +247,7 @@
                                 {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}
                                 <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                     <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
-                                        {% if relation.staff.avatar %}<img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-tertiary-container);color:var(--md3-on-tertiary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}</div>{% endif %}
+                                        {% if relation.staff.has_display_avatar %}<img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-tertiary-container);color:var(--md3-on-tertiary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}</div>{% endif %}
                                     </div>
                                     <span style="border-bottom:1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
                                 </a>
@@ -274,7 +274,7 @@
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                         <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
-                                            {% if club.president.profile.avatar %}<img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-primary-container);color:var(--md3-on-primary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}</div>{% endif %}
+                                            {% if club.president.profile.has_display_avatar %}<img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-primary-container);color:var(--md3-on-primary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}</div>{% endif %}
                                         </div>
                                         <span style="border-bottom:1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                                     </a>
@@ -286,7 +286,7 @@
                                         {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}
                                         <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                             <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
-                                                {% if relation.staff.avatar %}<img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-tertiary-container);color:var(--md3-on-tertiary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}</div>{% endif %}
+                                                {% if relation.staff.has_display_avatar %}<img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-tertiary-container);color:var(--md3-on-tertiary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}</div>{% endif %}
                                             </div>
                                             <span style="border-bottom:1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
                                         </a>
@@ -318,7 +318,7 @@
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                 <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
-                                    {% if club.president.profile.avatar %}<img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-primary-container);color:var(--md3-on-primary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}</div>{% endif %}
+                                    {% if club.president.profile.has_display_avatar %}<img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-primary-container);color:var(--md3-on-primary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}</div>{% endif %}
                                 </div>
                                 <span style="border-bottom:1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                             </a>
@@ -330,7 +330,7 @@
                                 {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}
                                 <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                     <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
-                                        {% if relation.staff.avatar %}<img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-tertiary-container);color:var(--md3-on-tertiary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}</div>{% endif %}
+                                        {% if relation.staff.has_display_avatar %}<img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-tertiary-container);color:var(--md3-on-tertiary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}</div>{% endif %}
                                     </div>
                                     <span style="border-bottom:1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
                                 </a>
@@ -357,7 +357,7 @@
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                         <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
-                                            {% if club.president.profile.avatar %}<img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-primary-container);color:var(--md3-on-primary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}</div>{% endif %}
+                                            {% if club.president.profile.has_display_avatar %}<img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-primary-container);color:var(--md3-on-primary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}</div>{% endif %}
                                         </div>
                                         <span style="border-bottom:1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
                                     </a>
@@ -369,7 +369,7 @@
                                         {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}
                                         <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
                                             <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
-                                                {% if relation.staff.avatar %}<img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-tertiary-container);color:var(--md3-on-tertiary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}</div>{% endif %}
+                                                {% if relation.staff.has_display_avatar %}<img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<div style="width:100%;height:100%;background-color:var(--md3-tertiary-container);color:var(--md3-on-tertiary-container);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">{{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}</div>{% endif %}
                                             </div>
                                             <span style="border-bottom:1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
                                         </a>
@@ -417,8 +417,8 @@
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                    {% if club.president.profile.avatar %}
-                                        <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% if club.president.profile.has_display_avatar %}
+                                        <img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                     {% else %}
                                         <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                             {{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}
@@ -438,8 +438,8 @@
                                     {% for relation in club.responsible_staff.all %}
                                     <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                            {% if relation.staff.avatar %}
-                                                <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% if relation.staff.has_display_avatar %}
+                                                <img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                             {% else %}
                                                 <div style="width: 100%; height: 100%; background-color: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                 {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
@@ -474,8 +474,8 @@
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                            {% if club.president.profile.avatar %}
-                                                <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% if club.president.profile.has_display_avatar %}
+                                                <img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                             {% else %}
                                                 <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                     {{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}
@@ -495,8 +495,8 @@
                                             {% for relation in club.responsible_staff.all %}
                                             <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                                    {% if relation.staff.avatar %}
-                                                        <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                    {% if relation.staff.has_display_avatar %}
+                                                        <img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                                     {% else %}
                                                         <div style="width: 100%; height: 100%; background-color: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                         {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
@@ -538,8 +538,8 @@
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                    {% if club.president.profile.avatar %}
-                                        <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% if club.president.profile.has_display_avatar %}
+                                        <img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                     {% else %}
                                         <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                             {{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}
@@ -559,8 +559,8 @@
                                     {% for relation in club.responsible_staff.all %}
                                     <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                            {% if relation.staff.avatar %}
-                                                <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% if relation.staff.has_display_avatar %}
+                                                <img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                             {% else %}
                                                 <div style="width: 100%; height: 100%; background-color: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                 {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
@@ -595,8 +595,8 @@
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                            {% if club.president.profile.avatar %}
-                                                <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% if club.president.profile.has_display_avatar %}
+                                                <img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                             {% else %}
                                                 <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                     {{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}
@@ -616,8 +616,8 @@
                                             {% for relation in club.responsible_staff.all %}
                                             <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                                    {% if relation.staff.avatar %}
-                                                        <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                    {% if relation.staff.has_display_avatar %}
+                                                        <img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                                     {% else %}
                                                         <div style="width: 100%; height: 100%; background-color: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                         {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
@@ -674,8 +674,8 @@
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                    {% if club.president.profile.avatar %}
-                                        <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% if club.president.profile.has_display_avatar %}
+                                        <img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                     {% else %}
                                         <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                             {{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}
@@ -695,8 +695,8 @@
                                     {% for relation in club.responsible_staff.all %}
                                     <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                            {% if relation.staff.avatar %}
-                                                <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% if relation.staff.has_display_avatar %}
+                                                <img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                             {% else %}
                                                 <div style="width: 100%; height: 100%; background-color: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                 {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
@@ -731,8 +731,8 @@
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                            {% if club.president.profile.avatar %}
-                                                <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% if club.president.profile.has_display_avatar %}
+                                                <img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                             {% else %}
                                                 <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                     {{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}
@@ -752,8 +752,8 @@
                                             {% for relation in club.responsible_staff.all %}
                                             <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                                    {% if relation.staff.avatar %}
-                                                        <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                    {% if relation.staff.has_display_avatar %}
+                                                        <img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                                     {% else %}
                                                         <div style="width: 100%; height: 100%; background-color: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                         {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
@@ -795,8 +795,8 @@
                             {% if club.president %}
                             <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                    {% if club.president.profile.avatar %}
-                                        <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% if club.president.profile.has_display_avatar %}
+                                        <img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                     {% else %}
                                         <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                             {{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}
@@ -816,8 +816,8 @@
                                     {% for relation in club.responsible_staff.all %}
                                     <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                            {% if relation.staff.avatar %}
-                                                <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% if relation.staff.has_display_avatar %}
+                                                <img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                             {% else %}
                                                 <div style="width: 100%; height: 100%; background-color: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                 {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
@@ -852,8 +852,8 @@
                                     {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                         <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                            {% if club.president.profile.avatar %}
-                                                <img src="{{ club.president.profile.avatar.url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% if club.president.profile.has_display_avatar %}
+                                                <img src="{{ club.president.profile.display_avatar_url }}" alt="{{ club.president.profile.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                             {% else %}
                                                 <div style="width: 100%; height: 100%; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                     {{ club.president.profile.get_full_name|slice:":1"|default:club.president.username|slice:":1" }}
@@ -873,8 +873,8 @@
                                             {% for relation in club.responsible_staff.all %}
                                             <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                                                 <div style="width: 20px; height: 20px; border-radius: 50%; overflow: hidden; margin-right: 6px; flex-shrink: 0;">
-                                                    {% if relation.staff.avatar %}
-                                                        <img src="{{ relation.staff.avatar.url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                    {% if relation.staff.has_display_avatar %}
+                                                        <img src="{{ relation.staff.display_avatar_url }}" alt="{{ relation.staff.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                                     {% else %}
                                                         <div style="width: 100%; height: 100%; background-color: var(--md3-tertiary-container); color: var(--md3-on-tertiary-container); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
                                                         {{ relation.staff.get_full_name|slice:":1"|default:relation.staff.user.username|slice:":1" }}
@@ -1028,8 +1028,8 @@
                             <td class="club-col-president" data-label="社长">
                                 {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" class="club-person-link">
-                                        {% if club.president.profile.avatar %}
-                                            <img src="{{ club.president.profile.avatar.url }}" class="club-avatar" alt="{{ club.president.profile.get_full_name }}">
+                                        {% if club.president.profile.has_display_avatar %}
+                                            <img src="{{ club.president.profile.display_avatar_url }}" class="club-avatar" alt="{{ club.president.profile.get_full_name }}">
                                         {% else %}
                                             <span class="club-avatar club-avatar-fallback">
                                                 {{ club.president.profile.get_full_name|slice:":1"|upper|default:club.president.username|slice:":1"|upper }}

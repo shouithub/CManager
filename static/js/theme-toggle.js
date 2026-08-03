@@ -151,14 +151,6 @@
             themeText.textContent = theme === THEME_AUTO ? '跟随系统' : (theme === THEME_DARK ? '深色模式' : '浅色模式');
         }
 
-        // 兼容旧版按钮
-        const btn = document.getElementById('theme-toggle-btn');
-        if (btn) {
-            btn.textContent = icon;
-            btn.classList.add('material-icons');
-            btn.setAttribute('title', title);
-            btn.setAttribute('aria-label', title);
-        }
     }
 
     /**

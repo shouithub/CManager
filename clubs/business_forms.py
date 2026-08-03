@@ -56,10 +56,6 @@ def get_business_action(key: str) -> BusinessFormAction | None:
     return BUSINESS_FORM_ACTIONS.get(key)
 
 
-def get_business_action_choices():
-    return [(key, action.label) for key, action in BUSINESS_FORM_ACTIONS.items()]
-
-
 def missing_required_field_keys(channel) -> list[str]:
     action = get_business_action(channel.builtin_action)
     if not action:
@@ -251,47 +247,6 @@ def create_form_cycle(channel, name='', user=None, starts_at=None):
         starts_at=starts_at or timezone.now(),
         created_by=user,
     )
-
-
-def seed_business_form_channels(user=None):
-    from .models import FormChannel, FormField
-
-    for action in BUSINESS_FORM_ACTIONS.values():
-        channel, _ = FormChannel.objects.update_or_create(
-            slug=action.default_slug,
-            defaults={
-                'name': action.label,
-                'icon': action.default_icon,
-                'description': action.default_description,
-                'order': action.default_order,
-                'is_active': True,
-                'publish_status': 'published',
-                'is_builtin': True,
-                'builtin_action': action.key,
-                'submission_policy': action.default_policy,
-                'show_unsubmitted_status': action.show_unsubmitted_status,
-                'allow_staff_toggle': action.allow_staff_toggle,
-                'cycle_type': action.default_cycle_type,
-            },
-        )
-        for field_spec in action.fields:
-            FormField.objects.update_or_create(
-                channel=channel,
-                field_key=field_spec.key,
-                defaults={
-                    'label': field_spec.label,
-                    'field_type': field_spec.field_type,
-                    'required': field_spec.required,
-                    'order': field_spec.order,
-                    'options': field_spec.options,
-                    'validation': field_spec.validation,
-                    'placeholder': field_spec.placeholder,
-                    'help_text': field_spec.help_text,
-                    'is_active': True,
-                },
-            )
-        if action.default_policy == 'once_per_cycle' and not channel.cycles.filter(is_active=True).exists():
-            create_form_cycle(channel, user=user)
 
 
 register_business_form_action(BusinessFormAction(

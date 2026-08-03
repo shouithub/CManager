@@ -6,7 +6,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
 from django.utils import timezone
-from django.db.models import Q
 from datetime import datetime, timedelta, time
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -14,27 +13,7 @@ from openpyxl.utils import get_column_letter
 import urllib.parse
 
 from .models import RoomBooking, Room, FormSubmission, PublishedActivity
-from .views import is_staff_or_admin
-
-
-def _is_staff(user):
-    """检查用户是否为干事"""
-    if not user.is_authenticated:
-        return False
-    try:
-        return user.profile.role == 'staff'
-    except:
-        return False
-
-
-def _is_admin(user):
-    """检查用户是否为管理员"""
-    if not user.is_authenticated:
-        return False
-    try:
-        return user.profile.role == 'admin'
-    except:
-        return False
+from .permissions import has_any_role
 
 
 @login_required(login_url='clubs:login')
@@ -44,7 +23,7 @@ def export_room_bookings_weekly(request):
     表格以天为列，时间段为行
     """
     # 检查权限
-    if not is_staff_or_admin(request.user):
+    if not has_any_role(request.user, 'staff', 'admin'):
         messages.error(request, '您没有权限导出日程安排')
         return redirect('clubs:room_calendar')
     

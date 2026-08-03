@@ -36,7 +36,7 @@ import tempfile
 import threading
 import uuid
 import logging
-from urllib.parse import urljoin, urlparse, quote
+from urllib.parse import urljoin, quote
 
 from django.conf import settings
 from django.core.files.storage import Storage
@@ -50,6 +50,7 @@ logger = logging.getLogger(__name__)
 _backend_lock = threading.Lock()
 _backend_cache = {}  # {(backend_type, version, config_signature): backend_instance}
 _temp_paths_registry = threading.local()  # 临时文件清理登记
+_config_cache = {'value': None, 'expires_at': 0.0}
 
 
 # ============================================================
@@ -462,6 +463,13 @@ def cleanup_temp_files():
         registry.pop(name, None)
 
 
+def clear_storage_config_cache():
+    with _backend_lock:
+        _config_cache['value'] = None
+        _config_cache['expires_at'] = 0.0
+        _backend_cache.clear()
+
+
 # ============================================================
 # Django Storage 适配器
 # ============================================================
@@ -500,9 +508,16 @@ class ClubStorage(Storage):
 
         表不存在或未配置时返回 None，降级到本地存储。
         """
+        now = time.monotonic()
+        if _config_cache['expires_at'] > now:
+            return _config_cache['value']
         try:
             from .models import StorageConfig
-            return StorageConfig.get_active_config()
+            config = StorageConfig.get_active_config()
+            with _backend_lock:
+                _config_cache['value'] = config
+                _config_cache['expires_at'] = now + 10
+            return config
         except Exception:
             # 迁移未跑、表不存在等
             return None
@@ -540,6 +555,11 @@ class ClubStorage(Storage):
     # ============ Django Storage 接口实现 ============
 
     def _save(self, name, content):
+        # Keep fixed site assets stable; all user uploads receive unpredictable keys.
+        if getattr(settings, 'SECURE_RANDOMIZE_UPLOAD_NAMES', True) and not name.startswith('site/'):
+            directory, filename = os.path.split(name)
+            extension = os.path.splitext(filename)[1].lower()[:16]
+            name = os.path.join(directory, f'{uuid.uuid4().hex}{extension}')
         return self._backend().save(name, content)
 
     def get_available_name(self, name, max_length=None):
@@ -632,7 +652,6 @@ class ClubStorage(Storage):
                 Bucket=config_dict.get('s3_bucket_name'),
                 MaxKeys=1,
             )
-            count = response.get('KeyCount', 0)
             return True, "连接成功，bucket '%s' 可访问，当前对象数：%s" % (
                 config_dict.get('s3_bucket_name'),
                 response.get('KeyCount', 0),

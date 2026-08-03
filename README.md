@@ -118,7 +118,7 @@
 
 3.  **安装依赖**
     ```bash
-    pip install -r requirements.txt
+    pip install --require-hashes -r requirements.txt
     ```
 
 4.  **配置环境变量**
@@ -131,12 +131,15 @@
     copy .env.example .env.local
     ```
     
-    请务必修改 `.env.local` 文件中的 `SECRET_KEY` 为一个随机的安全字符串。
+    请务必修改 `.env.local` 文件中的 `SECRET_KEY`，并生成独立的
+    `CREDENTIAL_ENCRYPTION_KEY`。后者用于加密数据库中的 SMTP 密码和 S3 Secret Key，
+    丢失后无法解密已有凭据，请放入 Secret Manager 或受权限保护的环境文件中。
     
     示例 `.env.local` 配置：
     ```ini
     # 核心安全配置
     SECRET_KEY=your-long-random-secret-key
+    CREDENTIAL_ENCRYPTION_KEY=your-fernet-key
     DEBUG=True
     ALLOWED_HOSTS=localhost,127.0.0.1
     CSRF_TRUSTED_ORIGINS=http://127.0.0.1,http://localhost
@@ -151,11 +154,11 @@
     EMAIL_USE_TLS=True
     DEFAULT_FROM_EMAIL=no-reply@example.com
 
-    # 生产环境安全增强 (建议生产环境开启)
+    # 生产环境安全增强（DEBUG=False 时必须启用）
     SECURE_BROWSER_XSS_FILTER=True
     SECURE_CONTENT_TYPE_NOSNIFF=True
-    SESSION_COOKIE_SECURE=False
-    CSRF_COOKIE_SECURE=False
+    SESSION_COOKIE_SECURE=True
+    CSRF_COOKIE_SECURE=True
     X_FRAME_OPTIONS=DENY
     ```
 
@@ -164,7 +167,7 @@
     python manage.py migrate
     ```
 
-    > **生产环境提示**：如需使用 MySQL，请在 `.env.local` 中配置 `DATABASE_URL`；如需 Redis 缓存，请配置 `REDIS_URL`。详见 `.env.example`。
+    > **生产环境提示**：如需使用 MySQL，请在 `.env.local` 中配置数据库参数。`DEBUG=False` 时系统默认拒绝不安全的 Secret、Cookie 和非 Redis 缓存配置；请设置 `CACHE_BACKEND=redis` 与 `REDIS_URL`。详见 `.env.example`。
     > `clubs` 应用已使用合并迁移（squashed migration），新环境仅需执行上述迁移命令即可。
 
 6.  **首次启动初始化（推荐）**
@@ -186,12 +189,16 @@
     }
     location /media/ {
         alias /path/to/CManager/media/;
+        add_header X-Content-Type-Options nosniff always;
     }
     ```
     同时请在部署时执行：
     ```bash
     python manage.py collectstatic --noinput
+    python manage.py check --deploy
     ```
+    用户提交附件应通过应用的鉴权下载接口提供。媒体目录的完整脚本执行阻断规则见
+    `docs/nginx-media-security.conf`，部署时请合并到站点配置。
 
 ## 📖 角色使用指南
 

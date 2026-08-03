@@ -1,290 +1,642 @@
 {% extends 'clubs/base.html' %}
-{% load static %}
 
-{% block title %}{% if carousel %}编辑轮播图{% else %}添加轮播图{% endif %}{% endblock %}
+{% block title %}{% if carousel %}编辑轮播{% else %}新增轮播{% endif %} - 管理后台{% endblock %}
 
 {% block extra_css %}
 <style>
-    .dashboard-container {
-        max-width: 900px;
+    .carousel-editor-shell {
+        width: min(1400px, 100%);
         margin: 0 auto;
-        padding: var(--md3-spacing-2xl);
-        padding-bottom: calc(var(--md3-spacing-2xl) + 120px); /* 预留底栏空间 */
+        padding: clamp(18px, 3vw, var(--md3-spacing-2xl));
+        padding-bottom: 120px;
         box-sizing: border-box;
     }
-    
+
     .page-header {
         display: flex;
         align-items: center;
         gap: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-2xl);
-        padding: var(--md3-spacing-2xl);
-        background: linear-gradient(135deg, var(--md3-primary-container) 0%, var(--md3-secondary-container) 100%);
-        border-radius: var(--md3-radius-xl);
-        box-shadow: var(--md3-elevation-2);
-    }
-    
-    .page-header .material-icons {
-        font-size: 3rem;
-        color: var(--md3-primary);
-        flex-shrink: 0;
-    }
-    
-    .page-header h1 {
-        margin: 0;
-        font-size: 2rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-        white-space: nowrap;
-    }
-    
-    .form-card {
-        background: var(--md3-surface-container);
-        border-radius: var(--md3-radius-xl);
-        padding: var(--md3-spacing-2xl);
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-xl);
         border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        background: var(--md3-surface-container-low);
+    }
+
+    .page-header > .material-icons {
+        flex: 0 0 auto;
+        color: var(--md3-primary);
+        font-size: 2.5rem;
+    }
+
+    .page-header-content { flex: 1; min-width: 0; }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs);
+        color: var(--md3-on-surface);
+        font-size: 1.75rem;
+        font-weight: 600;
+    }
+
+    .page-header .subtitle {
+        margin: 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+    }
+
+    .carousel-back-action {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: 7px;
+        min-height: 40px;
+        padding: 0 15px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-low);
+        color: var(--md3-on-surface);
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .carousel-back-action:hover { border-color: var(--md3-primary); color: var(--md3-primary); }
+    .carousel-back-action .material-icons { font-size: 18px; }
+
+    .carousel-form-error {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 18px;
+        padding: 14px 16px;
+        border: 1px solid color-mix(in srgb, var(--md3-error) 35%, transparent);
+        border-radius: 16px;
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        font-size: 0.86rem;
+    }
+
+    .carousel-form-error .material-icons { font-size: 20px; }
+
+    .carousel-editor-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.55fr) minmax(310px, .75fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .carousel-editor-main,
+    .carousel-editor-aside {
+        display: grid;
+        gap: 18px;
+    }
+
+    .carousel-editor-aside { position: sticky; top: 20px; }
+
+    .carousel-form-card {
+        overflow: hidden;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 24px;
+        background: var(--md3-surface-container-low);
         box-shadow: var(--md3-elevation-1);
     }
-    
-    .form-group {
-        margin-bottom: var(--md3-spacing-xl);
-    }
-    
-    .form-group label {
-        display: block;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--md3-on-surface);
-        margin-bottom: var(--md3-spacing-sm);
-    }
-    
-    .form-group input[type="text"],
-    .form-group input[type="url"],
-    .form-group input[type="number"],
-    .form-group input[type="file"],
-    .form-group textarea {
-        width: 100%;
-        padding: var(--md3-spacing-md);
-        border: 1px solid var(--md3-outline);
-        border-radius: var(--md3-radius-md);
-        background: var(--md3-surface);
-        color: var(--md3-on-surface);
-        font-size: 1rem;
-        font-family: inherit;
-        transition: all 0.2s ease;
-    }
-    
-    .form-group input[type="text"]:focus,
-    .form-group input[type="url"]:focus,
-    .form-group input[type="number"]:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: var(--md3-primary);
-        box-shadow: 0 0 0 2px rgba(var(--md3-primary-rgb), 0.1);
-    }
-    
-    .form-group textarea {
-        min-height: 120px;
-        resize: vertical;
-    }
-    
-    .form-help {
-        font-size: 0.813rem;
-        color: var(--md3-on-surface-variant);
-        margin-top: var(--md3-spacing-xs);
-    }
-    
-    .checkbox-group {
+
+    .carousel-form-card-header {
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-sm);
+        gap: 12px;
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--md3-outline-variant);
     }
-    
-    .checkbox-group input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
+
+    .carousel-section-icon {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 13px;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .carousel-section-icon .material-icons { font-size: 20px; }
+    .carousel-form-card-header h2 { margin: 0; color: var(--md3-on-surface); font-size: 1rem; }
+    .carousel-form-card-header p { margin: 3px 0 0; color: var(--md3-on-surface-variant); font-size: 0.74rem; }
+    .carousel-form-card-body { padding: 22px; }
+
+    .carousel-field-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 150px;
+        gap: 16px;
+    }
+
+    .carousel-field { min-width: 0; margin-bottom: 20px; }
+    .carousel-field:last-child { margin-bottom: 0; }
+
+    .carousel-label-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .carousel-label-row label {
+        color: var(--md3-on-surface);
+        font-size: 0.84rem;
+        font-weight: 700;
+    }
+
+    .carousel-optional,
+    .carousel-character-count {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+
+    .carousel-input,
+    .carousel-textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 14px;
+        outline: none;
+        background: var(--md3-surface-container-lowest);
+        color: var(--md3-on-surface);
+        font: inherit;
+        font-size: 0.92rem;
+        transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .carousel-input { height: 48px; padding: 0 14px; }
+    .carousel-textarea { min-height: 116px; padding: 13px 14px; line-height: 1.55; resize: vertical; }
+
+    .carousel-input:focus,
+    .carousel-textarea:focus {
+        border-color: var(--md3-primary);
+        background: var(--md3-surface);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 16%, transparent);
+    }
+
+    .carousel-field-help {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        margin: 7px 0 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.72rem;
+        line-height: 1.45;
+    }
+
+    .carousel-field-help .material-icons { margin-top: 1px; font-size: 14px; }
+
+    .carousel-upload-zone {
+        position: relative;
+        overflow: hidden;
+        min-height: 250px;
+        border: 1px dashed var(--md3-outline);
+        border-radius: 20px;
+        background: var(--md3-surface-container-lowest);
+        transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .carousel-upload-zone:focus-within,
+    .carousel-upload-zone.is-dragging {
+        border-color: var(--md3-primary);
+        background: color-mix(in srgb, var(--md3-primary-container) 35%, var(--md3-surface-container-lowest));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 13%, transparent);
+    }
+
+    .carousel-file-input {
+        position: absolute;
+        z-index: 4;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
         cursor: pointer;
     }
-    
-    .image-preview {
-        margin-top: var(--md3-spacing-md);
-        border-radius: var(--md3-radius-lg);
-        overflow: hidden;
-        max-width: 100%;
+
+    .carousel-upload-placeholder {
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        padding: 28px;
+        text-align: center;
+        pointer-events: none;
     }
-    
-    .image-preview img {
+
+    .carousel-upload-placeholder.is-hidden { display: none; }
+
+    .carousel-upload-icon {
+        display: grid;
+        width: 58px;
+        height: 58px;
+        margin-bottom: 14px;
+        place-items: center;
+        border-radius: 20px;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .carousel-upload-icon .material-icons { font-size: 28px; }
+    .carousel-upload-placeholder strong { color: var(--md3-on-surface); font-size: 0.98rem; }
+    .carousel-upload-placeholder span { margin-top: 7px; color: var(--md3-on-surface-variant); font-size: 0.76rem; }
+
+    .carousel-selected-image {
+        position: absolute;
+        z-index: 0;
+        inset: 0;
         width: 100%;
-        height: auto;
-        max-height: 400px;
+        height: 100%;
+        display: none;
         object-fit: cover;
     }
-    
-    .form-actions {
-        display: flex;
-        gap: var(--md3-spacing-md);
-        padding-top: var(--md3-spacing-xl);
-        border-top: 1px solid var(--md3-outline-variant);
+
+    .carousel-selected-image.is-visible { display: block; }
+
+    .carousel-upload-overlay {
+        position: absolute;
+        z-index: 2;
+        right: 12px;
+        bottom: 12px;
+        display: none;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 12px;
+        border-radius: var(--md3-radius-full);
+        background: rgba(24, 20, 29, .76);
+        color: white;
+        font-size: 0.72rem;
+        font-weight: 700;
+        backdrop-filter: blur(8px);
+        pointer-events: none;
     }
-    
-    .btn {
-        flex: 1;
+
+    .carousel-upload-overlay.is-visible { display: inline-flex; }
+    .carousel-upload-overlay .material-icons { font-size: 16px; }
+
+    .carousel-file-meta {
+        min-height: 18px;
+        margin-top: 8px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.72rem;
+    }
+
+    .carousel-preview-card { overflow: hidden; }
+
+    .carousel-live-preview {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 10 / 4;
+        background:
+            linear-gradient(135deg, color-mix(in srgb, var(--md3-primary) 22%, transparent), transparent),
+            var(--md3-surface-container-highest);
+    }
+
+    .carousel-live-preview img {
+        width: 100%;
+        height: 100%;
+        display: none;
+        object-fit: cover;
+    }
+
+    .carousel-live-preview img.is-visible { display: block; }
+
+    .carousel-live-preview::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 28%, rgba(17, 15, 20, .76));
+        pointer-events: none;
+    }
+
+    .carousel-preview-empty {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .carousel-preview-empty.is-hidden { display: none; }
+    .carousel-preview-empty .material-icons { font-size: 34px; opacity: .65; }
+
+    .carousel-preview-copy {
+        position: absolute;
+        z-index: 1;
+        right: 16px;
+        bottom: 14px;
+        left: 16px;
+        color: white;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, .35);
+    }
+
+    .carousel-preview-copy strong {
+        display: block;
+        overflow: hidden;
+        font-size: 0.98rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .carousel-preview-copy span {
+        display: block;
+        margin-top: 3px;
+        overflow: hidden;
+        font-size: 0.68rem;
+        opacity: .88;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .carousel-settings-list { display: grid; gap: 16px; }
+
+    .carousel-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 15px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 16px;
+        background: var(--md3-surface-container-lowest);
+    }
+
+    .carousel-toggle-copy strong { display: block; color: var(--md3-on-surface); font-size: 0.84rem; }
+    .carousel-toggle-copy span { display: block; margin-top: 4px; color: var(--md3-on-surface-variant); font-size: 0.7rem; line-height: 1.4; }
+
+    .carousel-switch { position: relative; width: 50px; height: 30px; flex: 0 0 auto; }
+    .carousel-switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .carousel-switch-track {
+        position: absolute;
+        inset: 0;
+        border: 2px solid var(--md3-outline);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-highest);
+        cursor: pointer;
+        transition: 160ms ease;
+    }
+
+    .carousel-switch-track::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 5px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--md3-outline);
+        transform: translateY(-50%);
+        transition: 160ms ease;
+    }
+
+    .carousel-switch input:checked + .carousel-switch-track { border-color: var(--md3-primary); background: var(--md3-primary); }
+    .carousel-switch input:checked + .carousel-switch-track::after { left: 25px; background: var(--md3-on-primary); }
+    .carousel-switch input:focus-visible + .carousel-switch-track { box-shadow: 0 0 0 3px color-mix(in srgb, var(--md3-primary) 18%, transparent); }
+
+    .carousel-form-actions {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+    }
+
+    .carousel-submit,
+    .carousel-cancel {
         display: inline-flex;
+        min-height: 46px;
         align-items: center;
         justify-content: center;
-        gap: var(--md3-spacing-sm);
-        padding: var(--md3-spacing-md) var(--md3-spacing-xl);
+        gap: 8px;
+        padding: 0 18px;
         border-radius: var(--md3-radius-full);
-        font-size: 1rem;
-        font-weight: 600;
+        font: inherit;
+        font-size: 0.86rem;
+        font-weight: 700;
         text-decoration: none;
-        border: none;
         cursor: pointer;
-        transition: all 0.2s ease;
     }
-    
-    .btn .material-icons {
-        font-size: 1.25rem;
-    }
-    
-    .btn-primary {
+
+    .carousel-submit {
+        border: 0;
         background: var(--md3-primary);
         color: var(--md3-on-primary);
         box-shadow: var(--md3-elevation-2);
     }
-    
-    .btn-primary:hover {
-        box-shadow: var(--md3-elevation-3);
-        transform: translateY(-1px);
+
+    .carousel-submit:hover { transform: translateY(-1px); box-shadow: var(--md3-elevation-3); }
+    .carousel-cancel { border: 1px solid var(--md3-outline-variant); background: transparent; color: var(--md3-on-surface); }
+    .carousel-submit .material-icons, .carousel-cancel .material-icons { font-size: 18px; }
+
+    @media (max-width: 900px) {
+        .carousel-editor-grid { grid-template-columns: 1fr; }
+        .carousel-editor-aside { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .carousel-form-actions { grid-column: 1 / -1; }
     }
-    
-    .btn-secondary {
-        background: var(--md3-surface-container-high);
-        color: var(--md3-on-surface);
-    }
-    
-    .btn-secondary:hover {
-        background: var(--md3-surface-container-highest);
-    }
-    
-    .error {
-        color: var(--md3-error);
-        font-size: 0.813rem;
-        margin-top: var(--md3-spacing-xs);
-    }
-    
-    @media (max-width: 768px) {
-        .dashboard-container {
-            padding: var(--md3-spacing-lg);
-        }
-        
-        .page-header {
-            flex-direction: column;
-            text-align: center;
-        }
-        
-        .form-actions {
-            flex-direction: column;
-        }
+
+    @media (max-width: 620px) {
+        .carousel-editor-shell { padding: 16px; padding-bottom: 100px; }
+        .page-header { align-items: flex-start; flex-direction: column; text-align: left; }
+        .carousel-back-action { width: 100%; box-sizing: border-box; justify-content: center; }
+        .carousel-editor-aside { grid-template-columns: 1fr; }
+        .carousel-field-grid { grid-template-columns: 1fr; gap: 0; }
+        .carousel-form-card { border-radius: 20px; }
+        .carousel-form-card-body { padding: 18px; }
+        .carousel-upload-zone { min-height: 210px; }
+        .carousel-form-actions { grid-template-columns: 1fr; }
+        .carousel-cancel { order: 2; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <div class="page-header">
-        <span class="material-icons">{% if carousel %}edit{% else %}add{% endif %}</span>
-        <h1>{% if carousel %}编辑轮播图{% else %}添加轮播图{% endif %}</h1>
+<main class="carousel-editor-shell">
+    <header class="page-header">
+        <span class="material-icons" aria-hidden="true">{% if carousel %}edit_square{% else %}add_photo_alternate{% endif %}</span>
+        <div class="page-header-content">
+            <h1>{% if carousel %}编辑轮播内容{% else %}新增轮播内容{% endif %}</h1>
+            <p class="subtitle">{% if carousel %}调整图片、文案与发布状态，保存后首页会自动更新{% else %}上传横向主视觉，并配置访客点击后前往的页面{% endif %}</p>
+        </div>
+        <a href="{% url 'clubs:manage_carousel' %}" class="carousel-back-action">
+            <span class="material-icons" aria-hidden="true">arrow_back</span>返回列表
+        </a>
+    </header>
+
+    {% if form_error %}
+    <div class="carousel-form-error" role="alert">
+        <span class="material-icons" aria-hidden="true">error</span>
+        <span>{{ form_error }}</span>
     </div>
-    
-    <div class="form-card">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="id_title">标题</label>
-                <input type="text" id="id_title" name="title" value="{{ carousel.title|default:'' }}" maxlength="200">
-                <div class="form-help">轮播图下方显示的标题文字</div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" id="carousel-editor-form">
+        {% csrf_token %}
+        <div class="carousel-editor-grid">
+            <div class="carousel-editor-main">
+                <section class="carousel-form-card" aria-labelledby="carousel-image-heading">
+                    <div class="carousel-form-card-header">
+                        <span class="carousel-section-icon"><span class="material-icons" aria-hidden="true">image</span></span>
+                        <div><h2 id="carousel-image-heading">主视觉图片</h2><p>首页会以居中裁切的方式展示图片</p></div>
+                    </div>
+                    <div class="carousel-form-card-body">
+                        <div class="carousel-upload-zone" id="carousel-upload-zone">
+                            <input class="carousel-file-input" type="file" id="id_image" name="image" accept="image/jpeg,image/png,image/webp" {% if not carousel %}required{% endif %} aria-label="选择轮播图片">
+                            <div class="carousel-upload-placeholder {% if carousel and carousel.image %}is-hidden{% endif %}" id="carousel-upload-placeholder">
+                                <span class="carousel-upload-icon"><span class="material-icons" aria-hidden="true">add_photo_alternate</span></span>
+                                <strong>拖放图片，或点击选择</strong>
+                                <span>建议 1600 × 480，支持 JPG、PNG、WebP</span>
+                            </div>
+                            <img id="carousel-selected-image" class="carousel-selected-image {% if carousel and carousel.image %}is-visible{% endif %}" {% if carousel and carousel.image %}src="{{ carousel.image.url }}"{% endif %} alt="轮播图片预览">
+                            <span id="carousel-upload-overlay" class="carousel-upload-overlay {% if carousel and carousel.image %}is-visible{% endif %}"><span class="material-icons" aria-hidden="true">swap_horiz</span>点击替换图片</span>
+                        </div>
+                        <div class="carousel-file-meta" id="carousel-file-meta" aria-live="polite">{% if carousel and carousel.image %}当前图片：{{ carousel.image.name }}{% else %}请选择一张横向图片{% endif %}</div>
+                    </div>
+                </section>
+
+                <section class="carousel-form-card" aria-labelledby="carousel-content-heading">
+                    <div class="carousel-form-card-header">
+                        <span class="carousel-section-icon"><span class="material-icons" aria-hidden="true">text_fields</span></span>
+                        <div><h2 id="carousel-content-heading">文案与链接</h2><p>简洁的标题和描述更适合首屏阅读</p></div>
+                    </div>
+                    <div class="carousel-form-card-body">
+                        <div class="carousel-field">
+                            <div class="carousel-label-row">
+                                <label for="id_title">标题</label>
+                                <span class="carousel-character-count"><span id="title-count">0</span>/200</span>
+                            </div>
+                            <input class="carousel-input" type="text" id="id_title" name="title" value="{% if form_data %}{{ form_data.title }}{% else %}{{ carousel.title|default:'' }}{% endif %}" maxlength="200" placeholder="例如：发现校园里的无限可能">
+                        </div>
+
+                        <div class="carousel-field">
+                            <div class="carousel-label-row">
+                                <label for="id_description">描述</label>
+                                <span class="carousel-optional">选填</span>
+                            </div>
+                            <textarea class="carousel-textarea" id="id_description" name="description" placeholder="用一两句话补充活动或内容信息">{% if form_data %}{{ form_data.description }}{% else %}{{ carousel.description|default:'' }}{% endif %}</textarea>
+                        </div>
+
+                        <div class="carousel-field">
+                            <div class="carousel-label-row">
+                                <label for="id_link">跳转链接</label>
+                                <span class="carousel-optional">选填</span>
+                            </div>
+                            <input class="carousel-input" type="url" id="id_link" name="link" value="{% if form_data %}{{ form_data.link }}{% else %}{{ carousel.link|default:'' }}{% endif %}" placeholder="https://example.com/activity">
+                            <p class="carousel-field-help"><span class="material-icons" aria-hidden="true">open_in_new</span>访客点击轮播图时会打开此地址；留空则仅展示图片。</p>
+                        </div>
+                    </div>
+                </section>
             </div>
-            
-            <div class="form-group">
-                <label for="id_description">描述</label>
-                <textarea id="id_description" name="description">{{ carousel.description|default:'' }}</textarea>
-                <div class="form-help">标题下方显示的详细描述</div>
-            </div>
-            
-            <div class="form-group">
-                <label for="id_link">跳转链接</label>
-                <input type="url" id="id_link" name="link" value="{{ carousel.link|default:'' }}" placeholder="https://example.com">
-                <div class="form-help">点击轮播图时跳转的URL地址（选填）</div>
-            </div>
-            
-            <div class="form-group">
-                <label for="id_order">排序顺序</label>
-                <input type="number" id="id_order" name="order" value="{{ carousel.order|default:0 }}" min="0">
-                <div class="form-help">数字越小越靠前，相同数字按上传时间排列</div>
-            </div>
-            
-            <div class="form-group">
-                <label for="id_image">轮播图片 {% if carousel %}(选择新图片将替换原图){% endif %}</label>
-                <input type="file" id="id_image" name="image" accept="image/*" {% if not carousel %}required{% endif %}>
-                <div class="form-help">推荐尺寸: 1920x500 像素，支持 JPG、PNG 格式</div>
-                {% if carousel and carousel.image %}
-                <div class="image-preview">
-                    <img src="{{ carousel.image.url }}" alt="{{ carousel.title }}">
+
+            <aside class="carousel-editor-aside">
+                <section class="carousel-form-card carousel-preview-card" aria-labelledby="carousel-preview-heading">
+                    <div class="carousel-form-card-header">
+                        <span class="carousel-section-icon"><span class="material-icons" aria-hidden="true">preview</span></span>
+                        <div><h2 id="carousel-preview-heading">首页效果预览</h2><p>实际尺寸会随屏幕宽度变化</p></div>
+                    </div>
+                    <div class="carousel-live-preview">
+                        <div id="carousel-preview-empty" class="carousel-preview-empty {% if carousel and carousel.image %}is-hidden{% endif %}"><span class="material-icons" aria-hidden="true">panorama</span></div>
+                        <img id="carousel-live-image" class="{% if carousel and carousel.image %}is-visible{% endif %}" {% if carousel and carousel.image %}src="{{ carousel.image.url }}"{% endif %} alt="首页轮播效果预览">
+                        <div class="carousel-preview-copy">
+                            <strong id="carousel-preview-title">{% if form_data.title %}{{ form_data.title }}{% elif carousel.title %}{{ carousel.title }}{% else %}轮播标题预览{% endif %}</strong>
+                            <span id="carousel-preview-description">{% if form_data.description %}{{ form_data.description }}{% elif carousel.description %}{{ carousel.description }}{% else %}描述内容会显示在这里{% endif %}</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="carousel-form-card" aria-labelledby="carousel-publish-heading">
+                    <div class="carousel-form-card-header">
+                        <span class="carousel-section-icon"><span class="material-icons" aria-hidden="true">tune</span></span>
+                        <div><h2 id="carousel-publish-heading">发布设置</h2><p>控制展示状态与排列位置</p></div>
+                    </div>
+                    <div class="carousel-form-card-body carousel-settings-list">
+                        <div class="carousel-field">
+                            <div class="carousel-label-row"><label for="id_order">排序值</label></div>
+                            <input class="carousel-input" type="number" id="id_order" name="order" value="{% if form_data %}{{ form_data.order|default:0 }}{% else %}{{ carousel.order|default:0 }}{% endif %}" min="0" step="1" inputmode="numeric">
+                            <p class="carousel-field-help"><span class="material-icons" aria-hidden="true">low_priority</span>数字越小越靠前。</p>
+                        </div>
+
+                        <div class="carousel-toggle-row">
+                            <div class="carousel-toggle-copy">
+                                <strong>在首页展示</strong>
+                                <span>关闭后内容仍会保留，但访客不可见。</span>
+                            </div>
+                            <label class="carousel-switch" aria-label="在首页展示">
+                                <input type="checkbox" id="id_is_active" name="is_active" {% if form_data %}{% if form_data.is_active %}checked{% endif %}{% elif carousel.is_active or not carousel %}checked{% endif %}>
+                                <span class="carousel-switch-track" aria-hidden="true"></span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="carousel-form-actions">
+                    <button type="submit" class="carousel-submit">
+                        <span class="material-icons" aria-hidden="true">{% if carousel %}save{% else %}publish{% endif %}</span>
+                        {% if carousel %}保存更改{% else %}创建轮播{% endif %}
+                    </button>
+                    <a href="{% url 'clubs:manage_carousel' %}" class="carousel-cancel" aria-label="取消"><span class="material-icons" aria-hidden="true">close</span></a>
                 </div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <div class="checkbox-group">
-                    <input type="checkbox" id="id_is_active" name="is_active" {% if carousel.is_active or not carousel %}checked{% endif %}>
-                    <label for="id_is_active" style="margin: 0;">激活显示</label>
-                </div>
-                <div class="form-help">仅激活的轮播图会在首页显示</div>
-            </div>
-            
-            {% if form.errors %}
-            <div class="error">
-                {% for field, errors in form.errors.items %}
-                    {% for error in errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    <span class="material-icons">save</span>
-                    保存
-                </button>
-                <a href="{% url 'clubs:manage_carousel' %}" class="btn btn-secondary">
-                    <span class="material-icons">cancel</span>
-                    取消
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
+            </aside>
+        </div>
+    </form>
+</main>
 
 <script>
-// 图片预览
-document.getElementById('id_image').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            let preview = document.querySelector('.image-preview');
-            if (!preview) {
-                preview = document.createElement('div');
-                preview.className = 'image-preview';
-                e.target.parentElement.appendChild(preview);
-            }
-            preview.innerHTML = `<img src="${event.target.result}" alt="预览">`;
-        };
-        reader.readAsDataURL(file);
+(function () {
+    const input = document.getElementById('id_image');
+    const zone = document.getElementById('carousel-upload-zone');
+    const selectedImage = document.getElementById('carousel-selected-image');
+    const liveImage = document.getElementById('carousel-live-image');
+    const placeholder = document.getElementById('carousel-upload-placeholder');
+    const previewEmpty = document.getElementById('carousel-preview-empty');
+    const overlay = document.getElementById('carousel-upload-overlay');
+    const fileMeta = document.getElementById('carousel-file-meta');
+    const title = document.getElementById('id_title');
+    const description = document.getElementById('id_description');
+    const previewTitle = document.getElementById('carousel-preview-title');
+    const previewDescription = document.getElementById('carousel-preview-description');
+    const titleCount = document.getElementById('title-count');
+    let objectUrl = null;
+
+    function syncCopy() {
+        previewTitle.textContent = title.value.trim() || '轮播标题预览';
+        previewDescription.textContent = description.value.trim() || '描述内容会显示在这里';
+        titleCount.textContent = title.value.length;
     }
-});
+
+    function formatSize(bytes) {
+        if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+        return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    }
+
+    input.addEventListener('change', function () {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        objectUrl = URL.createObjectURL(file);
+        selectedImage.src = objectUrl;
+        liveImage.src = objectUrl;
+        selectedImage.classList.add('is-visible');
+        liveImage.classList.add('is-visible');
+        placeholder.classList.add('is-hidden');
+        previewEmpty.classList.add('is-hidden');
+        overlay.classList.add('is-visible');
+        fileMeta.textContent = file.name + ' · ' + formatSize(file.size);
+    });
+
+    ['dragenter', 'dragover'].forEach(function (eventName) {
+        input.addEventListener(eventName, function () { zone.classList.add('is-dragging'); });
+    });
+    ['dragleave', 'drop'].forEach(function (eventName) {
+        input.addEventListener(eventName, function () { zone.classList.remove('is-dragging'); });
+    });
+
+    title.addEventListener('input', syncCopy);
+    description.addEventListener('input', syncCopy);
+    syncCopy();
+})();
 </script>
 {% endblock %}

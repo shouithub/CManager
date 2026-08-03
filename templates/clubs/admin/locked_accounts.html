@@ -123,8 +123,8 @@
         {% for u in locked %}
         <div class="user-row">
             <a href="{% url 'clubs:user_detail' u.id %}" class="user-avatar">
-                {% if u.profile.avatar %}
-                    <img src="{{ u.profile.avatar.url }}" alt="{{ u.username }}">
+                {% if u.profile.has_display_avatar %}
+                    <img src="{{ u.profile.display_avatar_url }}" alt="{{ u.username }}">
                 {% else %}
                     {{ u.profile.get_full_name|slice:":1"|default:u.username|slice:":1"|upper }}
                 {% endif %}
