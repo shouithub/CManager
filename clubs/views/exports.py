@@ -12,8 +12,8 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 import urllib.parse
 
-from .models import RoomBooking, Room, FormSubmission, PublishedActivity
-from .permissions import has_any_role
+from ..models import RoomBooking, Room, FormSubmission, PublishedActivity
+from ..permissions import has_any_role
 
 
 @login_required(login_url='clubs:login')

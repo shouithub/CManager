@@ -11,14 +11,14 @@ from django.db import IntegrityError, connection, transaction
 from django.test import TestCase
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
 
-from .avatar_utils import clear_avatar_settings_cache, get_profile_avatar_url
-from .models import Club, ClubMember, RegistrationToken, Room, RoomBooking, SiteSettings, SMTPConfig
-from .services.booking_service import BookingConflictError, create_room_booking
-from .services.registration_service import (
+from ..avatar_utils import clear_avatar_settings_cache, get_profile_avatar_url
+from ..models import Club, ClubMember, FormChannel, RegistrationToken, Room, RoomBooking, SiteSettings, SMTPConfig
+from ..services.booking_service import BookingConflictError, create_room_booking
+from ..services.registration_service import (
     RegistrationTokenUnavailable,
     register_member_with_token,
 )
-from .upload_security import validate_upload
+from ..upload_security import validate_upload
 
 
 class AvatarServiceTests(TestCase):
@@ -61,9 +61,10 @@ class AvatarServiceTests(TestCase):
         response = self.client.post(
             reverse('clubs:manage_favicon'),
             {'form_type': 'avatar_settings', 'cravatar_enabled': 'on'},
+            secure=True,
         )
 
-        self.assertRedirects(response, reverse('clubs:manage_favicon'))
+        self.assertRedirects(response, reverse('clubs:manage_favicon'), fetch_redirect_response=False)
         self.config.refresh_from_db()
         self.assertTrue(self.config.cravatar_enabled)
 
@@ -72,9 +73,14 @@ class AvatarServiceTests(TestCase):
         response = self.client.post(
             reverse('clubs:edit_profile'),
             {'action': 'use_cravatar', 'avatar_email': 'Avatar@Example.com'},
+            secure=True,
         )
 
-        self.assertRedirects(response, f"{reverse('clubs:edit_profile')}?tab=avatar")
+        self.assertRedirects(
+            response,
+            f"{reverse('clubs:edit_profile')}?tab=avatar",
+            fetch_redirect_response=False,
+        )
         self.user.profile.refresh_from_db()
         self.assertEqual(self.user.profile.avatar_email, 'avatar@example.com')
         self.assertEqual(self.user.profile.avatar_source, 'cravatar')
@@ -85,9 +91,14 @@ class AvatarServiceTests(TestCase):
         response = self.client.post(
             reverse('clubs:edit_profile'),
             {'action': 'use_cravatar', 'avatar_email': 'missing@example.com'},
+            secure=True,
         )
 
-        self.assertRedirects(response, f"{reverse('clubs:edit_profile')}?tab=avatar")
+        self.assertRedirects(
+            response,
+            f"{reverse('clubs:edit_profile')}?tab=avatar",
+            fetch_redirect_response=False,
+        )
         self.user.profile.refresh_from_db()
         self.assertEqual(self.user.profile.avatar_email, '')
         self.assertEqual(self.user.profile.avatar_source, 'local')
@@ -102,9 +113,14 @@ class AvatarServiceTests(TestCase):
         response = self.client.post(
             reverse('clubs:edit_profile'),
             {'action': 'use_local_avatar'},
+            secure=True,
         )
 
-        self.assertRedirects(response, f"{reverse('clubs:edit_profile')}?tab=avatar")
+        self.assertRedirects(
+            response,
+            f"{reverse('clubs:edit_profile')}?tab=avatar",
+            fetch_redirect_response=False,
+        )
         profile.refresh_from_db()
         self.assertEqual(profile.avatar_source, 'local')
 
@@ -158,12 +174,22 @@ class BookingServiceTests(TestCase):
         booking = self.create_booking()
         self.client.force_login(self.user)
 
-        confirmation = self.client.get(reverse('clubs:delete_room_booking', args=[booking.pk]))
+        confirmation = self.client.get(
+            reverse('clubs:delete_room_booking', args=[booking.pk]),
+            secure=True,
+        )
         self.assertEqual(confirmation.status_code, 200)
         self.assertTrue(RoomBooking.objects.filter(pk=booking.pk).exists())
 
-        response = self.client.post(reverse('clubs:delete_room_booking', args=[booking.pk]))
-        self.assertRedirects(response, reverse('clubs:my_room_bookings'))
+        response = self.client.post(
+            reverse('clubs:delete_room_booking', args=[booking.pk]),
+            secure=True,
+        )
+        self.assertRedirects(
+            response,
+            reverse('clubs:my_room_bookings'),
+            fetch_redirect_response=False,
+        )
         self.assertFalse(RoomBooking.objects.filter(pk=booking.pk).exists())
 
 
@@ -288,9 +314,13 @@ class SecurityInfrastructureTests(TestCase):
         member = User.objects.create_user('ordinary-member', password='password')
         self.client.force_login(member)
 
-        response = self.client.get(reverse('clubs:download_file'), {'file_path': 'anything.pdf'})
+        response = self.client.get(
+            reverse('clubs:download_file'),
+            {'file_path': 'anything.pdf'},
+            secure=True,
+        )
 
-        self.assertRedirects(response, reverse('clubs:index'))
+        self.assertRedirects(response, reverse('clubs:index'), fetch_redirect_response=False)
 
 
 class StaticPageSmokeTests(TestCase):
@@ -322,5 +352,23 @@ class StaticPageSmokeTests(TestCase):
                 continue
             with self.subTest(route=name):
                 self.client.force_login(self.admin)
-                response = self.client.get(reverse(name), follow=False)
+                response = self.client.get(reverse(name), follow=False, secure=True)
                 self.assertLess(response.status_code, 500, f'{name} returned {response.status_code}')
+
+    def test_form_channel_admin_exposes_status_overview_and_search(self):
+        initial_count = FormChannel.objects.count()
+        FormChannel.objects.create(
+            name='界面测试通道',
+            slug='ui-test-channel',
+            publish_status='published',
+            is_active=True,
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse('clubs:manage_form_channels'), secure=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['channel_summary']['total'], initial_count + 1)
+        self.assertGreaterEqual(response.context['channel_summary']['published'], 1)
+        self.assertContains(response, 'js-channel-search')
+        self.assertContains(response, '通道状态概览')

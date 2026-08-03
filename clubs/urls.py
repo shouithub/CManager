@@ -1,11 +1,11 @@
 # type: ignore
 from django.urls import path
-from . import views
-from . import oobe_views
-from . import auth_views
-from . import export_views
-from . import activity_views
-from . import admin_settings_views
+from .views import core as views
+from .views import oobe as oobe_views
+from .views import auth as auth_views
+from .views import exports as export_views
+from .views import activities as activity_views
+from .views import admin_settings as admin_settings_views
 
 app_name = 'clubs'
 

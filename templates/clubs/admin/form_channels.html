@@ -46,6 +46,73 @@
         white-space: nowrap;
     }
 
+    .builder-heading {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 0;
+    }
+
+    .builder-heading-icon {
+        width: 52px;
+        height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        border-radius: 18px;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .builder-heading-icon .material-icons {
+        font-size: 1.7rem;
+    }
+
+    .channel-overview {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .overview-card {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr);
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-low);
+    }
+
+    .overview-icon {
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: var(--md3-surface-container-high);
+        color: var(--md3-primary);
+    }
+
+    .overview-value {
+        display: block;
+        color: var(--md3-on-surface);
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    .overview-label {
+        display: block;
+        margin-top: 3px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.78rem;
+    }
+
     .builder-grid {
         display: grid;
         grid-template-columns: 320px minmax(0, 1fr);
@@ -65,7 +132,7 @@
     .channel-rail {
         position: sticky;
         top: var(--md3-spacing-lg);
-        overflow: visible;
+        overflow: hidden;
     }
 
     .rail-header {
@@ -92,9 +159,53 @@
         display: flex;
         flex-direction: column;
         gap: 6px;
-        max-height: none;
-        overflow: visible;
+        max-height: min(62vh, 620px);
+        overflow-y: auto;
         padding: 10px;
+        scrollbar-width: thin;
+    }
+
+    .rail-search {
+        position: relative;
+        padding: 10px 10px 0;
+    }
+
+    .rail-search .material-icons {
+        position: absolute;
+        top: 21px;
+        left: 22px;
+        color: var(--md3-on-surface-variant);
+        font-size: 1.1rem;
+        pointer-events: none;
+    }
+
+    .rail-search-input {
+        width: 100%;
+        min-height: 40px;
+        padding: 8px 12px 8px 38px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface);
+        color: var(--md3-on-surface);
+        box-sizing: border-box;
+        font: inherit;
+    }
+
+    .rail-search-input:focus {
+        outline: 2px solid color-mix(in srgb, var(--md3-primary) 26%, transparent);
+        border-color: var(--md3-primary);
+    }
+
+    .channel-item[hidden],
+    .rail-filter-empty[hidden] {
+        display: none;
+    }
+
+    .rail-filter-empty {
+        padding: 18px 12px;
+        color: var(--md3-on-surface-variant);
+        text-align: center;
+        font-size: 0.86rem;
     }
 
     .channel-item {
@@ -137,6 +248,7 @@
     }
 
     .channel-name {
+        display: block;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -144,6 +256,7 @@
     }
 
     .channel-meta {
+        display: block;
         margin-top: 2px;
         color: var(--md3-on-surface-variant);
         font-size: 0.78rem;
@@ -251,13 +364,15 @@
 
     .channel-action-bar {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
         gap: 12px;
         margin-top: 16px;
         padding: 14px;
         border: 1px solid var(--md3-outline-variant);
         border-radius: var(--md3-radius-lg);
         background: var(--md3-surface-container);
+        box-shadow: 0 8px 28px color-mix(in srgb, var(--md3-shadow, #000) 10%, transparent);
     }
 
     .channel-action-copy {
@@ -519,11 +634,50 @@
 
     .question-head {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 190px auto;
+        grid-template-columns: minmax(0, 1fr) 190px minmax(180px, auto);
         gap: 10px;
         align-items: center;
         margin-bottom: var(--md3-spacing-md);
         padding-top: 4px;
+    }
+
+    .question-head-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .question-head-actions form {
+        margin: 0;
+    }
+
+    .question-card.is-collapsed {
+        padding-bottom: 12px;
+    }
+
+    .question-card.is-collapsed > form {
+        display: none;
+    }
+
+    .question-card.is-collapsed .question-title-input,
+    .question-card.is-collapsed .js-field-type {
+        border-color: transparent;
+        background: transparent;
+        box-shadow: none;
+        pointer-events: none;
+    }
+
+    .question-card.is-collapsed .question-head {
+        margin-bottom: 0;
+    }
+
+    .question-toggle .material-icons {
+        transition: transform 0.18s ease;
+    }
+
+    .question-toggle[aria-expanded="true"] .material-icons {
+        transform: rotate(180deg);
     }
 
     .question-title-input {
@@ -667,7 +821,12 @@
 
         .builder-header {
             flex-direction: column;
+            align-items: stretch;
             margin-bottom: var(--md3-spacing-lg);
+        }
+
+        .channel-overview {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .builder-grid {
@@ -687,6 +846,10 @@
             scroll-snap-type: x proximity;
         }
 
+        .rail-search {
+            display: none;
+        }
+
         .channel-item {
             min-width: 220px;
             scroll-snap-align: start;
@@ -701,6 +864,33 @@
 
         .builder-header h1 {
             font-size: 1.35rem;
+        }
+
+        .builder-heading {
+            align-items: flex-start;
+        }
+
+        .builder-heading-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+        }
+
+        .channel-overview {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .overview-card {
+            grid-template-columns: 34px minmax(0, 1fr);
+            gap: 9px;
+            padding: 11px;
+        }
+
+        .overview-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 11px;
         }
 
         .form-cover,
@@ -762,14 +952,36 @@
 {% block content %}
 <div class="forms-admin-page">
     <header class="builder-header">
-        <div>
-            <h1>提交通道管理</h1>
-            <p>像配置问卷一样管理社长可提交的通道、字段、上传材料和审核后的内置动作。</p>
+        <div class="builder-heading">
+            <span class="builder-heading-icon"><span class="material-icons">account_tree</span></span>
+            <div>
+                <h1>提交通道管理</h1>
+                <p>统一配置提交入口、表单字段、审核策略与业务动作。</p>
+            </div>
         </div>
         <a class="btn btn-primary" href="{% url 'clubs:manage_form_channels' %}?new=1">
             <span class="material-icons">add</span>新增通道
         </a>
     </header>
+
+    <section class="channel-overview" aria-label="通道状态概览">
+        <div class="overview-card">
+            <span class="overview-icon"><span class="material-icons">dynamic_form</span></span>
+            <span><strong class="overview-value">{{ channel_summary.total }}</strong><span class="overview-label">全部通道</span></span>
+        </div>
+        <div class="overview-card">
+            <span class="overview-icon"><span class="material-icons">public</span></span>
+            <span><strong class="overview-value">{{ channel_summary.published }}</strong><span class="overview-label">对外开放</span></span>
+        </div>
+        <div class="overview-card">
+            <span class="overview-icon"><span class="material-icons">edit_note</span></span>
+            <span><strong class="overview-value">{{ channel_summary.draft }}</strong><span class="overview-label">草稿</span></span>
+        </div>
+        <div class="overview-card">
+            <span class="overview-icon"><span class="material-icons">warning_amber</span></span>
+            <span><strong class="overview-value">{{ channel_summary.attention }}</strong><span class="overview-label">需要处理</span></span>
+        </div>
+    </section>
 
     <div class="builder-grid">
         <aside class="channel-rail">
@@ -777,14 +989,20 @@
                 <h2 class="rail-title"><span class="material-icons">view_sidebar</span>通道</h2>
                 <span class="count-pill">{{ channels|length }}</span>
             </div>
+            {% if channels %}
+            <label class="rail-search">
+                <span class="material-icons">search</span>
+                <input class="rail-search-input js-channel-search" type="search" placeholder="搜索名称或标识" autocomplete="off">
+            </label>
+            {% endif %}
             <div class="rail-list">
                 {% for channel in channels %}
-                <a href="{% url 'clubs:manage_form_channels_detail' channel.id %}" class="channel-item {% if current and current.id == channel.id %}active{% endif %}">
+                <a href="{% url 'clubs:manage_form_channels_detail' channel.id %}" class="channel-item {% if current and current.id == channel.id %}active{% endif %}" data-channel-search="{{ channel.name|lower }} {{ channel.slug|lower }}">
                     <span class="channel-icon"><span class="material-icons">{{ channel.icon }}</span></span>
                     <span class="channel-main">
                         <span class="channel-name">{{ channel.name }}</span>
                         <span class="channel-meta">
-                            {{ channel.fields.count }} 个字段
+                            {{ channel.field_count }} 个字段
                             {% if channel.publish_status == 'draft' %} · 草稿{% endif %}
                             {% if channel.missing_required_fields %} · 未就绪{% endif %}
                         </span>
@@ -799,6 +1017,7 @@
                     还没有通道
                 </div>
                 {% endfor %}
+                <div class="rail-filter-empty" hidden>没有匹配的通道</div>
             </div>
             <div class="rail-actions">
                 <a class="btn btn-outlined" href="{% url 'clubs:manage_form_channels' %}?new=1">
@@ -967,7 +1186,7 @@
             </div>
 
             {% for field in current.fields.all %}
-            <section class="question-card js-question-card{% if field.field_key in locked_field_keys %} is-locked{% endif %}">
+            <section class="question-card js-question-card is-collapsed{% if field.field_key in locked_field_keys %} is-locked{% endif %}">
                 <div class="question-head">
                     <input form="field-form-{{ field.id }}" class="field-control question-title-input js-label-input" name="label" value="{{ field.label }}" required placeholder="问题标题" {% if field.field_key in locked_field_keys %}disabled{% endif %}>
                     <select form="field-form-{{ field.id }}" class="field-control js-field-type" name="field_type" {% if field.field_key in locked_field_keys %}disabled{% endif %}>
@@ -975,16 +1194,21 @@
                         <option value="{{ value }}" {% if field.field_type == value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
-                    {% if field.field_key in locked_field_keys %}
-                    <span class="state-pill">业务锁定</span>
-                    {% else %}
-                    <form method="post" action="{% url 'clubs:delete_form_field' current.id field.id %}">
-                        {% csrf_token %}
-                        <button class="btn btn-soft-danger" type="submit" onclick="return confirm('确定删除这个字段吗？')">
-                            <span class="material-icons">delete</span>删除
+                    <div class="question-head-actions">
+                        <button class="btn btn-outlined question-toggle js-question-toggle" type="button" aria-expanded="false">
+                            <span class="material-icons">expand_more</span><span class="js-toggle-label">展开</span>
                         </button>
-                    </form>
-                    {% endif %}
+                        {% if field.field_key in locked_field_keys %}
+                        <span class="state-pill">业务锁定</span>
+                        {% else %}
+                        <form method="post" action="{% url 'clubs:delete_form_field' current.id field.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-soft-danger" type="submit" onclick="return confirm('确定删除这个字段吗？')">
+                                <span class="material-icons">delete</span>删除
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <form id="field-form-{{ field.id }}" method="post" enctype="multipart/form-data" action="{% url 'clubs:edit_form_field' current.id field.id %}">
@@ -1286,6 +1510,22 @@
 {% block extra_js %}
 <script>
     (function () {
+        const channelSearch = document.querySelector('.js-channel-search');
+        if (channelSearch) {
+            const channelItems = Array.from(document.querySelectorAll('.channel-item[data-channel-search]'));
+            const filterEmpty = document.querySelector('.rail-filter-empty');
+            channelSearch.addEventListener('input', function () {
+                const keyword = channelSearch.value.trim().toLowerCase();
+                let visibleCount = 0;
+                channelItems.forEach(function (item) {
+                    const matched = !keyword || (item.dataset.channelSearch || '').includes(keyword);
+                    item.hidden = !matched;
+                    if (matched) visibleCount += 1;
+                });
+                if (filterEmpty) filterEmpty.hidden = visibleCount !== 0;
+            });
+        }
+
         function normalizeKey(value, fallback) {
             return value
                 .trim()
@@ -1347,9 +1587,25 @@
 
         function lockBusinessField(card) {
             if (!card.classList.contains('is-locked')) return;
-            card.querySelectorAll('input, select, textarea, button').forEach(function (control) {
+            card.querySelectorAll('input, select, textarea, button:not(.js-question-toggle)').forEach(function (control) {
                 control.disabled = true;
             });
+        }
+
+        function initQuestionToggle(card) {
+            const toggle = card.querySelector('.js-question-toggle');
+            if (!toggle) return;
+            const label = toggle.querySelector('.js-toggle-label');
+            function sync() {
+                const expanded = !card.classList.contains('is-collapsed');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                if (label) label.textContent = expanded ? '收起' : '展开';
+            }
+            toggle.addEventListener('click', function () {
+                card.classList.toggle('is-collapsed');
+                sync();
+            });
+            sync();
         }
 
         function initOptionEditor(card) {
@@ -1420,6 +1676,7 @@
             initOptionEditor(card);
             syncWordMergeOption(card);
             lockBusinessField(card);
+            initQuestionToggle(card);
             if (typeSelect) {
                 typeSelect.addEventListener('change', function () {
                     syncTypeSections(card);

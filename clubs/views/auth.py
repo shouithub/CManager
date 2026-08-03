@@ -8,7 +8,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 from django.conf import settings
 from django.contrib import messages
 from django.utils.http import url_has_allowed_host_and_scheme
-from .models import UserProfile, Club, FormChannel, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
+from ..models import UserProfile, Club, FormChannel, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
 from datetime import datetime
 from django.utils import timezone
 from django.db.models import Q, Prefetch
@@ -19,9 +19,9 @@ from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.core.exceptions import ObjectDoesNotExist
-from .lifecycle_utils import extend_inactive_account
-from .business_forms import externally_available_channels
-from .identity import (
+from ..lifecycle_utils import extend_inactive_account
+from ..business_forms import externally_available_channels
+from ..identity import (
     IDENTITY_PRESIDENT,
     IDENTITY_PRIMARY,
     IDENTITY_SESSION_KEY,
@@ -99,7 +99,7 @@ def register(request):
             if not department_id:
                 errors.append('干事必须选择部门')
             else:
-                from .models import Department
+                from ..models import Department
                 try:
                     department_obj = Department.objects.get(id=department_id)
                     department = department_obj.name
@@ -112,7 +112,7 @@ def register(request):
                 errors.append('社长必须选择政治面貌')
         
         if errors:
-            from .models import Department
+            from ..models import Department
             departments = Department.objects.all().order_by('order', 'name')
             return render(request, 'clubs/auth/register.html', {
                 'errors': errors,
@@ -152,7 +152,7 @@ def register(request):
         messages.success(request, message_text)
         return redirect('clubs:login')
     
-    from .models import Department
+    from ..models import Department
     departments = Department.objects.all().order_by('order', 'name')
     return render(request, 'clubs/auth/register.html', {'departments': departments})
 
@@ -416,7 +416,7 @@ def manage_staff_clubs(request):
         selected_club_ids = request.POST.getlist('club_ids', [])
         
         # 更新StaffClubRelation
-        from .models import StaffClubRelation, Club
+        from ..models import StaffClubRelation, Club
         
         # 先将所有现有关联设置为inactive
         StaffClubRelation.objects.filter(staff=profile, is_active=True).update(is_active=False)
@@ -440,7 +440,7 @@ def manage_staff_clubs(request):
         return redirect('clubs:manage_staff_clubs')
     
     # 获取所有社团
-    from .models import Club, StaffClubRelation
+    from ..models import Club, StaffClubRelation
     all_clubs = Club.objects.all().order_by('name')
     
     # 获取当前干事已选中的社团ID
@@ -557,7 +557,7 @@ def edit_profile(request):
         elif action == 'use_cravatar':
             from django.core.validators import validate_email
             from django.core.exceptions import ValidationError
-            from .avatar_utils import cravatar_exists, get_avatar_settings, normalize_avatar_email
+            from ..avatar_utils import cravatar_exists, get_avatar_settings, normalize_avatar_email
             if not get_avatar_settings():
                 messages.error(request, '管理员暂未开放 Cravatar')
                 return redirect(f"{reverse('clubs:edit_profile')}?tab=avatar")
@@ -598,7 +598,7 @@ def edit_profile(request):
                 if is_async_upload:
                     payload = {'ok': ok, 'message': message}
                     if ok:
-                        from .avatar_utils import get_profile_avatar_url
+                        from ..avatar_utils import get_profile_avatar_url
                         payload['avatar_url'] = get_profile_avatar_url(profile, request=request, size=256)
                     return JsonResponse(payload, status=200 if ok else 400)
                 if ok:
@@ -622,7 +622,7 @@ def edit_profile(request):
 
             if avatar_file:
                 try:
-                    from .upload_security import validate_upload
+                    from ..upload_security import validate_upload
                     upload_error = validate_upload(
                         avatar_file,
                         field_name='头像',
@@ -678,7 +678,7 @@ def edit_profile(request):
         'profile': profile,
         'political_status_choices': UserProfile.POLITICAL_STATUS_CHOICES,
     }
-    from .avatar_utils import get_avatar_settings, get_profile_avatar_url
+    from ..avatar_utils import get_avatar_settings, get_profile_avatar_url
     context.update({
         'cravatar_enabled': get_avatar_settings(),
         'resolved_avatar_url': get_profile_avatar_url(profile, request=request, size=256),
@@ -701,7 +701,7 @@ def staff_management(request):
         messages.error(request, '用户角色未配置')
         return redirect('clubs:login')
     
-    from .models import Club, FormSubmission, StaffClubRelation, Officer
+    from ..models import Club, FormSubmission, StaffClubRelation, Officer
     annual_channel = FormChannel.objects.filter(builtin_action='annual_review').first()
     registration_channel = FormChannel.objects.filter(builtin_action='club_registration').first()
     toggle_channels = list(
@@ -897,8 +897,8 @@ def verify_email(request):
 @login_required(login_url=settings.LOGIN_URL)
 def resend_verification_code(request):
     """重新发送验证码"""
-    from .email_utils import send_verification_email
-    from .models import EmailVerificationCode
+    from ..email_utils import send_verification_email
+    from ..models import EmailVerificationCode
     
     user = request.user
     

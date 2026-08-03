@@ -10,9 +10,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
-from .identity import is_president_mode
-from .models import ActivityRegistration, Club, ClubMember, PublishedActivity
-from .permissions import president_club_ids, roles_required, user_role
+from ..identity import is_president_mode
+from ..models import ActivityRegistration, Club, ClubMember, PublishedActivity
+from ..permissions import president_club_ids, roles_required, user_role
 
 
 @roles_required('staff', 'admin', 'president', 'member')

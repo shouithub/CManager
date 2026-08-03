@@ -32,8 +32,8 @@ import tempfile
 import csv
 import io
 import json
-from .models import Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission, FormSubmissionReview, FormFieldValue, FormUploadedFile, Announcement, StaffClubRelation, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken
-from .business_forms import (
+from ..models import Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission, FormSubmissionReview, FormFieldValue, FormUploadedFile, Announcement, StaffClubRelation, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken
+from ..business_forms import (
     BusinessActionError,
     apply_business_action,
     create_form_cycle,
@@ -45,20 +45,20 @@ from .business_forms import (
     missing_required_field_keys,
 )
 from PIL import Image
-from .site_assets import process_site_logo
-from .lifecycle_utils import mark_profile_inactive
-from .identity import is_president_mode
-from .services.booking_service import (
+from ..site_assets import process_site_logo
+from ..lifecycle_utils import mark_profile_inactive
+from ..identity import is_president_mode
+from ..services.booking_service import (
     BookingConflictError,
     create_room_booking,
     update_room_booking,
 )
-from .services.registration_service import (
+from ..services.registration_service import (
     RegistrationTokenUnavailable,
     register_member_with_token,
 )
-from .upload_security import validate_upload
-from .permissions import (
+from ..upload_security import validate_upload
+from ..permissions import (
     has_any_role,
     is_president_of_club as _is_president_of_club,
     president_club_ids as _get_president_club_ids,
@@ -197,7 +197,7 @@ def download_submission_file(request, file_id):
     if not uploaded.file:
         raise Http404('文件不存在')
 
-    from .models import StorageConfig
+    from ..models import StorageConfig
     if StorageConfig.is_s3_active():
         try:
             url = uploaded.file.storage.get_presigned_url(
@@ -302,7 +302,7 @@ def user_detail(request, user_id):
 
 def index(request):
     """首页 - 显示部门介绍、社团信息和最新公告"""
-    from .models import Department
+    from ..models import Department
 
     # 共享数据（所有用户类型复用，缓存30秒）
     departments = cache.get('index:departments:v1')
@@ -335,7 +335,7 @@ def index(request):
 
     if staff_admin:
         # 为干事和管理员显示部门介绍和树状图
-        from .models import StaffClubRelation
+        from ..models import StaffClubRelation
 
         # 获取组织统计
         total_staff = UserProfile.objects.filter(role='staff', status='approved').count()
@@ -3346,7 +3346,7 @@ def manage_favicon(request):
             messages.success(request, '站点字体设置已保存，刷新页面后生效')
             return redirect('clubs:manage_favicon')
         elif form_type == 'avatar_settings':
-            from .avatar_utils import clear_avatar_settings_cache
+            from ..avatar_utils import clear_avatar_settings_cache
             cfg = SiteSettings.get_settings()
             cfg.cravatar_enabled = request.POST.get('cravatar_enabled') == 'on'
             cfg.save(update_fields=['cravatar_enabled'])
@@ -3407,7 +3407,7 @@ def get_department_members(request, department_id):
     members_data = []
 
     for member in members:
-        from .avatar_utils import get_profile_avatar_url
+        from ..avatar_utils import get_profile_avatar_url
         avatar_url = get_profile_avatar_url(member, request=request, size=96) or None
         item = {
             'id': member.user.id,
@@ -3821,7 +3821,7 @@ def _build_merged_word_file(field, uploaded_records):
         finally:
             # S3 模式下 path() 会下载到 /tmp，用完立即释放
             try:
-                from .storage_backends import cleanup_temp_files
+                from ..storage_backends import cleanup_temp_files
                 cleanup_temp_files()
             except Exception:
                 pass
@@ -3923,7 +3923,7 @@ def _office_preview_url(request, uploaded):
         return ''
     # 走存储抽象层：S3 模式返回 S3/CDN 直链（不经本站代理），
     # 本地模式返回相对 MEDIA_URL，再由 build_absolute_uri 补全为绝对 URL。
-    from .storage_backends import ClubStorage
+    from ..storage_backends import ClubStorage
     storage = ClubStorage()
     try:
         direct_url = storage.get_public_url(uploaded.file.name)
@@ -4435,8 +4435,18 @@ def manage_form_channels(request, channel_id=None):
     is_creating = request.GET.get('new') == '1'
     channels = list(channels)
     for channel in channels:
+        channel.field_count = len(channel.fields.all())
         channel.missing_required_fields = missing_required_field_keys(channel)
         channel.is_externally_available = is_channel_externally_available(channel)
+    channel_summary = {
+        'total': len(channels),
+        'published': sum(1 for channel in channels if channel.is_externally_available),
+        'draft': sum(1 for channel in channels if channel.publish_status == 'draft'),
+        'attention': sum(
+            1 for channel in channels
+            if not channel.is_active or channel.missing_required_fields
+        ),
+    }
     current = None if is_creating else (get_object_or_404(FormChannel, pk=channel_id) if channel_id else (channels[0] if channels else None))
     if current:
         current.missing_required_fields = missing_required_field_keys(current)
@@ -4446,6 +4456,7 @@ def manage_form_channels(request, channel_id=None):
     locked_field_keys = locked_business_field_keys(current) if current else set()
     return render(request, 'clubs/admin/form_channels.html', {
         'channels': channels,
+        'channel_summary': channel_summary,
         'current': current,
         'is_creating': is_creating or current is None,
         'field_types': FormField.FIELD_TYPE_CHOICES,

@@ -198,7 +198,14 @@
     python manage.py check --deploy
     ```
     用户提交附件应通过应用的鉴权下载接口提供。媒体目录的完整脚本执行阻断规则见
-    `docs/nginx-media-security.conf`，部署时请合并到站点配置。
+    `docs/deployment/nginx-media-security.conf`，部署时请合并到站点配置。
+
+## 🧭 开发目录指南
+
+项目目录职责、Django 管理命令与独立脚本的区别见
+[`docs/architecture/project-structure.md`](docs/architecture/project-structure.md)。
+独立开发脚本统一放在 `scripts/`；需要 Django ORM 的命令保留在框架规定的
+`clubs/management/commands/` 中。
 
 ## 📖 角色使用指南
 

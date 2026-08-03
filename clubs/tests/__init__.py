@@ -1,0 +1,1 @@
+"""CManager automated test suite."""

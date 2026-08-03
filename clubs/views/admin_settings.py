@@ -8,10 +8,10 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
-from .email_utils import send_test_email_with_config
-from .models import ConfigChangeLog, SMTPConfig, StorageConfig
-from .permissions import roles_required
-from .storage_backends import ClubStorage
+from ..email_utils import send_test_email_with_config
+from ..models import ConfigChangeLog, SMTPConfig, StorageConfig
+from ..permissions import roles_required
+from ..storage_backends import ClubStorage
 
 
 @roles_required('admin')

@@ -7,10 +7,10 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
-from .email_utils import send_test_email_with_config
-from .models import SMTPConfig, UserProfile
-from .oobe_bootstrap import has_admin_user, write_pending_oobe_setup
-from .site_assets import process_site_logo
+from ..email_utils import send_test_email_with_config
+from ..models import SMTPConfig, UserProfile
+from ..oobe_bootstrap import has_admin_user, write_pending_oobe_setup
+from ..site_assets import process_site_logo
 
 
 def _write_env_local(updates: dict):

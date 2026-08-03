@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Count lines of code in the repository.
 
-Usage: python tools/count_lines.py [path]
+Usage: python scripts/development/count_lines.py [path]
 
 This script walks the given path (current directory by default), skips
 common binary and VCS directories, and counts non-empty lines per file
