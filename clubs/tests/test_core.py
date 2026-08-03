@@ -380,6 +380,8 @@ class StaticPageSmokeTests(TestCase):
         self.assertEqual(response.context['channel_summary']['total'], initial_count + 1)
         self.assertGreaterEqual(response.context['channel_summary']['published'], 1)
         self.assertContains(response, 'js-channel-search')
+        self.assertContains(response, 'rail-search-control')
+        self.assertContains(response, 'aria-label="搜索通道名称或标识"')
         self.assertContains(response, '通道状态概览')
 
     def test_new_form_channel_page_exposes_material_icon_preview_and_reference(self):

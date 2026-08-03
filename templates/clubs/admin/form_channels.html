@@ -166,22 +166,32 @@
     }
 
     .rail-search {
-        position: relative;
         padding: 10px 10px 0;
     }
 
-    .rail-search .material-icons {
+    .rail-search-control {
+        position: relative;
+    }
+
+    .rail-search-control > .material-icons {
         position: absolute;
-        top: 21px;
-        left: 22px;
+        top: 50%;
+        left: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        line-height: 1;
         color: var(--md3-on-surface-variant);
         font-size: 1.1rem;
+        transform: translateY(-50%);
         pointer-events: none;
     }
 
-    .rail-search-input {
+    .rail-search input.rail-search-input {
         width: 100%;
-        min-height: 40px;
+        min-height: 44px;
         padding: 8px 12px 8px 38px;
         border: 1px solid var(--md3-outline-variant);
         border-radius: var(--md3-radius-full);
@@ -189,6 +199,7 @@
         color: var(--md3-on-surface);
         box-sizing: border-box;
         font: inherit;
+        line-height: 1.5;
     }
 
     .rail-search-input:focus {
@@ -1053,8 +1064,10 @@
             </div>
             {% if channels %}
             <label class="rail-search">
-                <span class="material-icons">search</span>
-                <input class="rail-search-input js-channel-search" type="search" placeholder="搜索名称或标识" autocomplete="off">
+                <span class="rail-search-control">
+                    <span class="material-icons" aria-hidden="true">search</span>
+                    <input class="rail-search-input js-channel-search" type="search" placeholder="搜索名称或标识" aria-label="搜索通道名称或标识" autocomplete="off">
+                </span>
             </label>
             {% endif %}
             <div class="rail-list">
