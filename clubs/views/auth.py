@@ -18,6 +18,7 @@ from django.db.models.functions import RowNumber
 from django.core.paginator import Paginator
 from django.core.cache import cache
 import time
+import uuid
 from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
@@ -663,8 +664,19 @@ def edit_profile(request):
                     )
                     
                     # 生成文件名
-                    file_name = f'avatar_{user.id}_{int(time.time())}.jpg'
+                    # 每次上传使用唯一文件名，避免同秒内重复上传相互覆盖，也让浏览器缓存自然失效。
+                    file_name = f'avatar_{user.id}_{uuid.uuid4().hex[:12]}.jpg'
+                    old_avatar_name = ''
+                    try:
+                        old_avatar_name = profile.avatar.name or ''
+                    except ValueError:
+                        old_avatar_name = ''
                     profile.avatar.save(file_name, ContentFile(thumb_io.getvalue()), save=True)
+                    if old_avatar_name and old_avatar_name != profile.avatar.name:
+                        try:
+                            profile.avatar.storage.delete(old_avatar_name)
+                        except Exception:
+                            logger.exception('删除旧头像文件失败: %s', old_avatar_name)
                     if profile.avatar_source != 'local':
                         profile.avatar_source = 'local'
                         profile.save(update_fields=['avatar_source', 'updated_at'])

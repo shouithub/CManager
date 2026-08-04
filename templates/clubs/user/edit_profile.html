@@ -826,7 +826,10 @@
                         URL.revokeObjectURL(objectUrl);
                         objectUrl = null;
                     }
-                    setUploadStatus(payload.message || '头像上传完成。', false);
+                    setUploadStatus(payload.message || '头像上传完成，页面即将刷新…', false);
+                    window.setTimeout(function() {
+                        window.location.reload();
+                    }, 500);
                 }).catch(function(error) {
                     input.disabled = false;
                     setUploadStatus(error.message || '头像上传失败，请重试。', true);

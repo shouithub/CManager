@@ -100,6 +100,49 @@ class AvatarServiceTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['message'], '请选择图片文件')
 
+    def test_upload_avatar_deletes_old_file(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+
+        from ..storage_backends import ClubStorage
+
+        def upload_png():
+            buffer = BytesIO()
+            Image.new('RGB', (32, 32), 'red').save(buffer, format='PNG')
+            response = self.client.post(
+                reverse('clubs:edit_profile'),
+                {
+                    'action': 'upload_avatar',
+                    'avatar': SimpleUploadedFile('avatar.png', buffer.getvalue(), content_type='image/png'),
+                },
+                HTTP_ACCEPT='application/json',
+                HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+                secure=True,
+            )
+            return response
+
+        with (
+            patch.object(
+                ClubStorage,
+                'save',
+                side_effect=lambda name, content, max_length=None: name,
+            ) as save_mock,
+            patch.object(ClubStorage, 'delete') as delete_mock,
+        ):
+            first_response = upload_png()
+            self.assertEqual(first_response.status_code, 200)
+            self.user.profile.refresh_from_db()
+            first_name = self.user.profile.avatar.name
+
+            second_response = upload_png()
+            self.assertEqual(second_response.status_code, 200)
+            self.user.profile.refresh_from_db()
+            second_name = self.user.profile.avatar.name
+
+        self.assertNotEqual(first_name, second_name)
+        self.assertEqual(save_mock.call_count, 2)
+        delete_mock.assert_called_once_with(first_name)
+
     def test_admin_can_change_third_party_cdn(self):
         response = self.client.post(
             reverse('clubs:site_settings'),
