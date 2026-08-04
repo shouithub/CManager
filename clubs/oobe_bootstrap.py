@@ -2,13 +2,14 @@ import json
 import logging
 from pathlib import Path
 
+from cryptography.fernet import InvalidToken
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.db.utils import OperationalError, ProgrammingError
 
 from .models import SMTPConfig, UserProfile
-from .crypto_fields import decrypt_secret, encrypt_secret
+from .crypto_fields import _fernet
 
 
 logger = logging.getLogger(__name__)
@@ -23,21 +24,10 @@ def has_pending_oobe_setup() -> bool:
 
 
 def write_pending_oobe_setup(payload: dict):
-    # OOBE 需要跨进程保存数据，但管理员和 SMTP 密码绝不能以明文落盘。
-    payload = json.loads(json.dumps(payload))
-    admin = payload.get('admin') or {}
-    email = payload.get('email') or {}
-    if admin.get('password'):
-        admin['password'] = encrypt_secret(admin['password'])
-    if email.get('sender_password'):
-        email['sender_password'] = encrypt_secret(email['sender_password'])
-    payload['admin'] = admin
-    payload['email'] = email
+    """以 Fernet 加密形式落盘 OOBE 数据，避免任何凭据出现在明文 JSON 中。"""
     file_path = _pending_file_path()
-    file_path.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2),
-        encoding='utf-8'
-    )
+    serialized = json.dumps(payload, ensure_ascii=False).encode('utf-8')
+    file_path.write_bytes(_fernet().encrypt(serialized))
 
 
 def has_admin_user() -> bool:
@@ -62,11 +52,16 @@ def apply_pending_oobe_setup() -> bool:
         return False
 
     try:
-        payload = json.loads(file_path.read_text(encoding='utf-8'))
+        raw_payload = file_path.read_bytes()
+        try:
+            payload = json.loads(_fernet().decrypt(raw_payload).decode('utf-8'))
+        except InvalidToken:
+            # 兼容升级前残留的临时 JSON；成功应用后该文件会被删除。
+            payload = json.loads(raw_payload.decode('utf-8'))
 
         admin = payload.get('admin') or {}
         username = (admin.get('username') or '').strip()
-        password = decrypt_secret(admin.get('password') or '')
+        password = admin.get('password') or ''
         email = (admin.get('email') or '').strip()
         real_name = (admin.get('real_name') or '').strip()
         student_id = (admin.get('student_id') or '').strip()
@@ -128,7 +123,7 @@ def apply_pending_oobe_setup() -> bool:
                 smtp_host=email_payload.get('smtp_host', ''),
                 smtp_port=int(email_payload.get('smtp_port', 587) or 587),
                 sender_email=email_payload.get('sender_email', ''),
-                sender_password=decrypt_secret(email_payload.get('sender_password', '')),
+                sender_password=email_payload.get('sender_password', ''),
                 use_tls=bool(email_payload.get('smtp_use_tls', True)),
                 is_active=True,
             )
