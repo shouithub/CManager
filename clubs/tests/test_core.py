@@ -6,6 +6,7 @@ from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
@@ -251,7 +252,9 @@ class AvatarServiceTests(TestCase):
 
         with override_settings(USE_X_FORWARDED_PROTO=True, USE_X_FORWARDED_HOST=True):
             url = _build_external_url(request, '/path')
-            self.assertTrue(url.startswith('https://public.example.com'))
+            parsed = urlparse(url)
+            self.assertEqual(parsed.scheme, 'https')
+            self.assertEqual(parsed.hostname, 'public.example.com')
 
     def test_admin_can_change_third_party_cdn(self):
         response = self.client.post(
