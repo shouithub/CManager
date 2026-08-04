@@ -1147,6 +1147,18 @@ class RoomBooking(models.Model):
 
 class SiteSettings(models.Model):
     """站点全局外观设置（单例，pk=1）"""
+    third_party_cdn_base_url = models.CharField(
+        max_length=500,
+        default='https://cdn.bootcdn.net',
+        verbose_name='第三方资源 CDN 基础地址',
+        help_text='用于加载 Chart.js、Swiper 和 Cropper.js 等 cdnjs 资源。',
+    )
+    third_party_cdn_sri = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name='第三方资源 SRI 校验值',
+        help_text='由管理页面在切换 CDN 时自动计算。',
+    )
     font_icon_url = models.CharField(
         max_length=500,
         default='https://fonts.font.im/icon?family=Material+Icons',

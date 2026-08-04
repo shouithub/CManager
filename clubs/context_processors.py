@@ -3,6 +3,7 @@ import os
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Count
+from urllib.parse import urlsplit
 from .models import FormChannel, FormSubmission, Officer
 from .business_forms import externally_available_channels
 from .identity import (
@@ -12,6 +13,15 @@ from .identity import (
     has_president_officer,
     IDENTITY_PRESIDENT,
 )
+
+
+THIRD_PARTY_CDN_DEFAULT_SRI = {
+    'chartjs': 'sha384-XcdcwHqIPULERb2yDEM4R0XaQKU3YnDsrTmjACBZyfdVVqjh6xQ4/DCMd7XLcA6Y',
+    'swiper_js': 'sha384-T6qkM4ANslBL/pKcwNUeB0bpsiI6pkXXzwrl7Avc6FXEC/UZaXAeBpZZ2zQ3Zbez',
+    'swiper_css': 'sha384-eKrJLy2KlZuvuza/yNmSyFUE2Qb5aehRlXikp6XUOxXVw5pOQBb5n1C0UOcCnAJb',
+    'cropper_js': 'sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir',
+    'cropper_css': 'sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh',
+}
 def site_settings(request):
     cached = cache.get('site:presentation:v1')
     if cached is not None:
@@ -55,10 +65,25 @@ def site_settings(request):
         font_icon_url = font_cfg.font_icon_url or 'https://fonts.font.im/icon?family=Material+Icons'
         body_font_url = font_cfg.body_font_url or ''
         body_font_family = font_cfg.body_font_family or ''
+        third_party_cdn_base_url = font_cfg.third_party_cdn_base_url or 'https://cdn.bootcdn.net'
+        stored_cdn_sri = font_cfg.third_party_cdn_sri
     except Exception:
         font_icon_url = 'https://fonts.font.im/icon?family=Material+Icons'
         body_font_url = ''
         body_font_family = ''
+        third_party_cdn_base_url = 'https://cdn.bootcdn.net'
+        stored_cdn_sri = {}
+
+    # 仅使用合法的 HTTP(S) CDN 地址，避免配置错误导致模板中的资源地址失效。
+    parsed_cdn_url = urlsplit(third_party_cdn_base_url)
+    if parsed_cdn_url.scheme not in ('http', 'https') or not parsed_cdn_url.netloc:
+        third_party_cdn_base_url = 'https://cdn.bootcdn.net'
+    third_party_cdn_base_url = third_party_cdn_base_url.rstrip('/')
+    third_party_cdn_sri = THIRD_PARTY_CDN_DEFAULT_SRI.copy()
+    if isinstance(stored_cdn_sri, dict):
+        for asset, integrity in stored_cdn_sri.items():
+            if asset in third_party_cdn_sri and isinstance(integrity, str) and integrity.startswith('sha384-'):
+                third_party_cdn_sri[asset] = integrity
 
     result = {
         'site_favicon_url': site_favicon_url,
@@ -66,6 +91,8 @@ def site_settings(request):
         'font_icon_url': font_icon_url,
         'body_font_url': body_font_url,
         'body_font_family': body_font_family,
+        'third_party_cdn_base_url': third_party_cdn_base_url,
+        'third_party_cdn_sri': third_party_cdn_sri,
     }
     cache.set('site:presentation:v1', result, 300)
     return result

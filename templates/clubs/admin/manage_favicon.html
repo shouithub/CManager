@@ -4,7 +4,7 @@
 
 
 
-{% block title %}图标与字体管理 - 社团管理系统{% endblock %}
+{% block title %}站点设置 - 社团管理系统{% endblock %}
 
 
 
@@ -1004,10 +1004,10 @@
   <div>
 
 
-    <h1>图标与字体管理</h1>
+    <h1>站点设置</h1>
 
 
-    <p class="ia-subtitle">管理网站 Favicon、用户头像服务与字体资源配置</p>
+    <p class="ia-subtitle">管理网站图标、头像服务、第三方 CDN 与字体资源配置</p>
 
 
   </div>
@@ -1244,7 +1244,53 @@
 </div>
 
 
-<!-- ③ 字体设置区 -->
+<!-- ③ 第三方资源 CDN -->
+<div class="ia-section">
+  <div class="ia-section-title">
+    <span class="material-icons">cloud</span>第三方资源 CDN
+  </div>
+
+  <form method="post" id="cdn-settings-form">
+    {% csrf_token %}
+    <input type="hidden" name="form_type" value="cdn_settings">
+    <input type="hidden" name="third_party_cdn_sri" id="third_party_cdn_sri">
+    <div class="ia-card">
+      <div class="ia-card-header">
+        <span class="material-icons">public</span>
+        <h2>cdnjs 资源镜像</h2>
+      </div>
+      <div class="ia-card-body">
+        <div class="ia-field">
+          <label for="third_party_cdn_base_url">CDN 基础地址</label>
+          <input type="url" name="third_party_cdn_base_url" id="third_party_cdn_base_url"
+                 value="{{ cfg.third_party_cdn_base_url }}" class="form-control"
+                 placeholder="https://cdn.example.com">
+        </div>
+        <div class="ia-helper" style="margin-bottom:var(--md3-spacing-sm);">
+          <span class="material-icons">info</span>
+          该地址统一用于 Chart.js、Swiper 与 Cropper.js。保存时会自动重新计算并保存 5 个资源的 SHA-384 SRI 校验值；地址末尾的 / 会自动忽略。
+        </div>
+        <p id="cdn-sri-status" class="ia-helper" aria-live="polite" style="display:none;margin:0 0 var(--md3-spacing-sm);"></p>
+        <div class="ia-preset-chips">
+          {% for p in cdn_presets %}
+          <button type="button" class="ia-chip"
+                  onclick="document.getElementById('third_party_cdn_base_url').value='{{ p.value }}'">
+            {{ p.label }}
+          </button>
+          {% endfor %}
+        </div>
+        <div class="ia-actions">
+          <button type="submit" class="btn btn-filled">
+            <span class="material-icons">save</span>保存 CDN 设置
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+
+<!-- ④ 字体设置区 -->
 
 
 <div class="ia-section">
@@ -1605,6 +1651,73 @@
         else form.submit();
       }).catch(function () { form.submit(); });
     }, 'image/png');
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var form = document.getElementById('cdn-settings-form');
+  var baseInput = document.getElementById('third_party_cdn_base_url');
+  var sriInput = document.getElementById('third_party_cdn_sri');
+  var status = document.getElementById('cdn-sri-status');
+  if (!form || !baseInput || !sriInput || !status) return;
+
+  var assets = {
+    chartjs: '/ajax/libs/Chart.js/4.5.0/chart.umd.min.js',
+    swiper_js: '/ajax/libs/Swiper/11.0.5/swiper-bundle.min.js',
+    swiper_css: '/ajax/libs/Swiper/11.0.5/swiper-bundle.min.css',
+    cropper_js: '/ajax/libs/cropperjs/1.6.2/cropper.min.js',
+    cropper_css: '/ajax/libs/cropperjs/1.6.2/cropper.min.css'
+  };
+
+  function showStatus(message) {
+    status.textContent = message;
+    status.style.display = 'flex';
+  }
+
+  function toBase64(buffer) {
+    var bytes = new Uint8Array(buffer);
+    var chunks = [];
+    for (var offset = 0; offset < bytes.length; offset += 8192) {
+      chunks.push(String.fromCharCode.apply(null, bytes.subarray(offset, offset + 8192)));
+    }
+    return btoa(chunks.join(''));
+  }
+
+  async function calculateIntegrity(url) {
+    var response = await fetch(url, { cache: 'no-store', mode: 'cors' });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    var digest = await crypto.subtle.digest('SHA-384', await response.arrayBuffer());
+    return 'sha384-' + toBase64(digest);
+  }
+
+  form.addEventListener('submit', async function (event) {
+    if (form.dataset.sriReady === 'true') return;
+    event.preventDefault();
+    if (!window.crypto || !crypto.subtle) {
+      showStatus('当前浏览器不支持自动 SRI 校验，请使用支持 Web Crypto 的现代浏览器。');
+      return;
+    }
+
+    var cdnBase = baseInput.value.trim().replace(/\/+$/, '');
+    if (!cdnBase) return;
+    var submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    showStatus('正在验证 CDN 资源并生成 SRI 校验值…');
+    try {
+      var results = await Promise.all(Object.keys(assets).map(async function (name) {
+        return [name, await calculateIntegrity(cdnBase + assets[name])];
+      }));
+      var sri = {};
+      results.forEach(function (item) { sri[item[0]] = item[1]; });
+      sriInput.value = JSON.stringify(sri);
+      form.dataset.sriReady = 'true';
+      form.submit();
+    } catch (error) {
+      showStatus('无法读取或校验该 CDN 的资源；未保存设置。请检查地址、网络和镜像的 CORS 支持。');
+      if (submitButton) submitButton.disabled = false;
+    }
   });
 })();
 </script>

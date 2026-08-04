@@ -906,9 +906,9 @@
                         <span class="material-icons">cloud_sync</span>
                         <span>S3存储设置</span>
                     </a>
-                    <a href="{% url 'clubs:manage_favicon' %}" class="action-btn">
-                        <span class="material-icons">image</span>
-                        <span>图标&amp;字体</span>
+                    <a href="{% url 'clubs:site_settings' %}" class="action-btn">
+                        <span class="material-icons">tune</span>
+                        <span>站点设置</span>
                     </a>
                     <a href="{% url 'clubs:admin_assign_presidents' %}" class="action-btn">
                         <span class="material-icons">manage_accounts</span>
@@ -957,7 +957,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script data-cfasync="false" src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" integrity="sha384-XcdcwHqIPULERb2yDEM4R0XaQKU3YnDsrTmjACBZyfdVVqjh6xQ4/DCMd7XLcA6Y" crossorigin="anonymous"></script>
+<script data-cfasync="false" src="{{ third_party_cdn_base_url }}/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" integrity="{{ third_party_cdn_sri.chartjs }}" crossorigin="anonymous"></script>
 <script>
 (function () {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';

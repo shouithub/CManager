@@ -3341,8 +3341,8 @@ def admin_time_slot_delete(request, slot_id):
 
 
 @login_required(login_url=settings.LOGIN_URL)
-def manage_favicon(request):
-    """管理网站图标 + 字体设置"""
+def manage_site_settings(request):
+    """管理网站图标、第三方资源 CDN 与字体设置。"""
     if not is_staff_or_admin(request.user):
         messages.error(request, '权限不足')
         return redirect('clubs:index')
@@ -3359,7 +3359,45 @@ def manage_favicon(request):
             cfg.body_font_family = request.POST.get('body_font_family', '').strip()
             cfg.save()
             messages.success(request, '站点字体设置已保存，刷新页面后生效')
-            return redirect('clubs:manage_favicon')
+            return redirect('clubs:site_settings')
+        elif form_type == 'cdn_settings':
+            from urllib.parse import urlsplit
+
+            cdn_base_url = request.POST.get('third_party_cdn_base_url', '').strip().rstrip('/')
+            parsed_url = urlsplit(cdn_base_url)
+            if (
+                not cdn_base_url
+                or parsed_url.scheme not in ('http', 'https')
+                or not parsed_url.netloc
+                or parsed_url.query
+                or parsed_url.fragment
+            ):
+                messages.error(request, '请输入有效的 CDN 基础地址（HTTP 或 HTTPS，且不包含查询参数）。')
+                return redirect('clubs:site_settings')
+            cdn_sri = {}
+            raw_cdn_sri = request.POST.get('third_party_cdn_sri', '')
+            try:
+                submitted_cdn_sri = json.loads(raw_cdn_sri)
+            except json.JSONDecodeError:
+                messages.error(request, 'CDN 资源完整性校验失败，请重试。')
+                return redirect('clubs:site_settings')
+            allowed_assets = {'chartjs', 'swiper_js', 'swiper_css', 'cropper_js', 'cropper_css'}
+            if not isinstance(submitted_cdn_sri, dict):
+                messages.error(request, 'CDN 资源完整性校验格式无效，请重试。')
+                return redirect('clubs:site_settings')
+            for asset, integrity in submitted_cdn_sri.items():
+                if asset in allowed_assets and isinstance(integrity, str) and re.fullmatch(r'sha384-[A-Za-z0-9+/]{64}', integrity):
+                    cdn_sri[asset] = integrity
+            if set(cdn_sri) != allowed_assets:
+                messages.error(request, 'CDN 资源完整性校验不完整，请重试。')
+                return redirect('clubs:site_settings')
+            cfg = SiteSettings.get_settings()
+            cfg.third_party_cdn_base_url = cdn_base_url
+            cfg.third_party_cdn_sri = cdn_sri
+            cfg.save(update_fields=['third_party_cdn_base_url', 'third_party_cdn_sri'])
+            cache.delete('site:presentation:v1')
+            messages.success(request, '第三方资源 CDN 已保存，刷新页面后生效')
+            return redirect('clubs:site_settings')
         elif form_type == 'avatar_settings':
             from ..avatar_utils import clear_avatar_settings_cache
             cfg = SiteSettings.get_settings()
@@ -3367,7 +3405,7 @@ def manage_favicon(request):
             cfg.save(update_fields=['cravatar_enabled'])
             clear_avatar_settings_cache()
             messages.success(request, 'Cravatar 开关已保存，用户仍可随时上传本站头像')
-            return redirect('clubs:manage_favicon')
+            return redirect('clubs:site_settings')
         elif 'favicon' in request.FILES:
             upload = request.FILES['favicon']
             ok, logo_message = process_site_logo(upload, allow_webp=False)
@@ -3377,7 +3415,7 @@ def manage_favicon(request):
                 messages.success(request, logo_message)
             else:
                 messages.error(request, logo_message)
-            return redirect('clubs:manage_favicon')
+            return redirect('clubs:site_settings')
 
     cfg = SiteSettings.get_settings()
     presets = [
@@ -3391,6 +3429,12 @@ def manage_favicon(request):
         {'label': 'Noto Sans SC (SJTUG)',         'url': 'https://google-fonts.mirrors.sjtug.sjtu.edu.cn/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap', 'family': "'Noto Sans SC', sans-serif"},
         {'label': 'Noto Sans SC (loli.net)',      'url': 'https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap', 'family': "'Noto Sans SC', sans-serif"},
     ]
+    cdn_presets = [
+        {'label': 'BootCDN（默认）', 'value': 'https://cdn.bootcdn.net'},
+        {'label': 'cdnjs 官方', 'value': 'https://cdnjs.cloudflare.com'},
+        {'label': '未闻花名 CDN', 'value': 'https://cdnjs.snrat.com'},
+        {'label': '南科大镜像', 'value': 'https://mirrors.sustech.edu.cn/cdnjs'},
+    ]
     icon_preview_list = [
         'home', 'settings', 'people', 'notifications', 'search', 'dashboard',
         'add_circle', 'edit', 'delete', 'check_circle', 'cancel', 'upload_file',
@@ -3400,6 +3444,7 @@ def manage_favicon(request):
         'cfg': cfg,
         'presets': presets,
         'body_font_presets': body_font_presets,
+        'cdn_presets': cdn_presets,
         'icon_preview_list': icon_preview_list,
     })
 

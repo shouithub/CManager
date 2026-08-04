@@ -1,3 +1,4 @@
+import json
 import zipfile
 from datetime import date, time
 from hashlib import md5
@@ -79,14 +80,54 @@ class AvatarServiceTests(TestCase):
 
     def test_admin_only_controls_cravatar_availability(self):
         response = self.client.post(
-            reverse('clubs:manage_favicon'),
+            reverse('clubs:site_settings'),
             {'form_type': 'avatar_settings', 'cravatar_enabled': 'on'},
             secure=True,
         )
 
-        self.assertRedirects(response, reverse('clubs:manage_favicon'), fetch_redirect_response=False)
+        self.assertRedirects(response, reverse('clubs:site_settings'), fetch_redirect_response=False)
         self.config.refresh_from_db()
         self.assertTrue(self.config.cravatar_enabled)
+
+    def test_admin_can_change_third_party_cdn(self):
+        response = self.client.post(
+            reverse('clubs:site_settings'),
+            {
+                'form_type': 'cdn_settings',
+                'third_party_cdn_base_url': 'https://mirrors.sustech.edu.cn/cdnjs/',
+                'third_party_cdn_sri': json.dumps({
+                    'chartjs': 'sha384-XcdcwHqIPULERb2yDEM4R0XaQKU3YnDsrTmjACBZyfdVVqjh6xQ4/DCMd7XLcA6Y',
+                    'swiper_js': 'sha384-T6qkM4ANslBL/pKcwNUeB0bpsiI6pkXXzwrl7Avc6FXEC/UZaXAeBpZZ2zQ3Zbez',
+                    'swiper_css': 'sha384-eKrJLy2KlZuvuza/yNmSyFUE2Qb5aehRlXikp6XUOxXVw5pOQBb5n1C0UOcCnAJb',
+                    'cropper_js': 'sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir',
+                    'cropper_css': 'sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh',
+                }),
+            },
+            secure=True,
+        )
+
+        self.assertRedirects(response, reverse('clubs:site_settings'), fetch_redirect_response=False)
+        self.config.refresh_from_db()
+        self.assertEqual(
+            self.config.third_party_cdn_base_url,
+            'https://mirrors.sustech.edu.cn/cdnjs',
+        )
+        self.assertTrue(self.config.third_party_cdn_sri['chartjs'].startswith('sha384-'))
+
+    def test_third_party_cdn_rejects_urls_with_query_parameters(self):
+        original_url = self.config.third_party_cdn_base_url
+        response = self.client.post(
+            reverse('clubs:site_settings'),
+            {
+                'form_type': 'cdn_settings',
+                'third_party_cdn_base_url': 'https://cdn.example.com?redirect=elsewhere',
+            },
+            secure=True,
+        )
+
+        self.assertRedirects(response, reverse('clubs:site_settings'), fetch_redirect_response=False)
+        self.config.refresh_from_db()
+        self.assertEqual(self.config.third_party_cdn_base_url, original_url)
 
     @patch('clubs.avatar_utils.cravatar_exists', return_value=True)
     def test_existing_cravatar_is_saved_and_selected(self, exists_mock):

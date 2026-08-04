@@ -62,7 +62,7 @@ urlpatterns = [
     # 管理员 - 锁定账号管理
     path('admin/locked-accounts/', views.locked_accounts, name='locked_accounts'),
     path('admin/unlock-account/<str:username>/', views.unlock_account, name='unlock_account'),
-    path('admin/favicon/', views.manage_favicon, name='manage_favicon'),
+    path('admin/site-settings/', views.manage_site_settings, name='site_settings'),
 
     path('staff/manage-clubs/', auth_views.manage_staff_clubs, name='manage_staff_clubs'),
     path('staff/view-users/', views.staff_view_users, name='staff_view_users'),
