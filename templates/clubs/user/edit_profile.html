@@ -476,7 +476,8 @@
 
         <h3 style="margin:28px 0 6px;color:var(--md3-on-surface);">上传本站头像</h3>
         <p style="margin:0 0 16px;color:var(--md3-on-surface-variant);">上传成功后会自动切换到本站头像。</p>
-        <form method="post" enctype="multipart/form-data" id="avatar-form">
+        <form method="post" enctype="multipart/form-data" id="avatar-form"
+              action="{% url 'clubs:edit_profile' %}">
             {% csrf_token %}
             <input type="hidden" name="action" value="upload_avatar">
             <input type="hidden" name="avatar_base64" id="avatar-base64">
@@ -772,7 +773,8 @@
                 setUploadStatus('压缩完成，正在上传…', false);
 
                 var data = new FormData(form);
-                fetch(form.action || window.location.href, {
+                // 不依赖 form.action：线上环境曾出现 action 被脚本错误改写成元素对象的问题。
+                fetch(window.location.href, {
                     method: 'POST',
                     body: data,
                     credentials: 'same-origin',
