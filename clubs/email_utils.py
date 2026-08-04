@@ -42,12 +42,12 @@ def send_email_with_config(config, to_email, subject, text_body, html_body=None,
     except smtplib.SMTPAuthenticationError:
         logger.error('SMTP认证失败')
         return False, 'SMTP认证失败，请检查邮箱配置'
-    except smtplib.SMTPException as exc:
-        logger.error('SMTP错误: %s', str(exc))
-        return False, f'SMTP错误: {str(exc)}'
-    except Exception as exc:
-        logger.error('邮件发送错误: %s', str(exc))
-        return False, f'邮件发送失败: {str(exc)}'
+    except smtplib.SMTPException:
+        logger.exception('SMTP错误')
+        return False, 'SMTP 发送失败，请检查服务器设置和账号信息'
+    except Exception:
+        logger.exception('邮件发送错误')
+        return False, '邮件发送失败，请稍后重试或检查 SMTP 设置'
 
 
 def send_test_email_with_config(config, to_email):

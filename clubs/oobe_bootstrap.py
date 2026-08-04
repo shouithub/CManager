@@ -8,6 +8,7 @@ from django.core.management import call_command
 from django.db.utils import OperationalError, ProgrammingError
 
 from .models import SMTPConfig, UserProfile
+from .crypto_fields import decrypt_secret, encrypt_secret
 
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,16 @@ def has_pending_oobe_setup() -> bool:
 
 
 def write_pending_oobe_setup(payload: dict):
+    # OOBE 需要跨进程保存数据，但管理员和 SMTP 密码绝不能以明文落盘。
+    payload = json.loads(json.dumps(payload))
+    admin = payload.get('admin') or {}
+    email = payload.get('email') or {}
+    if admin.get('password'):
+        admin['password'] = encrypt_secret(admin['password'])
+    if email.get('sender_password'):
+        email['sender_password'] = encrypt_secret(email['sender_password'])
+    payload['admin'] = admin
+    payload['email'] = email
     file_path = _pending_file_path()
     file_path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2),
@@ -55,7 +66,7 @@ def apply_pending_oobe_setup() -> bool:
 
         admin = payload.get('admin') or {}
         username = (admin.get('username') or '').strip()
-        password = admin.get('password') or ''
+        password = decrypt_secret(admin.get('password') or '')
         email = (admin.get('email') or '').strip()
         real_name = (admin.get('real_name') or '').strip()
         student_id = (admin.get('student_id') or '').strip()
@@ -117,7 +128,7 @@ def apply_pending_oobe_setup() -> bool:
                 smtp_host=email_payload.get('smtp_host', ''),
                 smtp_port=int(email_payload.get('smtp_port', 587) or 587),
                 sender_email=email_payload.get('sender_email', ''),
-                sender_password=email_payload.get('sender_password', ''),
+                sender_password=decrypt_secret(email_payload.get('sender_password', '')),
                 use_tls=bool(email_payload.get('smtp_use_tls', True)),
                 is_active=True,
             )

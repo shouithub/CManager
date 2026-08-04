@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.urls import reverse
@@ -7,7 +9,6 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods, require_POST
 from django.conf import settings
 from django.contrib import messages
-from django.utils.http import url_has_allowed_host_and_scheme
 from ..models import UserProfile, Club, FormChannel, FormCycle, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
 from datetime import datetime
 from django.utils import timezone
@@ -34,6 +35,7 @@ from ..identity import (
 # 登录限制配置
 MAX_LOGIN_ATTEMPTS = 5
 LOGIN_WINDOW_SECONDS = 300  # 5 minutes
+logger = logging.getLogger(__name__)
 
 
 def register(request):
@@ -315,21 +317,18 @@ def _identity_default_url(user, identity):
 @require_http_methods(['POST'])
 def switch_identity(request):
     identity = request.POST.get('identity', IDENTITY_PRIMARY)
-    next_url = request.POST.get('next') or ''
-    if next_url and not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
-        next_url = ''
 
     if identity == IDENTITY_PRESIDENT:
         if not has_president_officer(request.user):
             messages.error(request, '当前账号没有现任社长身份，无法切换')
-            return redirect(next_url or _identity_default_url(request.user, IDENTITY_PRIMARY))
+            return redirect(_identity_default_url(request.user, IDENTITY_PRIMARY))
         request.session[IDENTITY_SESSION_KEY] = IDENTITY_PRESIDENT
         messages.success(request, '已切换到社长身份')
-        return redirect(next_url or _identity_default_url(request.user, IDENTITY_PRESIDENT))
+        return redirect(_identity_default_url(request.user, IDENTITY_PRESIDENT))
 
     request.session[IDENTITY_SESSION_KEY] = IDENTITY_PRIMARY
     messages.success(request, '已切换回主身份')
-    return redirect(next_url or _identity_default_url(request.user, IDENTITY_PRIMARY))
+    return redirect(_identity_default_url(request.user, IDENTITY_PRIMARY))
 
 
 
@@ -616,8 +615,9 @@ def edit_profile(request):
                         base64.b64decode(imgstr, validate=True),
                         name=f'avatar_{user.id}_{int(time.time())}.{ext}',
                     )
-                except Exception as e:
-                    return finish_avatar_upload(False, f'头像处理失败: {str(e)}')
+                except Exception:
+                    logger.exception('头像 Base64 数据处理失败')
+                    return finish_avatar_upload(False, '头像数据无效，请重新选择图片')
 
             if avatar_file:
                 try:
@@ -665,8 +665,9 @@ def edit_profile(request):
                         profile.avatar_source = 'local'
                         profile.save(update_fields=['avatar_source', 'updated_at'])
                     return finish_avatar_upload(True, '头像已更新')
-                except Exception as e:
-                    return finish_avatar_upload(False, f'头像处理失败: {str(e)}')
+                except Exception:
+                    logger.exception('头像处理失败')
+                    return finish_avatar_upload(False, '头像处理失败，请稍后重试')
             else:
                 return finish_avatar_upload(False, '请选择图片文件')
                 

@@ -14,7 +14,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
-from django.utils.http import url_has_allowed_host_and_scheme
 from datetime import datetime
 from django.conf import settings
 from django.http import HttpResponse, FileResponse, HttpResponseForbidden, JsonResponse, Http404
@@ -33,6 +32,7 @@ import tempfile
 import csv
 import io
 import json
+import logging
 from ..models import Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission, FormSubmissionReview, FormFieldValue, FormUploadedFile, Announcement, StaffClubRelation, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken
 from ..business_forms import (
     BusinessActionError,
@@ -65,6 +65,9 @@ from ..permissions import (
     president_club_ids as _get_president_club_ids,
     roles_required,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def _validate_announcement_link(link_url):
@@ -1231,7 +1234,7 @@ def import_users_csv(request):
         messages.error(request, '仅管理员可以批量导入用户')
         return redirect('clubs:index')
 
-    next_url = request.POST.get('next', '').strip() or request.META.get('HTTP_REFERER') or reverse('clubs:manage_users')
+    next_url = reverse('clubs:manage_users')
     uploaded = request.FILES.get('csv_file')
     if not uploaded:
         if is_ajax:
@@ -1436,11 +1439,12 @@ def import_users_csv(request):
                     batch_size=100
                 )
 
-    except Exception as e:
+    except Exception:
         # 事务回滚，返回错误信息
+        logger.exception('批量导入用户失败')
         if is_ajax:
-            return _json_error(f'导入失败：{str(e)}')
-        messages.error(request, f'导入失败：{str(e)}')
+            return _json_error('导入失败，请检查 CSV 内容后重试')
+        messages.error(request, '导入失败，请检查 CSV 内容后重试')
         return redirect(next_url)
 
     summary_text = f'导入完成：新建{created_users}，更新{updated_users}，跳过{skipped}'
@@ -1489,7 +1493,7 @@ def import_clubs_csv(request):
         messages.error(request, '仅干事和管理员可以批量导入社团')
         return redirect('clubs:index')
 
-    next_url = request.POST.get('next', '').strip() or request.META.get('HTTP_REFERER') or reverse('clubs:staff_management')
+    next_url = reverse('clubs:staff_management')
     uploaded = request.FILES.get('csv_file')
     if not uploaded:
         messages.error(request, '请选择CSV文件后再导入')
@@ -2267,9 +2271,7 @@ def change_staff_attributes(request, user_id):
     if request.method == 'POST':
         department = request.POST.get('department', '').strip()
         staff_level = request.POST.get('staff_level', '').strip()
-        next_url = request.POST.get('next') or reverse('clubs:manage_users')
-        if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
-            next_url = reverse('clubs:manage_users')
+        next_url = reverse('clubs:manage_users')
 
         # 验证部门和职级
         valid_levels = dict(UserProfile.STAFF_LEVEL_CHOICES).keys()
@@ -2346,7 +2348,7 @@ def toggle_form_channel_cycle(request, channel_id):
         channel.is_active = not channel.is_active
         channel.save(update_fields=['is_active', 'updated_at'])
         messages.success(request, f"{channel.name} 已{'开启' if channel.is_active else '关闭'}")
-    return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
+    return redirect('clubs:staff_management')
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -2362,7 +2364,7 @@ def toggle_club_form_channel(request, channel_id, club_id):
     state.updated_by = request.user
     state.save()
     messages.success(request, f"{channel.name} 对 {club.name} 已{'开启' if state.is_enabled else '关闭'}")
-    return redirect(request.META.get('HTTP_REFERER') or reverse('clubs:staff_management'))
+    return redirect('clubs:staff_management')
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -2371,7 +2373,7 @@ def zip_download(request):
     submission_key = (request.GET.get('id') or '').strip()
     if not submission_key:
         messages.error(request, '缺少有效的请求编号')
-        return redirect(request.META.get('HTTP_REFERER', 'clubs:index'))
+        return redirect('clubs:index')
 
     submission = get_object_or_404(
         FormSubmission.objects.select_related('channel', 'club').prefetch_related('uploaded_files__field'),
@@ -2382,12 +2384,12 @@ def zip_download(request):
         return redirect('clubs:index')
     if not submission.channel.show_zip_download:
         messages.error(request, '这个通道未开启打包 ZIP 下载')
-        return redirect(request.META.get('HTTP_REFERER', 'clubs:index'))
+        return redirect('clubs:index')
 
     uploaded_files = [item for item in submission.uploaded_files.all() if item.file]
     if not uploaded_files:
         messages.warning(request, '这个提交没有可打包下载的文件')
-        return redirect(request.META.get('HTTP_REFERER', 'clubs:staff_audit_center'))
+        return redirect('clubs:staff_audit_center')
 
     import zipfile
     from pathlib import PurePath
