@@ -115,6 +115,14 @@ CREDENTIAL_ENCRYPTION_KEY = os.environ.get('CREDENTIAL_ENCRYPTION_KEY', '')
 DEBUG = _env_bool('DEBUG', False)
 ALLOW_DERIVED_CREDENTIAL_KEY = DEBUG or 'test' in sys.argv
 
+if not DEBUG and (
+    not SECRET_KEY
+    or len(SECRET_KEY) < 32
+    or SECRET_KEY in {'unsafe-secret-key', 'your_secret_key_here'}
+):
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured('生产环境必须通过 SECRET_KEY 环境变量设置足够强度的密钥')
+
 ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', ['localhost', '127.0.0.1'])
 
 # CSRF信任源，用于解决反向代理环境下的CSRF验证问题
@@ -123,24 +131,35 @@ CSRF_TRUSTED_ORIGINS = _env_list(
     _default_csrf_trusted_origins_from_hosts(ALLOWED_HOSTS),
 )
 
+# 反向代理主开关：仅在 Nginx/Caddy/Traefik 等反代部署时设为 True。
+# 直连端口部署必须保持 False，否则会信任客户端伪造的代理头。
+IS_NGINX_PROXY = _env_bool('IS_NGINX_PROXY', False)
+
 # 生产环境安全设置
 SECURE_BROWSER_XSS_FILTER = _env_bool('SECURE_BROWSER_XSS_FILTER', True)
 SECURE_CONTENT_TYPE_NOSNIFF = _env_bool('SECURE_CONTENT_TYPE_NOSNIFF', True)
-SESSION_COOKIE_SECURE = _env_bool('SESSION_COOKIE_SECURE', not DEBUG)
-CSRF_COOKIE_SECURE = _env_bool('CSRF_COOKIE_SECURE', not DEBUG)
+# Django 默认不直接提供 HTTPS，HTTPS 必须由 Nginx 反代终止 TLS。
+# 因此以下 HTTPS 强制措施仅在 IS_NGINX_PROXY=True 时开启：
+# - secure cookie：直连 HTTP 部署时开启会导致登录态失效
+# - SSL 跳转：直连 HTTP 部署时开启会造成跳转死循环
+# - HSTS：仅对 HTTPS 站点有意义
+SESSION_COOKIE_SECURE = IS_NGINX_PROXY and _env_bool('SESSION_COOKIE_SECURE', True)
+CSRF_COOKIE_SECURE = IS_NGINX_PROXY and _env_bool('CSRF_COOKIE_SECURE', True)
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE', 'Lax')
 CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE', 'Lax')
-SECURE_SSL_REDIRECT = _env_bool('SECURE_SSL_REDIRECT', not DEBUG)
-SECURE_HSTS_SECONDS = _env_int('SECURE_HSTS_SECONDS', 0 if DEBUG else 31536000)
-SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', not DEBUG)
-SECURE_HSTS_PRELOAD = _env_bool('SECURE_HSTS_PRELOAD', not DEBUG)
+SECURE_SSL_REDIRECT = IS_NGINX_PROXY and _env_bool('SECURE_SSL_REDIRECT', True)
+SECURE_HSTS_SECONDS = 0 if not IS_NGINX_PROXY else _env_int('SECURE_HSTS_SECONDS', 31536000)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = IS_NGINX_PROXY and _env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', True)
+SECURE_HSTS_PRELOAD = IS_NGINX_PROXY and _env_bool('SECURE_HSTS_PRELOAD', True)
 X_FRAME_OPTIONS = os.getenv('X_FRAME_OPTIONS', 'DENY')
 
-# 反向代理常见部署设置（Nginx/Caddy/Traefik 等）
-USE_X_FORWARDED_HOST = _env_bool('USE_X_FORWARDED_HOST', False)
-USE_X_FORWARDED_PORT = _env_bool('USE_X_FORWARDED_PORT', False)
-if _env_bool('USE_X_FORWARDED_PROTO', False):
+USE_X_FORWARDED_HOST = IS_NGINX_PROXY and _env_bool('USE_X_FORWARDED_HOST', False)
+USE_X_FORWARDED_PORT = IS_NGINX_PROXY and _env_bool('USE_X_FORWARDED_PORT', False)
+# 反代会把真实客户端 IP 追加到 X-Forwarded-For 末尾；仅在主开关开启时生效。
+USE_X_FORWARDED_FOR = IS_NGINX_PROXY and _env_bool('USE_X_FORWARDED_FOR', True)
+USE_X_FORWARDED_PROTO = IS_NGINX_PROXY and _env_bool('USE_X_FORWARDED_PROTO', True)
+if USE_X_FORWARDED_PROTO:
     forwarded_proto_header = os.getenv('FORWARDED_PROTO_HEADER', 'HTTP_X_FORWARDED_PROTO').strip()
     forwarded_proto_value = os.getenv('FORWARDED_PROTO_VALUE', 'https').strip() or 'https'
     SECURE_PROXY_SSL_HEADER = (forwarded_proto_header, forwarded_proto_value)
@@ -298,8 +317,10 @@ if not DEBUG:
         raise RuntimeError('生产环境必须设置长度至少为 32 的 SECRET_KEY')
     if not CREDENTIAL_ENCRYPTION_KEY:
         raise RuntimeError('生产环境必须设置 CREDENTIAL_ENCRYPTION_KEY')
-    if not SESSION_COOKIE_SECURE or not CSRF_COOKIE_SECURE:
-        raise RuntimeError('生产环境必须启用 SESSION_COOKIE_SECURE 和 CSRF_COOKIE_SECURE')
+    if IS_NGINX_PROXY and not (SESSION_COOKIE_SECURE and CSRF_COOKIE_SECURE):
+        raise RuntimeError(
+            '使用 Nginx 反向代理（IS_NGINX_PROXY=True）时必须启用 SESSION_COOKIE_SECURE 和 CSRF_COOKIE_SECURE'
+        )
     if CACHE_BACKEND != 'redis' and not _env_bool('ALLOW_NON_REDIS_CACHE', False):
         raise RuntimeError('生产环境必须使用 Redis 缓存；仅测试环境可设置 ALLOW_NON_REDIS_CACHE=True')
 

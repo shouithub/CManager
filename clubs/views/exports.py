@@ -16,6 +16,17 @@ from ..models import RoomBooking, Room, FormSubmission, PublishedActivity
 from ..permissions import has_any_role
 
 
+_CSV_FORMULA_PREFIXES = ('=', '+', '-', '@', '\t', '\r')
+
+
+def _safe_export_value(value):
+    """防止电子表格公式注入：以 = + - @ 等开头的单元格在 Excel 中会被当作公式。"""
+    text = '' if value is None else str(value)
+    if text.startswith(_CSV_FORMULA_PREFIXES):
+        return "'" + text
+    return text
+
+
 @login_required(login_url='clubs:login')
 def export_room_bookings_weekly(request):
     """
@@ -163,7 +174,7 @@ def export_room_bookings_weekly(request):
                     info = f"{club_name}\n({booking.start_time.strftime('%H:%M')}-{booking.end_time.strftime('%H:%M')})\n{booking.purpose}"
                     booking_info.append(info)
                 
-                cell_value = '\n---\n'.join(booking_info)
+                cell_value = _safe_export_value('\n---\n'.join(booking_info))
                 ws[f'{col_letter}{row}'] = cell_value
                 ws[f'{col_letter}{row}'].fill = PatternFill(start_color="E7E6E6", end_color="E7E6E6", fill_type="solid")
             else:
@@ -223,12 +234,12 @@ def export_activities(request):
     writer.writerow(['社团', '活动名称', '活动日期', '开始时间', '结束时间', '地点', '公开报名'])
     for item in activities:
         writer.writerow([
-            item.club.name,
-            item.activity_name,
-            item.activity_date,
-            item.activity_time_start,
-            item.activity_time_end,
-            item.activity_location,
+            _safe_export_value(item.club.name),
+            _safe_export_value(item.activity_name),
+            _safe_export_value(item.activity_date),
+            _safe_export_value(item.activity_time_start),
+            _safe_export_value(item.activity_time_end),
+            _safe_export_value(item.activity_location),
             '是' if item.is_public else '否',
         ])
     return response
@@ -253,14 +264,14 @@ def export_audit_center_data(request, tab):
     writer.writerow(['通道', '社团', '标题', '提交人', '状态', '提交时间', '审核人', '审核时间', '审核意见'])
     for item in submissions:
         writer.writerow([
-            item.channel.name,
-            item.club.name,
-            item.display_title,
-            item.submitter.username,
-            item.get_status_display(),
-            item.submitted_at.strftime('%Y-%m-%d %H:%M') if item.submitted_at else '',
-            item.reviewer.username if item.reviewer else '',
-            item.reviewed_at.strftime('%Y-%m-%d %H:%M') if item.reviewed_at else '',
-            item.review_comment,
+            _safe_export_value(item.channel.name),
+            _safe_export_value(item.club.name),
+            _safe_export_value(item.display_title),
+            _safe_export_value(item.submitter.username),
+            _safe_export_value(item.get_status_display()),
+            _safe_export_value(item.submitted_at.strftime('%Y-%m-%d %H:%M') if item.submitted_at else ''),
+            _safe_export_value(item.reviewer.username if item.reviewer else ''),
+            _safe_export_value(item.reviewed_at.strftime('%Y-%m-%d %H:%M') if item.reviewed_at else ''),
+            _safe_export_value(item.review_comment),
         ])
     return response

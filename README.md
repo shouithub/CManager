@@ -205,6 +205,13 @@
     用户提交附件应通过应用的鉴权下载接口提供。媒体目录的完整脚本执行阻断规则见
     `docs/deployment/nginx-media-security.conf`，部署时请合并到站点配置。
 
+    > **HTTPS 说明**：Django 本身不提供 HTTPS。若站点需要 HTTPS，请使用 Nginx
+    > 反向代理终止 TLS（`listen 443 ssl` 并转发 `X-Forwarded-Proto`），同时在环境
+    > 变量中设置 `IS_NGINX_PROXY=True`。HTTPS 强制跳转、Secure Cookie 与 HSTS 等
+    > 设置仅在该开关开启时生效；直连端口（HTTP）部署时这些功能自动关闭。请勿使用
+    > `django-sslserver` 或让 Django 直接监听 HTTPS——生产环境 HTTPS 一律由 Nginx
+    > 反向代理提供。
+
 ## 🧭 开发目录指南
 
 项目目录职责、Django 管理命令与独立脚本的区别见

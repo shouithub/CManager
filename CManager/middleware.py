@@ -70,7 +70,9 @@ class InitialSetupMiddleware:
             settings.ALLOWED_HOSTS = allowed_hosts
 
         trusted_origins = list(getattr(settings, 'CSRF_TRUSTED_ORIGINS', []))
-        forwarded_proto = (request.META.get('HTTP_X_FORWARDED_PROTO') or '').split(',')[0].strip().lower()
+        forwarded_proto = ''
+        if getattr(settings, 'USE_X_FORWARDED_PROTO', False):
+            forwarded_proto = (request.META.get('HTTP_X_FORWARDED_PROTO') or '').split(',')[0].strip().lower()
         scheme = forwarded_proto or ('https' if request.is_secure() else 'http')
 
         candidates = [f'{scheme}://{host}']

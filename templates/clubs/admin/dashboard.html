@@ -976,8 +976,8 @@
     const borderRejected = isDark ? '#ef5350' : '#c62828';
 
     // ── 访问量折线图 ──
-    const dates  = {{ visit_dates_json|safe }};
-    const counts = {{ visit_counts_json|safe }};
+    const dates  = JSON.parse('{{ visit_dates_json|escapejs }}');
+    const counts = JSON.parse('{{ visit_counts_json|escapejs }}');
     const dateLabels = dates.map(d => d.slice(5));
 
     new Chart(document.getElementById('visitChart'), {
@@ -1016,10 +1016,10 @@
     });
 
     // ── 申请类型分布柱状图 ──
-    const typeLabels   = {{ type_labels_json|safe }};
-    const typePending  = {{ type_pending_json|safe }};
-    const typeApproved = {{ type_approved_json|safe }};
-    const typeRejected = {{ type_rejected_json|safe }};
+    const typeLabels   = JSON.parse('{{ type_labels_json|escapejs }}');
+    const typePending  = JSON.parse('{{ type_pending_json|escapejs }}');
+    const typeApproved = JSON.parse('{{ type_approved_json|escapejs }}');
+    const typeRejected = JSON.parse('{{ type_rejected_json|escapejs }}');
 
     new Chart(document.getElementById('typeChart'), {
         type: 'bar',

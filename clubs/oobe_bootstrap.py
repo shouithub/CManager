@@ -147,8 +147,8 @@ def ensure_database_migrated() -> bool:
         call_command('migrate', interactive=False, verbosity=0)
         logger.info('OOBE bootstrap: automatic migrate completed')
         return True
-    except Exception as exc:
-        logger.exception('OOBE bootstrap: automatic migrate failed: %s', exc)
+    except Exception:
+        logger.exception('OOBE bootstrap: automatic migrate failed')
         return False
 
 

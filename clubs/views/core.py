@@ -114,8 +114,12 @@ def _is_admin(user):
 
 def _build_external_url(request, path: str) -> str:
     """Build a public URL for client-facing links behind reverse proxies."""
-    forwarded_proto = (request.headers.get('X-Forwarded-Proto') or '').split(',')[0].strip()
-    forwarded_host = (request.headers.get('X-Forwarded-Host') or '').split(',')[0].strip()
+    forwarded_proto = ''
+    forwarded_host = ''
+    if getattr(settings, 'USE_X_FORWARDED_PROTO', False):
+        forwarded_proto = (request.headers.get('X-Forwarded-Proto') or '').split(',')[0].strip()
+    if getattr(settings, 'USE_X_FORWARDED_HOST', False):
+        forwarded_host = (request.headers.get('X-Forwarded-Host') or '').split(',')[0].strip()
 
     scheme = forwarded_proto or request.scheme
     host = forwarded_host or request.get_host()
@@ -3236,13 +3240,34 @@ def admin_room_add(request):
     if not is_staff_or_admin(request.user):
         return redirect('clubs:index')
     if request.method == 'POST':
-        Room.objects.create(
-            name=request.POST.get('name'),
-            capacity=request.POST.get('capacity'),
-            location=request.POST.get('location'),
-            description=request.POST.get('description'),
-            status=request.POST.get('status')
-        )
+        room_name = request.POST.get('name', '').strip()
+        capacity_raw = request.POST.get('capacity', '').strip()
+        room_status = request.POST.get('status', 'available').strip()
+        valid_statuses = {value for value, _label in Room.STATUS_CHOICES}
+        if not room_name:
+            messages.error(request, '房间名称不能为空')
+            return redirect('clubs:admin_room_add')
+        try:
+            room_capacity = int(capacity_raw)
+            if room_capacity < 1 or room_capacity > 100000:
+                raise ValueError('capacity')
+        except (TypeError, ValueError):
+            messages.error(request, '容纳人数必须是 1-100000 的整数')
+            return redirect('clubs:admin_room_add')
+        if room_status not in valid_statuses:
+            messages.error(request, '房间状态无效')
+            return redirect('clubs:admin_room_add')
+        try:
+            Room.objects.create(
+                name=room_name,
+                capacity=room_capacity,
+                location=request.POST.get('location', '').strip(),
+                description=request.POST.get('description', '').strip(),
+                status=room_status,
+            )
+        except IntegrityError:
+            messages.error(request, '已存在同名的房间')
+            return redirect('clubs:admin_room_add')
         return redirect('clubs:admin_booking_management')
     return render(request, 'clubs/admin/room_form.html')
 
@@ -3254,12 +3279,33 @@ def admin_room_edit(request, room_id):
         return redirect('clubs:index')
     room = get_object_or_404(Room, pk=room_id)
     if request.method == 'POST':
-        room.name = request.POST.get('name')
-        room.capacity = request.POST.get('capacity')
-        room.location = request.POST.get('location')
-        room.description = request.POST.get('description')
-        room.status = request.POST.get('status')
-        room.save()
+        room_name = request.POST.get('name', '').strip()
+        capacity_raw = request.POST.get('capacity', '').strip()
+        room_status = request.POST.get('status', 'available').strip()
+        valid_statuses = {value for value, _label in Room.STATUS_CHOICES}
+        if not room_name:
+            messages.error(request, '房间名称不能为空')
+            return redirect('clubs:admin_room_edit', room_id=room.pk)
+        try:
+            room_capacity = int(capacity_raw)
+            if room_capacity < 1 or room_capacity > 100000:
+                raise ValueError('capacity')
+        except (TypeError, ValueError):
+            messages.error(request, '容纳人数必须是 1-100000 的整数')
+            return redirect('clubs:admin_room_edit', room_id=room.pk)
+        if room_status not in valid_statuses:
+            messages.error(request, '房间状态无效')
+            return redirect('clubs:admin_room_edit', room_id=room.pk)
+        room.name = room_name
+        room.capacity = room_capacity
+        room.location = request.POST.get('location', '').strip()
+        room.description = request.POST.get('description', '').strip()
+        room.status = room_status
+        try:
+            room.save()
+        except IntegrityError:
+            messages.error(request, '已存在同名的房间')
+            return redirect('clubs:admin_room_edit', room_id=room.pk)
         return redirect('clubs:admin_booking_management')
     return render(request, 'clubs/admin/room_form.html', {'room': room})
 
@@ -3304,10 +3350,24 @@ def admin_time_slot_add(request):
     if not is_staff_or_admin(request.user):
         return redirect('clubs:index')
     if request.method == 'POST':
+        label = request.POST.get('label', '').strip()
+        start_raw = request.POST.get('start_time', '').strip()
+        end_raw = request.POST.get('end_time', '').strip()
+        if not label:
+            messages.error(request, '时间段名称不能为空')
+            return redirect('clubs:admin_time_slot_add')
+        try:
+            start_time = datetime.strptime(start_raw, '%H:%M').time()
+            end_time = datetime.strptime(end_raw, '%H:%M').time()
+            if start_time >= end_time:
+                raise ValueError('time range')
+        except (TypeError, ValueError):
+            messages.error(request, '时间格式无效，必须为 HH:MM 且结束时间晚于开始时间')
+            return redirect('clubs:admin_time_slot_add')
         TimeSlot.objects.create(
-            start_time=request.POST.get('start_time'),
-            end_time=request.POST.get('end_time'),
-            label=request.POST.get('label'),
+            start_time=start_time,
+            end_time=end_time,
+            label=label,
             is_active=request.POST.get('is_active') == 'on'
         )
         return redirect('clubs:admin_booking_management')
@@ -3321,9 +3381,23 @@ def admin_time_slot_edit(request, slot_id):
         return redirect('clubs:index')
     slot = get_object_or_404(TimeSlot, pk=slot_id)
     if request.method == 'POST':
-        slot.start_time = request.POST.get('start_time')
-        slot.end_time = request.POST.get('end_time')
-        slot.label = request.POST.get('label')
+        label = request.POST.get('label', '').strip()
+        start_raw = request.POST.get('start_time', '').strip()
+        end_raw = request.POST.get('end_time', '').strip()
+        if not label:
+            messages.error(request, '时间段名称不能为空')
+            return redirect('clubs:admin_time_slot_edit', slot_id=slot.pk)
+        try:
+            start_time = datetime.strptime(start_raw, '%H:%M').time()
+            end_time = datetime.strptime(end_raw, '%H:%M').time()
+            if start_time >= end_time:
+                raise ValueError('time range')
+        except (TypeError, ValueError):
+            messages.error(request, '时间格式无效，必须为 HH:MM 且结束时间晚于开始时间')
+            return redirect('clubs:admin_time_slot_edit', slot_id=slot.pk)
+        slot.start_time = start_time
+        slot.end_time = end_time
+        slot.label = label
         slot.is_active = request.POST.get('is_active') == 'on'
         slot.save()
         return redirect('clubs:admin_booking_management')

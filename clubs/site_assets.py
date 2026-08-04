@@ -1,5 +1,9 @@
 import io
+import logging
 from PIL import Image
+
+
+logger = logging.getLogger(__name__)
 
 
 def process_site_logo(upload, allow_webp=True):
@@ -65,5 +69,6 @@ def process_site_logo(upload, allow_webp=True):
         storage.save(png_name, png_buf)
         storage.save(ico_name, ico_buf)
         return True, '网站图标已更新'
-    except Exception as exc:
-        return False, f'保存图标失败: {str(exc)}'
+    except Exception:
+        logger.exception('保存站点图标失败')
+        return False, '保存图标失败，请检查存储配置后重试'

@@ -1,3 +1,4 @@
+import os
 import secrets
 from pathlib import Path
 
@@ -33,6 +34,10 @@ def _write_env_local(updates: dict):
 
     content = '\n'.join([f'{key}={value}' for key, value in current.items()]) + '\n'
     env_path.write_text(content, encoding='utf-8')
+    try:
+        os.chmod(env_path, 0o600)
+    except OSError:
+        pass
 
 
 def _parse_bool(raw_value, default=False):
@@ -56,7 +61,9 @@ def _default_form_data(request=None):
 
     if request is not None:
         host = (request.get_host() or '').split(':', 1)[0].strip().lower()
-        forwarded_proto = request.META.get('HTTP_X_FORWARDED_PROTO', '').split(',')[0].strip().lower()
+        forwarded_proto = ''
+        if getattr(settings, 'USE_X_FORWARDED_PROTO', False):
+            forwarded_proto = request.META.get('HTTP_X_FORWARDED_PROTO', '').split(',')[0].strip().lower()
         scheme = forwarded_proto or ('https' if request.is_secure() else 'http')
 
         if host and host not in default_allowed_hosts:

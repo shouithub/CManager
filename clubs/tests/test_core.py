@@ -12,7 +12,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, connection, transaction
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
 
@@ -142,6 +142,116 @@ class AvatarServiceTests(TestCase):
         self.assertNotEqual(first_name, second_name)
         self.assertEqual(save_mock.call_count, 2)
         delete_mock.assert_called_once_with(first_name)
+
+    def test_department_members_visible_to_logged_in_users(self):
+        from ..models import Department
+
+        department = Department.objects.create(name='测试部门')
+        member = User.objects.create_user(username='plain-member', password='test-password')
+        UserProfile.objects.create(user=member, role='member', status='approved')
+        self.client.force_login(member)
+
+        response = self.client.get(
+            reverse('clubs:get_department_members', args=[department.pk]),
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['name'], '测试部门')
+
+    def test_department_members_requires_login(self):
+        from ..models import Department
+
+        department = Department.objects.create(name='测试部门')
+        self.client.logout()
+
+        response = self.client.get(
+            reverse('clubs:get_department_members', args=[department.pk]),
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+    def test_admin_room_add_rejects_invalid_capacity(self):
+        staff = User.objects.create_user(username='audit-staff', password='test-password')
+        UserProfile.objects.create(user=staff, role='staff', status='approved')
+        self.client.force_login(staff)
+
+        response = self.client.post(
+            reverse('clubs:admin_room_add'),
+            {
+                'name': '测试房间',
+                'capacity': 'not-a-number',
+                'status': 'available',
+            },
+            secure=True,
+        )
+
+        self.assertRedirects(response, reverse('clubs:admin_room_add'), fetch_redirect_response=False)
+        self.assertEqual(Room.objects.count(), 0)
+
+    @override_settings(USE_X_FORWARDED_FOR=True)
+    def test_login_lockout_uses_forwarded_for_ip(self):
+        from ..views import auth as auth_views
+
+        self.client.logout()
+        login_url = reverse('clubs:login')
+        fake_ip = '203.0.113.99'
+        for _ in range(auth_views.MAX_LOGIN_ATTEMPTS):
+            self.client.post(
+                login_url,
+                {'username': 'unknown-user-xyz', 'password': 'wrong-password'},
+                HTTP_X_FORWARDED_FOR=fake_ip,
+                secure=True,
+            )
+
+        response = self.client.post(
+            login_url,
+            {'username': 'unknown-user-xyz', 'password': 'wrong-password'},
+            HTTP_X_FORWARDED_FOR=fake_ip,
+            secure=True,
+        )
+
+        self.assertContains(response, '登录尝试过多')
+
+    def test_login_lockout_ignores_forwarded_for_without_proxy(self):
+        from ..views import auth as auth_views
+
+        self.client.logout()
+        login_url = reverse('clubs:login')
+        for index in range(auth_views.MAX_LOGIN_ATTEMPTS):
+            self.client.post(
+                login_url,
+                {'username': 'unknown-user-abc', 'password': 'wrong-password'},
+                HTTP_X_FORWARDED_FOR=f'10.0.0.{index}',
+                secure=True,
+            )
+
+        response = self.client.post(
+            login_url,
+            {'username': 'unknown-user-abc', 'password': 'wrong-password'},
+            HTTP_X_FORWARDED_FOR='10.0.0.99',
+            secure=True,
+        )
+
+        self.assertContains(response, '登录尝试过多')
+
+    def test_build_external_url_respects_proxy_switch(self):
+        from django.test import RequestFactory
+
+        from ..views.core import _build_external_url
+
+        request = RequestFactory().get('/some/path')
+        request.META['HTTP_X_FORWARDED_PROTO'] = 'https'
+        request.META['HTTP_X_FORWARDED_HOST'] = 'public.example.com'
+
+        with override_settings(USE_X_FORWARDED_PROTO=False, USE_X_FORWARDED_HOST=False):
+            url = _build_external_url(request, '/path')
+            self.assertTrue(url.startswith('http://testserver'))
+
+        with override_settings(USE_X_FORWARDED_PROTO=True, USE_X_FORWARDED_HOST=True):
+            url = _build_external_url(request, '/path')
+            self.assertTrue(url.startswith('https://public.example.com'))
 
     def test_admin_can_change_third_party_cdn(self):
         response = self.client.post(

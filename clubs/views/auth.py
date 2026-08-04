@@ -10,7 +10,6 @@ from django.views.decorators.http import require_http_methods, require_POST
 from django.conf import settings
 from django.contrib import messages
 from ..models import UserProfile, Club, FormChannel, FormCycle, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
-from datetime import datetime
 from django.utils import timezone
 from django.db import transaction
 from django.db.models import F, Q, Prefetch, Window
@@ -37,6 +36,20 @@ from ..identity import (
 MAX_LOGIN_ATTEMPTS = 5
 LOGIN_WINDOW_SECONDS = 300  # 5 minutes
 logger = logging.getLogger(__name__)
+
+
+def _client_ip(request):
+    """返回用于限速的客户端 IP。
+
+    反代场景下 Nginx 会把真实 IP 追加到 X-Forwarded-For 末尾，因此取最右侧
+    非空值；未开启代理头或没有该请求头时回退到 REMOTE_ADDR。
+    """
+    forwarded = (request.META.get('HTTP_X_FORWARDED_FOR') or '').strip()
+    if getattr(settings, 'USE_X_FORWARDED_FOR', False) and forwarded:
+        parts = [part.strip() for part in forwarded.split(',') if part.strip()]
+        if parts:
+            return parts[-1]
+    return request.META.get('REMOTE_ADDR', '')
 
 
 def register(request):
@@ -170,7 +183,7 @@ def user_login(request):
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '').strip()
-        client_ip = request.META.get('REMOTE_ADDR', '')
+        client_ip = _client_ip(request)
 
         if not username or not password:
             messages.error(request, '用户名和密码不能为空')
@@ -493,6 +506,13 @@ def edit_profile(request):
                 errors.append('学号不能为空')
             if profile.role in ['president', 'staff', 'admin'] and not political_status:
                 errors.append('政治面貌不能为空')
+            if UserProfile.objects.filter(student_id=student_id).exclude(id=profile.id).exists():
+                errors.append('学号已被其他用户使用')
+            valid_political_statuses = {
+                value for value, _label in UserProfile.POLITICAL_STATUS_CHOICES
+            }
+            if political_status and political_status not in valid_political_statuses:
+                errors.append('政治面貌无效')
             
             if errors:
                 for error in errors:
@@ -518,6 +538,8 @@ def edit_profile(request):
                 messages.error(request, '新用户名不能为空')
             elif len(new_username) < 3:
                 messages.error(request, '用户名至少3个字符')
+            elif len(new_username) > 30:
+                messages.error(request, '用户名不能超过30个字符')
             elif User.objects.exclude(id=user.id).filter(username=new_username).exists():
                 messages.error(request, '用户名已被使用')
             elif not password:
