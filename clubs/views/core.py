@@ -4073,6 +4073,11 @@ def _office_preview_url(request, uploaded):
     else:
         # S3 直链已经是绝对 URL，不再包装
         absolute_file_url = direct_url
+    # 仅允许 http(s) 地址用于 Office 预览，防止历史数据中的异常文件名
+    # （如 file:// 或本地绝对路径）被拼进 iframe，导致浏览器拦截。
+    parsed_file_url = urllib.parse.urlsplit(absolute_file_url)
+    if parsed_file_url.scheme not in ('http', 'https') or not parsed_file_url.netloc:
+        return ''
     encoded_file_url = urllib.parse.quote(absolute_file_url, safe='')
     return f'https://view.officeapps.live.com/op/embed.aspx?src={encoded_file_url}'
 

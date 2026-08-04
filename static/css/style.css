@@ -4192,3 +4192,9 @@ fieldset legend {
         font-size: 1.25rem;
     }
 }
+
+/* 按钮内图标跟随按钮文字颜色与字号，避免 page-header 的 2.5rem 图标放大按钮图标 */
+.btn:not(.btn-icon) .material-icons {
+    color: inherit;
+    font-size: 1.25rem;
+}

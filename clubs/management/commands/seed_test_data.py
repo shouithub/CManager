@@ -50,12 +50,57 @@ class Command(BaseCommand):
             self.seed_bookings(users, clubs, rooms, slots)
             channels = self.seed_form_channels(users["admin"], clubs)
             submissions = self.seed_submissions(users, clubs, channels)
+            self.normalize_legacy_file_names()
             self.seed_public_activity(users, clubs, submissions)
             self.seed_site_defaults()
             self.seed_daily_stats()
 
         self.stdout.write(self.style.SUCCESS("测试数据已写入完成。"))
         self.stdout.write(f"登录密码统一为：{TEST_PASSWORD}")
+        role_labels = {
+            "admin": "管理员",
+            "staff": "干事",
+            "president": "社长",
+            "member": "成员",
+        }
+        self.stdout.write("测试账号列表：")
+        for role in ("admin", "staff", "president", "member"):
+            matches = [user for user in users.values() if user.profile.role == role]
+            if not matches:
+                continue
+            self.stdout.write(f"  [{role_labels[role]}]")
+            for user in matches:
+                self.stdout.write(f"    - {user.username}")
+
+    def normalize_legacy_file_names(self):
+        """修复历史遗留的异常存储名（file://、绝对路径等），统一为站内相对路径。"""
+        from django.core.files.base import ContentFile
+
+        from ...models import FormUploadedFile
+        from ...storage_backends import ClubStorage
+
+        fixed = 0
+        for uploaded in FormUploadedFile.objects.exclude(file="").iterator():
+            legacy_name = uploaded.file.name or ""
+            if not legacy_name.startswith("/") and "://" not in legacy_name:
+                continue
+            try:
+                with uploaded.file.open("rb") as source:
+                    content = source.read()
+                storage = ClubStorage()
+                new_name = storage.save(legacy_name, ContentFile(content))
+                old_name = uploaded.file.name
+                uploaded.file.name = new_name
+                uploaded.save(update_fields=["file"])
+                try:
+                    storage.delete(old_name)
+                except Exception:
+                    pass
+                fixed += 1
+            except Exception:
+                self.stderr.write(f"跳过无法读取的历史文件记录：{uploaded.pk}")
+        if fixed:
+            self.stdout.write(f"已修复 {fixed} 条历史文件记录")
 
     def upsert_user(
         self,

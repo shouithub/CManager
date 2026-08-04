@@ -256,6 +256,45 @@ class AvatarServiceTests(TestCase):
             self.assertEqual(parsed.scheme, 'https')
             self.assertEqual(parsed.hostname, 'public.example.com')
 
+    def test_office_preview_url_rejects_non_http_schemes(self):
+        from django.core.files.base import ContentFile
+        from django.test import RequestFactory
+
+        from ..views.core import _office_preview_url
+        from ..models import FormField, FormSubmission, FormUploadedFile
+
+        channel = FormChannel.objects.create(
+            name='预览测试通道',
+            slug='preview-test',
+            is_active=True,
+            publish_status='published',
+        )
+        submission = FormSubmission.objects.create(
+            channel=channel,
+            club=Club.objects.create(name='预览测试社团', founded_date=date(2026, 1, 1)),
+            submitter=self.user,
+        )
+        field = FormField.objects.create(channel=channel, field_key='f', label='附件', field_type='file')
+        uploaded = FormUploadedFile.objects.create(
+            submission=submission,
+            field=field,
+            file=ContentFile(b'docx-bytes', name='doc.docx'),
+            original_name='doc.docx',
+        )
+        uploaded.file.name = 'file:///etc/passwd.docx'
+
+        request = RequestFactory().get('/')
+        self.assertEqual(_office_preview_url(request, uploaded), '')
+
+    def test_storage_name_sanitization(self):
+        from ..storage_backends import _sanitize_storage_name
+
+        self.assertEqual(_sanitize_storage_name('file:///etc/passwd.docx'), 'etc/passwd.docx')
+        self.assertEqual(_sanitize_storage_name('/abs/path/x.docx'), 'abs/path/x.docx')
+        self.assertEqual(_sanitize_storage_name('form_submissions/abc/x.docx'), 'form_submissions/abc/x.docx')
+        self.assertEqual(_sanitize_storage_name('a/../b.docx'), 'b.docx')
+        self.assertEqual(_sanitize_storage_name(''), 'unnamed')
+
     def test_admin_can_change_third_party_cdn(self):
         response = self.client.post(
             reverse('clubs:site_settings'),

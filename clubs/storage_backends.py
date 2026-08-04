@@ -31,6 +31,7 @@
 
 import os
 import io
+import re
 import time
 import tempfile
 import threading
@@ -44,6 +45,28 @@ from django.core.exceptions import SuspiciousFileOperation
 from django.utils.deconstruct import deconstructible
 
 logger = logging.getLogger(__name__)
+
+
+def _sanitize_storage_name(name):
+    """把存储名规范化为站内相对路径。
+
+    防止历史数据或异常文件名（如 ``file:///...``、绝对路径、目录穿越）被
+    直接写入存储字段，进而被拼进文件 URL 导致浏览器加载 ``file://`` 链接。
+    """
+    name = str(name or '').replace('\\', '/')
+    # 去掉 URL scheme（file://、https:// 等）
+    name = re.sub(r'^[a-zA-Z][a-zA-Z0-9+.\-]*://', '', name)
+    stack = []
+    for part in name.split('/'):
+        if part in ('', '.'):
+            continue
+        if part == '..':
+            if stack:
+                stack.pop()
+            continue
+        stack.append(part)
+    return '/'.join(stack) or 'unnamed'
+
 
 # 模块级缓存：每个 StorageConfig 版本号对应一组后端实例
 # 避免每次 save 都新建 client，但配置变更后会自动重建
@@ -81,6 +104,7 @@ class LocalStorageBackend:
 
     # ---------- Storage 接口 ----------
     def save(self, name, content, max_length=None):
+        name = _sanitize_storage_name(name)
         full = self._full_path(name)
         os.makedirs(os.path.dirname(full), exist_ok=True)
         # content 可能是 Django UploadedFile / ContentFile / file-like
@@ -555,6 +579,7 @@ class ClubStorage(Storage):
     # ============ Django Storage 接口实现 ============
 
     def _save(self, name, content):
+        name = _sanitize_storage_name(name)
         # Keep fixed site assets stable; all user uploads receive unpredictable keys.
         if getattr(settings, 'SECURE_RANDOMIZE_UPLOAD_NAMES', True) and not name.startswith('site/'):
             directory, filename = os.path.split(name)
