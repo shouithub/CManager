@@ -25,7 +25,7 @@
             mix-blend-mode: normal;
         }
     </style>
-    <title>{% block title %}社团管理系统{% endblock %}</title>
+    <title>{% block title %}{{ site_name|default:'社团管理系统' }}{% endblock %}</title>
     {% if site_favicon_url %}
     <link rel="icon" type="image/x-icon" sizes="any" href="{{ site_favicon_url }}">
     {% endif %}
@@ -257,7 +257,7 @@
                 <span class="material-icons" style="font-size: 1.5em;">flag</span>
                 {% endif %}
             </span>
-            <h1>社团管理系统</h1>
+            <h1>{{ site_name|default:'社团管理系统' }}</h1>
         </div>
         
         <!-- 导航菜单 -->
@@ -603,8 +603,8 @@
             {% endif %}
             
             <a href="javascript:void(0)" class="bottom-nav-item" onclick="toggleSidebar()">
-                <span class="icon"><span class="material-icons">person</span></span>
-                <span>用户</span>
+                <span class="icon"><span class="material-icons">more_horiz</span></span>
+                <span>更多</span>
             </a>
         </div>
     </nav>

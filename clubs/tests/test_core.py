@@ -21,6 +21,7 @@ from ..avatar_utils import clear_avatar_settings_cache, get_profile_avatar_url
 from ..models import (
     Club,
     ClubMember,
+    Announcement,
     FormChannel,
     FormCycle,
     FormField,
@@ -33,6 +34,7 @@ from ..models import (
     SiteSettings,
     SMTPConfig,
     StaffClubRelation,
+    TimeSlot,
     UserProfile,
 )
 from ..services.booking_service import BookingConflictError, create_room_booking
@@ -320,6 +322,24 @@ class AvatarServiceTests(TestCase):
         )
         self.assertTrue(self.config.third_party_cdn_sri['chartjs'].startswith('sha384-'))
 
+    def test_admin_can_change_site_name_and_homepage_title(self):
+        response = self.client.post(
+            reverse('clubs:site_settings'),
+            {
+                'form_type': 'site_info_settings',
+                'site_name': '测试站点',
+                'homepage_title': '测试首页标题',
+                'homepage_subtitle': '测试首页副标题',
+            },
+            secure=True,
+        )
+
+        self.assertRedirects(response, reverse('clubs:site_settings'), fetch_redirect_response=False)
+        self.config.refresh_from_db()
+        self.assertEqual(self.config.site_name, '测试站点')
+        self.assertEqual(self.config.homepage_title, '测试首页标题')
+        self.assertEqual(self.config.homepage_subtitle, '测试首页副标题')
+
     def test_third_party_cdn_rejects_urls_with_query_parameters(self):
         original_url = self.config.third_party_cdn_base_url
         response = self.client.post(
@@ -451,6 +471,102 @@ class StaffRegistrationReviewTests(TestCase):
         self.assertEqual(response.context['pending_review_users'], 1)
         self.assertContains(response, '1 个待审核')
         self.assertContains(response, '?role=staff&amp;status=pending')
+
+    def test_batch_delete_users(self):
+        first = User.objects.create_user(username='batch-del-1', password='test-password')
+        UserProfile.objects.create(user=first, role='member', status='approved')
+        second = User.objects.create_user(username='batch-del-2', password='test-password')
+        UserProfile.objects.create(user=second, role='member', status='approved')
+
+        response = self.client.post(
+            reverse('clubs:manage_users'),
+            {'action': 'batch_delete', 'user_ids': f'{first.pk},{second.pk}'},
+            secure=True,
+        )
+
+        self.assertRedirects(response, reverse('clubs:manage_users'), fetch_redirect_response=False)
+        self.assertFalse(User.objects.filter(pk__in=[first.pk, second.pk]).exists())
+
+    def test_batch_toggle_active_users(self):
+        first = User.objects.create_user(username='batch-tog-1', password='test-password')
+        UserProfile.objects.create(user=first, role='member', status='approved')
+        second = User.objects.create_user(username='batch-tog-2', password='test-password')
+        UserProfile.objects.create(user=second, role='member', status='approved')
+
+        self.client.post(
+            reverse('clubs:manage_users'),
+            {'action': 'batch_disable', 'user_ids': f'{first.pk},{second.pk}'},
+            secure=True,
+        )
+        first.refresh_from_db()
+        second.refresh_from_db()
+        self.assertFalse(first.is_active)
+        self.assertFalse(second.is_active)
+
+        self.client.post(
+            reverse('clubs:manage_users'),
+            {'action': 'batch_enable', 'user_ids': f'{first.pk},{second.pk}'},
+            secure=True,
+        )
+        first.refresh_from_db()
+        second.refresh_from_db()
+        self.assertTrue(first.is_active)
+        self.assertTrue(second.is_active)
+
+    def test_batch_delete_skips_superuser_and_self(self):
+        target = User.objects.create_user(username='batch-skip-1', password='test-password')
+        UserProfile.objects.create(user=target, role='member', status='approved')
+
+        self.client.post(
+            reverse('clubs:manage_users'),
+            {'action': 'batch_delete', 'user_ids': f'{target.pk},{self.admin.pk}'},
+            secure=True,
+        )
+
+        self.assertFalse(User.objects.filter(pk=target.pk).exists())
+        self.assertTrue(User.objects.filter(pk=self.admin.pk).exists())
+
+    def test_manage_announcements_page_and_toggle(self):
+        announcement = Announcement.objects.create(
+            title='测试公告',
+            content='公告内容',
+            status='draft',
+            created_by=self.admin,
+        )
+
+        response = self.client.get(reverse('clubs:manage_announcements'), secure=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '测试公告')
+
+        self.client.post(
+            reverse('clubs:toggle_announcement_status', args=[announcement.pk]),
+            secure=True,
+        )
+        announcement.refresh_from_db()
+        self.assertEqual(announcement.status, 'published')
+
+    def test_time_slot_import_template_and_import(self):
+        template_response = self.client.get(reverse('clubs:download_time_slot_import_template'), secure=True)
+        self.assertEqual(template_response.status_code, 200)
+        self.assertContains(template_response, '显示名称')
+
+        csv_content = '显示名称,开始时间,结束时间,状态\n第1-2节,08:15,09:55,启用\n午休,11:40,13:00,启用\n'
+        upload = SimpleUploadedFile(
+            'time_slots.csv',
+            csv_content.encode('utf-8-sig'),
+            content_type='text/csv',
+        )
+        response = self.client.post(
+            reverse('clubs:import_time_slots_csv'),
+            {'csv_file': upload},
+            HTTP_ACCEPT='application/json',
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['success'])
+        self.assertEqual(TimeSlot.objects.filter(label='第1-2节').count(), 1)
+        self.assertEqual(TimeSlot.objects.filter(label='午休').count(), 1)
 
 
 class BookingServiceTests(TestCase):

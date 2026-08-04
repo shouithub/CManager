@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load static %}
 
 {% block title %}{{ page_title|default:"用户管理" }}{% endblock %}
 
@@ -431,6 +432,16 @@
         gap: var(--md3-spacing-md);
     }
 
+    .user-card--selectable {
+        cursor: pointer;
+    }
+
+    .user-card--selectable.is-selected {
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 2px var(--md3-primary);
+        background: var(--md3-primary-container);
+    }
+
     .user-avatar {
         width: 48px;
         height: 48px;
@@ -583,6 +594,29 @@
 
     .search-form > .btn-search {
         justify-content: center;
+    }
+
+    .batch-controls {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+    }
+
+    .batch-controls label,
+    .batch-controls #batchCount {
+        line-height: 1;
+    }
+
+    .batch-controls input[type="checkbox"] {
+        margin: 0;
+        vertical-align: middle;
+    }
+
+    @media (min-width: 769px) {
+        .search-form .batch-controls {
+            grid-column: 1 / 4;
+        }
     }
 
     .user-card-actions form {
@@ -742,6 +776,11 @@
         .search-form {
             grid-template-columns: 1fr;
         }
+
+        .batch-controls {
+            flex-wrap: wrap;
+            white-space: normal;
+        }
         
     }
 
@@ -836,6 +875,29 @@
             grid-template-columns: 1fr;
         }
     }
+
+    @media (max-width: 768px) {
+        .page-header-actions {
+            flex-wrap: wrap;
+            gap: var(--md3-spacing-sm);
+        }
+
+        .page-header-actions .btn-action,
+        .page-header-actions .stats-badge {
+            flex: 1 1 calc(50% - var(--md3-spacing-sm));
+            max-width: calc(50% - var(--md3-spacing-sm));
+            min-width: 0;
+        }
+
+        .search-form {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .search-form .search-input-wrapper,
+        .search-form .batch-controls {
+            grid-column: 1 / -1;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -850,9 +912,13 @@
         </div>
         <div class="page-header-actions">
             {% if can_manage_users %}
-            <button type="button" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;" onclick="openBulkOpsModal()">
-                批量操作
+            <button type="button" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;" data-csv-import-open="bulkImportModal">
+                批量导入
             </button>
+            <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;">
+                <span class="material-icons">file_download</span>
+                导出数据
+            </a>
             <a href="{% url 'clubs:create_user' %}" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;">
                 <span class="material-icons">person_add</span>
                 创建用户
@@ -907,6 +973,17 @@
                 <option value="enabled" {% if active_state == 'enabled' %}selected{% endif %}>已启用</option>
                 <option value="disabled" {% if active_state == 'disabled' %}selected{% endif %}>已禁用</option>
             </select>
+            {% if can_manage_users and users %}
+            <div class="batch-controls">
+                <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.875rem;color:var(--md3-on-surface);white-space:nowrap;line-height:1;">
+                    <input type="checkbox" id="select-all-users"> <span>全选本页</span>
+                </label>
+                <span id="batchCount" style="font-size:0.8125rem;color:var(--md3-on-surface-variant);white-space:nowrap;">已选 0 人</span>
+                <button type="button" id="batchEnableBtn" class="btn-action detail">批量启用</button>
+                <button type="button" id="batchDisableBtn" class="btn-action review">批量禁用</button>
+                <button type="button" id="batchDeleteBtn" class="btn-action danger">批量删除</button>
+            </div>
+            {% endif %}
             <button type="submit" class="btn-search">
                 <span class="material-icons">search</span>
                 搜索
@@ -916,13 +993,20 @@
                 重置
             </a>
         </form>
+        {% if can_manage_users and users %}
+        <form id="batchUserForm" method="post" style="display:none;">
+            {% csrf_token %}
+            <input type="hidden" name="action" id="batchUserAction">
+            <input type="hidden" name="user_ids" id="batchUserIds">
+        </form>
+        {% endif %}
     </div>
-    
+
     <!-- 用户列表 -->
     {% if users %}
     <div class="users-list">
         {% for user in users %}
-        <article class="user-card">
+        <article class="user-card {% if can_manage_users %}user-card--selectable{% endif %}" {% if can_manage_users %}data-user-id="{{ user.id }}"{% endif %}>
             <div class="user-card-header">
                 <a href="{% url 'clubs:user_detail' user.id %}" class="user-avatar" aria-label="查看 {{ user.username }}">
                     {% if user.profile.has_display_avatar %}
@@ -1172,58 +1256,13 @@
     </div>
 </div>
 
-<div id="bulkOpsModal" class="bulk-modal-overlay">
-    <div class="bulk-modal-card">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-            <h3 style="margin:0; font-size:1.2rem;">批量操作</h3>
-            <button type="button" class="btn-action detail" onclick="closeBulkOpsModal()">关闭</button>
-        </div>
-        <p style="margin:8px 0 0 0; color: var(--md3-on-surface-variant);">下载模板、批量导入用户，或导出全部用户与社团数据。</p>
-        <div class="bulk-modal-actions">
-            <a href="{% url 'clubs:download_user_import_template' %}" class="btn-action detail" style="justify-content:center;">
-                <span class="material-icons">download</span>
-                下载导入模板
-            </a>
-            <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn-action detail" style="justify-content:center;">
-                <span class="material-icons">file_download</span>
-                导出全部用户+社团
-            </a>
-            <form id="bulkImportForm" method="post" action="{% url 'clubs:import_users_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <label class="bulk-modal-file-wrapper" for="csvFileInput">
-                    <span class="bulk-modal-file-label"><span class="material-icons" style="font-size:1rem;">folder_open</span>浏览</span>
-                    <span class="bulk-modal-file-name" id="csvFileName">未选择文件</span>
-                </label>
-                <input type="file" id="csvFileInput" name="csv_file" accept=".csv,text/csv" required class="bulk-modal-file"
-                    onchange="document.getElementById('csvFileName').textContent = this.files[0]?.name || '未选择文件'">
-                <button id="bulkImportSubmitBtn" type="submit" class="btn-action detail" style="justify-content:center;">
-                    <span class="material-icons">upload_file</span>
-                    批量导入CSV
-                </button>
-                <div id="importProgress" class="import-progress">
-                    <div id="importProgressText" class="import-progress-text">准备导入...</div>
-                    <div class="import-progress-track">
-                        <div id="importProgressBar" class="import-progress-bar"></div>
-                    </div>
-                </div>
-                <div id="importResult" class="import-result"></div>
-            </form>
-        </div>
-    </div>
-</div>
+{% url 'clubs:import_users_csv' as user_import_url %}
+{% url 'clubs:download_user_import_template' as user_template_url %}
+{% include 'clubs/components/_csv_import_modal.html' with modal_id='bulkImportModal' modal_title='批量导入用户' modal_description='下载模板填写后上传，即可批量导入用户账号。' import_url=user_import_url template_url=user_template_url column_hint='用户名,真实姓名,学号,邮箱,电话,微信,角色,部门' %}
 {% endif %}
 
 <script>
 {% if can_manage_users %}
-function openBulkOpsModal() {
-    document.getElementById('bulkOpsModal').style.display = 'flex';
-}
-
-function closeBulkOpsModal() {
-    document.getElementById('bulkOpsModal').style.display = 'none';
-}
-
 const staffAttrModal = document.getElementById('staffAttrModal');
 const staffAttrForm = document.getElementById('staffAttrForm');
 const staffAttrUser = document.getElementById('staffAttrUser');
@@ -1269,11 +1308,70 @@ function confirmDeleteUser(username) {
     return true;
 }
 
-document.getElementById('bulkOpsModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeBulkOpsModal();
+(function () {
+    const cards = Array.prototype.slice.call(document.querySelectorAll('.user-card--selectable'));
+    const selectAll = document.getElementById('select-all-users');
+    const countEl = document.getElementById('batchCount');
+    const form = document.getElementById('batchUserForm');
+    const actionInput = document.getElementById('batchUserAction');
+    const idsInput = document.getElementById('batchUserIds');
+    if (!cards.length || !selectAll || !form || !actionInput || !idsInput) return;
+
+    const selected = new Set();
+
+    function updateCount() {
+        cards.forEach(function (card) {
+            card.classList.toggle('is-selected', selected.has(card.dataset.userId));
+        });
+        if (countEl) countEl.textContent = '已选 ' + selected.size + ' 人';
+        selectAll.checked = selected.size === cards.length;
     }
-});
+
+    function isInteractive(target) {
+        return target.closest('a, button, input, select, textarea, label, form');
+    }
+
+    cards.forEach(function (card) {
+        card.addEventListener('click', function (event) {
+            if (isInteractive(event.target)) return;
+            const id = card.dataset.userId;
+            if (selected.has(id)) {
+                selected.delete(id);
+            } else {
+                selected.add(id);
+            }
+            updateCount();
+        });
+    });
+
+    selectAll.addEventListener('change', function () {
+        selected.clear();
+        if (selectAll.checked) {
+            cards.forEach(function (card) { selected.add(card.dataset.userId); });
+        }
+        updateCount();
+    });
+
+    function submitBatch(action, message) {
+        if (!selected.size) {
+            alert('请先选择用户');
+            return;
+        }
+        if (message && !confirm(message.replace('{n}', String(selected.size)))) {
+            return;
+        }
+        actionInput.value = action;
+        idsInput.value = Array.from(selected).join(',');
+        form.submit();
+    }
+
+    const enableBtn = document.getElementById('batchEnableBtn');
+    const disableBtn = document.getElementById('batchDisableBtn');
+    const deleteBtn = document.getElementById('batchDeleteBtn');
+    if (enableBtn) enableBtn.addEventListener('click', function () { submitBatch('batch_enable', ''); });
+    if (disableBtn) disableBtn.addEventListener('click', function () { submitBatch('batch_disable', '确定要禁用选中的 {n} 个用户吗？'); });
+    if (deleteBtn) deleteBtn.addEventListener('click', function () { submitBatch('batch_delete', '确定要删除选中的 {n} 个用户吗？此操作不可恢复！'); });
+})();
 
 staffAttrModal.addEventListener('click', function(e) {
     if (e.target === this) {
@@ -1283,117 +1381,11 @@ staffAttrModal.addEventListener('click', function(e) {
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        closeBulkOpsModal();
         closeStaffAttrModal();
     }
 });
-
-const bulkImportForm = document.getElementById('bulkImportForm');
-const bulkImportSubmitBtn = document.getElementById('bulkImportSubmitBtn');
-const importProgress = document.getElementById('importProgress');
-const importProgressText = document.getElementById('importProgressText');
-const importProgressBar = document.getElementById('importProgressBar');
-const importResult = document.getElementById('importResult');
-
-function setImportProgress(percent, text) {
-    importProgress.style.display = 'block';
-    importProgressBar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
-    importProgressText.textContent = text;
-}
-
-bulkImportForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const fileInput = bulkImportForm.querySelector('input[name="csv_file"]');
-    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-        importResult.style.display = 'block';
-        importResult.textContent = '请先选择CSV文件。';
-        return;
-    }
-
-    importResult.style.display = 'none';
-    importResult.textContent = '';
-    bulkImportSubmitBtn.disabled = true;
-    setImportProgress(5, '准备上传...');
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', bulkImportForm.action, true);
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    xhr.timeout = 300000;  // 5分钟超时
-
-    // 上传进度：0% → 60%
-    xhr.upload.addEventListener('progress', function(event) {
-        if (event.lengthComputable) {
-            const pct = Math.round((event.loaded / event.total) * 60);
-            setImportProgress(pct, `上传中... ${Math.round((event.loaded / event.total) * 100)}%`);
-        } else {
-            setImportProgress(30, '上传中...');
-        }
-    });
-
-    // 上传完成后切换为"服务端处理中"状态
-    xhr.upload.addEventListener('load', function() {
-        setImportProgress(65, '文件已上传，服务端处理中...');
-    });
-
-    xhr.addEventListener('load', function() {
-        let resp = null;
-        try {
-            resp = JSON.parse(xhr.responseText || '{}');
-        } catch (err) {
-            resp = null;
-        }
-
-        if (xhr.status >= 200 && xhr.status < 300 && resp && resp.success) {
-            setImportProgress(100, '导入完成');
-            importResult.style.display = 'block';
-            let msg = resp.message || '导入成功';
-            if (resp.errors && resp.errors.length) {
-                msg += `（部分行有问题：${resp.errors.join('；')}）`;
-            }
-            importResult.textContent = msg;
-            // 延迟刷新页面，让用户看到完成状态
-            setTimeout(function() {
-                window.location.reload();
-            }, 2000);
-            return;
-        }
-
-        setImportProgress(100, '导入失败');
-        importResult.style.display = 'block';
-        importResult.textContent = (resp && resp.message) ? resp.message : '导入失败，请稍后重试。';
-        bulkImportSubmitBtn.disabled = false;
-    });
-
-    xhr.addEventListener('error', function() {
-        setImportProgress(100, '网络异常');
-        importResult.style.display = 'block';
-        importResult.textContent = '网络异常，导入失败，请重试。';
-        bulkImportSubmitBtn.disabled = false;
-    });
-
-    xhr.addEventListener('timeout', function() {
-        setImportProgress(100, '服务端处理超时');
-        importResult.style.display = 'block';
-        importResult.textContent = '请求超时，数据可能已部分导入。请刷新页面确认结果。';
-        importResult.style.cursor = 'pointer';
-        importResult.onclick = function() { window.location.reload(); };
-        bulkImportSubmitBtn.disabled = false;
-    });
-
-    xhr.addEventListener('abort', function() {
-        setImportProgress(100, '已中止');
-        importResult.style.display = 'block';
-        importResult.textContent = '导入已中止。';
-        bulkImportSubmitBtn.disabled = false;
-    });
-
-    const formData = new FormData(bulkImportForm);
-    xhr.send(formData);
-    // 注意：不在 send() 后同步调用 setImportProgress，
-    // 由 upload.progress 和 upload.load 事件驱动进度更新
-});
 {% endif %}
 </script>
+<script src="{% static 'js/csv-import.js' %}"></script>
 
 {% endblock %}

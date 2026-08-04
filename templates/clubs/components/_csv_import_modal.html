@@ -1,0 +1,200 @@
+{% comment %}
+CSV 批量导入通用弹窗组件（Material Design 风格）。
+用法：
+  {% include 'clubs/components/_csv_import_modal.html' with modal_id='xxx' modal_title='...' modal_description='...' import_url=... template_url=... column_hint='...' %}
+页面末尾引入 static/js/csv-import.js；打开按钮加 data-csv-import-open="modal_id"。
+{% endcomment %}
+
+<style>
+    .csv-import-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1200;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-sizing: border-box;
+    }
+
+    .csv-import-modal.open { display: flex; }
+
+    .csv-import-card {
+        width: 100%;
+        max-width: 520px;
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 24px;
+        box-shadow: var(--md3-elevation-3);
+        padding: 24px;
+        box-sizing: border-box;
+    }
+
+    .csv-import-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .csv-import-header h3 { margin: 0; font-size: 1.2rem; color: var(--md3-on-surface); }
+
+    .csv-import-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--md3-on-surface-variant);
+        cursor: pointer;
+    }
+
+    .csv-import-close:hover { background: var(--md3-surface-container-high); }
+
+    .csv-import-desc {
+        margin: 8px 0 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .csv-import-hint {
+        margin: 6px 0 14px;
+        color: var(--md3-primary);
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    .csv-import-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding: 10px 16px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .csv-import-form { display: grid; gap: 10px; }
+
+    .csv-import-file {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container-high);
+        cursor: pointer;
+    }
+
+    .csv-import-file-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+        font-size: 0.8125rem;
+        font-weight: 700;
+    }
+
+    .csv-import-file-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.8125rem;
+    }
+
+    .csv-import-input { display: none; }
+
+    .csv-import-submit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        border: 0;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        font: inherit;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .csv-import-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .csv-import-progress { display: grid; gap: 6px; }
+    .csv-import-progress-text { color: var(--md3-on-surface-variant); font-size: 0.8125rem; }
+
+    .csv-import-progress-track {
+        height: 6px;
+        border-radius: 999px;
+        background: var(--md3-surface-container-highest);
+        overflow: hidden;
+    }
+
+    .csv-import-progress-bar {
+        width: 0;
+        height: 100%;
+        border-radius: 999px;
+        background: var(--md3-primary);
+        transition: width 160ms ease;
+    }
+
+    .csv-import-result {
+        padding: 10px 12px;
+        border-radius: var(--md3-radius-md);
+        font-size: 0.875rem;
+        line-height: 1.45;
+    }
+
+    .csv-import-result.success { background: var(--md3-success-container); color: var(--md3-on-success-container); }
+    .csv-import-result.error { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+</style>
+
+<div id="{{ modal_id }}" class="csv-import-modal" aria-hidden="true">
+    <div class="csv-import-card" role="dialog" aria-modal="true" aria-labelledby="{{ modal_id }}-title">
+        <div class="csv-import-header">
+            <h3 id="{{ modal_id }}-title">{{ modal_title|default:'批量导入' }}</h3>
+            <button type="button" class="csv-import-close" data-csv-import-close aria-label="关闭">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <p class="csv-import-desc">{{ modal_description|default:'下载模板填写后上传，即可批量导入。' }}</p>
+        {% if column_hint %}<p class="csv-import-hint">必要列：{{ column_hint }}</p>{% endif %}
+        <a href="{{ template_url }}" class="csv-import-download">
+            <span class="material-icons">download</span>
+            下载导入模板
+        </a>
+        <form class="csv-import-form" method="post" action="{{ import_url }}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label class="csv-import-file">
+                <span class="csv-import-file-label"><span class="material-icons">folder_open</span>浏览</span>
+                <span class="csv-import-file-name">未选择文件</span>
+                <input type="file" name="csv_file" accept=".csv,text/csv" required class="csv-import-input">
+            </label>
+            <button type="submit" class="csv-import-submit">
+                <span class="material-icons">upload_file</span>
+                开始导入
+            </button>
+            <div class="csv-import-progress" hidden>
+                <div class="csv-import-progress-text">准备导入...</div>
+                <div class="csv-import-progress-track"><div class="csv-import-progress-bar"></div></div>
+            </div>
+            <div class="csv-import-result" role="status" aria-live="polite"></div>
+        </form>
+    </div>
+</div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load static %}
 
 {% block title %}预约管理{% endblock %}
 
@@ -48,6 +49,7 @@
         background: var(--md3-surface-container-low);
         border-radius: var(--md3-radius-xl);
         border: 1px solid var(--md3-outline-variant);
+        box-shadow: var(--md3-elevation-1);
         margin-bottom: var(--md3-spacing-xl);
         overflow: hidden;
     }
@@ -330,10 +332,16 @@
                 <span class="material-icons">schedule</span>
                 时间段设置
             </h2>
-            <a href="{% url 'clubs:admin_time_slot_add' %}" class="btn btn-primary">
-                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">add</span>
-                添加时间段
-            </a>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <a href="{% url 'clubs:admin_time_slot_add' %}" class="btn btn-primary">
+                    <span class="material-icons" style="font-size: 1.125rem;">add</span>
+                    添加时间段
+                </a>
+                <button type="button" class="btn btn-primary" data-csv-import-open="timeSlotImportModal">
+                    <span class="material-icons" style="font-size: 1.125rem;">upload_file</span>
+                    批量导入
+                </button>
+            </div>
         </div>
         {% if time_slots %}
         <div class="table-responsive">
@@ -383,4 +391,10 @@
         {% endif %}
     </section>
 </div>
+
+{% url 'clubs:import_time_slots_csv' as time_slot_import_url %}
+{% url 'clubs:download_time_slot_import_template' as time_slot_template_url %}
+{% include 'clubs/components/_csv_import_modal.html' with modal_id='timeSlotImportModal' modal_title='批量导入时间段' modal_description='下载模板填写后上传，即可批量导入时间段；相同名称与时间的记录会自动更新。' import_url=time_slot_import_url template_url=time_slot_template_url column_hint='显示名称,开始时间,结束时间,状态' %}
+
+<script src="{% static 'js/csv-import.js' %}"></script>
 {% endblock %}

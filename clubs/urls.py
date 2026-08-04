@@ -92,6 +92,8 @@ urlpatterns = [
     path('admin-panel/bookings/rooms/edit/<int:room_id>/', views.admin_room_edit, name='admin_room_edit'),
     path('admin-panel/bookings/rooms/delete/<int:room_id>/', views.admin_room_delete, name='admin_room_delete'),
     path('admin-panel/bookings/time-slots/add/', views.admin_time_slot_add, name='admin_time_slot_add'),
+    path('admin-panel/bookings/time-slots/import/', views.import_time_slots_csv, name='import_time_slots_csv'),
+    path('admin-panel/bookings/time-slots/import-template/', views.download_time_slot_import_template, name='download_time_slot_import_template'),
     path('admin-panel/bookings/time-slots/edit/<int:slot_id>/', views.admin_time_slot_edit, name='admin_time_slot_edit'),
     path('admin-panel/bookings/time-slots/delete/<int:slot_id>/', views.admin_time_slot_delete, name='admin_time_slot_delete'),
 
@@ -121,6 +123,8 @@ urlpatterns = [
     path('admin-panel/form-channels/<int:channel_id>/cycles/<int:cycle_id>/close/', views.close_form_channel_cycle, name='close_form_channel_cycle'),
 
     path('admin-panel/publish-announcement/', views.publish_announcement, name='publish_announcement'),
+    path('admin-panel/manage-announcements/', views.manage_announcements, name='manage_announcements'),
+    path('admin-panel/announcements/<int:announcement_id>/toggle-status/', views.toggle_announcement_status, name='toggle_announcement_status'),
     path('admin-panel/delete-announcement/<int:announcement_id>/', views.delete_announcement, name='delete_announcement'),
     path('admin-panel/edit-announcement/<int:announcement_id>/', views.edit_announcement, name='edit_announcement'),
     path('admin-panel/assign-presidents/', views.admin_assign_presidents, name='admin_assign_presidents'),

@@ -1,6 +1,6 @@
 {% extends 'clubs/base.html' %}
 
-{% block title %}活动管理 - 社团管理系统{% endblock %}
+{% block title %}活动管理 - {{ site_name|default:'社团管理系统' }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -18,16 +18,17 @@
     .page-header {
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-2xl);
-        padding: var(--md3-spacing-xl);
+        gap: 14px;
+        margin-bottom: 18px;
+        padding: clamp(16px, 2.2vw, 26px);
+        min-height: 0;
         background: var(--md3-surface-container-low);
-        border-radius: var(--md3-radius-xl);
+        border-radius: 24px;
         border: 1px solid var(--md3-outline-variant);
     }
 
     .page-header .material-icons {
-        font-size: 2.5rem;
+        font-size: 2rem;
         color: var(--md3-primary);
     }
 
@@ -36,20 +37,21 @@
     }
 
     .page-header h1 {
-        margin: 0 0 var(--md3-spacing-xs) 0;
-        font-size: 1.75rem;
-        font-weight: 600;
+        margin: 0;
+        font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+        font-weight: 700;
         color: var(--md3-on-surface);
     }
 
     .page-header .subtitle {
         color: var(--md3-on-surface-variant);
-        font-size: 0.875rem;
+        font-size: 0.85rem;
+        margin: 4px 0 0;
     }
 
     /* 筛选和搜索区域 */
     .filters-section {
-        margin-bottom: var(--md3-spacing-2xl);
+        margin-bottom: 18px;
     }
 
     .filters-card {
@@ -57,13 +59,11 @@
         border-radius: var(--md3-radius-xl);
         border: 1px solid var(--md3-outline-variant);
         box-shadow: var(--md3-elevation-1);
-        overflow: hidden;
+        padding: 14px;
     }
 
     .filters-header {
-        padding: var(--md3-spacing-xl);
-        border-bottom: 1px solid var(--md3-outline-variant);
-        background: var(--md3-surface-container-high);
+        display: none;
     }
 
     .filters-header h2 {
@@ -82,7 +82,7 @@
     }
 
     .filters-body {
-        padding: var(--md3-spacing-xl);
+        padding: 0;
     }
 
     .filters-form {
@@ -91,9 +91,9 @@
 
     .filters-grid {
         display: grid;
-        grid-template-columns: 2fr 1fr 1fr 1fr;
-        gap: var(--md3-spacing-lg);
-        margin-bottom: var(--md3-spacing-xl);
+        grid-template-columns: minmax(240px, 2fr) repeat(3, minmax(140px, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
     }
 
     @media (max-width: 1024px) {
@@ -114,13 +114,7 @@
     }
 
     .filter-label {
-        display: flex;
-        align-items: center;
-        gap: var(--md3-spacing-xs);
-        margin-bottom: var(--md3-spacing-sm);
-        font-weight: 600;
-        color: var(--md3-on-surface);
-        font-size: 0.875rem;
+        display: none;
     }
 
     .filter-label .material-icons {
@@ -131,12 +125,13 @@
     .filter-input,
     .filter-select {
         width: 100%;
-        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        min-height: 42px;
+        padding: 8px 12px;
         background: var(--md3-surface-container-highest);
         border: 1px solid var(--md3-outline);
         border-radius: var(--md3-radius-md);
         font-family: inherit;
-        font-size: 1rem;
+        font-size: 0.9rem;
         color: var(--md3-on-surface);
         transition: all 0.2s ease;
         box-sizing: border-box;
@@ -168,6 +163,21 @@
         .filters-actions .btn {
             width: 100%;
             justify-content: center;
+        }
+
+        .filters-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .export-actions-wrapper,
+        .export-inline-group {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .filters-actions {
+            width: 100%;
         }
     }
 
@@ -575,6 +585,12 @@
 
         .detail-value {
             font-size: 0.875rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .filters-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 </style>

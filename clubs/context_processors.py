@@ -67,12 +67,18 @@ def site_settings(request):
         body_font_family = font_cfg.body_font_family or ''
         third_party_cdn_base_url = font_cfg.third_party_cdn_base_url or 'https://cdn.bootcdn.net'
         stored_cdn_sri = font_cfg.third_party_cdn_sri
+        site_name = font_cfg.site_name or '社团管理系统'
+        homepage_title = font_cfg.homepage_title or '社团管理服务中心'
+        homepage_subtitle = font_cfg.homepage_subtitle or '致力于为社团提供全方位的管理与服务支持，促进社团健康发展'
     except Exception:
         font_icon_url = 'https://fonts.font.im/icon?family=Material+Icons'
         body_font_url = ''
         body_font_family = ''
         third_party_cdn_base_url = 'https://cdn.bootcdn.net'
         stored_cdn_sri = {}
+        site_name = '社团管理系统'
+        homepage_title = '社团管理服务中心'
+        homepage_subtitle = '致力于为社团提供全方位的管理与服务支持，促进社团健康发展'
 
     # 仅使用合法的 HTTP(S) CDN 地址，避免配置错误导致模板中的资源地址失效。
     parsed_cdn_url = urlsplit(third_party_cdn_base_url)
@@ -93,6 +99,9 @@ def site_settings(request):
         'body_font_family': body_font_family,
         'third_party_cdn_base_url': third_party_cdn_base_url,
         'third_party_cdn_sri': third_party_cdn_sri,
+        'site_name': site_name,
+        'homepage_title': homepage_title,
+        'homepage_subtitle': homepage_subtitle,
     }
     cache.set('site:presentation:v1', result, 300)
     return result

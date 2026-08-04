@@ -790,6 +790,45 @@ def manage_carousel(request):
 
 
 @login_required(login_url=settings.LOGIN_URL)
+def manage_announcements(request):
+    """管理公告列表 - 仅管理员可用（与轮播管理同风格）"""
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以访问此页面')
+        return redirect('clubs:index')
+
+    announcements = Announcement.objects.select_related('created_by').order_by('-published_at', '-created_at')
+    return render(request, 'clubs/admin/manage_announcements.html', {
+        'announcements': announcements,
+        'total_count': announcements.count(),
+        'published_count': announcements.filter(status='published').count(),
+        'draft_count': announcements.filter(status='draft').count(),
+    })
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def toggle_announcement_status(request, announcement_id):
+    """发布 / 下线公告 - 仅管理员可用"""
+    if not _is_admin(request.user):
+        messages.error(request, '仅管理员可以操作公告')
+        return redirect('clubs:index')
+
+    announcement = get_object_or_404(Announcement, pk=announcement_id)
+    if announcement.status == 'published':
+        announcement.status = 'draft'
+        message = f'公告“{announcement.title}”已下线'
+    else:
+        announcement.status = 'published'
+        if not announcement.published_at:
+            announcement.published_at = timezone.now()
+        message = f'公告“{announcement.title}”已发布'
+    announcement.save(update_fields=['status', 'published_at', 'updated_at'])
+    _clear_announcement_cache()
+    messages.success(request, message)
+    return redirect('clubs:manage_announcements')
+
+
+@login_required(login_url=settings.LOGIN_URL)
 def add_carousel(request):
     """添加轮播图"""
     if not _is_admin(request.user):
@@ -1011,7 +1050,7 @@ def publish_announcement(request):
 
         _clear_announcement_cache()
         messages.success(request, '公告发布成功！')
-        return redirect('clubs:admin_dashboard')
+        return redirect('clubs:manage_announcements')
 
     # GET 请求 - 获取最近的公告列表
     announcements = Announcement.objects.all().order_by('-created_at')[:10]
@@ -1035,7 +1074,7 @@ def delete_announcement(request, announcement_id):
         announcement.delete()
         _clear_announcement_cache()
         messages.success(request, f'公告"{announcement_title}"已删除')
-        return redirect('clubs:admin_dashboard')
+        return redirect('clubs:manage_announcements')
 
     # GET 请求：确认删除
     context = {
@@ -1115,7 +1154,7 @@ def edit_announcement(request, announcement_id):
         _clear_announcement_cache()
 
         messages.success(request, '公告修改成功！')
-        return redirect('clubs:admin_dashboard')
+        return redirect('clubs:manage_announcements')
 
     # GET 请求 - 预填充表单
     context = {
@@ -1253,26 +1292,13 @@ def import_users_csv(request):
         messages.error(request, upload_error)
         return redirect(next_url)
 
-    raw_bytes = uploaded.read()
-    text = None
-    for encoding in ('utf-8-sig', 'utf-8', 'gbk'):
-        try:
-            text = raw_bytes.decode(encoding)
-            break
-        except Exception:
-            continue
+    from ..services.csv_import import build_import_feedback, read_csv_upload
 
-    if text is None:
+    reader, read_error = read_csv_upload(uploaded)
+    if read_error:
         if is_ajax:
-            return _json_error('CSV文件编码无法识别，请使用UTF-8编码')
-        messages.error(request, 'CSV文件编码无法识别，请使用UTF-8编码')
-        return redirect(next_url)
-
-    reader = csv.DictReader(io.StringIO(text))
-    if not reader.fieldnames:
-        if is_ajax:
-            return _json_error('CSV表头无效')
-        messages.error(request, 'CSV表头无效')
+            return _json_error(read_error)
+        messages.error(request, read_error)
         return redirect(next_url)
 
     created_users = 0
@@ -1446,28 +1472,29 @@ def import_users_csv(request):
     except Exception:
         # 事务回滚，返回错误信息
         logger.exception('批量导入用户失败')
-        if is_ajax:
-            return _json_error('导入失败，请检查 CSV 内容后重试')
-        messages.error(request, '导入失败，请检查 CSV 内容后重试')
-        return redirect(next_url)
+        return build_import_feedback(
+            request,
+            is_ajax=is_ajax,
+            success=False,
+            message='导入失败，请检查 CSV 内容后重试',
+            redirect_url=next_url,
+        )
 
     summary_text = f'导入完成：新建{created_users}，更新{updated_users}，跳过{skipped}'
-    if is_ajax:
-        return JsonResponse({
-            'success': True,
-            'message': summary_text,
+    return build_import_feedback(
+        request,
+        is_ajax=is_ajax,
+        success=True,
+        message=summary_text,
+        errors=errors,
+        redirect_url=next_url,
+        extra={
             'created_users': created_users,
             'updated_users': updated_users,
             'skipped': skipped,
-            'errors': errors[:10],
             'next_url': next_url,
-        })
-
-    messages.success(request, summary_text)
-    if errors:
-        messages.warning(request, '部分数据有问题：' + '；'.join(errors[:10]))
-
-    return redirect(next_url)
+        },
+    )
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -1486,6 +1513,96 @@ def download_club_import_template(request):
     writer.writerow(['示例社团A', '示例社团简介', '2024-09-01', 'active', '36', 'demo_president'])
     writer.writerow(['示例社团B', '可为空', '', 'inactive', '0', ''])
     return response
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['GET'])
+def download_time_slot_import_template(request):
+    """下载时间段批量导入 CSV 模板（仅干事/管理员）。"""
+    if not is_staff_or_admin(request.user):
+        messages.error(request, '仅干事和管理员可以下载时间段导入模板')
+        return redirect('clubs:admin_booking_management')
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename="time_slot_import_template.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['显示名称', '开始时间', '结束时间', '状态'])
+    writer.writerow(['第1-2节', '08:15', '09:55', '启用'])
+    writer.writerow(['午休', '11:40', '13:00', '启用'])
+    return response
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_http_methods(['POST'])
+def import_time_slots_csv(request):
+    """批量导入时间段（CSV，干事/管理员可用）。"""
+    from ..services.csv_import import CSVImportError, build_import_feedback, run_simple_csv_import
+
+    if not is_staff_or_admin(request.user):
+        messages.error(request, '仅干事和管理员可以批量导入时间段')
+        return redirect('clubs:admin_booking_management')
+
+    is_ajax = (
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        or 'application/json' in request.headers.get('Accept', '')
+    )
+    redirect_url = 'clubs:admin_booking_management'
+    uploaded = request.FILES.get('csv_file')
+    if not uploaded:
+        return build_import_feedback(request, is_ajax=is_ajax, success=False, message='请选择 CSV 文件后再导入', redirect_url=redirect_url)
+
+    upload_error = validate_upload(
+        uploaded,
+        field_name='时间段 CSV',
+        allowed_extensions={'.csv'},
+        max_bytes=10 * 1024 * 1024,
+    )
+    if upload_error:
+        return build_import_feedback(request, is_ajax=is_ajax, success=False, message=upload_error, redirect_url=redirect_url)
+
+    def process_row(row):
+        label = (row.get('显示名称') or row.get('label') or '').strip()
+        start_raw = (row.get('开始时间') or row.get('start_time') or '').strip()
+        end_raw = (row.get('结束时间') or row.get('end_time') or '').strip()
+        active_raw = (row.get('状态') or row.get('is_active') or '启用').strip()
+        if not label or not start_raw or not end_raw:
+            raise CSVImportError('名称、开始时间、结束时间均不能为空')
+        try:
+            start_time = datetime.strptime(start_raw, '%H:%M').time()
+            end_time = datetime.strptime(end_raw, '%H:%M').time()
+        except ValueError:
+            raise CSVImportError('时间格式必须为 HH:MM')
+        if start_time >= end_time:
+            raise CSVImportError('结束时间必须晚于开始时间')
+        is_active = active_raw.lower() in ('启用', '是', '1', 'true', 'yes', 'on')
+        _, created = TimeSlot.objects.update_or_create(
+            label=label,
+            start_time=start_time,
+            end_time=end_time,
+            defaults={'is_active': is_active},
+        )
+        return 'created' if created else 'updated'
+
+    try:
+        summary = run_simple_csv_import(
+            uploaded,
+            required_headers=['显示名称', '开始时间', '结束时间'],
+            process_row=process_row,
+        )
+    except CSVImportError as exc:
+        return build_import_feedback(request, is_ajax=is_ajax, success=False, message=str(exc), redirect_url=redirect_url)
+
+    message = f'导入完成：新建{summary["created"]}，更新{summary["updated"]}，跳过{summary["skipped"]}'
+    return build_import_feedback(
+        request,
+        is_ajax=is_ajax,
+        success=True,
+        message=message,
+        errors=summary['errors'],
+        redirect_url=redirect_url,
+        extra={'created_slots': summary['created'], 'updated_slots': summary['updated'], 'skipped': summary['skipped']},
+    )
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -1508,22 +1625,11 @@ def import_clubs_csv(request):
         messages.error(request, upload_error)
         return redirect(next_url)
 
-    raw_bytes = uploaded.read()
-    text = None
-    for encoding in ('utf-8-sig', 'utf-8', 'gbk'):
-        try:
-            text = raw_bytes.decode(encoding)
-            break
-        except Exception:
-            continue
+    from ..services.csv_import import build_import_feedback, read_csv_upload
 
-    if text is None:
-        messages.error(request, 'CSV文件编码无法识别，请使用UTF-8编码')
-        return redirect(next_url)
-
-    reader = csv.DictReader(io.StringIO(text))
-    if not reader.fieldnames:
-        messages.error(request, 'CSV表头无效')
+    reader, read_error = read_csv_upload(uploaded)
+    if read_error:
+        messages.error(request, read_error)
         return redirect(next_url)
 
     created_clubs = 0
@@ -1619,11 +1725,19 @@ def import_clubs_csv(request):
             except Exception:
                 errors.append(f'第{idx}行社长 Officer 记录更新失败')
 
-    messages.success(request, f'社团导入完成：新建{created_clubs}，更新{updated_clubs}，跳过{skipped}')
-    if errors:
-        messages.warning(request, '部分数据有问题：' + '；'.join(errors[:5]))
-
-    return redirect(next_url)
+    return build_import_feedback(
+        request,
+        is_ajax=False,
+        success=True,
+        message=f'社团导入完成：新建{created_clubs}，更新{updated_clubs}，跳过{skipped}',
+        errors=errors,
+        redirect_url=next_url,
+        extra={
+            'created_clubs': created_clubs,
+            'updated_clubs': updated_clubs,
+            'skipped': skipped,
+        },
+    )
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -1633,43 +1747,86 @@ def manage_users(request):
         messages.error(request, '仅管理员可以管理用户')
         return redirect('clubs:index')
 
-    if request.method == 'POST' and request.POST.get('action') in ('delete_user', 'toggle_active'):
+    if request.method == 'POST':
         action = request.POST.get('action')
-        user_id = request.POST.get('user_id', '').strip()
-        target_user = get_object_or_404(User, pk=user_id)
+        if action in ('batch_enable', 'batch_disable', 'batch_delete'):
+            raw_ids = request.POST.get('user_ids', '')
+            id_list = []
+            for part in raw_ids.replace('|', ',').split(','):
+                part = part.strip()
+                if part.isdigit():
+                    id_list.append(int(part))
+            processed = 0
+            skipped = 0
+            for target_user in User.objects.filter(id__in=id_list).select_related('profile'):
+                if target_user == request.user or target_user.is_superuser:
+                    skipped += 1
+                    continue
+                if action == 'batch_delete':
+                    target_user.delete()
+                    processed += 1
+                    continue
+                want_active = action == 'batch_enable'
+                if target_user.is_active != want_active:
+                    target_user.is_active = want_active
+                    target_user.save(update_fields=['is_active'])
+                    try:
+                        profile = target_user.profile
+                        if want_active:
+                            profile.account_status = 'active'
+                            profile.inactive_since = None
+                            if profile.status == 'inactive':
+                                profile.status = 'approved'
+                            profile.save(update_fields=['account_status', 'inactive_since', 'status', 'updated_at'])
+                        else:
+                            mark_profile_inactive(profile, reason='admin_disable')
+                    except UserProfile.DoesNotExist:
+                        pass
+                    processed += 1
+            action_label = {'batch_enable': '启用', 'batch_disable': '禁用', 'batch_delete': '删除'}[action]
+            if processed:
+                messages.success(request, f'已批量{action_label} {processed} 个账号')
+            if skipped:
+                messages.warning(request, f'跳过 {skipped} 个账号（当前登录账号或超级管理员）')
+            if not processed and not skipped:
+                messages.error(request, '未选择可操作的用户')
+            return redirect('clubs:manage_users')
+        elif action in ('delete_user', 'toggle_active'):
+            user_id = request.POST.get('user_id', '').strip()
+            target_user = get_object_or_404(User, pk=user_id)
 
-        if action == 'delete_user':
-            if target_user == request.user:
-                messages.error(request, '不能删除当前登录管理员账号')
-            elif target_user.is_superuser:
-                messages.error(request, '不能删除超级管理员账号')
+            if action == 'delete_user':
+                if target_user == request.user:
+                    messages.error(request, '不能删除当前登录管理员账号')
+                elif target_user.is_superuser:
+                    messages.error(request, '不能删除超级管理员账号')
+                else:
+                    username = target_user.username
+                    target_user.delete()
+                    messages.success(request, f'已删除用户账号：{username}')
             else:
-                username = target_user.username
-                target_user.delete()
-                messages.success(request, f'已删除用户账号：{username}')
-        else:
-            if target_user == request.user:
-                messages.error(request, '不能在列表中禁用当前登录管理员账号')
-            elif target_user.is_superuser:
-                messages.error(request, '不能禁用超级管理员账号')
-            else:
-                target_user.is_active = not target_user.is_active
-                target_user.save(update_fields=['is_active'])
-                try:
-                    profile = target_user.profile
-                    if target_user.is_active:
-                        profile.account_status = 'active'
-                        profile.inactive_since = None
-                        if profile.status == 'inactive':
-                            profile.status = 'approved'
-                        profile.save(update_fields=['account_status', 'inactive_since', 'status', 'updated_at'])
-                    else:
-                        mark_profile_inactive(profile, reason='admin_disable')
-                except UserProfile.DoesNotExist:
-                    pass
-                messages.success(request, f'已{"启用" if target_user.is_active else "禁用"}用户账号：{target_user.username}')
+                if target_user == request.user:
+                    messages.error(request, '不能在列表中禁用当前登录管理员账号')
+                elif target_user.is_superuser:
+                    messages.error(request, '不能禁用超级管理员账号')
+                else:
+                    target_user.is_active = not target_user.is_active
+                    target_user.save(update_fields=['is_active'])
+                    try:
+                        profile = target_user.profile
+                        if target_user.is_active:
+                            profile.account_status = 'active'
+                            profile.inactive_since = None
+                            if profile.status == 'inactive':
+                                profile.status = 'approved'
+                            profile.save(update_fields=['account_status', 'inactive_since', 'status', 'updated_at'])
+                        else:
+                            mark_profile_inactive(profile, reason='admin_disable')
+                    except UserProfile.DoesNotExist:
+                        pass
+                    messages.success(request, f'已{"启用" if target_user.is_active else "禁用"}用户账号：{target_user.username}')
 
-        return redirect('clubs:manage_users')
+            return redirect('clubs:manage_users')
 
     context = _user_list_context(request, can_manage_users=True)
     return render(request, 'clubs/admin/manage_users.html', context)
@@ -3425,7 +3582,19 @@ def manage_site_settings(request):
 
     if request.method == 'POST':
         form_type = request.POST.get('form_type', 'favicon')
-        if form_type == 'font_settings':
+        if form_type == 'site_info_settings':
+            cfg = SiteSettings.get_settings()
+            cfg.site_name = request.POST.get('site_name', '').strip() or '社团管理系统'
+            cfg.homepage_title = request.POST.get('homepage_title', '').strip() or '社团管理服务中心'
+            cfg.homepage_subtitle = (
+                request.POST.get('homepage_subtitle', '').strip()
+                or '致力于为社团提供全方位的管理与服务支持，促进社团健康发展'
+            )
+            cfg.save(update_fields=['site_name', 'homepage_title', 'homepage_subtitle'])
+            cache.delete('site:presentation:v1')
+            messages.success(request, '站点名称与首页标题已保存，刷新页面后生效')
+            return redirect('clubs:site_settings')
+        elif form_type == 'font_settings':
             cfg = SiteSettings.get_settings()
             cfg.font_icon_url = (
                 request.POST.get('font_icon_url', '').strip()

@@ -1147,6 +1147,24 @@ class RoomBooking(models.Model):
 
 class SiteSettings(models.Model):
     """站点全局外观设置（单例，pk=1）"""
+    site_name = models.CharField(
+        max_length=120,
+        default='社团管理系统',
+        verbose_name='站点名称（浏览器标题）',
+        help_text='显示在浏览器标签页标题中，修改后刷新页面生效',
+    )
+    homepage_title = models.CharField(
+        max_length=120,
+        default='社团管理服务中心',
+        verbose_name='首页主标题',
+        help_text='显示在首页顶部横幅中的大标题',
+    )
+    homepage_subtitle = models.CharField(
+        max_length=300,
+        default='致力于为社团提供全方位的管理与服务支持，促进社团健康发展',
+        verbose_name='首页副标题',
+        help_text='显示在首页顶部横幅中主标题下方',
+    )
     third_party_cdn_base_url = models.CharField(
         max_length=500,
         default='https://cdn.bootcdn.net',

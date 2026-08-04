@@ -64,6 +64,32 @@
         margin: 0;
         line-height: 1.5;
     }
+
+    .hero-stat {
+        margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 10px 18px;
+        background: rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(10px);
+        border-radius: var(--md3-radius-lg);
+        color: white;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .hero-stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .hero-stat-label {
+        font-size: 0.8125rem;
+        opacity: 0.95;
+    }
     
     .hero-decoration {
         position: absolute;
@@ -95,12 +121,120 @@
         box-shadow: var(--md3-elevation-2);
         position: relative;
         background: var(--md3-surface-container);
+        aspect-ratio: 2 / 1;
+    }
+
+    /* 轮播与公告并排 */
+    .home-hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+        gap: var(--md3-spacing-xl);
+        align-items: stretch;
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .home-hero-grid > :only-child {
+        grid-column: 1 / -1;
+    }
+
+    .home-hero-grid > .carousel-section,
+    .home-hero-grid > .announcements-section {
+        margin-bottom: 0;
+    }
+
+    @media (min-width: 1025px) {
+        .home-hero-grid > .announcements-section {
+            aspect-ratio: 1 / 1;
+        }
+    }
+
+    /* 公告栏与轮播等高（按比例），列表内部滚动 */
+    .home-hero-grid .announcements-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+    }
+
+    .home-hero-grid .announcements-list-wrap {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .home-hero-grid .announcements-list {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .home-hero-grid .announcement-item {
+        padding: 10px 12px;
+        gap: 6px;
+        border-radius: var(--md3-radius-lg);
+    }
+
+    .home-hero-grid .announcement-content {
+        margin: 0;
+        line-height: 1.45;
+    }
+
+    .announcements-scroll-hint {
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+        z-index: 2;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .announcements-scroll-hint.visible {
+        opacity: 1;
+    }
+
+    .announcements-scroll-hint-top {
+        top: 0;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.24), transparent);
+    }
+
+    .announcements-scroll-hint-bottom {
+        bottom: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.24), transparent);
+    }
+
+    .announcements-scroll-hint .material-icons {
+        font-size: 1.15rem;
+    }
+
+    @media (max-width: 1024px) {
+        .home-hero-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .home-hero-grid > .carousel-section {
+            align-self: start;
+        }
     }
     
     .carousel-container {
         position: relative;
         width: 100%;
-        height: 420px;
+        height: 100%;
         overflow: hidden;
     }
 
@@ -118,7 +252,14 @@
     .carousel-slide img {
         width: 100%;
         height: 100%;
+        min-height: 100%;
         object-fit: cover;
+        object-position: center;
+        display: block;
+    }
+
+    .carousel-container .swiper-slide {
+        height: 100%;
     }
     
     .carousel-caption {
@@ -795,7 +936,7 @@
         }
         
         .carousel-container {
-            height: 280px;
+            height: 100%;
         }
         
         .carousel-title {
@@ -866,13 +1007,20 @@
                 <span class="material-icons">groups</span>
             </div>
             <div class="hero-text">
-                <h1>社团管理服务中心</h1>
-                <p>致力于为社团提供全方位的管理与服务支持，促进社团健康发展</p>
+                <h1>{{ homepage_title|default:'社团管理服务中心' }}</h1>
+                <p>{{ homepage_subtitle|default:'致力于为社团提供全方位的管理与服务支持，促进社团健康发展' }}</p>
             </div>
+            {% if is_staff_or_admin %}
+            <div class="hero-stat">
+                <span class="hero-stat-value">{{ total_clubs }}</span>
+                <span class="hero-stat-label">社团总数</span>
+            </div>
+            {% endif %}
         </div>
         <div class="hero-decoration"></div>
     </div>
     
+    <div class="home-hero-grid">
     <!-- 轮播图 -->
     {% if carousel_images %}
     <div class="carousel-section">
@@ -907,7 +1055,7 @@
         </div>
     </div>
     {% endif %}
-    
+
     <!-- 公告区域 -->
     {% if announcements %}
     <div class="announcements-section">
@@ -916,9 +1064,14 @@
                 <span class="material-icons">campaign</span>
                 <h3>最新公告</h3>
             </div>
-            <div class="announcements-list">
-                {% for announcement in announcements %}
-                <div class="announcement-item">
+            <div class="announcements-list-wrap">
+                <div class="announcements-scroll-hint announcements-scroll-hint-top">
+                    <span class="material-icons">keyboard_arrow_up</span>
+                    <span class="announcements-scroll-count" data-direction="top">0</span>
+                </div>
+                <div class="announcements-list" id="announcementsList">
+                    {% for announcement in announcements %}
+                    <div class="announcement-item">
                     <div class="announcement-top">
                         <h4 class="announcement-title">{{ announcement.title }}</h4>
                         <span class="announcement-chip">
@@ -947,12 +1100,18 @@
                         </a>
                         {% endif %}
                     </div>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+                <div class="announcements-scroll-hint announcements-scroll-hint-bottom">
+                    <span class="material-icons">keyboard_arrow_down</span>
+                    <span class="announcements-scroll-count" data-direction="bottom">0</span>
+                </div>
             </div>
         </div>
     </div>
     {% endif %}
+    </div>
     
     {% if is_anonymous %}
     <!-- ===== 未登录状态===== -->
@@ -1019,40 +1178,6 @@
     {% else %}
     <!-- ===== 已登录状态===== -->
     
-    <!-- 统计卡片（干事管理员可见） -->
-    {% if is_staff_or_admin %}
-    <!-- 统计卡片（干事管理员可见） -->
-    <div class="stats-section">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <span class="material-icons">groups</span>
-            </div>
-            <div class="stat-info">
-                <div class="stat-label">干事总数</div>
-                <div class="stat-value">{{ total_staff }}</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <span class="material-icons">stars</span>
-            </div>
-            <div class="stat-info">
-                <div class="stat-label">部长人数</div>
-                <div class="stat-value">{{ total_directors }}</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <span class="material-icons">person</span>
-            </div>
-            <div class="stat-info">
-                <div class="stat-label">部员人数</div>
-                <div class="stat-value">{{ total_members }}</div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
     <!-- 部门介绍（已登录用户） -->
     {% if departments %}
     <div class="departments-section">
@@ -1296,4 +1421,38 @@ if (window.Swiper) new Swiper('.carousel-container', {
 });
 </script>
 {% endif %}
+<script>
+(function () {
+    var list = document.getElementById('announcementsList');
+    if (!list) return;
+    var wrap = list.parentElement;
+    var topHint = wrap.querySelector('.announcements-scroll-hint-top');
+    var bottomHint = wrap.querySelector('.announcements-scroll-hint-bottom');
+    var topCount = topHint ? topHint.querySelector('.announcements-scroll-count') : null;
+    var bottomCount = bottomHint ? bottomHint.querySelector('.announcements-scroll-count') : null;
+    var items = Array.prototype.slice.call(list.querySelectorAll('.announcement-item'));
+    if (!items.length) return;
+
+    function updateHints() {
+        var listRect = list.getBoundingClientRect();
+        var above = 0;
+        var below = 0;
+        items.forEach(function (item) {
+            var rect = item.getBoundingClientRect();
+            if (rect.top < listRect.top) above += 1;
+            if (rect.bottom > listRect.bottom) below += 1;
+        });
+        var atTop = list.scrollTop <= 2;
+        var atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 2;
+        if (topCount) topCount.textContent = String(above);
+        if (bottomCount) bottomCount.textContent = String(below);
+        if (topHint) topHint.classList.toggle('visible', above > 0 && !atTop);
+        if (bottomHint) bottomHint.classList.toggle('visible', below > 0 && !atBottom);
+    }
+
+    list.addEventListener('scroll', updateHints, { passive: true });
+    window.addEventListener('resize', updateHints);
+    updateHints();
+})();
+</script>
 {% endblock %}

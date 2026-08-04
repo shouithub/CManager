@@ -1,0 +1,405 @@
+{% extends 'clubs/base.html' %}
+
+{% block title %}公告管理 - {{ site_name|default:'社团管理系统' }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .announce-admin-shell {
+        width: min(1100px, 100%);
+        margin: 0 auto;
+        padding: clamp(18px, 3vw, var(--md3-spacing-2xl));
+        padding-bottom: 120px;
+        box-sizing: border-box;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-xl);
+        padding: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        background: var(--md3-surface-container-low);
+    }
+
+    .page-header > .material-icons {
+        flex: 0 0 auto;
+        color: var(--md3-primary);
+        font-size: 2.5rem;
+    }
+
+    .page-header-content { flex: 1; min-width: 0; }
+
+    .page-header h1 {
+        margin: 0 0 var(--md3-spacing-xs);
+        color: var(--md3-on-surface);
+        font-size: 1.75rem;
+        font-weight: 600;
+    }
+
+    .page-header .subtitle {
+        margin: 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+    }
+
+    .announce-hero-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(100px, 1fr));
+        gap: 10px;
+        margin-bottom: var(--md3-spacing-xl);
+    }
+
+    .announce-stat {
+        min-width: 82px;
+        padding: 16px;
+        border: 1px solid color-mix(in srgb, var(--md3-outline-variant) 75%, transparent);
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--md3-surface-container-lowest) 82%, transparent);
+        backdrop-filter: blur(10px);
+        text-align: center;
+    }
+
+    .announce-stat strong {
+        display: block;
+        color: var(--md3-on-surface);
+        font-size: 1.55rem;
+        line-height: 1;
+    }
+
+    .announce-stat span {
+        display: block;
+        margin-top: 7px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.72rem;
+    }
+
+    .announce-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin: 26px 0 16px;
+    }
+
+    .announce-toolbar-title h2 {
+        margin: 0;
+        color: var(--md3-on-surface);
+        font-size: 1.25rem;
+    }
+
+    .announce-toolbar-title p {
+        margin: 4px 0 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.8rem;
+    }
+
+    .announce-primary-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: var(--md3-radius-full);
+        font: inherit;
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        background: var(--md3-primary);
+        color: var(--md3-on-primary);
+        box-shadow: var(--md3-elevation-2);
+        transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .announce-primary-action:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--md3-elevation-3);
+    }
+
+    .announce-list {
+        display: grid;
+        gap: 16px;
+    }
+
+    .announce-admin-card {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        padding: clamp(20px, 3vw, 28px);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 24px;
+        background: var(--md3-surface-container-low);
+        box-shadow: var(--md3-elevation-1);
+        transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .announce-admin-card:hover {
+        border-color: color-mix(in srgb, var(--md3-primary) 42%, var(--md3-outline-variant));
+        transform: translateY(-2px);
+        box-shadow: var(--md3-elevation-2);
+    }
+
+    .announce-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .announce-card-title {
+        margin: 0;
+        color: var(--md3-on-surface);
+        font-size: 1.25rem;
+        line-height: 1.3;
+    }
+
+    .announce-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex: 0 0 auto;
+        height: 30px;
+        padding: 0 11px;
+        border-radius: var(--md3-radius-full);
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .announce-status.published { color: #0f5132; background: #d1e7dd; }
+    .announce-status.draft { color: #664d03; background: #fff3cd; }
+    .announce-status.archived { color: #495057; background: #e9ecef; }
+
+    .announce-card-content {
+        display: -webkit-box;
+        min-height: 2.9em;
+        margin: 10px 0 16px;
+        overflow: hidden;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.88rem;
+        line-height: 1.5;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .announce-card-footer {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-top: auto;
+        padding-top: 16px;
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .announce-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.74rem;
+    }
+
+    .announce-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .announce-meta-item .material-icons { font-size: 15px; }
+
+    .announce-card-actions {
+        display: flex;
+        flex: 0 0 auto;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .announce-card-actions form { display: flex; margin: 0; }
+
+    .announce-card-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 38px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: var(--md3-radius-full);
+        font: inherit;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        transition: background 160ms ease;
+    }
+
+    .announce-card-action:hover { background: var(--md3-primary-container); }
+    .announce-card-action.danger { background: var(--md3-error-container); color: var(--md3-on-error-container); }
+    .announce-card-action.danger:hover { background: var(--md3-error); color: var(--md3-on-error); }
+
+    .announce-empty {
+        display: grid;
+        justify-items: center;
+        padding: clamp(48px, 9vw, 92px) 24px;
+        border: 1px dashed var(--md3-outline);
+        border-radius: 28px;
+        background: var(--md3-surface-container-low);
+        text-align: center;
+    }
+
+    .announce-empty-icon {
+        display: grid;
+        width: 74px;
+        height: 74px;
+        margin-bottom: 18px;
+        place-items: center;
+        border-radius: 24px;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .announce-empty-icon .material-icons { font-size: 36px; }
+    .announce-empty h2 { margin: 0; color: var(--md3-on-surface); font-size: 1.4rem; }
+    .announce-empty p { max-width: 430px; margin: 10px 0 22px; color: var(--md3-on-surface-variant); line-height: 1.55; }
+
+    @media (max-width: 640px) {
+        .announce-hero-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .announce-toolbar { flex-direction: column; align-items: stretch; }
+        .announce-toolbar .announce-primary-action { justify-content: center; }
+        .announce-card-top, .announce-card-footer { flex-direction: column; align-items: stretch; }
+        .announce-card-actions { justify-content: flex-end; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="announce-admin-shell">
+    <div class="page-header">
+        <span class="material-icons">campaign</span>
+        <div class="page-header-content">
+            <h1>公告管理</h1>
+            <p class="subtitle">发布、编辑与上下架站点公告</p>
+        </div>
+    </div>
+
+    <div class="announce-hero-stats">
+        <div class="announce-stat">
+            <strong>{{ total_count }}</strong>
+            <span>总公告</span>
+        </div>
+        <div class="announce-stat">
+            <strong>{{ published_count }}</strong>
+            <span>已发布</span>
+        </div>
+        <div class="announce-stat">
+            <strong>{{ draft_count }}</strong>
+            <span>草稿</span>
+        </div>
+    </div>
+
+    <div class="announce-toolbar">
+        <div class="announce-toolbar-title">
+            <h2>全部公告</h2>
+            <p>共 {{ total_count }} 条公告</p>
+        </div>
+        <a href="{% url 'clubs:publish_announcement' %}" class="announce-primary-action">
+            <span class="material-icons">add</span>
+            发布公告
+        </a>
+    </div>
+
+    {% if announcements %}
+    <div class="announce-list">
+        {% for announcement in announcements %}
+        <article class="announce-admin-card">
+            <div class="announce-card-top">
+                <h3 class="announce-card-title">{{ announcement.title }}</h3>
+                <span class="announce-status {{ announcement.status }}">
+                    <span class="material-icons">
+                        {% if announcement.status == 'published' %}check_circle
+                        {% elif announcement.status == 'draft' %}edit_note
+                        {% else %}archive{% endif %}
+                    </span>
+                    {{ announcement.get_status_display }}
+                </span>
+            </div>
+            {% if announcement.content %}
+            <p class="announce-card-content">{{ announcement.content|truncatewords:28 }}</p>
+            {% endif %}
+            <div class="announce-card-footer">
+                <div class="announce-meta">
+                    <span class="announce-meta-item">
+                        <span class="material-icons">person</span>
+                        {{ announcement.created_by.username|default:'系统' }}
+                    </span>
+                    {% if announcement.published_at %}
+                    <span class="announce-meta-item">
+                        <span class="material-icons">schedule</span>
+                        发布于 {{ announcement.published_at|date:"Y-m-d H:i" }}
+                    </span>
+                    {% endif %}
+                    {% if announcement.expires_at %}
+                    <span class="announce-meta-item">
+                        <span class="material-icons">event_busy</span>
+                        过期 {{ announcement.expires_at|date:"Y-m-d H:i" }}
+                    </span>
+                    {% endif %}
+                    {% if announcement.link_url %}
+                    <span class="announce-meta-item">
+                        <span class="material-icons">open_in_new</span>
+                        含跳转链接
+                    </span>
+                    {% endif %}
+                    {% if announcement.attachment %}
+                    <span class="announce-meta-item">
+                        <span class="material-icons">attach_file</span>
+                        含附件
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="announce-card-actions">
+                    <form method="post" action="{% url 'clubs:toggle_announcement_status' announcement.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="announce-card-action">
+                            <span class="material-icons">{% if announcement.status == 'published' %}visibility_off{% else %}publish{% endif %}</span>
+                            {% if announcement.status == 'published' %}下线{% else %}发布{% endif %}
+                        </button>
+                    </form>
+                    <a href="{% url 'clubs:edit_announcement' announcement.id %}" class="announce-card-action">
+                        <span class="material-icons">edit</span>
+                        编辑
+                    </a>
+                    <form method="post" action="{% url 'clubs:delete_announcement' announcement.id %}"
+                          onsubmit="return confirm('确定要删除公告“{{ announcement.title|escapejs }}”吗？此操作不可恢复。');">
+                        {% csrf_token %}
+                        <button type="submit" class="announce-card-action danger">
+                            <span class="material-icons">delete</span>
+                            删除
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="announce-empty">
+        <div class="announce-empty-icon">
+            <span class="material-icons">campaign</span>
+        </div>
+        <h2>还没有公告</h2>
+        <p>发布第一条公告，向全校社团展示最新的通知与安排。</p>
+        <a href="{% url 'clubs:publish_announcement' %}" class="announce-primary-action">
+            <span class="material-icons">add</span>
+            发布公告
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

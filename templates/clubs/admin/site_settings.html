@@ -4,7 +4,7 @@
 
 
 
-{% block title %}站点设置 - 社团管理系统{% endblock %}
+{% block title %}站点设置 - {{ site_name|default:'社团管理系统' }}{% endblock %}
 
 
 
@@ -1244,7 +1244,50 @@
 </div>
 
 
-<!-- ③ 第三方资源 CDN -->
+<!-- ③ 站点信息 -->
+<div class="ia-section">
+  <div class="ia-section-title">
+    <span class="material-icons">badge</span>站点信息
+  </div>
+  <form method="post" id="site-info-form">
+    {% csrf_token %}
+    <input type="hidden" name="form_type" value="site_info_settings">
+    <div class="ia-card">
+      <div class="ia-card-header">
+        <span class="material-icons">title</span>
+        <h2>站点名称与首页标题</h2>
+      </div>
+      <div class="ia-card-body">
+        <div class="ia-field">
+          <label for="site_name">站点名称（浏览器标题）</label>
+          <input type="text" name="site_name" id="site_name"
+                 value="{{ cfg.site_name|default:'社团管理系统' }}" class="form-control"
+                 maxlength="120" placeholder="社团管理系统">
+        </div>
+        <div class="ia-field">
+          <label for="homepage_title">首页主标题</label>
+          <input type="text" name="homepage_title" id="homepage_title"
+                 value="{{ cfg.homepage_title|default:'社团管理服务中心' }}" class="form-control"
+                 maxlength="120" placeholder="社团管理服务中心">
+        </div>
+        <div class="ia-field">
+          <label for="homepage_subtitle">首页副标题</label>
+          <input type="text" name="homepage_subtitle" id="homepage_subtitle"
+                 value="{{ cfg.homepage_subtitle|default:'致力于为社团提供全方位的管理与服务支持，促进社团健康发展' }}" class="form-control"
+                 maxlength="300" placeholder="致力于为社团提供全方位的管理与服务支持，促进社团健康发展">
+        </div>
+        <div class="ia-actions">
+          <button type="submit" class="btn btn-filled">
+            <span class="material-icons">save</span>保存站点信息
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+
+<!-- ④ 第三方资源 CDN -->
 <div class="ia-section">
   <div class="ia-section-title">
     <span class="material-icons">cloud</span>第三方资源 CDN
@@ -1290,7 +1333,7 @@
 </div>
 
 
-<!-- ④ 字体设置区 -->
+<!-- ⑤ 字体设置区 -->
 
 
 <div class="ia-section">

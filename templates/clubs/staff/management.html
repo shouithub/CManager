@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load static %}
 
 {% block title %}社团管理{% endblock %}
 
@@ -207,9 +208,13 @@
             <p class="subtitle">管理社团功能、模板和用户信息</p>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-            <button type="button" class="btn btn-primary" onclick="openBulkOpsModal()">
-                批量操作
+            <button type="button" class="btn btn-primary" data-csv-import-open="clubImportModal">
+                批量导入
             </button>
+            <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn btn-outlined">
+                <span class="material-icons">file_download</span>
+                导出数据
+            </a>
         </div>
     </div>
 
@@ -1142,34 +1147,9 @@
     </div>
 </div>
 
-<div id="bulkOpsModal" class="bulk-modal-overlay">
-    <div class="bulk-modal-card">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-            <h3 style="margin:0; font-size:1.2rem;">批量操作</h3>
-            <button type="button" class="btn btn-secondary" onclick="closeBulkOpsModal()">关闭</button>
-        </div>
-        <p style="margin:8px 0 0 0; color: var(--md3-on-surface-variant);">下载社团模板、批量导入社团，或导出全部用户与社团数据。</p>
-        <div class="bulk-modal-actions">
-            <a href="{% url 'clubs:download_club_import_template' %}" class="btn btn-secondary" style="justify-content:center;">
-                <span class="material-icons">download</span>
-                下载社团导入模板
-            </a>
-            <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn btn-secondary" style="justify-content:center;">
-                <span class="material-icons">file_download</span>
-                导出全部用户+社团
-            </a>
-            <form method="post" action="{% url 'clubs:import_clubs_csv' %}" enctype="multipart/form-data" style="display:grid; gap:10px;">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <input type="file" name="csv_file" accept=".csv,text/csv" required class="bulk-modal-file">
-                <button type="submit" class="btn btn-primary" style="justify-content:center;">
-                    <span class="material-icons">upload_file</span>
-                    批量导入社团CSV
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
+{% url 'clubs:import_clubs_csv' as club_import_url %}
+{% url 'clubs:download_club_import_template' as club_template_url %}
+{% include 'clubs/components/_csv_import_modal.html' with modal_id='clubImportModal' modal_title='批量导入社团' modal_description='下载模板填写后上传，即可批量导入社团。' import_url=club_import_url template_url=club_template_url column_hint='社团名称,社团简介,成立日期,状态,成员数,社长用户名' %}
 
 <!-- 删除确认弹窗 -->
 <div id="deleteModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
@@ -1215,14 +1195,6 @@ function closeDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
 }
 
-function openBulkOpsModal() {
-    document.getElementById('bulkOpsModal').style.display = 'flex';
-}
-
-function closeBulkOpsModal() {
-    document.getElementById('bulkOpsModal').style.display = 'none';
-}
-
 function checkDeleteInput() {
     const input = document.getElementById('confirmNameInput').value;
     const btn = document.getElementById('confirmDeleteBtn');
@@ -1238,10 +1210,6 @@ function checkDeleteInput() {
 // Close on click outside
 document.getElementById('deleteModal').addEventListener('click', function(e) {
     if (e.target === this) closeDeleteModal();
-});
-
-document.getElementById('bulkOpsModal').addEventListener('click', function(e) {
-    if (e.target === this) closeBulkOpsModal();
 });
 
 function showToast() {
@@ -1365,4 +1333,5 @@ function copyUnsubmittedRegistrationClubsAll() {
     navigator.clipboard.writeText(text).then(showToast).catch(err => console.error('复制失败:', err));
 }
 </script>
+<script src="{% static 'js/csv-import.js' %}"></script>
 {% endblock %}
