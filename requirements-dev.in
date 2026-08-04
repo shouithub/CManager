@@ -1,5 +1,5 @@
 -r requirements.in
-pip==26.1.2
+pip==26.2
 pip-audit>=2.9,<3
 pyright[nodejs]>=1.1.400,<2
 ruff>=0.12,<1
