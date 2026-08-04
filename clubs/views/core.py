@@ -3442,7 +3442,7 @@ def manage_site_settings(request):
         'add_circle', 'edit', 'delete', 'check_circle', 'cancel', 'upload_file',
         'arrow_back', 'save', 'font_download',
     ]
-    return render(request, 'clubs/admin/manage_favicon.html', {
+    return render(request, 'clubs/admin/site_settings.html', {
         'cfg': cfg,
         'presets': presets,
         'body_font_presets': body_font_presets,

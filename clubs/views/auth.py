@@ -590,7 +590,11 @@ def edit_profile(request):
             import base64
             avatar_base64 = request.POST.get('avatar_base64')
             avatar_file = request.FILES.get('avatar')
-            is_async_upload = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            # 反向代理可能移除 X-Requested-With；Accept 是标准协商头，保留它作为可靠兜底。
+            is_async_upload = (
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+                or 'application/json' in request.headers.get('Accept', '')
+            )
 
             def finish_avatar_upload(ok, message):
                 if is_async_upload:

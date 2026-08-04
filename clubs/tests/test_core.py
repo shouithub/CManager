@@ -89,6 +89,17 @@ class AvatarServiceTests(TestCase):
         self.config.refresh_from_db()
         self.assertTrue(self.config.cravatar_enabled)
 
+    def test_avatar_upload_returns_json_when_accept_header_requests_it(self):
+        response = self.client.post(
+            reverse('clubs:edit_profile'),
+            {'action': 'upload_avatar'},
+            HTTP_ACCEPT='application/json',
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['message'], '请选择图片文件')
+
     def test_admin_can_change_third_party_cdn(self):
         response = self.client.post(
             reverse('clubs:site_settings'),
