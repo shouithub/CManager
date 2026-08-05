@@ -28,6 +28,7 @@ from ..models import (
     FormField,
     FormFieldValue,
     FormSubmission,
+    FormSubmissionReview,
     Officer,
     RegistrationToken,
     Room,
@@ -494,6 +495,46 @@ class StaffRegistrationReviewTests(TestCase):
         self.assertRedirects(response, reverse('clubs:manage_users'), fetch_redirect_response=False)
         staff.profile.refresh_from_db()
         self.assertEqual(staff.profile.status, 'approved')
+
+    def test_review_rejects_already_processed_submission(self):
+        first_reviewer = self.create_pending_staff('reviewer-first')
+        first_reviewer.profile.status = 'approved'
+        first_reviewer.profile.save(update_fields=['status'])
+        channel = FormChannel.objects.create(
+            name='审核通道',
+            slug='review-channel',
+            is_active=True,
+            publish_status='published',
+        )
+        club = Club.objects.create(name='审核社团', founded_date=date(2026, 1, 1))
+        submission = FormSubmission.objects.create(
+            channel=channel,
+            club=club,
+            submitter=first_reviewer,
+            status='approved',
+        )
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=first_reviewer,
+            status='approved',
+            submission_attempt=1,
+        )
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {'decision': 'approved', 'comment': '重复审核'},
+            secure=True,
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('clubs:staff_audit_center', args=[submission.channel.slug]),
+            fetch_redirect_response=False,
+        )
+        followed = self.client.get(response.url, secure=True)
+        self.assertContains(followed, '无需重复审核')
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, 'approved')
 
     def test_user_management_shows_pending_review_count(self):
         self.create_pending_staff('pending-count')

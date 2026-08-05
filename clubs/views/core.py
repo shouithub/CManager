@@ -4727,6 +4727,8 @@ def _mark_submission_approved(submission, reviewer, comment):
         submission_attempt=submission.resubmission_count,
     ).exists():
         raise BusinessActionError('您已经审核过本次提交，不能重复审核')
+    if submission.status != 'pending':
+        raise BusinessActionError('该请求已不在待审核状态，不能重复审核')
 
     FormSubmissionReview.objects.create(
         submission=submission,
@@ -4760,6 +4762,8 @@ def _mark_submission_rejected(submission, reviewer, comment, post):
         submission_attempt=submission.resubmission_count,
     ).exists():
         raise BusinessActionError('您已经审核过本次提交，不能重复审核')
+    if submission.status != 'pending':
+        raise BusinessActionError('该请求已不在待审核状态，不能重复审核')
 
     FormSubmissionReview.objects.create(
         submission=submission,
@@ -4834,6 +4838,9 @@ def staff_review_form_submission(request, submission_key):
                     submission = FormSubmission.objects.select_for_update().select_related(
                         'channel', 'club'
                     ).get(pk=submission.pk)
+                    if submission.status != 'pending':
+                        messages.error(request, '该请求已被其他审核人处理，无需重复审核')
+                        return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
                     if decision == 'approved':
                         _mark_submission_approved(submission, request.user, comment)
                     else:
