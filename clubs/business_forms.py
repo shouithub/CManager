@@ -37,6 +37,8 @@ class BusinessFormAction:
     default_description: str
     fields: list[BusinessField]
     show_unsubmitted_status: bool = False
+    show_unsubmitted_alert: bool = False
+    alert_color: str = '#b3261e'
     allow_staff_toggle: bool = False
     default_cycle_type: str = 'none'
     required_fields: tuple[str, ...] = ()
@@ -262,6 +264,8 @@ register_business_form_action(BusinessFormAction(
     default_policy='once_per_cycle',
     default_description='社团年审默认动态提交通道',
     show_unsubmitted_status=True,
+    show_unsubmitted_alert=True,
+    alert_color='#9a6700',
     allow_staff_toggle=True,
     default_cycle_type='year',
     required_fields=('submission_year',),
@@ -288,6 +292,8 @@ register_business_form_action(BusinessFormAction(
     default_policy='once_per_cycle',
     default_description='社团注册默认动态提交通道',
     show_unsubmitted_status=True,
+    show_unsubmitted_alert=True,
+    alert_color='#b3261e',
     allow_staff_toggle=True,
     default_cycle_type='count',
     required_fields=('registration_form',),

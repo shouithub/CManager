@@ -1,0 +1,74 @@
+{% if alerts %}
+<div class="alerts-grid">
+    {% for alert in alerts %}
+    <div class="alert-card" style="border-color: {{ alert.color }}66; background: {{ alert.color }}14;">
+        <div class="alert-header">
+            <span class="material-icons">{{ alert.icon }}</span> {{ alert.title }} ({{ alert.count }})
+        </div>
+
+        <div class="alert-list">
+            {% if alert.my_count > 0 %}
+                {% for club in alert.my|slice:":3" %}
+                {% include 'clubs/components/_alert_club_item.html' with club=club show_members=alert.show_members %}
+                {% endfor %}
+            {% else %}
+                <div class="alert-item" style="opacity: 0.7; font-style: italic;">{{ alert.empty_my }}</div>
+            {% endif %}
+        </div>
+
+        <div class="alert-buttons">
+            {% if alert.my_count > 3 %}
+            <button type="button" class="btn-copy-my" onclick="openAlertListModal('{{ alert.key }}', 'my')">
+                <span class="material-icons" style="font-size:18px;">format_list_bulleted</span> 我的全部 ({{ alert.my_count }})
+            </button>
+            {% endif %}
+            {% if alert.other_count > 0 %}
+            <button type="button" class="btn-copy-all" onclick="openAlertListModal('{{ alert.key }}', 'other')">
+                <span class="material-icons" style="font-size:18px;">groups</span> 其他干事负责 ({{ alert.other_count }})
+            </button>
+            {% endif %}
+            {% if alert.my_count > 0 %}
+            <button type="button" class="btn-copy-my" onclick="copyAlert('{{ alert.key }}', 'my')">
+                <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
+            </button>
+            {% endif %}
+            {% if alert.count > 0 %}
+            <button type="button" class="btn-copy-all" onclick="copyAlert('{{ alert.key }}', 'all')">
+                <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 告警列表弹窗（我的全部 / 其他干事，统一入口，不再撑高卡片） -->
+<div id="alertListModal" class="alert-modal-overlay" hidden>
+    <div class="alert-modal-card" role="dialog" aria-modal="true" aria-labelledby="alertModalTitle">
+        <div class="alert-modal-header">
+            <h3 id="alertModalTitle"></h3>
+            <button type="button" class="alert-modal-close" onclick="closeAlertListModal()" aria-label="关闭">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div id="alertModalList" class="alert-list"></div>
+    </div>
+</div>
+
+{% for alert in alerts %}
+    {% if alert.my_count > 3 %}
+    <div id="alert-panel-{{ alert.key }}-my" hidden>
+        {% for club in alert.my %}
+        {% include 'clubs/components/_alert_club_item.html' with club=club show_members=alert.show_members %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if alert.other_count > 0 %}
+    <div id="alert-panel-{{ alert.key }}-other" hidden>
+        {% for club in alert.other %}
+        {% include 'clubs/components/_alert_club_item.html' with club=club show_members=alert.show_members %}
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endfor %}
+{% endif %}

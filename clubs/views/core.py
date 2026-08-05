@@ -4960,6 +4960,12 @@ def save_form_channel(request, channel_id=None):
     channel.is_builtin = request.POST.get('is_builtin') == 'on'
     channel.show_zip_download = request.POST.get('show_zip_download') == 'on'
     channel.show_unsubmitted_status = request.POST.get('show_unsubmitted_status') == 'on'
+    channel.show_unsubmitted_alert = request.POST.get('show_unsubmitted_alert') == 'on'
+    raw_alert_color = (request.POST.get('alert_color') or '').strip()
+    if re.fullmatch(r'#[0-9a-fA-F]{6}', raw_alert_color):
+        channel.alert_color = raw_alert_color
+    else:
+        channel.alert_color = '#b3261e'
     channel.allow_staff_toggle = request.POST.get('allow_staff_toggle') == 'on'
     try:
         channel.order = int(request.POST.get('order', '0') or 0)

@@ -22,8 +22,8 @@ class FormCycleInline(admin.TabularInline):
 
 @admin.register(FormChannel)
 class FormChannelAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'publish_status', 'builtin_action', 'submission_policy', 'cycle_type', 'show_unsubmitted_status', 'allow_staff_toggle', 'is_active', 'order', 'updated_at')
-    list_filter = ('publish_status', 'is_active', 'is_builtin', 'builtin_action', 'submission_policy', 'cycle_type', 'show_unsubmitted_status', 'allow_staff_toggle')
+    list_display = ('name', 'slug', 'publish_status', 'builtin_action', 'submission_policy', 'cycle_type', 'show_unsubmitted_status', 'show_unsubmitted_alert', 'alert_color', 'allow_staff_toggle', 'is_active', 'order', 'updated_at')
+    list_filter = ('publish_status', 'is_active', 'is_builtin', 'builtin_action', 'submission_policy', 'cycle_type', 'show_unsubmitted_status', 'show_unsubmitted_alert', 'allow_staff_toggle')
     search_fields = ('name', 'slug', 'description')
     list_editable = ('publish_status', 'is_active', 'order')
     inlines = [FormFieldInline, FormCycleInline]

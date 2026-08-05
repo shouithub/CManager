@@ -546,6 +546,8 @@ class Command(BaseCommand):
                     "required_approval_count": approval_count,
                     "show_zip_download": True,
                     "show_unsubmitted_status": policy == "once_per_cycle",
+                    "show_unsubmitted_alert": action in ("annual_review", "club_registration"),
+                    "alert_color": "#9a6700" if action == "annual_review" else "#b3261e",
                     "allow_staff_toggle": True,
                     "cycle_type": "year" if policy == "once_per_cycle" else "none",
                 },

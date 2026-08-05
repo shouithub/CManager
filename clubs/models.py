@@ -413,6 +413,8 @@ class FormChannel(models.Model):
     required_approval_count = models.PositiveSmallIntegerField(default=1, verbose_name='所需通过次数')
     show_zip_download = models.BooleanField(default=True, verbose_name='显示打包 ZIP 下载')
     show_unsubmitted_status = models.BooleanField(default=False, verbose_name='show unsubmitted status')
+    show_unsubmitted_alert = models.BooleanField(default=False, verbose_name='显示未提交告警')
+    alert_color = models.CharField(max_length=20, default='#b3261e', verbose_name='告警颜色')
     allow_staff_toggle = models.BooleanField(default=False, verbose_name='allow staff toggle')
     cycle_type = models.CharField(max_length=20, choices=CYCLE_TYPE_CHOICES, default='none', verbose_name='周期判断方式')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')

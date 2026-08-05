@@ -1,0 +1,27 @@
+<div class="settings-group span-2">
+    <div class="settings-group-title">
+        <span class="material-icons">campaign</span> 告警设置
+        <p>在干事“社团管理”页生成未提交告警，并自定义告警卡片的主题色。</p>
+    </div>
+    <div class="settings-grid">
+        <label class="setting-card">
+            <span class="setting-card-icon"><span class="material-icons">notifications_active</span></span>
+            <span class="setting-card-text">
+                <strong>未提交告警</strong>
+                <small>开启后，干事社团管理页会显示“未提交{{ channel_label|default:'该通道' }}”告警</small>
+            </span>
+            <input type="checkbox" name="show_unsubmitted_alert" {% if current.show_unsubmitted_alert %}checked{% endif %}>
+        </label>
+        <label class="setting-card">
+            <span class="setting-card-icon"><span class="material-icons">palette</span></span>
+            <span class="setting-card-text">
+                <strong>告警颜色</strong>
+                <small>选择告警卡片的主题色</small>
+            </span>
+            <span class="color-picker-wrap">
+                <span class="color-preview" style="background: {% if current %}{{ current.alert_color|default:'#b3261e' }}{% else %}#b3261e{% endif %};"></span>
+                <input type="color" name="alert_color" value="{% if current %}{{ current.alert_color|default:'#b3261e' }}{% else %}#b3261e{% endif %}" oninput="this.closest('.setting-card').querySelector('.color-preview').style.background = this.value;">
+            </span>
+        </label>
+    </div>
+</div>

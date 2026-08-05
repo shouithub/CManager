@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.shortcuts import render, redirect
@@ -746,13 +747,6 @@ def staff_management(request):
         queryset=FormCycle.objects.filter(is_active=True).order_by('-sequence', '-starts_at'),
         to_attr='_active_cycles',
     )
-    special_channels = {}
-    for channel in FormChannel.objects.filter(
-        builtin_action__in=['annual_review', 'club_registration'],
-    ).prefetch_related(active_cycles):
-        special_channels.setdefault(channel.builtin_action, channel)
-    annual_channel = special_channels.get('annual_review')
-    registration_channel = special_channels.get('club_registration')
     toggle_channels = list(
         FormChannel.objects.filter(allow_staff_toggle=True)
         .prefetch_related(active_cycles)
@@ -762,13 +756,12 @@ def staff_management(request):
         channel.needs_cycle = channel.cycle_type != 'none' or channel.submission_policy == 'once_per_cycle'
         channel.active_cycle = channel._active_cycles[0] if channel.needs_cycle and channel._active_cycles else None
         channel.global_enabled = bool(channel.active_cycle) if channel.needs_cycle else channel.is_active
-    active_review_cycle = annual_channel._active_cycles[0] if annual_channel and annual_channel._active_cycles else None
-    active_registration_period = (
-        registration_channel._active_cycles[0]
-        if registration_channel and registration_channel._active_cycles else None
+    # 开启“未提交告警”的通道（不再写死内置动作，任何动态表单通道都可以开启）
+    alert_channels = list(
+        FormChannel.objects.filter(show_unsubmitted_alert=True)
+        .prefetch_related(active_cycles)
+        .order_by('order', 'id')
     )
-    all_review_enabled = bool(active_review_cycle)
-    all_registration_enabled = bool(active_registration_period)
 
     # 搜索 & 列表（分页）
     q = request.GET.get('q', '').strip()
@@ -797,7 +790,7 @@ def staff_management(request):
     page_clubs = list(clubs_page.object_list)
     state_channel_ids = {
         channel.id
-        for channel in [annual_channel, registration_channel, *toggle_channels]
+        for channel in [*toggle_channels, *alert_channels]
         if channel
     }
     disabled_by_channel = {channel_id: set() for channel_id in state_channel_ids}
@@ -806,8 +799,6 @@ def staff_management(request):
         is_enabled=False,
     ).values_list('channel_id', 'club_id'):
         disabled_by_channel[channel_id].add(club_id)
-    disabled_review_ids = disabled_by_channel.get(getattr(annual_channel, 'id', None), set())
-    disabled_registration_ids = disabled_by_channel.get(getattr(registration_channel, 'id', None), set())
     for club in page_clubs:
         club.dynamic_channel_states = [
             {
@@ -848,71 +839,98 @@ def staff_management(request):
         Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count')
     )
     
-    current_year = timezone.localdate().year
-    clubs_enabled_review_not_submitted = []
-    clubs_enabled_review_not_submitted_my = []
-    clubs_enabled_review_not_submitted_other = []
-    if annual_channel and active_review_cycle:
-        enabled_review_clubs = Club.objects.exclude(status='suspended').exclude(id__in=disabled_review_ids)
-        submitted_clubs_ids = FormSubmission.objects.filter(
-            club__in=enabled_review_clubs,
-            channel=annual_channel,
-            cycle=active_review_cycle,
+    # === 统一告警数据（成员数量 + 各通道未提交） ===
+    alerts = []
+
+    if clubs_with_low_members:
+        alerts.append({
+            'key': 'low_members',
+            'title': '社团成员数量预警',
+            'icon': 'warning',
+            'color': '#6750a4',
+            'show_members': True,
+            'empty_my': '暂无你负责的成员不足社团',
+            'my': clubs_with_low_members_my,
+            'my_count': len(clubs_with_low_members_my),
+            'other': clubs_with_low_members_other,
+            'other_count': len(clubs_with_low_members_other),
+            'count': len(clubs_with_low_members),
+            'copy_title': '成员数量不足的社团名单',
+            'copy_cycle': '',
+        })
+
+    for channel in alert_channels:
+        needs_cycle = channel.cycle_type != 'none' or channel.submission_policy == 'once_per_cycle'
+        active_cycle = channel._active_cycles[0] if needs_cycle and channel._active_cycles else None
+        if needs_cycle and not active_cycle:
+            continue
+        disabled_ids = disabled_by_channel.get(channel.id, set())
+        enabled_clubs = Club.objects.exclude(status='suspended').exclude(id__in=disabled_ids)
+        submitted_qs = FormSubmission.objects.filter(
+            club__in=enabled_clubs,
+            channel=channel,
             status__in=['pending', 'approved'],
-        ).values_list('club_id', flat=True)
-        (
-            clubs_enabled_review_not_submitted,
-            clubs_enabled_review_not_submitted_my,
-            clubs_enabled_review_not_submitted_other,
-        ) = warning_club_lists(enabled_review_clubs.exclude(id__in=submitted_clubs_ids).order_by('name'))
-    
-    # 注册未交预警逻辑
-    clubs_enabled_registration_not_submitted = []
-    clubs_enabled_registration_not_submitted_my = []
-    clubs_enabled_registration_not_submitted_other = []
-    
-    if registration_channel and active_registration_period:
-        enabled_registration_clubs = Club.objects.exclude(status='suspended').exclude(id__in=disabled_registration_ids)
-        submitted_registration_ids = FormSubmission.objects.filter(
-            club__in=enabled_registration_clubs,
-            channel=registration_channel,
-            cycle=active_registration_period,
-            status__in=['pending', 'approved'],
-        ).values_list('club_id', flat=True)
-        (
-            clubs_enabled_registration_not_submitted,
-            clubs_enabled_registration_not_submitted_my,
-            clubs_enabled_registration_not_submitted_other,
-        ) = warning_club_lists(enabled_registration_clubs.exclude(id__in=submitted_registration_ids).order_by('name'))
-    
+        )
+        if active_cycle:
+            submitted_qs = submitted_qs.filter(cycle=active_cycle)
+        submitted_ids = set(submitted_qs.values_list('club_id', flat=True))
+        clubs, mine, other = warning_club_lists(
+            enabled_clubs.exclude(id__in=submitted_ids).order_by('name')
+        )
+        if not clubs:
+            continue
+        alerts.append({
+            'key': f'unsubmitted_{channel.id}',
+            'title': f'未提交{channel.name}预警',
+            'icon': 'error',
+            'color': channel.alert_color or '#b3261e',
+            'show_members': False,
+            'empty_my': '暂无你负责的未提交社团',
+            'my': mine,
+            'my_count': len(mine),
+            'other': other,
+            'other_count': len(other),
+            'count': len(clubs),
+            'copy_title': f'未提交{channel.name}的社团名单',
+            'copy_cycle': f'（{active_cycle.name}）' if active_cycle else '',
+        })
+
+    def _club_copy_info(club):
+        president = club.president
+        president_name = '未设置'
+        if president:
+            profile = getattr(president, 'profile', None)
+            president_name = profile.get_full_name() if profile and profile.pk else president.get_full_name() or president.username
+        staff_names = [relation.staff.get_full_name() for relation in club.responsible_staff.all()]
+        return {
+            'name': club.name,
+            'members': club.members_count,
+            'president': president_name,
+            'staff': staff_names if staff_names else ['暂未分配负责干事'],
+        }
+
+    alerts_json = json.dumps([
+        {
+            'key': alert['key'],
+            'title': alert['copy_title'],
+            'cycle': alert['copy_cycle'],
+            'show_members': alert['show_members'],
+            'count': alert['count'],
+            'my_count': alert['my_count'],
+            'my': [_club_copy_info(club) for club in alert['my']],
+            'all': [_club_copy_info(club) for club in [*alert['my'], *alert['other']]],
+        }
+        for alert in alerts
+    ], ensure_ascii=False).replace('</', '<\\/')
+
     context = {
-        'all_review_enabled': all_review_enabled,
-        'all_registration_enabled': all_registration_enabled,
-        'active_registration_period': active_registration_period,
         'toggle_channels': toggle_channels,
         'toggle_colspan': 4 + len(toggle_channels),
         'clubs_page': clubs_page,
         'q': q,
-        # 预警数据
-        'clubs_with_low_members': clubs_with_low_members,
-        'clubs_with_low_members_count': len(clubs_with_low_members),
-        'clubs_with_low_members_my': clubs_with_low_members_my,
-        'clubs_with_low_members_my_count': len(clubs_with_low_members_my),
-        'clubs_with_low_members_other': clubs_with_low_members_other,
-        'clubs_with_low_members_other_count': len(clubs_with_low_members_other),
-        'clubs_enabled_review_not_submitted': clubs_enabled_review_not_submitted,
-        'clubs_enabled_review_not_submitted_count': len(clubs_enabled_review_not_submitted),
-        'clubs_enabled_review_not_submitted_my': clubs_enabled_review_not_submitted_my,
-        'clubs_enabled_review_not_submitted_my_count': len(clubs_enabled_review_not_submitted_my),
-        'clubs_enabled_review_not_submitted_other': clubs_enabled_review_not_submitted_other,
-        'clubs_enabled_review_not_submitted_other_count': len(clubs_enabled_review_not_submitted_other),
-        'clubs_enabled_registration_not_submitted': clubs_enabled_registration_not_submitted,
-        'clubs_enabled_registration_not_submitted_count': len(clubs_enabled_registration_not_submitted),
-        'clubs_enabled_registration_not_submitted_my': clubs_enabled_registration_not_submitted_my,
-        'clubs_enabled_registration_not_submitted_my_count': len(clubs_enabled_registration_not_submitted_my),
-        'clubs_enabled_registration_not_submitted_other': clubs_enabled_registration_not_submitted_other,
-        'clubs_enabled_registration_not_submitted_other_count': len(clubs_enabled_registration_not_submitted_other),
-        'current_year': current_year,
+        # 统一告警数据
+        'alerts': alerts,
+        'alerts_json': alerts_json,
     }
     
     return render(request, 'clubs/staff/management.html', context)
