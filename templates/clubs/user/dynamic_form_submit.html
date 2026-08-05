@@ -303,11 +303,13 @@
         </div>
     </section>
 
-    {% if channel.example_file %}
+    {% if channel.example_files.all %}
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 14px;border:1px solid var(--md3-outline-variant);border-radius:var(--md3-radius-lg);background:var(--md3-surface-container-low);color:var(--md3-on-surface-variant);font-size:0.875rem;">
         <span class="material-icons" style="color:var(--md3-primary);">description</span>
         <span>通道示例文件：</span>
-        <a href="{{ channel.example_file.url }}" target="_blank" rel="noopener" style="color:var(--md3-primary);font-weight:600;">{{ channel.example_file.name|slice:"-30:" }}</a>
+        {% for example in channel.example_files.all %}
+        <a href="{{ example.file.url }}" target="_blank" rel="noopener" style="color:var(--md3-primary);font-weight:600;">{{ example.file.name|slice:"-30:" }}</a>{% if not forloop.last %}<span>、</span>{% endif %}
+        {% endfor %}
     </div>
     {% endif %}
 

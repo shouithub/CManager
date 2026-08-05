@@ -404,13 +404,6 @@ class FormChannel(models.Model):
     slug = models.SlugField(max_length=80, unique=True, verbose_name='通道标识')
     icon = models.CharField(max_length=50, default='description', verbose_name='图标')
     description = models.TextField(blank=True, verbose_name='说明')
-    example_file = models.FileField(
-        upload_to='channel_examples/%Y/%m/',
-        blank=True,
-        null=True,
-        verbose_name='通道示例文件',
-        help_text='显示在提交页顶部的可选示例文件',
-    )
     order = models.IntegerField(default=0, verbose_name='排序')
     is_active = models.BooleanField(default=True, verbose_name='启用')
     publish_status = models.CharField(max_length=20, choices=PUBLISH_STATUS_CHOICES, default='draft', verbose_name='发布状态')
@@ -432,6 +425,22 @@ class FormChannel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ChannelExampleFile(models.Model):
+    """通道级示例文件（可多个，显示在提交页顶部）。"""
+
+    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='example_files', verbose_name='通道')
+    file = models.FileField(upload_to='channel_examples/%Y/%m/', verbose_name='示例文件')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
+
+    class Meta:
+        verbose_name = '通道示例文件'
+        verbose_name_plural = '通道示例文件'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.file.name
 
 
 class FormCycle(models.Model):

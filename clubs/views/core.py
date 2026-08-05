@@ -33,7 +33,31 @@ import csv
 import io
 import json
 import logging
-from ..models import Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission, FormSubmissionReview, FormFieldValue, FormUploadedFile, Announcement, StaffClubRelation, CarouselImage, Department, Room, RoomBooking, TimeSlot, SiteSettings, DailyStat, ClubMember, RegistrationToken
+from ..models import (
+    Announcement,
+    CarouselImage,
+    ChannelExampleFile,
+    Club,
+    ClubMember,
+    DailyStat,
+    Department,
+    FormChannel,
+    FormChannelClubState,
+    FormCycle,
+    FormField,
+    FormFieldValue,
+    FormSubmission,
+    FormSubmissionReview,
+    FormUploadedFile,
+    Officer,
+    RegistrationToken,
+    Room,
+    RoomBooking,
+    SiteSettings,
+    StaffClubRelation,
+    TimeSlot,
+    UserProfile,
+)
 from ..business_forms import (
     BusinessActionError,
     apply_business_action,
@@ -4918,8 +4942,8 @@ def save_form_channel(request, channel_id=None):
     else:
         try:
             channel.save()
-            if 'example_file' in request.FILES:
-                example_upload = request.FILES['example_file']
+            example_files = request.FILES.getlist('example_files')
+            for example_upload in example_files:
                 example_error = validate_upload(
                     example_upload,
                     field_name='通道示例文件',
@@ -4929,10 +4953,17 @@ def save_form_channel(request, channel_id=None):
                 if example_error:
                     messages.error(request, example_error)
                     return redirect('clubs:manage_form_channels_detail', channel_id=channel.id)
-                channel.example_file = example_upload
-            if request.POST.get('clear_channel_example') == 'on':
-                channel.example_file = None
-            channel.save(update_fields=['example_file'])
+            if example_files:
+                ChannelExampleFile.objects.bulk_create([
+                    ChannelExampleFile(channel=channel, file=upload) for upload in example_files
+                ])
+            delete_ids = [
+                int(item) for item in request.POST.getlist('delete_example_file') if item.isdigit()
+            ]
+            if delete_ids:
+                ChannelExampleFile.objects.filter(pk__in=delete_ids, channel=channel).delete()
+            if request.POST.get('clear_channel_examples') == 'on':
+                ChannelExampleFile.objects.filter(channel=channel).delete()
             missing_fields = missing_required_field_keys(channel)
             if channel.publish_status == 'published' and missing_fields:
                 missing_labels = [item['label'] for item in missing_required_field_infos(channel)]

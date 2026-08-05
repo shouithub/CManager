@@ -19,9 +19,10 @@ from django.urls import URLPattern, URLResolver, get_resolver, reverse
 
 from ..avatar_utils import clear_avatar_settings_cache, get_profile_avatar_url
 from ..models import (
+    Announcement,
+    ChannelExampleFile,
     Club,
     ClubMember,
-    Announcement,
     FormChannel,
     FormCycle,
     FormField,
@@ -602,7 +603,7 @@ class StaffRegistrationReviewTests(TestCase):
         self.assertTrue(any(label and '自定义时段' in label for label in labels))
         self.assertTrue(any(label and '09:00-10:00' in label for label in labels))
 
-    def test_save_form_channel_accepts_example_file(self):
+    def test_save_form_channel_accepts_multiple_example_files(self):
         from django.core.files.uploadedfile import SimpleUploadedFile
 
         channel = FormChannel.objects.create(
@@ -611,14 +612,16 @@ class StaffRegistrationReviewTests(TestCase):
             is_active=True,
             publish_status='draft',
         )
-        zip_buffer = BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w') as archive:
-            archive.writestr('[Content_Types].xml', '<Types/>')
-        upload = SimpleUploadedFile(
-            'example.docx',
-            zip_buffer.getvalue(),
-            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        )
+
+        def make_docx(name):
+            zip_buffer = BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w') as archive:
+                archive.writestr('[Content_Types].xml', '<Types/>')
+            return SimpleUploadedFile(
+                name,
+                zip_buffer.getvalue(),
+                content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            )
 
         response = self.client.post(
             reverse('clubs:edit_form_channel', args=[channel.pk]),
@@ -629,14 +632,13 @@ class StaffRegistrationReviewTests(TestCase):
                 'order': '0',
                 'required_approval_count': '1',
                 'publish_status': 'draft',
-                'example_file': upload,
+                'example_files': [make_docx('a.docx'), make_docx('b.docx')],
             },
             secure=True,
         )
 
         self.assertEqual(response.status_code, 302)
-        channel.refresh_from_db()
-        self.assertTrue(channel.example_file)
+        self.assertEqual(ChannelExampleFile.objects.filter(channel=channel).count(), 2)
 
 
 class BookingServiceTests(TestCase):

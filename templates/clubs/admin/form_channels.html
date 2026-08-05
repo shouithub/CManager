@@ -1091,7 +1091,7 @@
                         {% if not current.is_active %}已停用{% elif current.publish_status == 'draft' %}草稿{% elif missing_required_fields %}未就绪{% else %}已发布{% endif %}
                     </span>
                 </div>
-                <form id="channel-settings-form" method="post" action="{% url 'clubs:edit_form_channel' current.id %}" class="form-grid">
+                <form id="channel-settings-form" method="post" enctype="multipart/form-data" action="{% url 'clubs:edit_form_channel' current.id %}" class="form-grid">
                     {% csrf_token %}
                     <div class="field-group">
                         <label>通道名称</label>
@@ -1102,9 +1102,18 @@
                         <input class="field-control" name="slug" value="{{ current.slug }}" required placeholder="reimbursement">
                     </div>
                     <div class="field-group span-2">
-                        {% include 'clubs/components/_file_upload.html' with field_id='channel_example_file' field_name='example_file' label='通道示例文件（可选）' is_required=False allowed_extensions='.doc,.docx,.pdf,.jpg,.jpeg,.png,.webp' max_size_mb=10 existing_file=current.example_file %}
-                        {% if current.example_file %}
-                        <label class="switch-label"><input type="checkbox" name="clear_channel_example">清除当前示例文件</label>
+                        {% include 'clubs/components/_file_upload.html' with field_id='channel_example_files' field_name='example_files' label='通道示例文件（可选，可一次选择多个）' is_required=False allowed_extensions='.doc,.docx,.pdf,.jpg,.jpeg,.png,.webp' max_size_mb=10 multiple=True %}
+                        {% if current.example_files.all %}
+                        <div style="display:grid;gap:6px;margin-top:10px;">
+                            {% for example in current.example_files.all %}
+                            <label class="switch-label" style="font-weight:400;">
+                                <input type="checkbox" name="delete_example_file" value="{{ example.id }}">
+                                <span class="material-icons" style="font-size:1rem;">attach_file</span>
+                                <a href="{{ example.file.url }}" target="_blank" rel="noopener" style="color:var(--md3-primary);">{{ example.file.name|slice:"-30:" }}</a>
+                            </label>
+                            {% endfor %}
+                            <label class="switch-label"><input type="checkbox" name="clear_channel_examples">清除全部示例文件</label>
+                        </div>
                         {% endif %}
                     </div>
                     {% include 'clubs/admin/_material_icon_field.html' with input_id='channel-icon-edit' icon_value=current.icon %}
@@ -1478,7 +1487,7 @@
             <section class="form-cover">
                 <h2>新增通道</h2>
                 <p class="form-cover-subtitle">新通道默认保存为草稿，配置字段并发布后才会出现在社长侧提交入口。</p>
-                <form method="post" action="{% url 'clubs:add_form_channel' %}" class="form-grid">
+                <form method="post" enctype="multipart/form-data" action="{% url 'clubs:add_form_channel' %}" class="form-grid">
                     {% csrf_token %}
                     <div class="field-group">
                         <label>通道名称</label>
@@ -1489,7 +1498,7 @@
                         <input class="field-control js-channel-slug" name="slug" placeholder="room-application" required>
                     </div>
                     <div class="field-group span-2">
-                        {% include 'clubs/components/_file_upload.html' with field_id='channel_example_file' field_name='example_file' label='通道示例文件（可选）' is_required=False allowed_extensions='.doc,.docx,.pdf,.jpg,.jpeg,.png,.webp' max_size_mb=10 %}
+                        {% include 'clubs/components/_file_upload.html' with field_id='channel_example_files' field_name='example_files' label='通道示例文件（可选，可一次选择多个）' is_required=False allowed_extensions='.doc,.docx,.pdf,.jpg,.jpeg,.png,.webp' max_size_mb=10 multiple=True %}
                     </div>
                     {% include 'clubs/admin/_material_icon_field.html' with input_id='channel-icon-new' icon_value='description' %}
                     <div class="field-group">
