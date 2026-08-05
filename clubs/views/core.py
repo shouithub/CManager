@@ -1636,7 +1636,7 @@ def download_time_slot_import_template(request):
 @require_http_methods(['POST'])
 def import_time_slots_csv(request):
     """批量导入时间段（CSV，干事/管理员可用）。"""
-    from ..services.csv_import import CSVImportError, build_import_feedback, run_simple_csv_import
+    from ..services.csv_import import build_import_feedback, run_simple_csv_import
 
     if not is_staff_or_admin(request.user):
         messages.error(request, '仅干事和管理员可以批量导入时间段')
@@ -1666,14 +1666,14 @@ def import_time_slots_csv(request):
         end_raw = (row.get('结束时间') or row.get('end_time') or '').strip()
         active_raw = (row.get('状态') or row.get('is_active') or '启用').strip()
         if not label or not start_raw or not end_raw:
-            raise CSVImportError('名称、开始时间、结束时间均不能为空')
+            return None, '名称、开始时间、结束时间均不能为空'
         try:
             start_time = datetime.strptime(start_raw, '%H:%M').time()
             end_time = datetime.strptime(end_raw, '%H:%M').time()
         except ValueError:
-            raise CSVImportError('时间格式必须为 HH:MM')
+            return None, '时间格式必须为 HH:MM'
         if start_time >= end_time:
-            raise CSVImportError('结束时间必须晚于开始时间')
+            return None, '结束时间必须晚于开始时间'
         is_active = active_raw.lower() in ('启用', '是', '1', 'true', 'yes', 'on')
         _, created = TimeSlot.objects.update_or_create(
             label=label,
@@ -1681,16 +1681,15 @@ def import_time_slots_csv(request):
             end_time=end_time,
             defaults={'is_active': is_active},
         )
-        return 'created' if created else 'updated'
+        return ('created' if created else 'updated'), None
 
-    try:
-        summary = run_simple_csv_import(
-            uploaded,
-            required_headers=['显示名称', '开始时间', '结束时间'],
-            process_row=process_row,
-        )
-    except CSVImportError as exc:
-        return build_import_feedback(request, is_ajax=is_ajax, success=False, message=str(exc), redirect_url=redirect_url)
+    summary, import_error = run_simple_csv_import(
+        uploaded,
+        required_headers=['显示名称', '开始时间', '结束时间'],
+        process_row=process_row,
+    )
+    if import_error:
+        return build_import_feedback(request, is_ajax=is_ajax, success=False, message=import_error, redirect_url=redirect_url)
 
     message = f'导入完成：新建{summary["created"]}，更新{summary["updated"]}，跳过{summary["skipped"]}'
     return build_import_feedback(
@@ -3355,8 +3354,9 @@ def submit_room_booking(request):
     except BookingConflictError as exc:
         messages.error(request, str(exc))
         return redirect('clubs:room_calendar')
-    except Exception as e:
-        messages.error(request, f'预约失败: {str(e)}')
+    except Exception:
+        logger.exception('房间预约提交失败')
+        messages.error(request, '预约失败，请稍后重试')
         # 发生错误时，最好能保留用户输入，但这里简化处理
         return redirect('clubs:room_calendar')
 
