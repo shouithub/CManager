@@ -1351,6 +1351,14 @@
                         <div class="field-group">
                             <label>允许后缀</label>
                             <input class="field-control js-allowed-ext" name="allowed_extensions" placeholder=".docx,.pdf,.png" value="{{ field.validation.allowed_extensions|join:',' }}">
+                            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                                <span style="font-size:0.75rem;color:var(--md3-on-surface-variant);">常用类型：</span>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".jpg,.jpeg,.png,.gif,.webp">图片</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt">文档</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp4,.mov,.avi,.mkv,.webm">视频</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp3,.wav,.ogg,.m4a">音频</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".zip,.rar,.7z">压缩包</button>
+                            </div>
                         </div>
                         <div class="field-group">
                             <label>最大文件大小 MB</label>
@@ -1463,6 +1471,14 @@
                         <div class="field-group">
                             <label>允许后缀</label>
                             <input class="field-control js-allowed-ext" name="allowed_extensions" placeholder=".jpg,.jpeg,.png,.pdf,.docx">
+                            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                                <span style="font-size:0.75rem;color:var(--md3-on-surface-variant);">常用类型：</span>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".jpg,.jpeg,.png,.gif,.webp">图片</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt">文档</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp4,.mov,.avi,.mkv,.webm">视频</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp3,.wav,.ogg,.m4a">音频</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".zip,.rar,.7z">压缩包</button>
+                            </div>
                         </div>
                         <div class="field-group">
                             <label>最大文件大小 MB</label>
@@ -1785,6 +1801,14 @@
                 channelSlug.dataset.touched = '1';
             });
         }
+
+        document.addEventListener('click', function (event) {
+            const chip = event.target.closest('[data-ext-preset]');
+            if (!chip) return;
+            const group = chip.closest('.field-group');
+            const input = group ? group.querySelector('.js-allowed-ext') : null;
+            if (input) input.value = chip.getAttribute('data-ext-preset');
+        });
 
         document.querySelectorAll('.js-material-icon-control').forEach(function (control) {
             const input = control.querySelector('.js-material-icon-input');
