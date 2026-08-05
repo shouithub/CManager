@@ -1110,9 +1110,6 @@
                                 已禁用
                             </span>
                         {% endif %}
-                        <span class="status-badge {% if user.profile.account_status == 'active' %}approved{% else %}pending{% endif %}" style="margin-left:6px;">
-                            {{ user.profile.get_account_status_display }}
-                        </span>
                     </span>
                 </div>
                 <div class="user-meta-item">

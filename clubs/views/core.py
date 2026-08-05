@@ -112,6 +112,25 @@ def _is_admin(user):
     return has_any_role(user, 'admin')
 
 
+def _can_manage_club(user, club):
+    """管理员可管理所有社团；干事仅可管理自己负责的社团。"""
+    if not user.is_authenticated:
+        return False
+    try:
+        profile = user.profile
+    except UserProfile.DoesNotExist:
+        return False
+    if profile.role == 'admin':
+        return True
+    if profile.role == 'staff':
+        return StaffClubRelation.objects.filter(
+            staff=profile,
+            club=club,
+            is_active=True,
+        ).exists()
+    return False
+
+
 def _build_external_url(request, path: str) -> str:
     """Build a public URL for client-facing links behind reverse proxies."""
     forwarded_proto = ''
@@ -308,6 +327,51 @@ def user_detail(request, user_id):
     return render(request, 'clubs/user_detail.html', context)
 
 
+@require_GET
+def cravatar_proxy(request, digest):
+    """同源 Cravatar 代理：服务端缓存图片并返回 immutable 缓存头。"""
+    if not re.fullmatch(r'[0-9a-f]{32}', digest or ''):
+        return HttpResponse(status=404)
+
+    try:
+        size = max(1, min(int(request.GET.get('s', 160) or 160), 2048))
+    except (TypeError, ValueError):
+        size = 160
+    default = (request.GET.get('d', 'mp') or 'mp').strip()
+    rating = (request.GET.get('r', 'g') or 'g').strip()
+    allowed_defaults = {'mp', '404', 'identicon', 'monsterid', 'wavatar', 'retro', 'robohash', 'blank'}
+    if default not in allowed_defaults:
+        default = 'mp'
+    if rating not in {'g', 'pg', 'r', 'x'}:
+        rating = 'g'
+
+    cache_key = f'cravatar:{digest}:{size}:{default}:{rating}'
+    cached = cache.get(cache_key)
+    if cached is None:
+        from urllib.error import HTTPError, URLError
+        from urllib.request import Request, urlopen
+
+        remote_url = (
+            'https://cravatar.cn/avatar/'
+            + digest
+            + '?'
+            + urllib.parse.urlencode({'s': size, 'd': default, 'r': rating})
+        )
+        remote_request = Request(remote_url, headers={'User-Agent': 'CManager/1.0'}, method='GET')
+        try:
+            with urlopen(remote_request, timeout=5) as response:
+                content = response.read()
+                content_type = response.headers.get_content_type() or 'image/png'
+        except (HTTPError, URLError, TimeoutError, OSError):
+            return HttpResponse(status=404)
+        cached = {'content': content, 'content_type': content_type}
+        cache.set(cache_key, cached, timeout=60 * 60 * 24 * 7)
+
+    response = HttpResponse(cached['content'], content_type=cached['content_type'])
+    response['Cache-Control'] = 'public, max-age=31536000, immutable'
+    return response
+
+
 def index(request):
     """首页 - 显示部门介绍、社团信息和最新公告"""
     from ..models import Department
@@ -455,6 +519,9 @@ def club_detail(request, club_id):
             is_staff = request.user.profile.role in ['staff', 'admin']
         except UserProfile.DoesNotExist:
             is_staff = False
+        can_manage_club = _can_manage_club(request.user, club)
+    else:
+        can_manage_club = False
 
     context = {
         'club': club,
@@ -462,6 +529,14 @@ def club_detail(request, club_id):
         'memberships': memberships,
         'is_president': is_president,
         'is_staff': is_staff,
+        'can_manage_club': can_manage_club,
+        'active_form_channels': (
+            externally_available_channels(
+                FormChannel.objects.filter(is_active=True).prefetch_related('fields')
+            )
+            if is_president
+            else []
+        ),
     }
     return render(request, 'clubs/club_detail.html', context)
 
@@ -2586,12 +2661,10 @@ def change_club_status(request, club_id):
     """
     改变社团的活跃状态 - 仅干事可用
     """
-    # 检查用户权限 - 仅干事和管理员可以操作
-    if not _is_staff(request.user) and not _is_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
-        return redirect('clubs:club_detail', club_id=club_id)
-
     club = get_object_or_404(Club, pk=club_id)
+    if not _can_manage_club(request.user, club):
+        messages.error(request, '您没有权限执行此操作（干事仅可管理自己负责的社团）')
+        return redirect('clubs:club_detail', club_id=club_id)
 
     if request.method == 'POST':
         new_status = request.POST.get('status', club.status)
@@ -2647,12 +2720,10 @@ def direct_edit_club_info(request, club_id):
     """
     直接修改社团信息 - 仅干事和管理员可用（无需审核）
     """
-    # 检查用户权限 - 仅干事和管理员可以操作
-    if not _is_staff(request.user) and not _is_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
-        return redirect('clubs:club_detail', club_id=club_id)
-
     club = get_object_or_404(Club, pk=club_id)
+    if not _can_manage_club(request.user, club):
+        messages.error(request, '您没有权限执行此操作（干事仅可管理自己负责的社团）')
+        return redirect('clubs:club_detail', club_id=club_id)
 
     if request.method == 'POST':
         # 获取表单数据
@@ -2711,12 +2782,10 @@ def delete_club(request, club_id):
     """
     删除社团 - 仅干事和管理员可用
     """
-    # 检查用户权限 - 仅干事和管理员可以操作
-    if not _is_staff(request.user) and not _is_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
-        return redirect('clubs:index')
-
     club = get_object_or_404(Club, pk=club_id)
+    if not _can_manage_club(request.user, club):
+        messages.error(request, '您没有权限执行此操作（干事仅可管理自己负责的社团）')
+        return redirect('clubs:club_detail', club_id=club_id)
 
     if request.method == 'POST':
         # 获取并验证用户输入的确认社团名称
@@ -4905,7 +4974,17 @@ def save_form_field(request, channel_id, field_id=None):
     except ValueError:
         field.order = 0
     if 'example_file' in request.FILES:
-        field.example_file = request.FILES['example_file']
+        example_upload = request.FILES['example_file']
+        example_error = validate_upload(
+            example_upload,
+            field_name='示例文件',
+            allowed_extensions={'.doc', '.docx', '.pdf', '.jpg', '.jpeg', '.png', '.webp'},
+            max_bytes=10 * 1024 * 1024,
+        )
+        if example_error:
+            messages.error(request, example_error)
+            return redirect('clubs:manage_form_channels_detail', channel_id=channel.id)
+        field.example_file = example_upload
     if request.POST.get('clear_example') == 'on':
         field.example_file = None
     if not field.label or not field.field_key:

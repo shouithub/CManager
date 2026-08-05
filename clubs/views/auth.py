@@ -1006,7 +1006,7 @@ def manage_department_staff(request):
     
     try:
         profile = user.profile
-        if profile.role != 'staff' or profile.staff_level != 'director':
+        if profile.staff_level != 'director':
             messages.error(request, '您没有权限访问此页面，仅部长可以管理本部门人员')
             return redirect('clubs:index')
     except UserProfile.DoesNotExist:

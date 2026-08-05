@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load static %}
 
 {% block title %}{{ channel.name }}{% endblock %}
 
@@ -358,18 +359,9 @@
                 {% endfor %}
             </div>
             {% elif field.field_type == 'file' %}
-            <label class="file-dropzone" data-file-dropzone>
-                <input type="file" name="field_{{ field.id }}" class="file-input" {% if field.required or revision_mode %}required{% endif %} {% if field.allow_multiple_files %}multiple{% endif %}>
-                <span class="file-dropzone-content">
-                    <span class="file-dropzone-icon"><span class="material-icons">upload_file</span></span>
-                    <span class="file-dropzone-title">拖拽文件到这里，或点击选择</span>
-                    <span class="file-dropzone-subtitle">{% if field.allow_multiple_files %}可一次选择多个文件{% else %}仅可上传 1 个文件{% endif %}</span>
-                    <span class="file-selected-list" data-file-list>尚未选择文件</span>
-                </span>
-            </label>
-            <div class="file-hint">
-                <span class="material-icons">info</span>允许：{{ field.allowed_extensions|join:", " }}；最大 {{ field.max_size_mb }}MB
-            </div>
+            {% with file_accept=field.allowed_extensions|join:"," %}
+            {% include 'clubs/components/_file_upload.html' with field_id='field_'|add:field.id field_name='field_'|add:field.id label=field.label is_required=field.required allowed_extensions=file_accept max_size_mb=field.max_size_mb multiple=field.allow_multiple_files %}
+            {% endwith %}
             {% else %}
             <input type="text" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" placeholder="{{ field.placeholder }}" {% if field.required or revision_mode %}required{% endif %}>
             {% endif %}
@@ -392,32 +384,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.querySelectorAll('[data-file-dropzone]').forEach((dropzone) => {
-    const input = dropzone.querySelector('.file-input');
-    const fileList = dropzone.querySelector('[data-file-list]');
-    const renderFiles = () => {
-        const names = Array.from(input.files || []).map((file) => file.name);
-        fileList.textContent = names.length ? names.join('、') : '尚未选择文件';
-    };
-
-    input.addEventListener('change', renderFiles);
-
-    ['dragenter', 'dragover'].forEach((eventName) => {
-        dropzone.addEventListener(eventName, (event) => {
-            event.preventDefault();
-            dropzone.classList.add('is-dragover');
-        });
-    });
-
-    ['dragleave', 'drop'].forEach((eventName) => {
-        dropzone.addEventListener(eventName, () => {
-            dropzone.classList.remove('is-dragover');
-            if (eventName === 'drop') {
-                window.setTimeout(renderFiles, 0);
-            }
-        });
-    });
-});
-</script>
+<script src="{% static 'js/file-upload.js' %}"></script>
 {% endblock %}

@@ -22,11 +22,14 @@ self.addEventListener('activate', event => {
     event.waitUntil(self.clients.claim());
 });
 
-function isLocalAvatarRequest(request) {
+function isCachedAvatarRequest(request) {
     if (request.method !== 'GET' || request.destination !== 'image') return false;
 
     const url = new URL(request.url);
-    return url.origin === self.location.origin && url.pathname.startsWith('/media/avatars/');
+    return url.origin === self.location.origin && (
+        url.pathname.startsWith('/media/avatars/') ||
+        url.pathname.startsWith('/cravatar/')
+    );
 }
 
 async function getCachedLocalAvatar(request) {
@@ -72,7 +75,7 @@ self.addEventListener('message', async event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (isLocalAvatarRequest(event.request)) {
+    if (isCachedAvatarRequest(event.request)) {
         event.respondWith(getCachedLocalAvatar(event.request));
         return;
     }

@@ -292,6 +292,12 @@
                                 <span class="icon"><span class="material-icons">business_center</span></span>
                                 <span>社团管理</span>
                             </a>
+                            {% if user.profile.staff_level == 'director' and user.profile.department %}
+                            <a href="{% url 'clubs:manage_department_staff' %}" class="sidebar-menu-item">
+                                <span class="icon"><span class="material-icons">supervisor_account</span></span>
+                                <span>部门管理</span>
+                            </a>
+                            {% endif %}
                         {% elif not is_president_identity and user.profile.role == 'staff' %}
                             <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">business_center</span></span>

@@ -1,23 +1,36 @@
 {% comment %}
-通用文件上传组件
-使用方式: 
-{% include 'clubs/components/_file_upload.html' with 
-    field_name="form_field_name" 
-    label="显示名称" 
-    is_required=True/False 
-    allowed_extensions=".doc,.docx,.pdf" 
-    description="帮助文本" 
-    existing_file=existing_file_obj 
-    icon="icon_name" 
+标准文件上传组件（Material Design 风格，全站统一）。
+用法：
+{% include 'clubs/components/_file_upload.html' with
+    field_id='field_12'            # 输入框/容器 id（默认取 field_name）
+    field_name='field_12'          # 表单提交字段名（必填）
+    label='上传附件'                # 显示名称
+    is_required=True/False
+    allowed_extensions='.doc,.docx,.pdf'   # 字符串，用于 accept 与提示
     max_size_mb=10
+    multiple=True/False
+    description='帮助文本'
+    existing_file=file_obj         # 编辑时显示当前文件
+    icon='attach_file'
+    input_id='id_image'            # 覆盖输入框 id（页面需要挂钩时）
+    input_class='carousel-file-input'  # 追加到输入框的类名
+    simple=True                    # 仅输出隐藏输入框，预览/拖拽交给页面自行实现
 %}
+页面末尾引入 static/js/file-upload.js。
 {% endcomment %}
 
-<div class="file-upload-component" id="container_{{ field_id|default:field_name }}">
-    <label class="upload-label" for="{{ field_id|default:field_name }}">
-        <span class="material-icons component-icon">
-            {% if icon %}{{ icon }}{% else %}cloud_upload{% endif %}
-        </span>
+{% if simple %}
+<input type="file"
+       id="{% if input_id %}{{ input_id }}{% elif field_id %}{{ field_id }}{% else %}{{ field_name }}{% endif %}"
+       name="{{ field_name }}"
+       class="file-input {% if input_class %}{{ input_class }}{% endif %}"
+       {% if allowed_extensions %}accept="{{ allowed_extensions }}"{% endif %}
+       {% if multiple %}multiple{% endif %}
+       {% if is_required and not existing_file %}required{% endif %}>
+{% else %}
+<div class="file-upload-component" id="container_{% if field_id %}{{ field_id }}{% else %}{{ field_name }}{% endif %}">
+    <label class="upload-label" for="{% if input_id %}{{ input_id }}{% elif field_id %}{{ field_id }}{% else %}{{ field_name }}{% endif %}">
+        <span class="material-icons component-icon">{{ icon|default:'cloud_upload' }}</span>
         <span class="label-text">{{ label }}</span>
         {% if is_required %}
         <span class="required-mark">*</span>
@@ -31,32 +44,24 @@
             <span class="material-icons placeholder-icon">add_circle_outline</span>
             <div class="placeholder-content">
                 <div class="placeholder-text">
-                    <span class="desktop-text">点击或拖拽文件至此</span>
+                    <span class="desktop-text">点击或拖拽{% if multiple %}多个文件{% endif %}至此</span>
                     <span class="mobile-text">点击选择文件</span>
                 </div>
                 <div class="upload-hint">
-                    {% if allowed_extensions %}支持格式: {{ allowed_extensions }} {% endif %}
-                    {% if max_size_mb %}(最大 {{ max_size_mb }}MB){% endif %}
+                    {% if allowed_extensions %}支持格式：{{ allowed_extensions }}{% endif %}
+                    {% if max_size_mb %}（最大 {{ max_size_mb }}MB）{% endif %}
                 </div>
             </div>
         </div>
-        
-        <div class="file-preview" style="display: none;">
-            <span class="material-icons file-icon">insert_drive_file</span>
-            <div class="file-info">
-                <span class="file-name"></span>
-                <span class="file-size"></span>
-            </div>
-            <button type="button" class="remove-btn" title="移除文件">
-                <span class="material-icons">close</span>
-            </button>
-        </div>
 
-        <input type="file" 
-               id="{{ field_id|default:field_name }}" 
-               name="{{ field_name }}" 
-               class="file-input" 
+        <div class="file-preview-list" style="display: none;"></div>
+
+        <input type="file"
+               id="{{ input_id|default:field_id|default:field_name }}"
+               name="{{ field_name }}"
+               class="file-input {% if input_class %}{{ input_class }}{% endif %}"
                {% if allowed_extensions %}accept="{{ allowed_extensions }}"{% endif %}
+               {% if multiple %}multiple{% endif %}
                {% if is_required and not existing_file %}required{% endif %}>
     </div>
 
@@ -65,10 +70,10 @@
     {% endif %}
 
     {% if template_url %}
-    <div class="template-download-info" style="display: flex; align-items: center; gap: var(--md3-spacing-xs); margin-top: var(--md3-spacing-xs);">
-        <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-primary);">download</span>
-        <a href="{{ template_url }}" download class="template-link" style="color: var(--md3-primary); text-decoration: none; font-size: 0.875rem; font-weight: 500;">
-            下载模板{% if template_name %}: {{ template_name }}{% endif %}
+    <div class="template-download-info">
+        <span class="material-icons">download</span>
+        <a href="{{ template_url }}" download class="template-link">
+            下载模板{% if template_name %}：{{ template_name }}{% endif %}
         </a>
     </div>
     {% endif %}
@@ -76,13 +81,14 @@
     {% if existing_file %}
     <div class="existing-file-info">
         <span class="material-icons">check_circle</span>
-        <span>当前文件: </span>
+        <span>当前文件：</span>
         <a href="{{ existing_file.url }}" target="_blank" class="existing-file-link">
             {{ existing_file.name }}
         </a>
     </div>
     {% endif %}
 </div>
+{% endif %}
 
 <style>
     .file-upload-component {
@@ -101,16 +107,8 @@
         cursor: pointer;
     }
 
-    .component-icon {
-        color: var(--md3-primary);
-        font-size: 1.25rem;
-    }
-
-    .required-mark {
-        color: var(--md3-error);
-        margin-left: 4px;
-    }
-
+    .component-icon { color: var(--md3-primary); font-size: 1.25rem; }
+    .required-mark { color: var(--md3-error); margin-left: 4px; }
     .optional-mark {
         color: var(--md3-on-surface-variant);
         font-size: 0.8125rem;
@@ -120,310 +118,127 @@
 
     .upload-area {
         position: relative;
-        background: var(--md3-surface-container-highest);
-        border: 2px dashed var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
-        padding: var(--md3-spacing-lg);
-        text-align: center;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1.5px dashed var(--md3-outline);
+        border-radius: var(--md3-radius-xl);
+        background: var(--md3-surface-container-low);
         cursor: pointer;
+        transition: border-color 160ms ease, background-color 160ms ease;
         overflow: hidden;
-        min-height: 120px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
     }
 
-    .upload-area:hover, .upload-area.drag-over {
-        background: var(--md3-surface-container-high);
-        border-color: var(--md3-primary);
-    }
-
+    .upload-area:hover,
     .upload-area.drag-over {
+        border-color: var(--md3-primary);
         background: var(--md3-primary-container);
     }
 
     .upload-placeholder {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 4px;
-        width: 100%;
-        pointer-events: none;
+        gap: var(--md3-spacing-lg);
+        padding: 22px 18px;
+        text-align: left;
     }
 
-    .placeholder-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
-    }
+    .placeholder-icon { color: var(--md3-primary); font-size: 1.75rem; flex: 0 0 auto; }
 
-    .placeholder-icon {
-        font-size: 2rem;
-        color: var(--md3-on-surface-variant);
-        opacity: 0.6;
-        margin-bottom: 4px;
-    }
-
-    .upload-area:hover .placeholder-icon {
-        color: var(--md3-primary);
-        opacity: 1;
-    }
-
-    .placeholder-text {
-        font-weight: 500;
-        color: var(--md3-on-surface);
-    }
-
+    .placeholder-text { font-weight: 600; color: var(--md3-on-surface); }
     .mobile-text { display: none; }
 
-    .upload-hint {
-        font-size: 0.75rem;
-        color: var(--md3-on-surface-variant);
-        margin-top: 4px;
+    .upload-hint { margin-top: 5px; color: var(--md3-on-surface-variant); font-size: 0.78rem; }
+
+    .file-preview-list {
+        display: grid;
+        gap: 8px;
+        padding: 12px;
     }
 
-    .file-input {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        cursor: pointer;
-        z-index: 10; /* Ensure it's on top */
-    }
-
-    .file-preview {
+    .file-preview-item {
         display: flex;
         align-items: center;
-        gap: var(--md3-spacing-md);
-        width: 100%;
-        background: var(--md3-secondary-container);
-        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
-        border-radius: var(--md3-radius-md);
-        z-index: 20; /* Above input when visible */
-        position: relative;
-        pointer-events: auto;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface-container-high);
     }
 
-    .file-icon {
-        color: var(--md3-on-secondary-container);
-    }
+    .file-preview-icon { color: var(--md3-primary); flex: 0 0 auto; }
 
-    .file-info {
+    .file-preview-info {
+        display: grid;
+        min-width: 0;
+        gap: 2px;
         flex: 1;
-        text-align: left;
-        overflow: hidden;
     }
 
-    .file-name {
-        display: block;
-        font-weight: 500;
-        color: var(--md3-on-secondary-container);
-        white-space: nowrap;
+    .file-preview-name {
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--md3-on-surface);
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .file-preview-size { color: var(--md3-on-surface-variant); font-size: 0.75rem; }
+
+    .file-preview-remove {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        cursor: pointer;
+        flex: 0 0 auto;
+    }
+
+    .file-preview-remove .material-icons { font-size: 1rem; }
+
+    .file-input { display: none; }
+
+    .field-description { margin: 8px 0 0; color: var(--md3-on-surface-variant); font-size: 0.8125rem; }
+
+    .template-download-info {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        margin-top: var(--md3-spacing-xs);
+        color: var(--md3-primary);
         font-size: 0.875rem;
     }
 
-    .file-size {
-        display: block;
-        font-size: 0.75rem;
-        color: var(--md3-on-secondary-container);
-        opacity: 0.8;
-    }
-
-    .remove-btn {
-        background: none;
-        border: none;
-        color: var(--md3-on-secondary-container);
-        cursor: pointer;
-        padding: 4px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-        z-index: 30; /* Top most */
-    }
-
-    .remove-btn:hover {
-        background: rgba(0,0,0,0.1);
-    }
-
-    .field-description {
-        font-size: 0.75rem;
-        color: var(--md3-on-surface-variant);
-        margin: var(--md3-spacing-xs) 0 0 0;
-        padding-left: 4px;
-    }
-
-    .existing-file-info {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 8px;
-        font-size: 0.8125rem;
-        color: var(--md3-primary);
-        background: var(--md3-surface-container);
-        padding: 6px 12px;
-        border-radius: var(--md3-radius-sm);
-        border: 1px solid var(--md3-outline-variant);
-    }
-    
-    .existing-file-link {
+    .template-link {
         color: var(--md3-primary);
         text-decoration: none;
         font-weight: 500;
     }
 
-    .existing-file-link:hover {
-        text-decoration: underline;
+    .existing-file-info {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        margin-top: var(--md3-spacing-xs);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.8125rem;
     }
 
-    @media (max-width: 600px) {
+    .existing-file-info .material-icons { color: var(--md3-primary); font-size: 1rem; }
+
+    .existing-file-link {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--md3-primary);
+        text-decoration: none;
+    }
+
+    @media (max-width: 480px) {
         .desktop-text { display: none; }
         .mobile-text { display: inline; }
-        
-        .upload-area {
-            padding: 12px 16px;
-            min-height: 100px;
-            background: var(--md3-surface);
-        }
-
-        .upload-placeholder {
-            flex-direction: row;
-            align-items: center;
-            gap: 16px;
-            text-align: left;
-        }
-
-        .placeholder-content {
-            align-items: flex-start;
-            gap: 0;
-        }
-        
-        .placeholder-icon {
-            font-size: 1.5rem;
-            margin-bottom: 0;
-            color: var(--md3-primary);
-            opacity: 1;
-        }
-
-        .placeholder-text {
-            font-size: 0.9375rem;
-        }
     }
 </style>
-
-<script>
-(function() {
-    const containerId = "container_{{ field_id|default:field_name }}";
-    const container = document.getElementById(containerId);
-    
-    // Safety check: if container not found, likely ID conflict or DOM issue
-    if (!container) {
-        console.warn('File upload container not found:', containerId);
-        return;
-    }
-
-    const input = container.querySelector('.file-input');
-    const uploadArea = container.querySelector('.upload-area');
-    const placeholder = container.querySelector('.upload-placeholder');
-    const preview = container.querySelector('.file-preview');
-    const fileName = container.querySelector('.file-name');
-    const fileSize = container.querySelector('.file-size');
-    const removeBtn = container.querySelector('.remove-btn');
-
-    if (!input || !uploadArea || !placeholder || !preview || !removeBtn) return;
-
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 B';
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    function updateDisplay(file) {
-        if (file) {
-            fileName.textContent = file.name;
-            fileSize.textContent = formatFileSize(file.size);
-            placeholder.style.display = 'none';
-            preview.style.display = 'flex';
-            uploadArea.classList.add('has-file');
-            // Hide input so it doesn't block the preview area clicks (except remove btn)
-            // Actually we keep it but maybe adjust z-index if needed.
-            // But we want to allow re-clicking to change file? 
-            // If we want to allow change, we keep input on top or handle click on preview.
-            // Let's keep input accessible but maybe moved or sized differently?
-            // Current CSS puts input on top (z-index 10) but preview on z-index 20.
-            // So preview covers input. Clicking preview does nothing unless we handle it.
-        } else {
-            fileName.textContent = '';
-            fileSize.textContent = '';
-            placeholder.style.display = 'flex';
-            preview.style.display = 'none';
-            uploadArea.classList.remove('has-file');
-            input.value = ''; // Clear input value
-        }
-    }
-
-    // Input change handler
-    input.addEventListener('change', function(e) {
-        if (this.files && this.files.length > 0) {
-            updateDisplay(this.files[0]);
-        } else {
-            updateDisplay(null);
-        }
-    });
-
-    // Remove button handler
-    removeBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation(); // Stop bubbling
-        updateDisplay(null);
-    });
-    
-    // Allow clicking on preview to re-select file (optional UX)
-    preview.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-btn')) return;
-        input.click();
-    });
-
-    // Drag and drop visual feedback
-    uploadArea.addEventListener('dragenter', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadArea.classList.add('drag-over');
-    });
-
-    uploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadArea.classList.add('drag-over');
-    });
-
-    uploadArea.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadArea.classList.remove('drag-over');
-    });
-
-    uploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadArea.classList.remove('drag-over');
-        
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            input.files = e.dataTransfer.files;
-            // Trigger change event manually
-            const event = new Event('change', { bubbles: true });
-            input.dispatchEvent(event);
-        }
-    });
-})();
-</script>

@@ -598,6 +598,30 @@ a:focus-visible {
     color: var(--md3-on-warning);
 }
 
+/* 独立按钮变体（未带 .btn 类时）也使用 flex 居中，避免图标与文字基线错位 */
+.btn-primary, .btn-secondary, .btn-tertiary, .btn-success, .btn-danger,
+.btn-error, .btn-warning, .btn-outlined, .btn-text, .btn-md3 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    vertical-align: middle;
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+}
+
+.btn-primary .material-icons, .btn-secondary .material-icons,
+.btn-tertiary .material-icons, .btn-success .material-icons,
+.btn-danger .material-icons, .btn-error .material-icons,
+.btn-warning .material-icons, .btn-outlined .material-icons,
+.btn-text .material-icons, .btn-md3 .material-icons {
+    flex: 0 0 auto;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
 /* Info Button */
 .btn-info {
     background-color: var(--md3-info);

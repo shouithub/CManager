@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load static %}
 
 {% block title %}发布公告{% endblock %}
 
@@ -447,14 +448,7 @@
             </div>
             
             <div class="form-group">
-                <label for="attachment" class="form-label">附件（可选）</label>
-                <input 
-                    type="file" 
-                    id="attachment" 
-                    name="attachment"
-                    class="form-file"
-                >
-                <small class="form-hint">支持上传各种类型的文件，如文档、图片等。</small>
+                {% include 'clubs/components/_file_upload.html' with field_id='attachment' field_name='attachment' label='附件（可选）' is_required=False allowed_extensions='.jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xlsx,.csv,.zip' max_size_mb=20 description='支持文档、图片等常见文件。' %}
             </div>
             
             <div class="form-group">
@@ -540,4 +534,5 @@
     {% endif %}
 </div>
 
+<script src="{% static 'js/file-upload.js' %}"></script>
 {% endblock %}

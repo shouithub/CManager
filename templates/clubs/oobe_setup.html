@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load static %}
 
 {% block title %}初始化向导{% endblock %}
 
@@ -766,13 +767,6 @@
                 <input type="file" id="site_logo" name="site_logo" accept=".ico,.png,.jpg,.jpeg,.webp">
                 <div id="logoFileName" class="oobe-file-name" style="display:none;"></div>
             </div>
-            <div class="oobe-crop-wrap" id="logoCropWrap">
-                <img id="logoCropImage" class="oobe-crop-canvas" alt="待裁剪网站 Logo">
-                <div class="oobe-field" style="margin-top:12px; max-width:280px; margin-left:auto; margin-right:auto;">
-                    <label>缩放</label>
-                    <input type="range" id="logoCropZoom" min="1" max="3" step="0.01" value="1">
-                </div>
-            </div>
         </div>
 
         <div class="oobe-actions">
@@ -842,6 +836,8 @@
 </template>
 
 {% include 'clubs/components/_cropper_script.html' %}
+{% include 'clubs/components/_cropper_upload.html' %}
+<script src="{% static 'js/cropper-upload.js' %}"></script>
 <script>
 (function() {
     const form = document.querySelector('.oobe-form');
@@ -969,18 +965,11 @@
         if (step === 3) {
             const logoInput = section.querySelector('#site_logo');
             const fileName = section.querySelector('#logoFileName');
-            const cropWrap = section.querySelector('#logoCropWrap');
-            const cropImage = section.querySelector('#logoCropImage');
-            const zoom = section.querySelector('#logoCropZoom');
-            let cropper = null;
-            let objectUrl = null;
 
             const dropZone = section.querySelector('#logoDropZone');
 
             // 点击上传区域触发文件选择
             dropZone.addEventListener('click', (e) => {
-                // 避免在拖拽 canvas 内的元素时误触发
-                if (e.target.closest('#logoCropWrap')) return;
                 logoInput.click();
             });
 
@@ -1016,35 +1005,24 @@
                     fileName.style.display = 'block';
                 } else {
                     fileName.style.display = 'none';
-                }
-                if (!file) {
-                    cropWrap.style.display = 'none';
                     return;
                 }
-                if (cropper) cropper.destroy();
-                if (objectUrl) URL.revokeObjectURL(objectUrl);
-                objectUrl = URL.createObjectURL(file);
-                cropImage.src = objectUrl;
-                cropWrap.style.display = 'block';
-                cropper = new Cropper(cropImage, {
+                if (!window.CManagerCropper) return;
+                CManagerCropper.open({
+                    image: file,
                     aspectRatio: 1,
-                    viewMode: 1,
-                    dragMode: 'move',
-                    autoCropArea: 1,
-                    background: false,
-                    responsive: true,
-                    ready: () => {
-                        const data = cropper.getImageData();
-                        const ratio = data.width / data.naturalWidth;
-                        zoom.min = ratio.toFixed(4);
-                        zoom.max = (ratio * 3).toFixed(4);
-                        zoom.value = ratio.toFixed(4);
-                    },
+                    outputWidth: 512,
+                    outputHeight: 512,
+                    format: 'image/png',
+                    quality: 0.9,
+                    onDone: (blob) => {
+                        const dt = new DataTransfer();
+                        dt.items.add(new File([blob], 'site_logo.png', { type: 'image/png' }));
+                        logoInput.files = dt.files;
+                        fileName.textContent = 'site_logo.png（已裁剪）';
+                        fileName.style.display = 'block';
+                    }
                 });
-            });
-
-            zoom.addEventListener('input', () => {
-                if (cropper) cropper.zoomTo(parseFloat(zoom.value));
             });
 
             const nextBtn = section.querySelector('[data-next-step]');
@@ -1060,26 +1038,7 @@
                     return;
                 }
 
-                if (!cropper) return;
                 e.preventDefault();
-
-                const croppedBlob = await new Promise((resolve) => {
-                    cropper.getCroppedCanvas({
-                        width: 512,
-                        height: 512,
-                        imageSmoothingEnabled: true,
-                        imageSmoothingQuality: 'high',
-                    }).toBlob((blob) => resolve(blob), 'image/png');
-                });
-                if (croppedBlob) {
-                    const dt = new DataTransfer();
-                    const croppedFile = new File([croppedBlob], 'site_logo.png', { type: 'image/png' });
-                    dt.items.add(croppedFile);
-                    logoInput.files = dt.files;
-                    fileName.textContent = 'site_logo.png（已裁剪）';
-                    fileName.style.display = 'block';
-                }
-
                 if (!validateStep(section)) return;
                 retainCurrentStepInputs(section);
                 section.remove();

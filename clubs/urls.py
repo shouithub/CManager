@@ -32,6 +32,7 @@ urlpatterns = [
     
     # 认证相关
     path('login/', auth_views.user_login, name='login'),
+    path('cravatar/<str:digest>/', views.cravatar_proxy, name='cravatar_proxy'),
     path('register/', auth_views.register, name='register'),
     path('logout/', auth_views.user_logout, name='logout'),
     path('identity/switch/', auth_views.switch_identity, name='switch_identity'),

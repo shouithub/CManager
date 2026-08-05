@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load static %}
 
 {% block title %}编辑公告 - CManager{% endblock %}
 
@@ -494,19 +495,7 @@
             </div>
 
             <div class="md3-field">
-                <label for="attachment">附件</label>
-                <input
-                    type="file"
-                    id="attachment"
-                    name="attachment"
-                    class="md3-input"
-                >
-                {% if announcement.attachment %}
-                <div class="attachment-current">
-                    <span class="material-icons">attach_file</span>
-                    <a href="{{ announcement.attachment.url }}" target="_blank" rel="noopener">{{ announcement.attachment.name }}</a>
-                </div>
-                {% endif %}
+                {% include 'clubs/components/_file_upload.html' with field_id='attachment' field_name='attachment' label='附件' is_required=False allowed_extensions='.jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xlsx,.csv,.zip' max_size_mb=20 existing_file=announcement.attachment %}
             </div>
 
             <div class="md3-actions">
@@ -525,6 +514,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/file-upload.js' %}"></script>
 <script>
     (function () {
         const expiresInput = document.getElementById('expires_at');

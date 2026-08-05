@@ -12,7 +12,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 import urllib.parse
 
-from ..models import RoomBooking, Room, FormSubmission, PublishedActivity
+from ..models import RoomBooking, Room, TimeSlot, FormSubmission, PublishedActivity
 from ..permissions import has_any_role
 
 
@@ -53,10 +53,12 @@ def export_room_bookings_weekly(request):
     week_start_str = request.GET.get('week_start')
     if week_start_str:
         try:
-            week_start = datetime.strptime(week_start_str, '%Y-%m-%d').date()
+            chosen_date = datetime.strptime(week_start_str, '%Y-%m-%d').date()
         except ValueError:
             messages.error(request, '无效的日期格式')
             return redirect('clubs:room_calendar')
+        # 无论选择周几，都归一到该周的周一作为周起始
+        week_start = chosen_date - timedelta(days=chosen_date.weekday())
     else:
         # 默认为当前周
         today = timezone.now().date()
@@ -64,19 +66,30 @@ def export_room_bookings_weekly(request):
     
     week_end = week_start + timedelta(days=6)
     
-    # 定义时间段
-    time_slots = [
-        {'start': time(8, 15), 'end': time(9, 55), 'label': '第1-2节(8:15-9:55)'},
-        {'start': time(10, 5), 'end': time(11, 40), 'label': '第3-4节(10:05-11:40)'},
-        {'start': time(11, 40), 'end': time(13, 0), 'label': '午休(11:40-13:00)'},
-        {'start': time(13, 0), 'end': time(14, 35), 'label': '第5-6节(13:00-14:35)'},
-        {'start': time(14, 45), 'end': time(16, 20), 'label': '第7-8节(14:45-16:20)'},
-        {'start': time(16, 20), 'end': time(18, 0), 'label': '课外时间(16:20-18:00)'},
-        {'start': time(18, 0), 'end': time(19, 0), 'label': '晚餐(18:00-19:00)'},
-        {'start': time(19, 0), 'end': time(20, 0), 'label': '晚间1(19:00-20:00)'},
-        {'start': time(20, 0), 'end': time(21, 0), 'label': '晚间2(20:00-21:00)'},
-        {'start': time(21, 0), 'end': time(22, 0), 'label': '晚间3(21:00-22:00)'},
-    ]
+    # 时间段使用管理员配置的启用时间段；未配置时回退到默认时段
+    configured_slots = list(TimeSlot.objects.filter(is_active=True).order_by('start_time', 'id'))
+    if configured_slots:
+        time_slots = [
+            {
+                'start': slot.start_time,
+                'end': slot.end_time,
+                'label': f'{slot.label} ({slot.start_time.strftime("%H:%M")}-{slot.end_time.strftime("%H:%M")})',
+            }
+            for slot in configured_slots
+        ]
+    else:
+        time_slots = [
+            {'start': time(8, 15), 'end': time(9, 55), 'label': '第1-2节(8:15-9:55)'},
+            {'start': time(10, 5), 'end': time(11, 40), 'label': '第3-4节(10:05-11:40)'},
+            {'start': time(11, 40), 'end': time(13, 0), 'label': '午休(11:40-13:00)'},
+            {'start': time(13, 0), 'end': time(14, 35), 'label': '第5-6节(13:00-14:35)'},
+            {'start': time(14, 45), 'end': time(16, 20), 'label': '第7-8节(14:45-16:20)'},
+            {'start': time(16, 20), 'end': time(18, 0), 'label': '课外时间(16:20-18:00)'},
+            {'start': time(18, 0), 'end': time(19, 0), 'label': '晚餐(18:00-19:00)'},
+            {'start': time(19, 0), 'end': time(20, 0), 'label': '晚间1(19:00-20:00)'},
+            {'start': time(20, 0), 'end': time(21, 0), 'label': '晚间2(20:00-21:00)'},
+            {'start': time(21, 0), 'end': time(22, 0), 'label': '晚间3(21:00-22:00)'},
+        ]
     
     # 获取该周的所有有效预约
     bookings = RoomBooking.objects.filter(

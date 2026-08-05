@@ -1,4 +1,5 @@
 {% extends "clubs/base.html" %}
+{% load static %}
 
 
 
@@ -472,150 +473,6 @@
 
 
     gap: var(--md3-spacing-lg);
-
-
-}
-
-
-
-
-
-/* 裁剪器 */
-
-
-.ia-cropper-wrap {
-
-
-    display: flex;
-
-
-    flex-direction: column;
-
-
-    align-items: center;
-
-
-    gap: var(--md3-spacing-md);
-
-
-    padding: var(--md3-spacing-lg);
-
-
-    background: var(--md3-surface-container-lowest);
-
-
-    border-radius: var(--md3-radius-lg);
-
-
-    border: 1px solid var(--md3-outline-variant);
-
-
-}
-
-
-.ia-cropper-canvas {
-
-
-    width: 200px;
-
-
-    height: 200px;
-
-
-    border-radius: var(--md3-radius-md);
-
-
-    overflow: hidden;
-
-
-    border: 1px solid var(--md3-outline-variant);
-
-
-}
-
-
-.ia-cropper-canvas img {
-
-
-    display: block;
-
-
-}
-
-
-.ia-range-wrap {
-
-
-    width: 100%;
-
-
-    display: flex;
-
-
-    align-items: center;
-
-
-    gap: var(--md3-spacing-sm);
-
-
-}
-
-
-.ia-range-wrap .material-icons {
-
-
-    font-size: 1rem;
-
-
-    color: var(--md3-on-surface-variant);
-
-
-}
-
-
-.ia-range-wrap input[type=range] {
-
-
-    flex: 1;
-
-
-    -webkit-appearance: none;
-
-
-    height: 4px;
-
-
-    border-radius: 2px;
-
-
-    background: var(--md3-secondary-container);
-
-
-    cursor: pointer;
-
-
-}
-
-
-.ia-range-wrap input[type=range]::-webkit-slider-thumb {
-
-
-    -webkit-appearance: none;
-
-
-    width: 16px; height: 16px;
-
-
-    border-radius: 50%;
-
-
-    background: var(--md3-primary);
-
-
-    cursor: pointer;
-
-
-    margin-top: -6px;
 
 
 }
@@ -1137,59 +994,6 @@
 
 
             </div>
-
-
-            <!-- 裁剪器 -->
-
-
-            <div id="ia-cropper-wrap" class="ia-cropper-wrap" style="display:none;">
-
-
-              <div class="ia-cropper-canvas">
-
-
-                <img id="ia-cropper-image" alt="待裁剪站点图标">
-
-
-              </div>
-
-
-              <div class="ia-range-wrap">
-
-
-                <span class="material-icons">zoom_out</span>
-
-
-                <input type="range" id="ia-cropper-zoom" min="1" max="3" step="0.01" value="1">
-
-
-                <span class="material-icons">zoom_in</span>
-
-
-              </div>
-
-
-              <div class="ia-helper">拖动图片调整位置，滑块调整缩放</div>
-
-
-            </div>
-
-
-            <div class="ia-actions" style="border-top:none;margin-top:var(--md3-spacing-md);padding-top:0;">
-
-
-              <button type="submit" class="btn btn-filled">
-
-
-                <span class="material-icons">upload</span>上传更新图标
-
-
-              </button>
-
-
-            </div>
-
-
           </form>
 
 
@@ -1625,77 +1429,47 @@
 
 
 {% include 'clubs/components/_cropper_script.html' %}
+{% include 'clubs/components/_cropper_upload.html' %}
+<script src="{% static 'js/cropper-upload.js' %}"></script>
 <script>
+// 站点图标裁剪（统一走共享 CManagerCropper 组件）
 (function () {
   var input = document.getElementById('favicon-input');
-  var wrap = document.getElementById('ia-cropper-wrap');
-  var image = document.getElementById('ia-cropper-image');
-  var zoom = document.getElementById('ia-cropper-zoom');
   var form = document.getElementById('favicon-form');
-  if (!input || !wrap || !image || !zoom || !form || !window.Cropper) return;
-
-  var cropper = null;
-  var objectUrl = null;
+  if (!input) return;
 
   input.addEventListener('change', function () {
     var file = input.files && input.files[0];
-    if (!file) {
-      wrap.style.display = 'none';
-      return;
-    }
-    if (cropper) cropper.destroy();
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
-    objectUrl = URL.createObjectURL(file);
-    image.src = objectUrl;
-    wrap.style.display = 'flex';
-    cropper = new Cropper(image, {
+    if (!file) return;
+    if (!window.CManagerCropper) return;
+    CManagerCropper.open({
+      image: file,
       aspectRatio: 1,
-      viewMode: 1,
-      dragMode: 'move',
-      autoCropArea: 1,
-      background: false,
-      ready: function () {
-        var data = cropper.getImageData();
-        var ratio = data.width / data.naturalWidth;
-        zoom.min = ratio.toFixed(4);
-        zoom.max = (ratio * 3).toFixed(4);
-        zoom.value = ratio.toFixed(4);
-      }
+      outputWidth: 512,
+      outputHeight: 512,
+      format: 'image/png',
+      quality: 0.9,
+      onDone: uploadFavicon
     });
   });
 
-  zoom.addEventListener('input', function () {
-    if (cropper) cropper.zoomTo(parseFloat(zoom.value));
-  });
-
-  form.addEventListener('submit', function (event) {
-    if (!cropper) return;
-    event.preventDefault();
-    cropper.getCroppedCanvas({
-      width: 512,
-      height: 512,
-      imageSmoothingEnabled: true,
-      imageSmoothingQuality: 'high'
-    }).toBlob(function (blob) {
-      if (!blob) {
-        form.submit();
-        return;
-      }
-      var data = new FormData();
-      var csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
-      if (csrf) data.append('csrfmiddlewaretoken', csrf.value);
-      data.append('favicon', blob, 'favicon.png');
-      fetch(form.action || location.href, {
-        method: 'POST',
-        body: data,
-        headers: { 'X-CSRFToken': csrf ? csrf.value : '' }
-      }).then(function (response) {
-        if (response.ok) location.reload();
-        else form.submit();
-      }).catch(function () { form.submit(); });
-    }, 'image/png');
-  });
+  function uploadFavicon(blob, dataUrl) {
+    var data = new FormData();
+    var csrf = form ? form.querySelector('input[name="csrfmiddlewaretoken"]') : null;
+    if (csrf) data.append('csrfmiddlewaretoken', csrf.value);
+    data.append('favicon', blob, 'favicon.png');
+    fetch(window.location.href, {
+      method: 'POST',
+      body: data,
+      headers: { 'X-CSRFToken': csrf ? csrf.value : '' }
+    }).then(function () {
+      window.location.reload();
+    }).catch(function () {
+      window.location.reload();
+    });
+  }
 })();
+
 </script>
 
 <script>

@@ -632,7 +632,7 @@
     {% endif %}
 
     <!-- 快速操作 -->
-    {% if is_president or is_staff or user.is_superuser %}
+    {% if active_form_channels or can_manage_club %}
     <div class="detail-card">
         <div class="detail-card-header">
             <span class="material-icons">bolt</span>
@@ -640,14 +640,23 @@
         </div>
         <div class="action-grid">
             {% if is_president %}
-                <!-- 社长操作 -->
                 {% for channel in active_form_channels %}
                 <a href="{% url 'clubs:submit_dynamic_form' channel.slug club.id %}" class="action-btn btn-primary">
                     <span class="material-icons">{{ channel.icon }}</span>{{ channel.name }}
                 </a>
                 {% endfor %}
             {% endif %}
-
+            {% if can_manage_club %}
+                <a href="{% url 'clubs:direct_edit_club_info' club.id %}" class="action-btn btn-primary">
+                    <span class="material-icons">edit</span>修改资料
+                </a>
+                <a href="{% url 'clubs:change_club_status' club.id %}" class="action-btn btn-outline">
+                    <span class="material-icons">toggle_on</span>更改状态
+                </a>
+                <a href="{% url 'clubs:delete_club' club.id %}" class="action-btn btn-outline">
+                    <span class="material-icons">delete</span>删除社团
+                </a>
+            {% endif %}
         </div>
     </div>
     {% endif %}

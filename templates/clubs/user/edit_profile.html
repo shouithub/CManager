@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load static %}
 {% load common_tags %}
 
 {% block title %}个人中心{% endblock %}
@@ -480,7 +481,6 @@
               action="{% url 'clubs:edit_profile' %}">
             {% csrf_token %}
             <input type="hidden" name="action" value="upload_avatar">
-            <input type="hidden" name="avatar_base64" id="avatar-base64">
             
             <div class="avatar-preview-container">
                 <!-- 当前头像展示 -->
@@ -494,17 +494,6 @@
                     {{ profile.real_name|first }}
                 </div>
                 
-                <!-- 裁剪区域 (初始隐藏) -->
-                <div id="cropper-wrapper" style="display: none; width: 100%;">
-                    <div class="avatar-cropper-frame">
-                        <img id="cropper-image" alt="待裁剪头像">
-                    </div>
-                    <div class="cropper-controls">
-                        <label class="form-label" style="text-align: center;">缩放图片</label>
-                        <input type="range" id="cropper-zoom" min="1" max="3" step="0.01" value="1" class="form-control" style="padding: 0;">
-                    </div>
-                </div>
-                
                 <p style="color: var(--md3-on-surface-variant); margin: 0; text-align: center;">支持 JPG、PNG、WebP，上传前会自动裁剪并压缩</p>
                 
                 <div class="file-input-wrapper">
@@ -516,13 +505,7 @@
                 </div>
             </div>
             
-            <div style="margin-top: 32px; text-align: right;">
-                <button type="submit" class="btn-primary" id="save-avatar-btn">
-                    <span class="material-icons">cloud_upload</span>
-                    上传头像
-                </button>
-                <div id="avatar-upload-status" class="avatar-upload-status" role="status" aria-live="polite"></div>
-            </div>
+            <div id="avatar-upload-status" class="avatar-upload-status" role="status" aria-live="polite" style="margin-top:16px;"></div>
         </form>
     </div>
 
@@ -659,25 +642,13 @@
         }
     });
 
-    // 头像裁剪逻辑
-    (function() {
+    // 头像裁剪逻辑（统一走共享 CManagerCropper 组件）
+    (function () {
         var input = document.getElementById('avatar-input');
-        var wrapper = document.getElementById('cropper-wrapper');
-        var image = document.getElementById('cropper-image');
-        var zoom = document.getElementById('cropper-zoom');
-        var form = document.getElementById('avatar-form');
         var currentView = document.getElementById('current-avatar-view');
         var currentAvatarImage = currentView ? currentView.querySelector('img') : null;
         var placeholder = document.getElementById('avatar-placeholder');
-        var base64Input = document.getElementById('avatar-base64');
-        var submitButton = document.getElementById('save-avatar-btn');
         var uploadStatus = document.getElementById('avatar-upload-status');
-        
-        if (!input || !wrapper || !image || !zoom || !form || !window.Cropper) {
-            return;
-        }
-        var cropper = null;
-        var objectUrl = null;
         var isSubmitting = false;
 
         function setUploadStatus(message, isError) {
@@ -685,160 +656,96 @@
             uploadStatus.textContent = message || '';
             uploadStatus.classList.toggle('is-error', Boolean(isError));
         }
-        
-        input.addEventListener('change', function() {
-            var file = input.files && input.files[0];
-            if (!file) {
-                return;
-            }
 
+        input.addEventListener('change', function () {
+            var file = input.files && input.files[0];
+            if (!file) return;
             if (file.size > 20 * 1024 * 1024) {
                 input.value = '';
                 setUploadStatus('图片不能超过 20 MB，请选择较小的文件。', true);
                 return;
             }
-
-            setUploadStatus('已选择 ' + file.name + '，保存时将自动压缩。', false);
-            
-            if (cropper) cropper.destroy();
-            if (objectUrl) URL.revokeObjectURL(objectUrl);
-            objectUrl = URL.createObjectURL(file);
-            image.src = objectUrl;
-            wrapper.style.display = 'block';
-            if (currentView) currentView.style.display = 'none';
-            if (placeholder) placeholder.style.display = 'none';
-            cropper = new Cropper(image, {
-                aspectRatio: 1,
-                viewMode: 1,
-                dragMode: 'move',
-                autoCropArea: 1,
-                background: false,
-                responsive: true,
-                ready: function() {
-                    var ratio = cropper.getImageData().width / cropper.getImageData().naturalWidth;
-                    zoom.min = ratio.toFixed(4);
-                    zoom.max = (ratio * 3).toFixed(4);
-                    zoom.value = ratio.toFixed(4);
-                }
-            });
-        });
-        
-        zoom.addEventListener('input', function() {
-            if (cropper) cropper.zoomTo(parseFloat(zoom.value));
-        });
-        
-        // 提交前把裁剪结果转换成小尺寸 JPEG Blob，并替换原始大文件。
-        form.addEventListener('submit', function(e) {
-            if (!cropper || isSubmitting) return;
-            e.preventDefault();
-
-            var canvas = cropper.getCroppedCanvas({
-                width: 256,
-                height: 256,
-                fillColor: '#ffffff',
-                imageSmoothingEnabled: true,
-                imageSmoothingQuality: 'high'
-            });
-
-            if (!canvas) {
-                setUploadStatus('无法生成头像，请重新选择图片。', true);
+            if (!window.CManagerCropper) {
+                setUploadStatus('裁剪组件未加载，请刷新页面重试。', true);
                 return;
             }
-
-            if (submitButton) submitButton.disabled = true;
-            setUploadStatus('正在压缩头像…', false);
-
-            canvas.toBlob(function(blob) {
-                if (!blob) {
-                    if (submitButton) submitButton.disabled = false;
-                    setUploadStatus('头像压缩失败，请重试。', true);
-                    return;
+            CManagerCropper.open({
+                image: file,
+                aspectRatio: 1,
+                outputWidth: 256,
+                outputHeight: 256,
+                format: 'image/jpeg',
+                quality: 0.82,
+                onDone: uploadAvatar,
+                onError: function (message) {
+                    setUploadStatus(message || '图片处理失败，请重新选择。', true);
                 }
-
-                try {
-                    var transfer = new DataTransfer();
-                    transfer.items.add(new File([blob], 'avatar.jpg', {
-                        type: 'image/jpeg',
-                        lastModified: Date.now()
-                    }));
-                    input.files = transfer.files;
-                    base64Input.value = '';
-                } catch (error) {
-                    // 兼容不支持 DataTransfer 构造器的旧浏览器：只提交压缩后的 Base64。
-                    base64Input.value = canvas.toDataURL('image/jpeg', 0.82);
-                    input.disabled = true;
-                }
-
-                isSubmitting = true;
-                setUploadStatus('压缩完成，正在上传…', false);
-
-                var data = new FormData(form);
-                // 不依赖 form.action：线上环境曾出现 action 被脚本错误改写成元素对象的问题。
-                fetch(window.location.href, {
-                    method: 'POST',
-                    body: data,
-                    credentials: 'same-origin',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                }).then(function(response) {
-                    var contentType = response.headers.get('content-type') || '';
-                    if (!contentType.includes('application/json')) {
-                        if (response.redirected || response.status === 401 || response.status === 403) {
-                            throw new Error('登录状态已失效或请求被拒绝，请刷新页面后重新登录。');
-                        }
-                        throw new Error('服务器未返回头像上传结果，请刷新页面后重试。');
-                    }
-                    return response.json().then(function(payload) {
-                        if (!response.ok || !payload.ok) {
-                            throw new Error(payload.message || '头像上传失败');
-                        }
-                        return payload;
-                    });
-                }).then(function(payload) {
-                    if (currentAvatarImage && payload.avatar_url) {
-                        currentAvatarImage.src = payload.avatar_url;
-                    }
-                    if (payload.avatar_url) {
-                        document.querySelectorAll('.sidebar-user-avatar').forEach(function(container) {
-                            var sidebarImage = container.querySelector('img');
-                            if (!sidebarImage) {
-                                sidebarImage = document.createElement('img');
-                                sidebarImage.alt = '用户头像';
-                                sidebarImage.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
-                                container.replaceChildren(sidebarImage);
-                            }
-                            sidebarImage.src = payload.avatar_url;
-                        });
-                    }
-                    if (currentView) currentView.style.display = 'block';
-                    if (placeholder) placeholder.style.display = 'none';
-                    wrapper.style.display = 'none';
-                    input.value = '';
-                    input.disabled = false;
-                    base64Input.value = '';
-                    if (cropper) {
-                        cropper.destroy();
-                        cropper = null;
-                    }
-                    if (objectUrl) {
-                        URL.revokeObjectURL(objectUrl);
-                        objectUrl = null;
-                    }
-                    setUploadStatus(payload.message || '头像上传完成，页面即将刷新…', false);
-                    window.setTimeout(function() {
-                        window.location.reload();
-                    }, 500);
-                }).catch(function(error) {
-                    input.disabled = false;
-                    setUploadStatus(error.message || '头像上传失败，请重试。', true);
-                }).finally(function() {
-                    isSubmitting = false;
-                    if (submitButton) submitButton.disabled = false;
-                });
-            }, 'image/jpeg', 0.82);
+            });
         });
+
+        function uploadAvatar(blob, dataUrl) {
+            if (isSubmitting) return;
+            isSubmitting = true;
+            setUploadStatus('正在上传头像…', false);
+            var form = document.getElementById('avatar-form');
+            var csrf = form ? form.querySelector('input[name="csrfmiddlewaretoken"]') : null;
+            var data = new FormData();
+            if (csrf) data.append('csrfmiddlewaretoken', csrf.value);
+            data.append('action', 'upload_avatar');
+            data.append('avatar', new File([blob], 'avatar.jpg', { type: 'image/jpeg', lastModified: Date.now() }), 'avatar.jpg');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                body: data,
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            }).then(function (response) {
+                var contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    if (response.redirected || response.status === 401 || response.status === 403) {
+                        throw new Error('登录状态已失效或请求被拒绝，请刷新页面后重新登录。');
+                    }
+                    throw new Error('服务器未返回头像上传结果，请刷新页面后重试。');
+                }
+                return response.json().then(function (payload) {
+                    if (!response.ok || !payload.ok) throw new Error(payload.message || '头像上传失败');
+                    return payload;
+                });
+            }).then(function (payload) {
+                if (currentAvatarImage && payload.avatar_url) currentAvatarImage.src = payload.avatar_url;
+                if (payload.avatar_url) {
+                    document.querySelectorAll('.sidebar-user-avatar').forEach(function (container) {
+                        var sidebarImage = container.querySelector('img');
+                        if (!sidebarImage) {
+                            sidebarImage = document.createElement('img');
+                            sidebarImage.alt = '用户头像';
+                            sidebarImage.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+                            container.replaceChildren(sidebarImage);
+                        }
+                        sidebarImage.src = payload.avatar_url;
+                    });
+                }
+                if (currentView) currentView.style.display = 'block';
+                if (placeholder) placeholder.style.display = 'none';
+                setUploadStatus(payload.message || '头像上传完成，页面即将刷新…', false);
+                window.setTimeout(function () { window.location.reload(); }, 500);
+            }).catch(function (error) {
+                setUploadStatus(error.message || '头像上传失败，请重试。', true);
+            }).finally(function () {
+                isSubmitting = false;
+            });
+        }
+
+        var form = document.getElementById('avatar-form');
+        if (form) {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                setUploadStatus('请先选择图片并完成裁剪。', true);
+            });
+        }
     })();
-</script>
+
+    </script>
+{% include 'clubs/components/_cropper_upload.html' %}
+<script src="{% static 'js/cropper-upload.js' %}"></script>
 {% endblock %}

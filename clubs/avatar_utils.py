@@ -38,7 +38,8 @@ def get_cravatar_url(email, size=160, default='mp'):
     digest = md5(normalize_avatar_email(email).encode('utf-8')).hexdigest()
     safe_size = max(1, min(int(size or 160), 2048))
     query = urlencode({'s': safe_size, 'd': default, 'r': 'g'})
-    return f'{CRAVATAR_BASE_URL}{digest}?{query}'
+    # 走同源代理并附带 immutable 缓存，避免每次刷新都重新请求 Cravatar
+    return f'/cravatar/{digest}/?{query}'
 
 
 def cravatar_exists(email, timeout=4):

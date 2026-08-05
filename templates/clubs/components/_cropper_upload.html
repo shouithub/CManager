@@ -1,0 +1,137 @@
+{% comment %}
+共享图片裁剪弹窗组件（基于 Cropper.js，Material Design 风格）。
+页面引入一次（页面里有多个裁剪入口时共用同一个弹窗）：
+  {% include 'clubs/components/_cropper_upload.html' %}
+页面末尾引入 static/js/cropper-upload.js，并在引入 Cropper.js 之后。
+页面脚本通过 window.CManagerCropper.open({...}) 打开裁剪：
+  CManagerCropper.open({
+      image: fileOrUrl,          // File 或图片 URL
+      aspectRatio: 1,            // 可选，默认 1
+      outputWidth: 512,          // 导出宽
+      outputHeight: 512,         // 导出高
+      format: 'image/png',       // 导出格式
+      quality: 0.9,              // JPEG 质量
+      onDone: function(blob, dataUrl) { ... }   // 确认裁剪后的回调
+  });
+{% endcomment %}
+
+<div class="cmanager-cropper-overlay" id="cmanagerCropperModal" aria-hidden="true">
+    <div class="cropper-modal-card" role="dialog" aria-modal="true" aria-labelledby="cmanagerCropperTitle">
+        <div class="cropper-modal-header">
+            <h3 id="cmanagerCropperTitle">裁剪图片</h3>
+            <button type="button" class="cropper-modal-close" id="cmanagerCropperCancel" aria-label="关闭">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="cropper-modal-body">
+            <div class="cropper-stage">
+                <img id="cmanagerCropperImage" alt="待裁剪图片">
+            </div>
+            <div class="cropper-zoom-row">
+                <span class="material-icons">zoom_out</span>
+                <input type="range" id="cmanagerCropperZoom" min="0.1" max="3" step="0.01" value="1">
+                <span class="material-icons">zoom_in</span>
+            </div>
+            <p class="cropper-hint">拖动图片调整位置，滑块调整缩放</p>
+        </div>
+        <div class="cropper-modal-actions">
+            <button type="button" class="btn btn-text" id="cmanagerCropperCancelBtn">取消</button>
+            <button type="button" class="btn btn-primary" id="cmanagerCropperConfirm">确认裁剪</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .cmanager-cropper-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 1300;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-sizing: border-box;
+    }
+
+    .cmanager-cropper-overlay.open { display: flex; }
+
+    .cropper-modal-card {
+        width: 100%;
+        max-width: 560px;
+        background-color: #fdfbff;
+        color: #1d1b20;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 24px;
+        box-shadow: var(--md3-elevation-3);
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    html[data-theme="dark"] .cropper-modal-card {
+        background-color: #1d1b20;
+        color: #e6e0e9;
+    }
+
+    .cropper-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .cropper-modal-header h3 { margin: 0; color: var(--md3-on-surface); font-size: 1.2rem; }
+
+    .cropper-modal-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--md3-on-surface-variant);
+        cursor: pointer;
+    }
+
+    .cropper-modal-close:hover { background: var(--md3-surface-container-high); }
+
+    .cropper-modal-body { margin-top: 14px; }
+
+    .cropper-stage {
+        height: 340px;
+        background-color: #ece6f0;
+        border-radius: var(--md3-radius-lg);
+        overflow: hidden;
+    }
+
+    html[data-theme="dark"] .cropper-stage {
+        background-color: #141218;
+    }
+
+    .cropper-stage img { display: block; max-width: 100%; }
+
+    .cropper-zoom-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+        color: var(--md3-on-surface-variant);
+    }
+
+    .cropper-zoom-row input[type="range"] { flex: 1; accent-color: var(--md3-primary); }
+
+    .cropper-hint { margin: 8px 0 0; color: var(--md3-on-surface-variant); font-size: 0.8125rem; }
+
+    .cropper-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    @media (max-width: 480px) {
+        .cropper-stage { height: 240px; }
+    }
+</style>

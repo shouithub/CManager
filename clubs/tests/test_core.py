@@ -70,6 +70,20 @@ class AvatarServiceTests(TestCase):
 
         self.assertIn(expected_hash, get_profile_avatar_url(profile))
 
+    def test_cravatar_proxy_rejects_invalid_digest(self):
+        response = self.client.get('/cravatar/not-a-digest/', secure=True)
+        self.assertEqual(response.status_code, 404)
+
+    def test_cravatar_proxy_serves_cached_with_immutable_header(self):
+        digest = 'a' * 32
+        cache.set(f'cravatar:{digest}:160:mp:g', {'content': b'png-bytes', 'content_type': 'image/png'})
+
+        response = self.client.get(f'/cravatar/{digest}/', secure=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Cache-Control'], 'public, max-age=31536000, immutable')
+        self.assertEqual(response.content, b'png-bytes')
+
     def test_disabled_cravatar_does_not_override_local_avatar(self):
         profile = self.user.profile
         profile.avatar_email = 'person@example.com'
@@ -567,6 +581,26 @@ class StaffRegistrationReviewTests(TestCase):
         self.assertTrue(response.json()['success'])
         self.assertEqual(TimeSlot.objects.filter(label='第1-2节').count(), 1)
         self.assertEqual(TimeSlot.objects.filter(label='午休').count(), 1)
+
+    def test_weekly_export_uses_monday_and_configured_slots(self):
+        from openpyxl import load_workbook
+
+        room = Room.objects.create(name='导出测试房间', capacity=10)
+        TimeSlot.objects.create(label='自定义时段', start_time=time(9, 0), end_time=time(10, 0), is_active=True)
+
+        response = self.client.get(
+            reverse('clubs:export_room_bookings_weekly'),
+            {'room_id': room.pk, 'week_start': '2026-08-05'},
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook.active
+        self.assertIn('2026年08月03日', worksheet['A1'].value)
+        labels = [worksheet.cell(row=row, column=1).value for row in range(3, worksheet.max_row + 1)]
+        self.assertTrue(any(label and '自定义时段' in label for label in labels))
+        self.assertTrue(any(label and '09:00-10:00' in label for label in labels))
 
 
 class BookingServiceTests(TestCase):

@@ -484,7 +484,7 @@
                     </div>
                     <div class="carousel-form-card-body">
                         <div class="carousel-upload-zone" id="carousel-upload-zone">
-                            <input class="carousel-file-input" type="file" id="id_image" name="image" accept="image/jpeg,image/png,image/webp" {% if not carousel %}required{% endif %} aria-label="选择轮播图片">
+                            {% include 'clubs/components/_file_upload.html' with simple=True input_id='id_image' input_class='carousel-file-input' field_name='image' is_required=False allowed_extensions='image/jpeg,image/png,image/webp' %}
                             <div class="carousel-upload-placeholder {% if carousel and carousel.image %}is-hidden{% endif %}" id="carousel-upload-placeholder">
                                 <span class="carousel-upload-icon"><span class="material-icons" aria-hidden="true">add_photo_alternate</span></span>
                                 <strong>拖放图片，或点击选择</strong>
