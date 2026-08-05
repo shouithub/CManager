@@ -614,13 +614,21 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="record-actions">
-                    <a class="btn btn-outlined" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
-                        <span class="material-icons">visibility</span>查看
-                    </a>
-                </div>
-            </article>
-            {% empty %}
+                    <div class="record-actions">
+                        <a class="btn btn-outlined" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
+                            <span class="material-icons">visibility</span>查看
+                        </a>
+                        {% if is_admin %}
+                        <form method="post" action="{% url 'clubs:delete_audit_request' item.channel.slug item.public_id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-danger" type="submit" onclick="return confirm('确定删除这条已处理的请求吗？相关附件也会一并删除。')">
+                                <span class="material-icons">delete</span>删除
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </article>
+                {% empty %}
             <div class="empty-state">
                 <span class="material-icons">inbox</span>
                 暂无已处理提交
@@ -650,6 +658,14 @@
                         <a class="btn btn-outlined" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
                             <span class="material-icons">visibility</span>查看
                         </a>
+                        {% if is_admin %}
+                        <form method="post" action="{% url 'clubs:delete_audit_request' item.channel.slug item.public_id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-danger" type="submit" onclick="return confirm('确定删除这条已处理的请求吗？相关附件也会一并删除。')">
+                                <span class="material-icons">delete</span>删除
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                 </article>
                 {% endfor %}

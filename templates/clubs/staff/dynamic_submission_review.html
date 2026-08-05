@@ -206,6 +206,7 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 14px;
         padding: 20px;
+        align-items: start;
     }
 
     .field-item {
@@ -270,7 +271,7 @@
 
     .file-entry {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         flex-wrap: wrap;
         gap: 8px;
         width: 100%;
@@ -278,17 +279,17 @@
     }
 
     .file-entry-image {
-        width: 100%;
+        width: auto;
         display: block;
         margin-bottom: 4px;
     }
 
     .file-entry-image img {
         max-width: 100%;
+        height: auto;
         max-height: 320px;
         border-radius: var(--md3-radius-lg);
         border: 1px solid var(--md3-outline-variant);
-        object-fit: contain;
         display: block;
     }
 
