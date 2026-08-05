@@ -94,7 +94,7 @@
     <link rel="preload" href="{{ body_font_url }}" as="style">
     <link href="{{ body_font_url }}" rel="stylesheet">
     {% endif %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260805a">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260805b">
     {% if body_font_family %}
     <style>body, html { font-family: {{ body_font_family }}; }</style>
     {% endif %}
@@ -638,6 +638,8 @@
                     });
                 }
             }
+            // 暴露给软导航：AJAX 替换内容后重新执行溢出修正
+            window.__cmanagerCheckOverflow = checkOverflow;
 
             function toggleSidebar() {
                 const sidebar = document.getElementById('sidebar');
@@ -767,6 +769,9 @@
                             currentRoot.querySelectorAll('.count-badge').forEach((el, index) => {
                                 if (freshBadges[index]) el.textContent = freshBadges[index].textContent;
                             });
+                            if (typeof window.__cmanagerCheckOverflow === 'function') {
+                                window.__cmanagerCheckOverflow();
+                            }
                         } catch (error) {
                             // 局部刷新失败时忽略，等待下一轮轮询
                         }
@@ -996,6 +1001,9 @@
                 history.pushState({}, '', url);
                 updateActiveMenu(new URL(url).pathname);
                 window.scrollTo(0, 0);
+                if (typeof window.__cmanagerCheckOverflow === 'function') {
+                    window.__cmanagerCheckOverflow();
+                }
                 window.dispatchEvent(new CustomEvent('page:updated', { detail: { url } }));
             } catch (error) {
                 window.location.href = url;

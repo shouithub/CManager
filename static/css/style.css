@@ -2852,6 +2852,7 @@ body.sidebar-resizing {
     margin-left: var(--sidebar-width);
     display: flex;
     flex-direction: column;
+    min-width: 0;
     min-height: 100vh;
     transition: margin-left var(--md3-motion-duration-medium4) var(--md3-motion-easing-emphasized);
     background-color: var(--md3-surface-container-lowest);
