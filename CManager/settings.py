@@ -184,6 +184,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'CManager.middleware.PartialRenderMiddleware',
     'CManager.middleware.InitialSetupMiddleware',
     'CManager.middleware.VisitTrackingMiddleware',
     'django.middleware.gzip.GZipMiddleware',
@@ -210,6 +211,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'clubs.context_processors.unread_approvals',
                 'clubs.context_processors.site_settings',
+                'clubs.context_processors.base_template',
             ],
         },
     },

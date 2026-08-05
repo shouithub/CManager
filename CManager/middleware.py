@@ -4,6 +4,17 @@ from django.urls import reverse
 from django.db.utils import OperationalError, ProgrammingError
 
 
+class PartialRenderMiddleware:
+    """标记 AJAX 页面请求为局部渲染，只返回内容区，减少整页带宽。"""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        request.partial = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        return self.get_response(request)
+
+
 class VisitTrackingMiddleware:
     """统计每日页面访问量，写入 DailyStat 表。
     静态文件、媒体文件、API 及管理接口不计入统计。

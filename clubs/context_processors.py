@@ -107,6 +107,17 @@ def site_settings(request):
     return result
 
 
+def base_template(request):
+    """根据请求类型选择完整页面或仅内容区的基础模板。"""
+    return {
+        'base_template': (
+            'clubs/base_partial.html'
+            if getattr(request, 'partial', False)
+            else 'clubs/base.html'
+        ),
+    }
+
+
 def audit_center_counts(request):
     empty = {
         'audit_center_counts': {'total': 0, 'channels': {}},

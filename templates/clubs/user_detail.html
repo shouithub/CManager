@@ -1,4 +1,4 @@
-{% extends 'clubs/base.html' %}
+{% extends base_template %}
 
 {% block title %}用户详情 - {{ target_user.profile.get_full_name|default:target_user.username }}{% endblock %}
 

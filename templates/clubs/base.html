@@ -754,7 +754,7 @@
                             if (!response.ok) return;
                             const text = await response.text();
                             const doc = new DOMParser().parseFromString(text, 'text/html');
-                            const freshRoot = doc.querySelector('.main-content') || doc.body;
+                            const freshRoot = doc.getElementById('soft-partial-content') || doc.querySelector('.main-content') || doc.body;
                             const currentRoot = document.querySelector('.main-content') || document.body;
                             if (!freshRoot || !currentRoot) return;
 
@@ -903,5 +903,131 @@
         })();
     </script>
     {% block extra_js %}{% endblock %}
+    <script>
+    /* 全局 AJAX 局部刷新：站内链接点击时仅替换内容区，避免重新加载侧边栏/底栏。 */
+    (function () {
+        if (window.__cmanagerSoftNav) return;
+        window.__cmanagerSoftNav = true;
+
+        const stylesHost = document.createElement('div');
+        stylesHost.id = 'soft-page-styles';
+        document.head.appendChild(stylesHost);
+        const scriptsHost = document.createElement('div');
+        scriptsHost.id = 'soft-page-scripts';
+        document.body.appendChild(scriptsHost);
+
+        function shouldSkipUrl(url) {
+            const path = url.pathname;
+            if (/\.(?:png|jpe?g|gif|webp|svg|avif|pdf|docx?|xlsx?|pptx?|zip|rar|7z|csv|txt|json|wasm|mp4|mp3|wav|woff2?|ttf|eot)$/i.test(path)) {
+                return true;
+            }
+            if (path.startsWith('/media/') || path.startsWith('/static/')) {
+                return true;
+            }
+            // 导出/下载类接口会直接返回文件，走 XHR 只会白下载一次
+            if (/\/export($|\/)/.test(path) || /\/import-template($|\/)/.test(path) || path.includes('/zip-download/')) {
+                return true;
+            }
+            return false;
+        }
+
+        function updateActiveMenu(pathname) {
+            document.querySelectorAll('.sidebar-menu-item, .bottom-nav-item').forEach((item) => {
+                let active = false;
+                try {
+                    active = item.getAttribute('href') === pathname;
+                } catch (error) {
+                    active = false;
+                }
+                item.classList.toggle('active', active);
+            });
+        }
+
+        async function softNavigate(url) {
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const contentType = response.headers.get('content-type') || '';
+                // 重定向到其他地址（如登录页）时走整页跳转，避免登录页被塞进内容区
+                if (!response.ok || !contentType.includes('text/html') || response.url !== url) {
+                    window.location.href = url;
+                    return;
+                }
+                const html = await response.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const freshContent = doc.getElementById('soft-partial-content');
+                const main = document.querySelector('.main-content');
+                if (!freshContent || !main) {
+                    window.location.href = url;
+                    return;
+                }
+
+                const freshStyles = doc.getElementById('soft-partial-styles');
+                const freshScripts = doc.getElementById('soft-partial-scripts');
+
+                // 先取出并移除脚本，再替换内容，避免 innerHTML 不执行 script
+                const scriptsToRun = [];
+                freshContent.querySelectorAll('script').forEach((script) => {
+                    scriptsToRun.push(script);
+                    script.remove();
+                });
+                if (freshScripts) {
+                    freshScripts.querySelectorAll('script').forEach((script) => scriptsToRun.push(script));
+                }
+
+                main.innerHTML = freshContent.innerHTML;
+                if (freshStyles) stylesHost.innerHTML = freshStyles.innerHTML;
+
+                scriptsHost.innerHTML = '';
+                scriptsToRun.forEach((oldScript) => {
+                    const script = document.createElement('script');
+                    if (oldScript.src) {
+                        script.src = oldScript.src;
+                    } else {
+                        script.textContent = oldScript.textContent;
+                    }
+                    scriptsHost.appendChild(script);
+                });
+
+                document.title = doc.title || document.title;
+                history.pushState({}, '', url);
+                updateActiveMenu(new URL(url).pathname);
+                window.scrollTo(0, 0);
+                window.dispatchEvent(new CustomEvent('page:updated', { detail: { url } }));
+            } catch (error) {
+                window.location.href = url;
+            }
+        }
+
+        document.addEventListener('click', function (event) {
+            if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            const link = event.target.closest('a');
+            if (!link) return;
+            const href = link.getAttribute('href');
+            if (!href) return;
+            if (link.target === '_blank' || link.hasAttribute('download')) return;
+            const rel = link.getAttribute('rel') || '';
+            if (rel.split(/\s+/).includes('noopener')) return;
+            if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return;
+            let url;
+            try {
+                url = new URL(href, window.location.href);
+            } catch (error) {
+                return;
+            }
+            if (url.origin !== window.location.origin || url.href === window.location.href) return;
+            if (shouldSkipUrl(url)) return;
+            event.preventDefault();
+            softNavigate(url.href);
+        });
+
+        window.addEventListener('popstate', function () {
+            softNavigate(window.location.href);
+        });
+    })();
+    </script>
 </body>
 </html>
