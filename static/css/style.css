@@ -4193,6 +4193,11 @@ fieldset legend {
     color: inherit;
 }
 
+.page-header .btn-primary .material-icons,
+.btn-primary .material-icons {
+    color: var(--md3-on-primary);
+}
+
 .page-header-content {
     flex: 1;
 }
