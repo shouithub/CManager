@@ -109,7 +109,6 @@
             position: relative;
         }
     </style>
-    {% block extra_css %}{% endblock %}
     <link rel="stylesheet" href="{% static 'css/ui-unified.css' %}?v=20260805a">
     <style>
         .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) {
@@ -243,6 +242,9 @@
     </script>
 </head>
 <body>
+    <!-- 页面专属样式：软导航时整体替换，避免首屏页面 CSS 残留在 head 中泄漏到其他页面 -->
+    <div id="soft-page-styles">{% block extra_css %}{% endblock %}</div>
+
     <!-- 遮罩层 (移动端) -->
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     
@@ -890,9 +892,12 @@
         if (window.__cmanagerSoftNav) return;
         window.__cmanagerSoftNav = true;
 
-        const stylesHost = document.createElement('div');
-        stylesHost.id = 'soft-page-styles';
-        document.head.appendChild(stylesHost);
+        const stylesHost = document.getElementById('soft-page-styles') || (function () {
+            const el = document.createElement('div');
+            el.id = 'soft-page-styles';
+            document.body.insertBefore(el, document.body.firstChild);
+            return el;
+        })();
         const scriptsHost = document.createElement('div');
         scriptsHost.id = 'soft-page-scripts';
         document.body.appendChild(scriptsHost);
