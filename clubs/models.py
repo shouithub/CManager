@@ -1216,6 +1216,11 @@ class SiteSettings(models.Model):
         verbose_name='允许使用 Cravatar',
         help_text='开启后，用户可在本站上传头像与 Cravatar 之间自行选择。',
     )
+    low_member_alert_threshold = models.PositiveSmallIntegerField(
+        default=20,
+        verbose_name='成员数量告警阈值',
+        help_text='成员数低于该值的社团会在干事社团管理页触发“社团成员数量预警”。',
+    )
 
     class Meta:
         verbose_name = '站点设置'

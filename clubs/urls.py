@@ -62,6 +62,7 @@ urlpatterns = [
     path('api/department/<int:department_id>/members/', views.get_department_members, name='get_department_members'),
     path('staff/management/', auth_views.staff_management, name='staff_management'),
     path('staff/manage-department/', auth_views.manage_department_staff, name='manage_department_staff'),
+    path('staff/alert-threshold/', auth_views.update_alert_threshold, name='update_alert_threshold'),
     # 管理员 - 锁定账号管理
     path('admin/locked-accounts/', views.locked_accounts, name='locked_accounts'),
     path('admin/unlock-account/<str:username>/', views.unlock_account, name='unlock_account'),

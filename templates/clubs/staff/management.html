@@ -41,7 +41,7 @@
     }
 
     .control-panel { display: grid; gap: 16px; margin-bottom: 24px; }
-    .control-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 16px; padding: 18px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+    .control-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 16px; padding: 18px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; box-shadow: var(--md3-elevation-1, 0 2px 6px rgba(0, 0, 0, 0.12)); }
     .control-card h3 { margin: 0; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex: 1 1 100%; }
     
     .control-group { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%; border-bottom: 1px solid var(--md3-outline-variant); padding-bottom: 12px; }
@@ -84,25 +84,27 @@
     .alert-modal-close:hover { background: rgba(0, 0, 0, 0.06); }
     .alert-modal-card .alert-list { padding: 16px 20px; overflow-y: auto; }
 
-    .section-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 18px; margin-bottom: 24px; overflow: hidden; }
+    .section-card { background: var(--md3-surface-container); border: 1px solid var(--md3-outline-variant); border-radius: 18px; margin-bottom: 24px; overflow: hidden; box-shadow: var(--md3-elevation-1, 0 2px 6px rgba(0, 0, 0, 0.12)); }
     .section-header { padding: 16px 20px; background: var(--md3-surface-container-low); border-bottom: 1px solid var(--md3-outline-variant); }
     .section-title { margin: 0; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .section-body { padding: 20px; }
     .section-description { color: var(--md3-on-surface-variant); font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
 
     .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
-    .action-card { background: var(--md3-surface-container-low); border: 1px solid var(--md3-outline-variant); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: all 0.2s ease; }
+    .action-card { background: var(--md3-surface-container-low); border: 1px solid var(--md3-outline-variant); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: all 0.2s ease; box-shadow: var(--md3-elevation-1, 0 2px 6px rgba(0, 0, 0, 0.12)); }
     .action-card:hover { background: var(--md3-surface-container-high); box-shadow: var(--md3-elevation-2); transform: translateY(-2px); }
     .action-card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--md3-primary-container); color: var(--md3-on-primary-container); }
     .action-card-title { font-size: 16px; font-weight: 600; color: var(--md3-on-surface); }
     .action-card-desc { font-size: 13px; color: var(--md3-on-surface-variant); line-height: 1.5; }
     .action-card-btn { align-self: flex-start; }
+    .threshold-form { display: flex; gap: 8px; align-items: center; width: 100%; margin-top: 2px; }
+    .threshold-form input[type="number"] { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--md3-outline); border-radius: 10px; background: var(--md3-surface-container-highest); color: var(--md3-on-surface); font-size: 0.9rem; font-family: inherit; }
 
     .club-list-toolbar { margin-bottom: var(--md3-spacing-xl); }
     .club-search-form { display: flex; gap: var(--md3-spacing-md); align-items: center; margin-bottom: var(--md3-spacing-lg); }
     .club-search-field { flex: 1; display: flex; align-items: center; gap: var(--md3-spacing-sm); padding: var(--md3-spacing-md) var(--md3-spacing-lg); background: var(--md3-surface-container-highest); border: 1px solid var(--md3-outline); border-radius: var(--md3-radius-md); }
     .club-search-field input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 1rem; color: var(--md3-on-surface); font-family: inherit; }
-    .club-table-wrap { overflow-x: auto; overflow-y: hidden; border-radius: var(--md3-radius-lg); border: 1px solid var(--md3-outline-variant); background: var(--md3-surface-container); -webkit-overflow-scrolling: touch; }
+    .club-table-wrap { overflow-x: auto; overflow-y: hidden; border-radius: var(--md3-radius-lg); border: 1px solid var(--md3-outline-variant); background: var(--md3-surface-container); -webkit-overflow-scrolling: touch; box-shadow: var(--md3-elevation-1, 0 2px 6px rgba(0, 0, 0, 0.12)); }
     .club-table-wrap :not(.club-table-wrap) { scrollbar-width: none; -ms-overflow-style: none; }
     .club-table-wrap :not(.club-table-wrap)::-webkit-scrollbar { display: none; width: 0; height: 0; }
     .club-table { width: max-content; min-width: 100%; border-collapse: collapse; table-layout: auto; }
@@ -263,6 +265,23 @@
                         <span class="material-icons">edit</span> 负责社团
                     </a>
                 </div>
+
+                {% if user.profile.role == 'admin' %}
+                <div class="action-card">
+                    <div class="action-card-icon">
+                        <span class="material-icons" style="font-size: 28px;">notifications</span>
+                    </div>
+                    <div class="action-card-title">人数告警阈值</div>
+                    <div class="action-card-desc">成员数低于该值的社团会触发“社团成员数量预警”，当前：{{ low_member_threshold }} 人。</div>
+                    <form method="post" action="{% url 'clubs:update_alert_threshold' %}" class="threshold-form">
+                        {% csrf_token %}
+                        <input type="number" name="low_member_threshold" min="1" max="999" value="{{ low_member_threshold }}" required aria-label="人数告警阈值">
+                        <button type="submit" class="btn btn-primary action-card-btn">
+                            <span class="material-icons">save</span> 保存
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

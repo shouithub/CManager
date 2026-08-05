@@ -8,6 +8,7 @@ from ..models import (
     Club,
     FormChannel,
     FormCycle,
+    SiteSettings,
     StaffClubRelation,
     UserProfile,
 )
@@ -74,3 +75,47 @@ class StaffAlertSystemTests(TestCase):
         self.assertIn('show_unsubmitted_alert', html)
         self.assertIn('alert_color', html)
         self.assertIn('#123456', html)
+
+    def test_low_member_threshold_setting(self):
+        settings = SiteSettings.get_settings()
+        settings.low_member_alert_threshold = 40
+        settings.save(update_fields=['low_member_alert_threshold'])
+
+        # 管理员可以看到阈值设置项，且页面按新阈值生成人数告警
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse('clubs:staff_management'))
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode('utf-8')
+        self.assertIn('人数告警阈值', html)
+        self.assertIn('社团成员数量预警', html)
+        self.assertIn('value="40"', html)  # 表单回显当前阈值
+
+        # 干事看不到阈值设置项
+        self.client.force_login(self.staff)
+        staff_html = self.client.get(reverse('clubs:staff_management')).content.decode('utf-8')
+        self.assertNotIn('人数告警阈值', staff_html)
+
+    def test_update_alert_threshold_endpoint(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            reverse('clubs:update_alert_threshold'),
+            {'low_member_threshold': '35'},
+        )
+        self.assertEqual(response.status_code, 302)
+        settings = SiteSettings.get_settings()
+        self.assertEqual(settings.low_member_alert_threshold, 35)
+
+        # 非法值回退
+        self.client.post(
+            reverse('clubs:update_alert_threshold'),
+            {'low_member_threshold': '0'},
+        )
+        self.assertEqual(SiteSettings.get_settings().low_member_alert_threshold, 35)
+
+        # 干事无权限
+        self.client.force_login(self.staff)
+        self.client.post(
+            reverse('clubs:update_alert_threshold'),
+            {'low_member_threshold': '10'},
+        )
+        self.assertEqual(SiteSettings.get_settings().low_member_alert_threshold, 35)

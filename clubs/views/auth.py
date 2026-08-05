@@ -835,8 +835,13 @@ def staff_management(request):
         other = [club for club in clubs if club.id not in staff_club_ids]
         return clubs, mine, other
 
+    from ..models import SiteSettings
+    site_settings = SiteSettings.get_settings()
+    low_member_threshold = site_settings.low_member_alert_threshold or 20
     clubs_with_low_members, clubs_with_low_members_my, clubs_with_low_members_other = warning_club_lists(
-        Club.objects.filter(members_count__lt=20).exclude(status='suspended').order_by('members_count')
+        Club.objects.filter(members_count__lt=low_member_threshold)
+        .exclude(status='suspended')
+        .order_by('members_count')
     )
     
     # === 统一告警数据（成员数量 + 各通道未提交） ===
@@ -928,12 +933,39 @@ def staff_management(request):
         'toggle_colspan': 4 + len(toggle_channels),
         'clubs_page': clubs_page,
         'q': q,
+        'low_member_threshold': low_member_threshold,
         # 统一告警数据
         'alerts': alerts,
         'alerts_json': alerts_json,
     }
     
     return render(request, 'clubs/staff/management.html', context)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def update_alert_threshold(request):
+    """修改成员数量告警阈值（仅管理员）。"""
+    profile = getattr(request.user, 'profile', None)
+    if not profile or profile.role != 'admin':
+        messages.error(request, '仅管理员可以修改人数告警阈值')
+        return redirect('clubs:staff_management')
+
+    from ..models import SiteSettings
+    raw = (request.POST.get('low_member_threshold') or '').strip()
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        value = 0
+    if value < 1 or value > 999:
+        messages.error(request, '人数告警阈值需为 1-999 之间的整数')
+        return redirect('clubs:staff_management')
+
+    site_settings = SiteSettings.get_settings()
+    site_settings.low_member_alert_threshold = value
+    site_settings.save(update_fields=['low_member_alert_threshold'])
+    messages.success(request, f'人数告警阈值已更新为 {value} 人')
+    return redirect('clubs:staff_management')
 
 
 @login_required(login_url=settings.LOGIN_URL)
