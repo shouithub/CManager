@@ -1,3 +1,4 @@
+{% load common_tags %}
 {% for row in rows %}
 <div class="field-item">
     <div class="field-label">
@@ -11,6 +12,11 @@
         {% if row.field.field_type == 'file' %}
             {% for uploaded in row.files %}
             <div class="file-entry">
+                {% if uploaded|is_image_file %}
+                <a href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener" style="display:block;width:100%;margin-bottom:4px;">
+                    <img src="{{ uploaded.file.url }}" alt="{{ uploaded.original_name|default:uploaded.file.name }}" loading="lazy" style="max-width:100%;max-height:320px;border-radius:12px;border:1px solid var(--md3-outline-variant);object-fit:contain;display:block;">
+                </a>
+                {% endif %}
                 <a class="file-link" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
                     <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
                 </a>

@@ -24,3 +24,11 @@ def office_preview_url(value, request=None):
     name = getattr(value, 'name', '') or ''
     display_name = getattr(value, 'original_name', '') or os.path.basename(str(name))
     return _office_preview_url_for_name(request, str(name), display_name)
+
+
+@register.filter
+def is_image_file(value):
+    """判断文件对象是否为图片格式。"""
+    name = getattr(value, 'name', '') or ''
+    ext = os.path.splitext(str(name))[1].lower()
+    return ext in {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
