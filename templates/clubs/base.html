@@ -623,24 +623,6 @@
                - 切换侧边栏/用户下拉/菜单折叠
                - 初始化折叠与高亮
             */
-            function checkOverflow() {
-                const body = document.body;
-                if (body.scrollWidth > window.innerWidth) {
-                    const elements = document.querySelectorAll('*');
-                    elements.forEach(el => {
-                        const rect = el.getBoundingClientRect();
-                        if (rect.right > window.innerWidth || rect.left < 0) {
-                            if (el.style.overflow !== 'auto' && el.style.overflow !== 'scroll') {
-                                el.style.maxWidth = '100vw';
-                                el.style.overflowX = 'hidden';
-                            }
-                        }
-                    });
-                }
-            }
-            // 暴露给软导航：AJAX 替换内容后重新执行溢出修正
-            window.__cmanagerCheckOverflow = checkOverflow;
-
             function toggleSidebar() {
                 const sidebar = document.getElementById('sidebar');
                 const overlay = document.querySelector('.sidebar-overlay');
@@ -676,9 +658,6 @@
             window.toggleMenuSection = toggleMenuSection;
 
             document.addEventListener('DOMContentLoaded', function() {
-                checkOverflow();
-                window.addEventListener('resize', checkOverflow);
-
                 (function initSidebarResize() {
                     const resizer = document.getElementById('sidebarResizer');
                     const root = document.documentElement;
@@ -769,9 +748,6 @@
                             currentRoot.querySelectorAll('.count-badge').forEach((el, index) => {
                                 if (freshBadges[index]) el.textContent = freshBadges[index].textContent;
                             });
-                            if (typeof window.__cmanagerCheckOverflow === 'function') {
-                                window.__cmanagerCheckOverflow();
-                            }
                         } catch (error) {
                             // 局部刷新失败时忽略，等待下一轮轮询
                         }
@@ -920,6 +896,27 @@
         const scriptsHost = document.createElement('div');
         scriptsHost.id = 'soft-page-scripts';
         document.body.appendChild(scriptsHost);
+        const executedPageScripts = window.__cmanagerExecutedScripts || (window.__cmanagerExecutedScripts = new Set());
+
+        function pageScriptKey(text) {
+            let hash = 0;
+            for (let i = 0; i < text.length; i += 1) {
+                hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+            }
+            return String(hash);
+        }
+
+        function loadExternalScript(src, integrity, crossorigin) {
+            return new Promise(function (resolve) {
+                const script = document.createElement('script');
+                script.src = src;
+                if (integrity) script.integrity = integrity;
+                if (crossorigin) script.crossOrigin = crossorigin;
+                script.onload = function () { resolve(); };
+                script.onerror = function () { resolve(); };
+                scriptsHost.appendChild(script);
+            });
+        }
 
         function shouldSkipUrl(url) {
             const path = url.pathname;
@@ -987,23 +984,35 @@
                 if (freshStyles) stylesHost.innerHTML = freshStyles.innerHTML;
 
                 scriptsHost.innerHTML = '';
-                scriptsToRun.forEach((oldScript) => {
+                for (const oldScript of scriptsToRun) {
                     const script = document.createElement('script');
                     if (oldScript.src) {
-                        script.src = oldScript.src;
+                        // 外部脚本按顺序加载完成后再执行后续脚本，
+                        // 避免行内脚本在依赖库（如 Chart.js）就绪前运行。
+                        await loadExternalScript(
+                            oldScript.src,
+                            oldScript.getAttribute('integrity'),
+                            oldScript.getAttribute('crossorigin')
+                        );
+                        continue;
+                    }
+                    const raw = oldScript.textContent || '';
+                    const key = pageScriptKey(raw);
+                    if (executedPageScripts.has(key)) {
+                        // 重复进入同一页面：包一层块级作用域，避免顶层 let/const 重复声明
+                        // 抛错；顶层语句仍会重新绑定到新 DOM，函数声明保留首次挂载的全局版本。
+                        script.textContent = '{' + raw + '\n}';
                     } else {
-                        script.textContent = oldScript.textContent;
+                        executedPageScripts.add(key);
+                        script.textContent = raw;
                     }
                     scriptsHost.appendChild(script);
-                });
+                }
 
                 document.title = doc.title || document.title;
                 history.pushState({}, '', url);
                 updateActiveMenu(new URL(url).pathname);
                 window.scrollTo(0, 0);
-                if (typeof window.__cmanagerCheckOverflow === 'function') {
-                    window.__cmanagerCheckOverflow();
-                }
                 window.dispatchEvent(new CustomEvent('page:updated', { detail: { url } }));
             } catch (error) {
                 window.location.href = url;
