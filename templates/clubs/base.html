@@ -736,6 +736,42 @@
                     let failureCount = 0;
                     let timerId = null;
 
+                    function centerPageType() {
+                        const path = window.location.pathname;
+                        if (path.includes('/staff/audit-center/')) return 'audit';
+                        if (path.includes('/approval-center/')) return 'approval';
+                        return null;
+                    }
+
+                    async function refreshCenterLists() {
+                        if (document.hidden) return;
+                        try {
+                            const response = await fetch(window.location.href, {
+                                method: 'GET',
+                                credentials: 'same-origin',
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                            });
+                            if (!response.ok) return;
+                            const text = await response.text();
+                            const doc = new DOMParser().parseFromString(text, 'text/html');
+                            const freshRoot = doc.querySelector('.main-content') || doc.body;
+                            const currentRoot = document.querySelector('.main-content') || document.body;
+                            if (!freshRoot || !currentRoot) return;
+
+                            const freshLists = freshRoot.querySelectorAll('.record-list');
+                            currentRoot.querySelectorAll('.record-list').forEach((el, index) => {
+                                if (freshLists[index]) el.innerHTML = freshLists[index].innerHTML;
+                            });
+
+                            const freshBadges = freshRoot.querySelectorAll('.count-badge');
+                            currentRoot.querySelectorAll('.count-badge').forEach((el, index) => {
+                                if (freshBadges[index]) el.textContent = freshBadges[index].textContent;
+                            });
+                        } catch (error) {
+                            // 局部刷新失败时忽略，等待下一轮轮询
+                        }
+                    }
+
                     function scheduleNext(delay) {
                         if (timerId) {
                             window.clearTimeout(timerId);
@@ -819,6 +855,9 @@
                             const data = await response.json();
                             applyCounts(data);
                             window.dispatchEvent(new CustomEvent('cmanager-counts-updated', { detail: data }));
+                            if (centerPageType()) {
+                                refreshCenterLists();
+                            }
                             failureCount = 0;
                             scheduleNext(pollIntervalMs);
                         } catch (error) {
