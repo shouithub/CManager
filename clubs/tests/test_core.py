@@ -85,6 +85,27 @@ class AvatarServiceTests(TestCase):
         self.assertEqual(response['Cache-Control'], 'public, max-age=31536000, immutable')
         self.assertEqual(response.content, b'png-bytes')
 
+    def test_is_image_file_supports_model_file_objects(self):
+        from django.core.files.base import ContentFile
+        from ..templatetags.common_tags import is_image_file
+        from ..models import FormUploadedFile
+
+        channel = FormChannel.objects.create(name='图片通道', slug='image-channel', is_active=True)
+        submission = FormSubmission.objects.create(
+            channel=channel,
+            club=Club.objects.create(name='图片社团', founded_date=date(2026, 1, 1)),
+            submitter=self.user,
+        )
+        field = FormField.objects.create(channel=channel, field_key='img', label='图片', field_type='file')
+        uploaded = FormUploadedFile.objects.create(
+            submission=submission,
+            field=field,
+            file=ContentFile(b'png', name='photo.png'),
+            original_name='photo.png',
+        )
+
+        self.assertTrue(is_image_file(uploaded))
+
     def test_disabled_cravatar_does_not_override_local_avatar(self):
         profile = self.user.profile
         profile.avatar_email = 'person@example.com'
