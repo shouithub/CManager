@@ -404,6 +404,13 @@ class FormChannel(models.Model):
     slug = models.SlugField(max_length=80, unique=True, verbose_name='通道标识')
     icon = models.CharField(max_length=50, default='description', verbose_name='图标')
     description = models.TextField(blank=True, verbose_name='说明')
+    example_file = models.FileField(
+        upload_to='channel_examples/%Y/%m/',
+        blank=True,
+        null=True,
+        verbose_name='通道示例文件',
+        help_text='显示在提交页顶部的可选示例文件',
+    )
     order = models.IntegerField(default=0, verbose_name='排序')
     is_active = models.BooleanField(default=True, verbose_name='启用')
     publish_status = models.CharField(max_length=20, choices=PUBLISH_STATUS_CHOICES, default='draft', verbose_name='发布状态')

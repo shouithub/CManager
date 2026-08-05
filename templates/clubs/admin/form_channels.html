@@ -1101,6 +1101,12 @@
                         <label>URL 标识 slug</label>
                         <input class="field-control" name="slug" value="{{ current.slug }}" required placeholder="reimbursement">
                     </div>
+                    <div class="field-group span-2">
+                        {% include 'clubs/components/_file_upload.html' with field_id='channel_example_file' field_name='example_file' label='通道示例文件（可选）' is_required=False allowed_extensions='.doc,.docx,.pdf,.jpg,.jpeg,.png,.webp' max_size_mb=10 existing_file=current.example_file %}
+                        {% if current.example_file %}
+                        <label class="switch-label"><input type="checkbox" name="clear_channel_example">清除当前示例文件</label>
+                        {% endif %}
+                    </div>
                     {% include 'clubs/admin/_material_icon_field.html' with input_id='channel-icon-edit' icon_value=current.icon %}
                     <div class="field-group">
                         <label>排序</label>
@@ -1481,6 +1487,9 @@
                     <div class="field-group">
                         <label>URL 标识 slug</label>
                         <input class="field-control js-channel-slug" name="slug" placeholder="room-application" required>
+                    </div>
+                    <div class="field-group span-2">
+                        {% include 'clubs/components/_file_upload.html' with field_id='channel_example_file' field_name='example_file' label='通道示例文件（可选）' is_required=False allowed_extensions='.doc,.docx,.pdf,.jpg,.jpeg,.png,.webp' max_size_mb=10 %}
                     </div>
                     {% include 'clubs/admin/_material_icon_field.html' with input_id='channel-icon-new' icon_value='description' %}
                     <div class="field-group">

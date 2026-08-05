@@ -303,6 +303,14 @@
         </div>
     </section>
 
+    {% if channel.example_file %}
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 14px;border:1px solid var(--md3-outline-variant);border-radius:var(--md3-radius-lg);background:var(--md3-surface-container-low);color:var(--md3-on-surface-variant);font-size:0.875rem;">
+        <span class="material-icons" style="color:var(--md3-primary);">description</span>
+        <span>通道示例文件：</span>
+        <a href="{{ channel.example_file.url }}" target="_blank" rel="noopener" style="color:var(--md3-primary);font-weight:600;">{{ channel.example_file.name|slice:"-30:" }}</a>
+    </div>
+    {% endif %}
+
     <form method="post" enctype="multipart/form-data" class="form-card">
         {% csrf_token %}
         {% for item in field_items %}
@@ -360,7 +368,7 @@
             </div>
             {% elif field.field_type == 'file' %}
             {% with file_accept=field.allowed_extensions|join:"," %}
-            {% include 'clubs/components/_file_upload.html' with field_id='field_'|add:field.id field_name='field_'|add:field.id label=field.label is_required=field.required allowed_extensions=file_accept max_size_mb=field.max_size_mb multiple=field.allow_multiple_files %}
+            {% include 'clubs/components/_file_upload.html' with field_number=field.id label=field.label is_required=field.required allowed_extensions=file_accept max_size_mb=field.max_size_mb multiple=field.allow_multiple_files %}
             {% endwith %}
             {% else %}
             <input type="text" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" placeholder="{{ field.placeholder }}" {% if field.required or revision_mode %}required{% endif %}>

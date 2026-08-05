@@ -602,6 +602,42 @@ class StaffRegistrationReviewTests(TestCase):
         self.assertTrue(any(label and '自定义时段' in label for label in labels))
         self.assertTrue(any(label and '09:00-10:00' in label for label in labels))
 
+    def test_save_form_channel_accepts_example_file(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        channel = FormChannel.objects.create(
+            name='示例通道',
+            slug='example-channel',
+            is_active=True,
+            publish_status='draft',
+        )
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as archive:
+            archive.writestr('[Content_Types].xml', '<Types/>')
+        upload = SimpleUploadedFile(
+            'example.docx',
+            zip_buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        )
+
+        response = self.client.post(
+            reverse('clubs:edit_form_channel', args=[channel.pk]),
+            {
+                'name': '示例通道',
+                'slug': 'example-channel',
+                'icon': 'description',
+                'order': '0',
+                'required_approval_count': '1',
+                'publish_status': 'draft',
+                'example_file': upload,
+            },
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 302)
+        channel.refresh_from_db()
+        self.assertTrue(channel.example_file)
+
 
 class BookingServiceTests(TestCase):
     def setUp(self):

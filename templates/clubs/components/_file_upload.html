@@ -21,15 +21,15 @@
 
 {% if simple %}
 <input type="file"
-       id="{% if input_id %}{{ input_id }}{% elif field_id %}{{ field_id }}{% else %}{{ field_name }}{% endif %}"
-       name="{{ field_name }}"
+       id="{% if input_id %}{{ input_id }}{% elif field_id %}{{ field_id }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_name }}{% endif %}"
+       name="{% if field_name %}{{ field_name }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_id }}{% endif %}"
        class="file-input {% if input_class %}{{ input_class }}{% endif %}"
        {% if allowed_extensions %}accept="{{ allowed_extensions }}"{% endif %}
        {% if multiple %}multiple{% endif %}
        {% if is_required and not existing_file %}required{% endif %}>
 {% else %}
-<div class="file-upload-component" id="container_{% if field_id %}{{ field_id }}{% else %}{{ field_name }}{% endif %}">
-    <label class="upload-label" for="{% if input_id %}{{ input_id }}{% elif field_id %}{{ field_id }}{% else %}{{ field_name }}{% endif %}">
+<div class="file-upload-component" id="container_{% if field_id %}{{ field_id }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_name }}{% endif %}">
+    <label class="upload-label" for="{% if input_id %}{{ input_id }}{% elif field_id %}{{ field_id }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_name }}{% endif %}">
         <span class="material-icons component-icon">{{ icon|default:'cloud_upload' }}</span>
         <span class="label-text">{{ label }}</span>
         {% if is_required %}
@@ -57,8 +57,8 @@
         <div class="file-preview-list" style="display: none;"></div>
 
         <input type="file"
-               id="{{ input_id|default:field_id|default:field_name }}"
-               name="{{ field_name }}"
+               id="{% if input_id %}{{ input_id }}{% elif field_id %}{{ field_id }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_name }}{% endif %}"
+               name="{% if field_name %}{{ field_name }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_id }}{% endif %}"
                class="file-input {% if input_class %}{{ input_class }}{% endif %}"
                {% if allowed_extensions %}accept="{{ allowed_extensions }}"{% endif %}
                {% if multiple %}multiple{% endif %}

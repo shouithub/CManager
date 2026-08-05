@@ -620,6 +620,7 @@ a:focus-visible {
     flex: 0 0 auto;
     font-size: 1.25rem;
     line-height: 1;
+    color: inherit;
 }
 
 /* Info Button */
@@ -4184,6 +4185,12 @@ fieldset legend {
 .page-header .material-icons {
     font-size: 2.5rem;
     color: var(--md3-primary);
+}
+
+.page-header .btn .material-icons,
+.page-header .btn-primary .material-icons,
+.page-header .btn-outlined .material-icons {
+    color: inherit;
 }
 
 .page-header-content {

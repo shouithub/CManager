@@ -4918,6 +4918,21 @@ def save_form_channel(request, channel_id=None):
     else:
         try:
             channel.save()
+            if 'example_file' in request.FILES:
+                example_upload = request.FILES['example_file']
+                example_error = validate_upload(
+                    example_upload,
+                    field_name='通道示例文件',
+                    allowed_extensions={'.doc', '.docx', '.pdf', '.jpg', '.jpeg', '.png', '.webp'},
+                    max_bytes=10 * 1024 * 1024,
+                )
+                if example_error:
+                    messages.error(request, example_error)
+                    return redirect('clubs:manage_form_channels_detail', channel_id=channel.id)
+                channel.example_file = example_upload
+            if request.POST.get('clear_channel_example') == 'on':
+                channel.example_file = None
+            channel.save(update_fields=['example_file'])
             missing_fields = missing_required_field_keys(channel)
             if channel.publish_status == 'published' and missing_fields:
                 missing_labels = [item['label'] for item in missing_required_field_infos(channel)]
