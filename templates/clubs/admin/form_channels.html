@@ -1,5 +1,6 @@
 {% extends 'clubs/base.html' %}
 {% load static %}
+{% load common_tags %}
 
 {% block title %}提交通道管理{% endblock %}
 
@@ -1106,11 +1107,17 @@
                         {% if current.example_files.all %}
                         <div style="display:grid;gap:6px;margin-top:10px;">
                             {% for example in current.example_files.all %}
-                            <label class="switch-label" style="font-weight:400;">
-                                <input type="checkbox" name="delete_example_file" value="{{ example.id }}">
-                                <span class="material-icons" style="font-size:1rem;">attach_file</span>
-                                <a href="{{ example.file.url }}" target="_blank" rel="noopener" style="color:var(--md3-primary);">{{ example.file.name|slice:"-30:" }}</a>
-                            </label>
+                            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                                <label class="switch-label" style="font-weight:400;margin:0;">
+                                    <input type="checkbox" name="delete_example_file" value="{{ example.id }}">
+                                    <span class="material-icons" style="font-size:1rem;">attach_file</span>
+                                </label>
+                                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ example.file.name|slice:"-30:" }}</span>
+                                <a href="{{ example.file.url }}" target="_blank" rel="noopener" class="btn btn-outlined btn-sm">下载</a>
+                                <button type="button" class="btn btn-outlined btn-sm js-office-preview"
+                                        data-office-preview-url="{{ example.file|office_preview_url:request }}"
+                                        data-office-file-name="{{ example.file.name|slice:'-30:' }}">预览</button>
+                            </div>
                             {% endfor %}
                             <label class="switch-label"><input type="checkbox" name="clear_channel_examples">清除全部示例文件</label>
                         </div>
@@ -1376,6 +1383,7 @@
                         {% endif %}
                     </div>
                 </form>
+{% include 'clubs/components/_office_preview_modal.html' %}
             </section>
             {% empty %}
             <div class="empty-state">
@@ -1569,6 +1577,7 @@
 
 {% block extra_js %}
 <script src="{% static 'js/file-upload.js' %}"></script>
+<script src="{% static 'js/office-preview.js' %}"></script>
 <script>
     (function () {
         const channelSearch = document.querySelector('.js-channel-search');

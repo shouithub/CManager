@@ -1,5 +1,6 @@
 {% extends 'clubs/base.html' %}
 {% load static %}
+{% load common_tags %}
 
 {% block title %}{{ channel.name }}{% endblock %}
 
@@ -304,12 +305,23 @@
     </section>
 
     {% if channel.example_files.all %}
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 14px;border:1px solid var(--md3-outline-variant);border-radius:var(--md3-radius-lg);background:var(--md3-surface-container-low);color:var(--md3-on-surface-variant);font-size:0.875rem;">
-        <span class="material-icons" style="color:var(--md3-primary);">description</span>
-        <span>通道示例文件：</span>
-        {% for example in channel.example_files.all %}
-        <a href="{{ example.file.url }}" target="_blank" rel="noopener" style="color:var(--md3-primary);font-weight:600;">{{ example.file.name|slice:"-30:" }}</a>{% if not forloop.last %}<span>、</span>{% endif %}
-        {% endfor %}
+    <div style="margin-bottom:16px;padding:12px 14px;border:1px solid var(--md3-outline-variant);border-radius:var(--md3-radius-lg);background:var(--md3-surface-container-low);">
+        <div style="display:flex;align-items:center;gap:6px;font-weight:700;color:var(--md3-on-surface);margin-bottom:8px;">
+            <span class="material-icons" style="color:var(--md3-primary);">description</span>
+            通道示例文件
+        </div>
+        <div style="display:grid;gap:8px;">
+            {% for example in channel.example_files.all %}
+            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                <span class="material-icons" style="color:var(--md3-primary);font-size:1.1rem;">insert_drive_file</span>
+                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--md3-on-surface);font-size:0.875rem;">{{ example.file.name|slice:"-30:" }}</span>
+                <a href="{{ example.file.url }}" target="_blank" rel="noopener" class="btn btn-outlined btn-sm">下载</a>
+                <button type="button" class="btn btn-outlined btn-sm js-office-preview"
+                        data-office-preview-url="{{ example.file|office_preview_url:request }}"
+                        data-office-file-name="{{ example.file.name|slice:'-30:' }}">预览</button>
+            </div>
+            {% endfor %}
+        </div>
     </div>
     {% endif %}
 
@@ -329,7 +341,14 @@
                     被打回文件：
                     {% for uploaded in item.files %}
                         {% if uploaded.review_status == 'rejected' %}
-                        <strong>{{ uploaded.original_name }}</strong>{% if uploaded.review_comment %}（{{ uploaded.review_comment }}）{% endif %}{% if not forloop.last %}、{% endif %}
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                            <span class="material-icons" style="font-size:1rem;">insert_drive_file</span>
+                            <strong>{{ uploaded.original_name }}</strong>{% if uploaded.review_comment %}（{{ uploaded.review_comment }}）{% endif %}
+                            <a href="{% url 'clubs:download_submission_file' uploaded.id %}" class="btn btn-outlined btn-sm">下载</a>
+                            <button type="button" class="btn btn-outlined btn-sm js-office-preview"
+                                    data-office-preview-url="{{ uploaded|office_preview_url:request }}"
+                                    data-office-file-name="{{ uploaded.original_name }}">预览</button>
+                        </div>
                         {% endif %}
                     {% endfor %}
                 </div>
@@ -391,8 +410,11 @@
         </div>
     </form>
 </div>
+
+{% include 'clubs/components/_office_preview_modal.html' %}
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/file-upload.js' %}"></script>
+<script src="{% static 'js/office-preview.js' %}"></script>
 {% endblock %}

@@ -1,3 +1,4 @@
+{% load common_tags %}
 {% comment %}
 标准文件上传组件（Material Design 风格，全站统一）。
 用法：
@@ -85,6 +86,10 @@
         <a href="{{ existing_file.url }}" target="_blank" class="existing-file-link">
             {{ existing_file.name }}
         </a>
+        <a href="{{ existing_file.url }}" target="_blank" rel="noopener" class="btn btn-outlined btn-sm">下载</a>
+        <button type="button" class="btn btn-outlined btn-sm js-office-preview"
+                data-office-preview-url="{{ existing_file|office_preview_url:request }}"
+                data-office-file-name="{{ existing_file.name }}">预览</button>
     </div>
     {% endif %}
 </div>

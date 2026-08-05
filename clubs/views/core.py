@@ -4344,6 +4344,29 @@ def _office_preview_url(request, uploaded):
     return f'https://view.officeapps.live.com/op/embed.aspx?src={encoded_file_url}'
 
 
+def _office_preview_url_for_name(request, file_name, display_name):
+    """按存储文件名与显示名生成 Office 在线预览 URL（非 Office 文档返回空）。"""
+    ext = os.path.splitext(str(display_name or file_name))[1].lower()
+    if ext not in {'.doc', '.docx', '.ppt', '.pptx'}:
+        return ''
+
+    from ..storage_backends import ClubStorage
+    storage = ClubStorage()
+    try:
+        direct_url = storage.get_public_url(file_name)
+    except Exception:
+        return ''
+
+    if direct_url.startswith('/'):
+        absolute_file_url = request.build_absolute_uri(direct_url) if request else direct_url
+    else:
+        absolute_file_url = direct_url
+    parsed_file_url = urllib.parse.urlsplit(absolute_file_url)
+    if parsed_file_url.scheme not in ('http', 'https') or not parsed_file_url.netloc:
+        return ''
+    return 'https://view.officeapps.live.com/op/embed.aspx?src=' + urllib.parse.quote(absolute_file_url, safe='')
+
+
 def _submission_context(submission, request=None):
     _ensure_generated_merge_files(submission)
     values = {value.field_id: value for value in submission.values.select_related('field')}

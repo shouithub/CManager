@@ -1,0 +1,93 @@
+{% comment %}
+Office 在线预览弹窗（共享组件）。
+页面引入一次，并加载 static/js/office-preview.js；
+预览按钮写法：
+  <button type="button" class="js-office-preview"
+          data-office-preview-url="{{ file|office_preview_url:request }}"
+          data-office-file-name="文件名">预览</button>
+{% endcomment %}
+
+<style>
+    .office-preview-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 28px;
+        background: rgba(0, 0, 0, 0.46);
+        box-sizing: border-box;
+    }
+
+    .office-preview-modal.active {
+        display: flex;
+    }
+
+    .office-preview-surface {
+        width: min(1120px, 100%);
+        height: min(760px, 90vh);
+        display: grid;
+        grid-template-rows: auto 1fr;
+        border-radius: var(--md3-radius-xl);
+        overflow: hidden;
+        background: var(--md3-surface-container-low, #fdfbff);
+        box-shadow: var(--md3-elevation-4);
+    }
+
+    .office-preview-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container-low);
+    }
+
+    .office-preview-title {
+        min-width: 0;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 750;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .office-preview-close {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: var(--md3-radius-full);
+        background: transparent;
+        color: var(--md3-on-surface-variant);
+        cursor: pointer;
+    }
+
+    .office-preview-close:hover {
+        background: var(--md3-surface-container-high);
+    }
+
+    .office-preview-frame {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: var(--md3-surface-container-lowest);
+    }
+</style>
+
+<div class="office-preview-modal" id="officePreviewModal" aria-hidden="true">
+    <div class="office-preview-surface" role="dialog" aria-modal="true" aria-labelledby="officePreviewTitle">
+        <div class="office-preview-header">
+            <h2 class="office-preview-title" id="officePreviewTitle">在线预览</h2>
+            <button class="office-preview-close" type="button" id="officePreviewClose" aria-label="关闭预览">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <iframe class="office-preview-frame" id="officePreviewFrame" title="Office 在线预览" allowfullscreen></iframe>
+    </div>
+</div>

@@ -1,4 +1,5 @@
 {% extends 'clubs/base.html' %}
+{% load static %}
 
 {% block title %}提交详情{% endblock %}
 
@@ -530,52 +531,6 @@
     </section>
 </div>
 
-<div class="office-preview-modal" id="officePreviewModal" aria-hidden="true">
-    <div class="office-preview-surface" role="dialog" aria-modal="true" aria-labelledby="officePreviewTitle">
-        <div class="office-preview-header">
-            <h2 class="office-preview-title" id="officePreviewTitle">在线预览</h2>
-            <button class="office-preview-close" type="button" id="officePreviewClose" aria-label="关闭预览">
-                <span class="material-icons">close</span>
-            </button>
-        </div>
-        <iframe class="office-preview-frame" id="officePreviewFrame" title="Office 在线预览" allowfullscreen></iframe>
-    </div>
-</div>
-
-<script>
-(function () {
-    var modal = document.getElementById('officePreviewModal');
-    var frame = document.getElementById('officePreviewFrame');
-    var title = document.getElementById('officePreviewTitle');
-    var closeBtn = document.getElementById('officePreviewClose');
-    if (!modal || !frame || !title || !closeBtn) return;
-
-    function openPreview(url, name) {
-        title.textContent = name || '在线预览';
-        frame.src = url;
-        modal.classList.add('active');
-        modal.setAttribute('aria-hidden', 'false');
-        closeBtn.focus();
-    }
-
-    function closePreview() {
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
-        frame.src = 'about:blank';
-    }
-
-    document.querySelectorAll('.js-office-preview').forEach(function (button) {
-        button.addEventListener('click', function () {
-            openPreview(button.dataset.officePreviewUrl, button.dataset.officeFileName);
-        });
-    });
-    closeBtn.addEventListener('click', closePreview);
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) closePreview();
-    });
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && modal.classList.contains('active')) closePreview();
-    });
-})();
-</script>
+{% include 'clubs/components/_office_preview_modal.html' %}
+<script src="{% static 'js/office-preview.js' %}"></script>
 {% endblock %}

@@ -1,5 +1,6 @@
 {% extends 'clubs/base.html' %}
 {% load static %}
+{% load common_tags %}
 
 {% block title %}编辑公告 - CManager{% endblock %}
 
@@ -511,10 +512,12 @@
         </aside>
     </form>
 </div>
+{% include 'clubs/components/_office_preview_modal.html' %}
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/file-upload.js' %}"></script>
+<script src="{% static 'js/office-preview.js' %}"></script>
 <script>
     (function () {
         const expiresInput = document.getElementById('expires_at');
