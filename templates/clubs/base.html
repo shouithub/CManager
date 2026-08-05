@@ -817,6 +817,25 @@
                         });
                     }
 
+                    function upsertSidebarChannelBadges(prefix, counts) {
+                        document.querySelectorAll(`.sidebar-menu-item[href*="${prefix}"]`).forEach((link) => {
+                            const href = link.getAttribute('href') || '';
+                            const slug = href.split(prefix).pop().replace(/\/+$/, '') || 'all';
+                            const count = (counts && counts[slug]) || 0;
+                            let badge = link.querySelector('.badge-count');
+                            if (count > 0) {
+                                if (!badge) {
+                                    badge = document.createElement('span');
+                                    badge.className = 'badge-count';
+                                    link.appendChild(badge);
+                                }
+                                badge.textContent = String(count);
+                            } else if (badge) {
+                                badge.remove();
+                            }
+                        });
+                    }
+
                     function applyCounts(data) {
                         if (!data || typeof data !== 'object') {
                             return;
@@ -824,11 +843,13 @@
 
                         if (role === 'staff' || role === 'admin') {
                             const audit = data.audit_counts || {};
+                            upsertSidebarChannelBadges('/staff/audit-center/', audit);
                             upsertBottomBadge('{% url "clubs:staff_audit_center" "all" %}', data.audit_total || 0);
                         }
 
                         if (role === 'president') {
                             const approval = data.approval_counts || {};
+                            upsertSidebarChannelBadges('/approval-center/', approval);
                             upsertBottomBadge('{% url "clubs:approval_center" "all" %}', approval.total || 0);
                         }
                     }
