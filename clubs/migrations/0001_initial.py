@@ -1338,9 +1338,9 @@ class Migration(migrations.Migration):
             model_name='staffclubrelation',
             index=models.Index(fields=['club', 'is_active'], name='scr_club_active_idx'),
         ),
-        migrations.AlterUniqueTogether(
-            name='staffclubrelation',
-            unique_together={('staff', 'club')},
+        migrations.AddConstraint(
+            model_name='staffclubrelation',
+            constraint=models.UniqueConstraint(fields=('staff', 'club'), name='unique_staff_club'),
         ),
         migrations.AddIndex(
             model_name='officer',
@@ -1350,9 +1350,9 @@ class Migration(migrations.Migration):
             model_name='officer',
             index=models.Index(fields=['club', 'position', 'is_current'], name='officer_club_pos_cur_idx'),
         ),
-        migrations.AlterUniqueTogether(
-            name='officer',
-            unique_together={('club', 'user_profile', 'position')},
+        migrations.AddConstraint(
+            model_name='officer',
+            constraint=models.UniqueConstraint(fields=('club', 'user_profile', 'position'), name='unique_club_officer_role'),
         ),
         migrations.RunPython(
             code=populate_departments,
@@ -1487,9 +1487,9 @@ class Migration(migrations.Migration):
             model_name='clubmember',
             index=models.Index(fields=['user_profile', 'status'], name='cm_user_status_idx'),
         ),
-        migrations.AlterUniqueTogether(
-            name='clubmember',
-            unique_together={('club', 'user_profile')},
+        migrations.AddConstraint(
+            model_name='clubmember',
+            constraint=models.UniqueConstraint(fields=('club', 'user_profile'), name='unique_club_member'),
         ),
         migrations.AddIndex(
             model_name='registrationtoken',
@@ -1572,7 +1572,7 @@ class Migration(migrations.Migration):
                 'verbose_name': '表单字段',
                 'verbose_name_plural': '表单字段',
                 'ordering': ['channel', 'order', 'id'],
-                'unique_together': {('channel', 'field_key')},
+                'constraints': [models.UniqueConstraint(fields=('channel', 'field_key'), name='unique_channel_field_key')],
             },
         ),
         migrations.CreateModel(
@@ -1610,7 +1610,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': '表单字段值',
                 'verbose_name_plural': '表单字段值',
-                'unique_together': {('submission', 'field')},
+                'constraints': [models.UniqueConstraint(fields=('submission', 'field'), name='unique_submission_field')],
             },
         ),
         migrations.CreateModel(
@@ -1782,7 +1782,7 @@ class Migration(migrations.Migration):
                 'verbose_name': '表单周期',
                 'verbose_name_plural': '表单周期',
                 'ordering': ['channel', '-sequence', '-starts_at'],
-                'unique_together': {('channel', 'sequence')},
+                'constraints': [models.UniqueConstraint(fields=('channel', 'sequence'), name='unique_channel_cycle_seq')],
             },
         ),
         migrations.AddField(
@@ -1803,7 +1803,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': '社团通道状态',
                 'verbose_name_plural': '社团通道状态',
-                'unique_together': {('channel', 'club')},
+                'constraints': [models.UniqueConstraint(fields=('channel', 'club'), name='unique_channel_club_state')],
             },
         ),
         migrations.CreateModel(
@@ -1853,7 +1853,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': '活动报名',
                 'verbose_name_plural': '活动报名',
-                'unique_together': {('activity', 'user_profile')},
+                'constraints': [models.UniqueConstraint(fields=('activity', 'user_profile'), name='unique_activity_user')],
             },
         ),
         migrations.AddIndex(
@@ -2005,7 +2005,7 @@ class Migration(migrations.Migration):
                 'verbose_name': '动态表单审核记录',
                 'verbose_name_plural': '动态表单审核记录',
                 'ordering': ['-reviewed_at'],
-                'unique_together': {('submission', 'reviewer', 'submission_attempt')},
+                'constraints': [models.UniqueConstraint(fields=('submission', 'reviewer', 'submission_attempt'), name='unique_submission_review')],
                 'indexes': [models.Index(fields=['submission', 'submission_attempt', 'status'], name='fsr_submission_attempt_idx'), models.Index(fields=['reviewer', '-reviewed_at'], name='fsr_reviewer_time_idx')],
             },
         ),
@@ -2110,78 +2110,6 @@ class Migration(migrations.Migration):
                 'ordering': ['-created_at'],
                 'indexes': [models.Index(fields=['category', '-created_at'], name='cfglog_category_time_idx')],
             },
-        ),
-        migrations.AlterUniqueTogether(
-            name='activityregistration',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='clubmember',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='formchannelclubstate',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='formcycle',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='formfield',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='formfieldvalue',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='formsubmissionreview',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='officer',
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name='staffclubrelation',
-            unique_together=set(),
-        ),
-        migrations.AddConstraint(
-            model_name='activityregistration',
-            constraint=models.UniqueConstraint(fields=('activity', 'user_profile'), name='unique_activity_user'),
-        ),
-        migrations.AddConstraint(
-            model_name='clubmember',
-            constraint=models.UniqueConstraint(fields=('club', 'user_profile'), name='unique_club_member'),
-        ),
-        migrations.AddConstraint(
-            model_name='formchannelclubstate',
-            constraint=models.UniqueConstraint(fields=('channel', 'club'), name='unique_channel_club_state'),
-        ),
-        migrations.AddConstraint(
-            model_name='formcycle',
-            constraint=models.UniqueConstraint(fields=('channel', 'sequence'), name='unique_channel_cycle_seq'),
-        ),
-        migrations.AddConstraint(
-            model_name='formfield',
-            constraint=models.UniqueConstraint(fields=('channel', 'field_key'), name='unique_channel_field_key'),
-        ),
-        migrations.AddConstraint(
-            model_name='formfieldvalue',
-            constraint=models.UniqueConstraint(fields=('submission', 'field'), name='unique_submission_field'),
-        ),
-        migrations.AddConstraint(
-            model_name='formsubmissionreview',
-            constraint=models.UniqueConstraint(fields=('submission', 'reviewer', 'submission_attempt'), name='unique_submission_review'),
-        ),
-        migrations.AddConstraint(
-            model_name='officer',
-            constraint=models.UniqueConstraint(fields=('club', 'user_profile', 'position'), name='unique_club_officer_role'),
-        ),
-        migrations.AddConstraint(
-            model_name='staffclubrelation',
-            constraint=models.UniqueConstraint(fields=('staff', 'club'), name='unique_staff_club'),
         ),
         migrations.AddIndex(
             model_name='formsubmission',
