@@ -361,15 +361,21 @@ def delete_account(request):
         if confirm_username == user.username:
             # 保存用户名用于显示消息
             username = user.username
+
+            try:
+                role = user.profile.role
+            except UserProfile.DoesNotExist:
+                messages.error(request, '用户档案不存在，无法注销账号')
+                return redirect('clubs:index')
             
             # 根据用户角色执行不同的删除逻辑
-            if user.profile.role == 'admin':
+            if role == 'admin':
                 # 管理员账户删除逻辑
                 # 直接删除用户，Django会级联删除相关数据
                 user.delete()
                 messages.success(request, f'管理员账户 {username} 已成功删除！')
             
-            elif user.profile.role == 'president':
+            elif role == 'president':
                 # 社长账户删除逻辑
                 # 1. 将该社长的 Officer 记录标记为离任，保留年审记录
                 Officer.objects.filter(
@@ -381,7 +387,7 @@ def delete_account(request):
                 user.delete()
                 messages.success(request, f'社长账户 {username} 已成功删除！您的年审记录已被保留。')
             
-            elif user.profile.role == 'staff':
+            elif role == 'staff':
                 # 干事账户删除逻辑 - 完整清除所有数据
                 # 1. 先删除干事在所有社团中的角色关系
                 # 删除干事在社团中的干部记录
@@ -473,7 +479,11 @@ def manage_staff_clubs(request):
 def edit_profile(request):
     """用户修改个人信息 - 整合了信息修改、密码修改和头像上传"""
     user = request.user
-    profile = user.profile
+    try:
+        profile = user.profile
+    except UserProfile.DoesNotExist:
+        messages.error(request, '用户档案不存在，请先联系管理员完善资料')
+        return redirect('clubs:index')
     
     if request.method == 'POST':
         action = request.POST.get('action')

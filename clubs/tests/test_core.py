@@ -1360,3 +1360,118 @@ class DynamicFormReReviewTests(TestCase):
         )
         self.assertTrue(response.context['can_edit_own_review'])
         self.assertTrue(response.context['can_reenter_review'])
+
+
+class DepartmentEditAndProfileRobustnessTests(TestCase):
+    """审计修复回归测试：非法表单参数不产生 500，缺失 profile 的用户操作有兜底。"""
+
+    def setUp(self):
+        # 首启引导中间件要求系统存在管理员，否则所有请求都会重定向到 /oobe/
+        self.admin = User.objects.create_superuser(
+            username='robustness-admin',
+            email='',
+            password='test-password',
+        )
+
+    def _make_staff(self, username='dept-edit-staff'):
+        staff = User.objects.create_user(username=username, password='test-password')
+        UserProfile.objects.create(user=staff, role='staff', status='approved')
+        self.client.force_login(staff)
+        return staff
+
+    def test_edit_department_rejects_non_numeric_order(self):
+        from ..models import Department
+
+        self._make_staff()
+        dept = Department.objects.create(name='原部门', order=2)
+        response = self.client.post(
+            reverse('clubs:edit_department', args=[dept.pk]),
+            {'name': '新部门', 'order': 'abc'},
+            secure=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '排序顺序必须是大于或等于 0 的整数')
+        dept.refresh_from_db()
+        self.assertEqual(dept.name, '原部门')
+        self.assertEqual(dept.order, 2)
+
+    def test_edit_department_rejects_empty_name(self):
+        from ..models import Department
+
+        self._make_staff()
+        dept = Department.objects.create(name='原部门')
+        response = self.client.post(
+            reverse('clubs:edit_department', args=[dept.pk]),
+            {'name': '   ', 'order': '3'},
+            secure=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '部门名称不能为空')
+        dept.refresh_from_db()
+        self.assertEqual(dept.name, '原部门')
+
+    def test_edit_department_accepts_valid_update(self):
+        from ..models import Department
+
+        self._make_staff()
+        dept = Department.objects.create(name='原部门', order=1)
+        response = self.client.post(
+            reverse('clubs:edit_department', args=[dept.pk]),
+            {'name': '新部门', 'order': '5'},
+            secure=True,
+        )
+        self.assertRedirects(
+            response,
+            reverse('clubs:manage_departments'),
+            fetch_redirect_response=False,
+        )
+        dept.refresh_from_db()
+        self.assertEqual(dept.name, '新部门')
+        self.assertEqual(dept.order, 5)
+
+    def test_edit_profile_without_profile_redirects(self):
+        user = User.objects.create_user(username='no-profile-user', password='test-password')
+        self.client.force_login(user)
+        response = self.client.post(
+            reverse('clubs:edit_profile'),
+            {'action': 'update_info'},
+            secure=True,
+        )
+        self.assertRedirects(
+            response,
+            reverse('clubs:index'),
+            fetch_redirect_response=False,
+        )
+        self.assertTrue(User.objects.filter(pk=user.pk).exists())
+
+    def test_delete_account_without_profile_redirects(self):
+        user = User.objects.create_user(username='no-profile-del', password='test-password')
+        self.client.force_login(user)
+        response = self.client.post(
+            reverse('clubs:delete_account'),
+            {'confirm_username': user.username},
+            secure=True,
+        )
+        self.assertRedirects(
+            response,
+            reverse('clubs:index'),
+            fetch_redirect_response=False,
+        )
+        self.assertTrue(User.objects.filter(pk=user.pk).exists())
+
+    def test_room_booking_str_without_profile(self):
+        from ..models import Room, RoomBooking
+
+        user = User.objects.create_user(username='booking-no-profile', password='test-password')
+        room = Room.objects.create(name='测试房间', capacity=10)
+        booking = RoomBooking.objects.create(
+            room=room,
+            user=user,
+            booking_date=date(2026, 8, 6),
+            start_time=time(9, 0),
+            end_time=time(10, 0),
+            purpose='测试',
+            participant_count=2,
+            contact_phone='13800000000',
+        )
+        self.assertIn('booking-no-profile', str(booking))

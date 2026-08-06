@@ -1136,7 +1136,13 @@ class RoomBooking(models.Model):
         ]
     
     def __str__(self) -> str:
-        return f"{self.room.name} - {self.user.profile.get_full_name()} - {self.booking_date} {self.start_time}-{self.end_time}"  # type: ignore[attr-defined]
+        profile = getattr(self.user, 'profile', None)
+        user_name = (
+            profile.get_full_name()
+            if profile
+            else (self.user.get_full_name() or self.user.username)
+        )
+        return f"{self.room.name} - {user_name} - {self.booking_date} {self.start_time}-{self.end_time}"  # type: ignore[attr-defined]
     
     def can_delete(self, user):
         """检查用户是否有权限删除此预约"""

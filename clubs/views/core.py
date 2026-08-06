@@ -3204,13 +3204,45 @@ def edit_department(request, dept_id):
     dept = get_object_or_404(Department, pk=dept_id)
 
     if request.method == 'POST':
-        dept.name = request.POST.get('name')
-        dept.description = request.POST.get('description')
-        dept.highlights = request.POST.get('highlights')
-        dept.icon = request.POST.get('icon', 'work')
-        dept.order = int(request.POST.get('order', 0))
+        form_data = {
+            'name': request.POST.get('name'),
+            # 字段缺失时保留原值，避免部分提交把必填/可空字段写空或触发约束错误
+            'description': request.POST.get('description', dept.description),
+            'highlights': request.POST.get('highlights', dept.highlights),
+            'icon': request.POST.get('icon', dept.icon or 'work'),
+            'order': request.POST.get('order', str(dept.order)),
+        }
+        name = (form_data['name'] or '').strip()
+        try:
+            order = int(form_data['order'] or 0)
+            if order < 0:
+                raise ValueError('order must be >= 0')
+        except (TypeError, ValueError):
+            messages.error(request, '排序顺序必须是大于或等于 0 的整数')
+            return render(request, 'clubs/admin/department_form.html', {
+                'title': '编辑部门',
+                'department': dept,
+            })
+        if not name:
+            messages.error(request, '部门名称不能为空')
+            return render(request, 'clubs/admin/department_form.html', {
+                'title': '编辑部门',
+                'department': dept,
+            })
+        dept.name = name
+        dept.description = form_data['description']
+        dept.highlights = form_data['highlights']
+        dept.icon = form_data['icon'] or 'work'
+        dept.order = order
         dept.updated_by = request.user
-        dept.save()
+        try:
+            dept.save()
+        except Exception as e:
+            messages.error(request, f'更新失败: {str(e)}')
+            return render(request, 'clubs/admin/department_form.html', {
+                'title': '编辑部门',
+                'department': dept,
+            })
         messages.success(request, '部门更新成功')
         return redirect('clubs:manage_departments')
 
