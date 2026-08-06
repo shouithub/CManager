@@ -256,7 +256,12 @@ def download_submission_file(request, file_id):
             pass
 
     filename = uploaded.original_name or os.path.basename(uploaded.file.name)
-    response = FileResponse(uploaded.file.open('rb'), as_attachment=True, filename=filename)
+    inline = request.GET.get('inline') == '1'
+    response = FileResponse(
+        uploaded.file.open('rb'),
+        as_attachment=not inline,
+        filename=filename,
+    )
     response['X-Content-Type-Options'] = 'nosniff'
     return response
 
@@ -4453,10 +4458,62 @@ def _submission_download_context(submission):
 def _submission_common_context(submission, request=None):
     context = {
         'rows': _submission_context(submission, request=request),
+        'attempt_history': submission.metadata.get('attempt_history') or [],
+        'attempt_groups': _submission_attempt_groups(submission, request=request),
     }
     context.update(_submission_review_summary(submission))
     context.update(_submission_download_context(submission))
     return context
+
+
+def _submission_attempt_groups(submission, request=None):
+    """按提交轮次合并历史快照与审核记录，供折叠历史卡片使用。
+
+    metadata.attempt_history 只在社长补交时写入，早期数据可能没有快照；
+    这里以 DB 中的 FormSubmissionReview.submission_attempt 为补充，确保
+    只有审核记录、没有内容快照的轮次也能在历史界面中展示。
+    """
+    history_by_attempt = {}
+    for entry in submission.metadata.get('attempt_history') or []:
+        attempt = entry.get('attempt')
+        if attempt is not None:
+            history_by_attempt[attempt] = dict(entry)
+
+    reviews_by_attempt = defaultdict(list)
+    reviews = (
+        submission.reviews.select_related('reviewer', 'reviewer__profile')
+        .order_by('submission_attempt', 'reviewed_at')
+    )
+    for review in reviews:
+        reviews_by_attempt[review.submission_attempt].append({
+            'reviewer': review.reviewer.username,
+            'status': review.status,
+            'status_label': review.get_status_display(),
+            'comment': review.comment,
+            'reviewed_at': timezone.localtime(review.reviewed_at).strftime('%Y-%m-%d %H:%M'),
+        })
+
+    attempt_numbers = set(history_by_attempt) | set(reviews_by_attempt)
+    groups = []
+    for attempt in sorted(attempt_numbers):
+        entry = history_by_attempt.get(attempt, {'attempt': attempt})
+        if attempt == submission.resubmission_count:
+            entry.setdefault('status', submission.status)
+            entry.setdefault('status_label', submission.get_status_display())
+            entry.setdefault(
+                'submitted_at',
+                timezone.localtime(submission.submitted_at).strftime('%Y-%m-%d %H:%M'),
+            )
+        entry['reviews'] = reviews_by_attempt.get(attempt, [])
+        if request is not None:
+            for file_info in entry.get('files') or []:
+                file_info['office_preview_url'] = _office_preview_url_for_name(
+                    request,
+                    file_info.get('storage_name') or '',
+                    file_info.get('file_name') or file_info.get('storage_name') or '',
+                )
+        groups.append(entry)
+    return groups
 
 
 def _rejected_field_queryset(submission):
@@ -4489,6 +4546,137 @@ def _form_field_items(fields, submission=None):
             'files': files_by_field.get(field.id, []),
         })
     return items
+
+
+def _snapshot_attempt_history(submission):
+    """把当前轮次提交的字段值和文件信息快照进 metadata。
+
+    仅在内容即将被覆盖/删除前调用（如社长修改补交），保证被打回轮次的
+    内容可以在历史中回溯。文件记录删除后物理文件会保留，供历史下载使用。
+    """
+    attempt = submission.resubmission_count
+    metadata = dict(submission.metadata or {})
+    history = [
+        entry
+        for entry in (metadata.get('attempt_history') or [])
+        if entry.get('attempt') != attempt
+    ]
+    fields = []
+    for value in submission.values.select_related('field'):
+        raw = value.value_json if value.value_json not in ({}, []) else value.value_text
+        fields.append({
+            'label': value.field.label,
+            'field_key': value.field.field_key,
+            'field_type': value.field.field_type,
+            'value': raw,
+            'review_status': value.review_status,
+            'review_comment': value.review_comment,
+        })
+    files = []
+    archive_dir = os.path.join('form_submissions', submission.public_id, 'history')
+    for uploaded in submission.uploaded_files.filter(is_generated=False).select_related('field'):
+        storage_name = uploaded.file.name or ''
+        if uploaded.review_status == 'rejected' and storage_name:
+            # 记录删除会触发 post_delete 信号删除物理文件，先复制到归档目录，
+            # 保证被打回轮次的附件在历史中仍可下载。
+            try:
+                from ..storage_backends import ClubStorage
+                storage = ClubStorage()
+                with uploaded.file.open('rb') as source:
+                    storage_name = storage.save(
+                        os.path.join(archive_dir, f'attempt_{attempt}_{os.path.basename(storage_name)}'),
+                        source,
+                    )
+            except Exception:
+                logger.warning('归档历史提交文件失败：%s', uploaded.file.name or '')
+        ext = os.path.splitext(storage_name)[1].lower()
+        files.append({
+            'file_name': uploaded.original_name or uploaded.file.name,
+            'storage_name': storage_name,
+            'field_label': uploaded.field.label,
+            'field_key': uploaded.field.field_key,
+            'review_status': uploaded.review_status,
+            'review_comment': uploaded.review_comment,
+            'is_image': ext in {'.jpg', '.jpeg', '.png', '.gif', '.webp'},
+        })
+    history.append({
+        'attempt': attempt,
+        'status': submission.status,
+        'status_label': submission.get_status_display(),
+        'submitted_at': timezone.localtime(submission.submitted_at).strftime('%Y-%m-%d %H:%M'),
+        'fields': fields,
+        'files': files,
+    })
+    history.sort(key=lambda item: item.get('attempt') or 0)
+    metadata['attempt_history'] = history
+    submission.metadata = metadata
+
+
+def _delete_attempt_history_files(submission):
+    """删除历史快照中引用的物理文件（仅在整条提交被删除时调用）。"""
+    history = submission.metadata.get('attempt_history') or []
+    if not history:
+        return
+    from ..storage_backends import ClubStorage
+    storage = ClubStorage()
+    for entry in history:
+        for file_info in entry.get('files') or []:
+            storage_name = file_info.get('storage_name') or ''
+            if not storage_name:
+                continue
+            try:
+                storage.delete(storage_name)
+            except Exception:
+                logger.warning('删除历史快照文件失败：%s', storage_name)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+def history_submission_file(request, submission_key, attempt, index):
+    """授权访问历史轮次快照中的附件（修改补交后被保留的旧文件）。"""
+    submission = _get_submission_or_404(submission_key)
+    if not (is_staff_or_admin(request.user) or _is_president_of_club(request.user, submission.club)):
+        return HttpResponseForbidden('无权下载该材料')
+    history = submission.metadata.get('attempt_history') or []
+    entry = next((item for item in history if item.get('attempt') == attempt), None)
+    if not entry:
+        raise Http404('历史提交不存在')
+    files = entry.get('files') or []
+    if index < 0 or index >= len(files):
+        raise Http404('文件不存在')
+    file_info = files[index]
+    storage_name = file_info.get('storage_name') or ''
+    if not storage_name:
+        raise Http404('文件不存在')
+
+    # 路径安全校验：存储名必须是站内相对路径，拒绝绝对路径/目录穿越
+    from ..storage_backends import _sanitize_storage_name
+    if _sanitize_storage_name(storage_name) != storage_name or storage_name.startswith('/'):
+        raise Http404('文件不存在')
+
+    from ..storage_backends import ClubStorage
+    from ..models import StorageConfig
+    storage = ClubStorage()
+    if not storage.exists(storage_name):
+        raise Http404('文件不存在')
+    if StorageConfig.is_s3_active():
+        try:
+            url = storage.get_presigned_url(
+                storage_name,
+                StorageConfig.get_active_config().presigned_url_expiration,
+            )
+            return redirect(url)
+        except Exception:
+            pass
+
+    filename = file_info.get('file_name') or os.path.basename(storage_name)
+    inline = request.GET.get('inline') == '1'
+    try:
+        file_handle = storage.open(storage_name, 'rb')
+    except Exception:
+        raise Http404('文件不存在')
+    response = FileResponse(file_handle, as_attachment=not inline, filename=filename)
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -4579,10 +4767,13 @@ def revise_dynamic_submission(request, submission_key):
                         item_type=submission.channel.slug,
                         submission_key=submission.public_id,
                     )
+                # 先保存当前被打回轮次的内容快照，再覆盖，保证历史可回溯
+                _snapshot_attempt_history(submission)
                 for field in fields:
                     if field.field_type == 'file':
                         for uploaded in submission.uploaded_files.filter(field=field, review_status='rejected', is_generated=False):
-                            _delete_uploaded_record(uploaded)
+                            # 仅删除记录，物理文件保留供历史下载使用
+                            uploaded.delete()
                         new_uploads = _create_uploaded_records(submission, field, upload_map.get(field.id, []))
                         for uploaded in new_uploads:
                             uploaded.review_status = 'pending'
@@ -4619,6 +4810,7 @@ def revise_dynamic_submission(request, submission_key):
                     'submitted_at',
                     'resubmission_count',
                     'is_read',
+                    'metadata',
                 ])
             messages.success(request, '已补交被打回的内容，等待重新审核')
             return redirect('clubs:approval_detail', item_type=submission.channel.slug, submission_key=submission.public_id)
@@ -5108,6 +5300,7 @@ def delete_audit_request(request, tab, item_key):
     for uploaded in submission.uploaded_files.all():
         if uploaded.file:
             uploaded.file.delete(save=False)
+    _delete_attempt_history_files(submission)
     submission.delete()
     messages.success(request, '审核请求已删除')
     return redirect('clubs:staff_audit_center', tab=slug)
@@ -5467,6 +5660,7 @@ def cancel_submission(request, submission_key):
     for uploaded in submission.uploaded_files.all():
         if uploaded.file:
             uploaded.file.delete(save=False)
+    _delete_attempt_history_files(submission)
     submission.delete()
     messages.success(request, '提交已取消')
     return redirect('clubs:approval_center', tab='all')

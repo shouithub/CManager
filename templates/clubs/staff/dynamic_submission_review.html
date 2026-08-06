@@ -691,6 +691,11 @@
                                 <img src="{{ uploaded.file.url }}" alt="{{ uploaded.original_name|default:uploaded.file.name }}" loading="lazy">
                             </a>
                             {% endif %}
+                            {% if not uploaded|is_image_file %}
+                            <a class="file-preview-button" href="{% url 'clubs:download_submission_file' uploaded.id %}?inline=1" target="_blank" rel="noopener">
+                                <span class="material-icons">open_in_new</span>查看
+                            </a>
+                            {% endif %}
                             <a class="file-link" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
                                 <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
                             </a>
@@ -795,25 +800,9 @@
         </form>
     </section>
 
-    <section class="content-card">
-        <div class="card-header">
-            <span class="material-icons">history</span>审核记录
-        </div>
-        <div class="review-history">
-            {% for review in all_reviews %}
-            <div class="review-history-row">
-                <strong>{{ review.reviewer.username }}</strong>
-                <span class="item-status {{ review.status }}">{{ review.get_status_display }}</span>
-                <span class="attempt-cell">
-                    <span>第 {{ review.submission_attempt }} 次提交 · {{ review.reviewed_at|date:"Y-m-d H:i" }}</span>
-                    {% if review.submission_attempt == submission.resubmission_count %}<span class="meta-chip progress">本轮</span>{% endif %}
-                </span>
-                {% if review.comment %}<div class="review-history-comment">{{ review.comment }}</div>{% endif %}
-            </div>
-            {% empty %}
-            <div class="empty-state">暂无审核记录</div>
-            {% endfor %}
-        </div>
+    <section class="content-card review-history-card">
+        {% include 'clubs/components/_submission_attempt_history.html' %}
+        {% if not attempt_groups %}<div class="empty-state">暂无审核记录</div>{% endif %}
         {% with override_history=submission.metadata.review_override_history %}
         {% if override_history %}
         <div class="card-header" style="margin-top:18px;border-top:1px solid var(--md3-outline-variant);">

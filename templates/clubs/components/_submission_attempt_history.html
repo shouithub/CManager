@@ -1,0 +1,275 @@
+{% comment %}
+历史轮次折叠卡片（共享组件）。
+配合视图 attempt_groups 使用：按提交轮次同时展示旧审核记录与
+被打回轮次的字段快照/归档附件，旧轮次默认折叠。
+需要上下文：submission、attempt_groups。
+{% endcomment %}
+{% if attempt_groups %}
+<style>
+    .attempt-history-block {
+        margin-top: 18px;
+        border-top: 1px solid var(--md3-outline-variant);
+        padding-top: 18px;
+    }
+
+    .attempt-history-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .attempt-history-item {
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg, 16px);
+        background: var(--md3-surface, #fff);
+        overflow: hidden;
+        box-shadow: var(--md3-elevation-1, 0 1px 2px rgba(0, 0, 0, 0.12));
+        transition: box-shadow 160ms ease;
+    }
+
+    .attempt-history-item[open] {
+        box-shadow: var(--md3-elevation-2, 0 2px 6px rgba(0, 0, 0, 0.16));
+    }
+
+    .attempt-history-item summary {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 13px 16px;
+        cursor: pointer;
+        list-style: none;
+        background: var(--md3-surface-container-low, #fdfbff);
+        color: var(--md3-on-surface, #1a1b1f);
+        font-weight: 700;
+        user-select: none;
+    }
+
+    .attempt-history-item summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .attempt-history-item summary::after {
+        content: 'expand_more';
+        font-family: 'Material Icons';
+        font-size: 1.3rem;
+        margin-left: auto;
+        transition: transform 0.18s ease;
+        color: var(--md3-on-surface-variant, #44474e);
+    }
+
+    .attempt-history-item[open] summary::after {
+        transform: rotate(180deg);
+    }
+
+    .attempt-history-item summary > .material-icons {
+        font-size: 1.2rem;
+        color: var(--md3-primary, #005ac1);
+    }
+
+    .attempt-time {
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .attempt-review-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 24px;
+        padding: 0 8px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-secondary-container, #d8e2ff);
+        color: var(--md3-on-secondary-container, #001a41);
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .attempt-history-body {
+        display: grid;
+        gap: 12px;
+        padding: 14px 16px 16px;
+        background: var(--md3-surface, #fff);
+    }
+
+    .history-review-list {
+        display: grid;
+        gap: 8px;
+    }
+
+    .history-review-row {
+        display: grid;
+        grid-template-columns: minmax(110px, 1fr) auto auto;
+        gap: 10px;
+        align-items: center;
+        padding: 11px 13px;
+        border: 1px solid var(--md3-outline-variant, #c4c6d0);
+        border-radius: var(--md3-radius-md, 12px);
+        background: var(--md3-surface-container-lowest, #ffffff);
+    }
+
+    .history-review-row .review-time {
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    .history-review-comment {
+        grid-column: 1 / -1;
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    .history-field-row,
+    .history-file-row {
+        display: grid;
+        gap: 6px;
+        padding: 12px;
+        border: 1px solid var(--md3-outline-variant, #c4c6d0);
+        border-radius: var(--md3-radius-md, 12px);
+        background: var(--md3-surface-container-lowest, #ffffff);
+    }
+
+    .history-field-label {
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.8rem;
+        font-weight: 750;
+    }
+
+    .history-field-value {
+        word-break: break-word;
+        line-height: 1.55;
+        white-space: pre-wrap;
+    }
+
+    .history-file-row .file-entry {
+        display: flex;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .history-file-row .file-entry img {
+        max-width: 100%;
+        max-height: 240px;
+        border-radius: var(--md3-radius-lg, 12px);
+        border: 1px solid var(--md3-outline-variant, #c4c6d0);
+        display: block;
+    }
+
+    @media (max-width: 600px) {
+        .attempt-history-item summary {
+            padding: 11px 12px;
+        }
+
+        .attempt-history-item summary .item-status {
+            order: 3;
+        }
+
+        .attempt-time {
+            width: 100%;
+            margin-left: 0;
+        }
+
+        .history-review-row {
+            grid-template-columns: 1fr auto;
+        }
+
+        .history-review-row .review-time {
+            grid-column: 1 / -1;
+        }
+    }
+</style>
+
+<div class="attempt-history-block">
+    <div class="card-header">
+        <span class="material-icons">content_paste_history</span>历史提交与审核记录
+        {% if reviewer_count %}
+        <span class="meta-chip progress" style="margin-left:auto;">已审核 {{ reviewer_count }} 人</span>
+        {% else %}
+        <span class="meta-chip" style="margin-left:auto;">旧轮次默认折叠</span>
+        {% endif %}
+    </div>
+    <div class="attempt-history-list">
+        {% for group in attempt_groups %}
+        <details class="attempt-history-item" {% if forloop.last %}open{% endif %}>
+            <summary>
+                <span class="material-icons">description</span>
+                第 {{ group.attempt }} 次提交
+                {% if group.status_label %}
+                <span class="item-status {{ group.status }}">{{ group.status_label }}</span>
+                {% endif %}
+                {% if group.reviews %}
+                <span class="attempt-review-count">
+                    <span class="material-icons">rate_review</span>{{ group.reviews|length }}
+                </span>
+                {% endif %}
+                <span class="attempt-time">{{ group.submitted_at|default:"—" }}</span>
+            </summary>
+            <div class="attempt-history-body">
+                {% if group.reviews %}
+                <div class="history-review-list">
+                    <span class="history-field-label">审核记录</span>
+                    {% for review in group.reviews %}
+                    <div class="history-review-row">
+                        <strong>{{ review.reviewer }}</strong>
+                        <span class="item-status {{ review.status }}">{{ review.status_label }}</span>
+                        <span class="review-time">{{ review.reviewed_at }}</span>
+                        {% if review.comment %}
+                        <div class="history-review-comment">{{ review.comment }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% for field in group.fields %}
+                {% if field.value is not None and field.value != '' %}
+                <div class="history-field-row">
+                    <span class="history-field-label">{{ field.label }}</span>
+                    <span class="history-field-value">
+                        {% if field.field_type == 'checkbox' %}{{ field.value|join:"、" }}{% else %}{{ field.value }}{% endif %}
+                    </span>
+                    {% if field.review_comment %}<span class="item-comment">{{ field.review_comment }}</span>{% endif %}
+                </div>
+                {% endif %}
+                {% empty %}
+                {% if not group.reviews %}
+                <div class="empty-state">该轮次没有可回溯的字段内容</div>
+                {% endif %}
+                {% endfor %}
+
+                {% for file in group.files %}
+                <div class="history-file-row">
+                    <span class="history-field-label">{{ file.field_label }}</span>
+                    <div class="file-entry">
+                        {% if file.is_image %}
+                        <a href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" target="_blank" rel="noopener" style="display:block;">
+                            <img src="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" alt="{{ file.file_name }}" loading="lazy">
+                        </a>
+                        {% endif %}
+                        {% if file.office_preview_url %}
+                        <button class="file-preview-button js-office-preview" type="button" data-office-preview-url="{{ file.office_preview_url }}" data-office-file-name="{{ file.file_name }}">
+                            <span class="material-icons">visibility</span>预览
+                        </button>
+                        {% endif %}
+                        {% if not file.is_image %}
+                        <a class="file-preview-button" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" target="_blank" rel="noopener">
+                            <span class="material-icons">open_in_new</span>查看
+                        </a>
+                        {% endif %}
+                        <a class="file-link" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}" target="_blank" rel="noopener">
+                            <span class="material-icons">download</span>{{ file.file_name }}
+                        </a>
+                        {% if file.review_comment %}<span class="item-comment">{{ file.review_comment }}</span>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </details>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

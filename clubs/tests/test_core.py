@@ -1365,6 +1365,176 @@ class DynamicFormReReviewTests(TestCase):
         self.assertTrue(response.context['can_edit_own_review'])
         self.assertTrue(response.context['can_reenter_review'])
 
+    def test_revise_preserves_rejected_round_content_in_history(self):
+        from django.core.files.base import ContentFile
+
+        from ..models import FormUploadedFile
+        from ..storage_backends import ClubStorage
+
+        text_field = FormField.objects.create(
+            channel=self.channel,
+            field_key='reason',
+            label='事由',
+            field_type='text',
+            is_active=True,
+        )
+        file_field = FormField.objects.create(
+            channel=self.channel,
+            field_key='attachment',
+            label='附件',
+            field_type='file',
+            is_active=True,
+        )
+        self.submitter.profile.role = 'president'
+        self.submitter.profile.save(update_fields=['role'])
+        Officer.objects.create(
+            club=self.club,
+            user_profile=self.submitter.profile,
+            position='president',
+            appointed_date=date(2026, 1, 1),
+        )
+
+        from PIL import Image
+
+        png_buffer = BytesIO()
+        Image.new('RGB', (1, 1), 'white').save(png_buffer, format='PNG')
+        png = png_buffer.getvalue()
+        submission = FormSubmission.objects.create(
+            channel=self.channel,
+            club=self.club,
+            submitter=self.submitter,
+            status='rejected',
+        )
+        FormFieldValue.objects.create(
+            submission=submission,
+            field=text_field,
+            value_text='第一轮内容',
+            review_status='rejected',
+        )
+        old_upload = FormUploadedFile.objects.create(
+            submission=submission,
+            field=file_field,
+            file=ContentFile(png, name='old.png'),
+            original_name='旧附件.png',
+            review_status='rejected',
+        )
+        old_pdf_upload = FormUploadedFile.objects.create(
+            submission=submission,
+            field=file_field,
+            file=ContentFile(b'%PDF-1.4\nold', name='old.pdf'),
+            original_name='旧附件.pdf',
+            review_status='rejected',
+        )
+        old_storage_name = old_upload.file.name
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=self.reviewer,
+            status='rejected',
+            comment='原审核意见',
+            submission_attempt=1,
+        )
+
+        self.client.force_login(self.submitter)
+        response = self.client.post(
+            reverse('clubs:revise_dynamic_submission', args=[submission.public_id]),
+            {
+                f'field_{text_field.id}': '第二轮内容',
+                f'field_{file_field.id}': SimpleUploadedFile('new.png', png, content_type='image/png'),
+            },
+            secure=True,
+        )
+        self.assertRedirects(
+            response,
+            reverse('clubs:approval_detail', args=[self.channel.slug, submission.public_id]),
+            fetch_redirect_response=False,
+        )
+
+        submission.refresh_from_db()
+        self.assertEqual(submission.resubmission_count, 2)
+        self.assertEqual(submission.status, 'pending')
+        # 旧文件记录已删除，但归档副本保留供历史下载
+        self.assertEqual(submission.uploaded_files.count(), 1)
+
+        history = submission.metadata.get('attempt_history') or []
+        self.assertEqual(len(history), 1)
+        entry = history[0]
+        self.assertEqual(entry['attempt'], 1)
+        self.assertEqual(entry['status'], 'rejected')
+        self.assertTrue(
+            any(
+                field['value'] == '第一轮内容'
+                for field in entry['fields']
+                if field['field_key'] == 'reason'
+            )
+        )
+        archived_files = [
+            file for file in entry['files']
+            if file['field_key'] == 'attachment'
+        ]
+        archived_file = archived_files[0]
+        self.assertTrue(archived_file['storage_name'])
+        self.assertNotEqual(archived_file['storage_name'], old_storage_name)
+        self.assertTrue(ClubStorage().exists(archived_file['storage_name']))
+        self.assertFalse(ClubStorage().exists(old_storage_name))
+        self.assertEqual(len(archived_files), 2)
+        pdf_file = next(
+            file for file in archived_files
+            if file['file_name'].endswith('.pdf')
+        )
+        self.assertFalse(pdf_file['is_image'])
+
+        # 详情页展示历史内容
+        detail = self.client.get(
+            reverse('clubs:approval_detail', args=[self.channel.slug, submission.public_id]),
+            secure=True,
+        )
+        self.assertContains(detail, '历史提交与审核记录')
+        self.assertContains(detail, '第一轮内容')
+        self.assertContains(detail, '旧附件.png')
+        self.assertContains(detail, '旧附件.pdf')
+        self.assertContains(detail, '原审核意见')
+        self.assertContains(detail, 'open_in_new')
+        self.assertContains(detail, '?inline=1')
+
+        # 干事/管理员审核页同样展示历史内容
+        self.client.force_login(self.admin)
+        staff_page = self.client.get(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            secure=True,
+        )
+        self.assertContains(staff_page, '历史提交与审核记录')
+        self.assertContains(staff_page, '第一轮内容')
+
+        # 历史附件仍可下载
+        download = self.client.get(
+            reverse(
+                'clubs:history_submission_file',
+                args=[submission.public_id, 1, 0],
+            ),
+            secure=True,
+        )
+        self.assertEqual(download.status_code, 200)
+        self.assertEqual(b''.join(download.streaming_content), png)
+
+        # 历史附件支持 inline 查看（非图片文件）
+        pdf_index = next(
+            index for index, file in enumerate(archived_files)
+            if file['file_name'].endswith('.pdf')
+        )
+        inline_download = self.client.get(
+            reverse(
+                'clubs:history_submission_file',
+                args=[submission.public_id, 1, pdf_index],
+            )
+            + '?inline=1',
+            secure=True,
+        )
+        self.assertEqual(inline_download.status_code, 200)
+        self.assertEqual(
+            b''.join(inline_download.streaming_content),
+            b'%PDF-1.4\nold',
+        )
+
 
 class DepartmentEditAndProfileRobustnessTests(TestCase):
     """审计修复回归测试：非法表单参数不产生 500，缺失 profile 的用户操作有兜底。"""

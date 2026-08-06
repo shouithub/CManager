@@ -536,25 +536,8 @@
     </section>
 
     <section class="content-card review-history-card">
-        <div class="card-header">
-            <span class="material-icons">history</span>审核记录
-            {% if reviewer_count %}<span class="meta-chip progress" style="margin-left:auto;">已审核 {{ reviewer_count }} 人</span>{% endif %}
-        </div>
-        <div class="review-history">
-            {% for review in all_reviews %}
-            <div class="review-history-row">
-                <strong>{{ review.reviewer.username }}</strong>
-                <span class="item-status {{ review.status }}">{{ review.get_status_display }}</span>
-                <span class="attempt-cell">
-                    <span>第 {{ review.submission_attempt }} 次提交 · {{ review.reviewed_at|date:"Y-m-d H:i" }}</span>
-                    {% if review.submission_attempt == submission.resubmission_count %}<span class="meta-chip progress">本轮</span>{% endif %}
-                </span>
-                {% if review.comment %}<div class="review-history-comment">{{ review.comment }}</div>{% endif %}
-            </div>
-            {% empty %}
-            <div class="empty-state">暂无审核记录</div>
-            {% endfor %}
-        </div>
+        {% include 'clubs/components/_submission_attempt_history.html' %}
+        {% if not attempt_groups %}<div class="empty-state">暂无审核记录</div>{% endif %}
         {% with override_history=submission.metadata.review_override_history %}
         {% if override_history %}
         <div class="card-header">

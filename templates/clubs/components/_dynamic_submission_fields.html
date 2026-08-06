@@ -17,6 +17,11 @@
                     <img src="{{ uploaded.file.url }}" alt="{{ uploaded.original_name|default:uploaded.file.name }}" loading="lazy" style="max-width:100%;height:auto;max-height:320px;border-radius:12px;border:1px solid var(--md3-outline-variant);display:block;">
                 </a>
                 {% endif %}
+                {% if not uploaded|is_image_file %}
+                <a class="file-preview-button" href="{% url 'clubs:download_submission_file' uploaded.id %}?inline=1" target="_blank" rel="noopener">
+                    <span class="material-icons">open_in_new</span>查看
+                </a>
+                {% endif %}
                 <a class="file-link" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
                     <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
                 </a>
