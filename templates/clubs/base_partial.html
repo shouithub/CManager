@@ -3,4 +3,7 @@
 <title>{% block title %}{{ site_name|default:'社团管理系统' }}{% endblock %}</title>
 <div id="soft-partial-styles">{% block extra_css %}{% endblock %}</div>
 <div id="soft-partial-content">{% block content %}{% endblock %}</div>
-<div id="soft-partial-scripts">{% block extra_js %}{% endblock %}</div>
+<div id="soft-partial-scripts">
+    <script data-cfasync="false" src="{% static 'js/md5.js' %}?v=20260806a"></script>
+    {% block extra_js %}{% endblock %}
+</div>

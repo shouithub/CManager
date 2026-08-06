@@ -31,6 +31,7 @@
 
 import os
 import io
+import json
 import re
 import time
 import tempfile
@@ -40,6 +41,9 @@ import logging
 from urllib.parse import urljoin, quote
 
 from django.conf import settings
+from django.db import transaction
+from django.db.models import F
+from django.db.utils import IntegrityError
 from django.core.files.storage import Storage
 from django.core.exceptions import SuspiciousFileOperation
 from django.utils.deconstruct import deconstructible
@@ -66,6 +70,50 @@ def _sanitize_storage_name(name):
             continue
         stack.append(part)
     return '/'.join(stack) or 'unnamed'
+
+
+_MD5_RE = re.compile(r'^[0-9a-f]{32}$')
+# 这些路径承担站点展示/个人展示缓存或固定寻址职责，不做内容寻址去重：
+# - site/：站点图标/Logo，需要固定文件名
+# - avatars/：头像走 /media/avatars/ 的 immutable 缓存，必须保留原目录
+# - carousel/：首页轮播图走 /media/carousel/ 的 30d 缓存，同样保留原目录
+_NO_DEDUP_PREFIXES = ('site/', 'avatars/', 'carousel/')
+
+
+def bind_client_md5_from_post(post, files):
+    """把客户端提交的 MD5 按顺序绑定到对应上传文件对象上。
+
+    multipart 表单中每个文件字段 ``field_name`` 会附带一个同名
+    ``md5_<field_name>`` 隐藏字段，值为 JSON 数组，顺序与
+    ``input.files`` 一致。服务器只读取该值并设置
+    ``uploaded.client_md5``，不读取文件内容做任何计算。
+
+    非法格式的 MD5 一律忽略（该文件退回普通随机名保存，不影响上传）。
+    """
+    if post is None or files is None:
+        return
+    for key in list(post.keys()):
+        if not key.startswith('md5_'):
+            continue
+        field_name = key[4:]
+        if not field_name:
+            continue
+        raw = post.get(key)
+        if not raw:
+            continue
+        try:
+            md5_list = json.loads(raw)
+            if not isinstance(md5_list, list):
+                md5_list = [md5_list]
+        except (TypeError, ValueError):
+            md5_list = [raw]
+        uploaded_list = files.getlist(field_name)
+        for index, uploaded in enumerate(uploaded_list):
+            if index >= len(md5_list):
+                break
+            candidate = md5_list[index]
+            if isinstance(candidate, str) and _MD5_RE.match(candidate):
+                uploaded.client_md5 = candidate
 
 
 # 模块级缓存：每个 StorageConfig 版本号对应一组后端实例
@@ -577,11 +625,54 @@ class ClubStorage(Storage):
 
     def _save(self, name, content):
         name = _sanitize_storage_name(name)
+        client_md5 = getattr(content, 'client_md5', '') or ''
+        if (
+            _MD5_RE.match(str(client_md5))
+            and not name.startswith(_NO_DEDUP_PREFIXES)
+        ):
+            return self._save_deduplicated(str(client_md5), content, name)
         # Keep fixed site assets stable; all user uploads receive unpredictable keys.
         if getattr(settings, 'SECURE_RANDOMIZE_UPLOAD_NAMES', True) and not name.startswith('site/'):
             directory, filename = os.path.split(name)
             extension = os.path.splitext(filename)[1].lower()[:16]
             name = os.path.join(directory, f'{uuid.uuid4().hex}{extension}')
+        return self._backend().save(name, content)
+
+    def _save_deduplicated(self, md5, content, original_name):
+        """内容寻址保存：同 MD5 复用同一份物理文件，仅增加引用计数。
+
+        存储名固定为 ``blobs/<md5><扩展名>``。并发下依赖 md5 唯一索引：
+        两个请求同时写入时，后提交者捕获 IntegrityError 后转为复用。
+        """
+        from .models import FileBlob
+        extension = os.path.splitext(original_name)[1].lower()[:16]
+        blob_name = f'blobs/{md5}{extension}'
+        existing = FileBlob.objects.filter(md5=md5).first()
+        if existing is not None:
+            # 已存在：不再写物理文件，仅增加引用计数
+            FileBlob.objects.filter(pk=existing.pk).update(ref_count=F('ref_count') + 1)
+            # 必须以登记表中的实际存储名为准：同一 MD5 可能先以
+            # .jpg 登记、后续又以 .jpeg 上传，扩展名必须保持首次登记值。
+            return existing.storage_name
+        try:
+            with transaction.atomic():
+                self._backend().save(blob_name, content)
+                FileBlob.objects.create(md5=md5, storage_name=blob_name, ref_count=1)
+        except IntegrityError:
+            # 并发下其他请求已创建同一 blob：回滚到 savepoint 后复用
+            blob = FileBlob.objects.filter(md5=md5).first()
+            if blob is None:
+                # 记录被并发删除的极端情况，退回普通随机名保存
+                logger.warning('FileBlob 并发创建冲突后未找到记录，回退普通保存: %s', md5)
+                return self._save_randomized(original_name, content)
+            FileBlob.objects.filter(pk=blob.pk).update(ref_count=F('ref_count') + 1)
+            return blob.storage_name
+        return blob_name
+
+    def _save_randomized(self, original_name, content):
+        directory, filename = os.path.split(original_name)
+        extension = os.path.splitext(filename)[1].lower()[:16]
+        name = os.path.join(directory, f'{uuid.uuid4().hex}{extension}')
         return self._backend().save(name, content)
 
     def get_available_name(self, name, max_length=None):
@@ -591,7 +682,45 @@ class ClubStorage(Storage):
         return self._backend().exists(name)
 
     def delete(self, name):
+        name = _sanitize_storage_name(name)
+        if name.startswith('blobs/'):
+            self._release_blob(name)
+            return None
         return self._backend().delete(name)
+
+    def _release_blob(self, blob_name):
+        """引用计数减一；归零时物理删除文件与登记记录。"""
+        from .models import FileBlob
+        try:
+            with transaction.atomic():
+                blob = FileBlob.objects.filter(storage_name=blob_name).select_for_update().first()
+                if blob is None:
+                    logger.warning('释放不存在的 FileBlob 引用: %s', blob_name)
+                    return
+                if blob.ref_count <= 1:
+                    self._backend().delete(blob_name)
+                    blob.delete()
+                else:
+                    FileBlob.objects.filter(pk=blob.pk).update(ref_count=F('ref_count') - 1)
+        except Exception:
+            logger.exception('释放 FileBlob 引用失败: %s', blob_name)
+
+    def retain(self, name):
+        """为内容寻址文件增加一个引用（历史快照等只引用不拷贝的场景）。"""
+        name = _sanitize_storage_name(name)
+        if not name.startswith('blobs/'):
+            return False
+        from .models import FileBlob
+        try:
+            blob = FileBlob.objects.filter(storage_name=name).first()
+            if blob is None:
+                logger.warning('retain 不存在的 FileBlob: %s', name)
+                return False
+            FileBlob.objects.filter(pk=blob.pk).update(ref_count=F('ref_count') + 1)
+            return True
+        except Exception:
+            logger.exception('retain FileBlob 失败: %s', name)
+            return False
 
     def listdir(self, path=''):
         return self._backend().listdir(path)

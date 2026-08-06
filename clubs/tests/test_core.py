@@ -12,11 +12,14 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.files.storage import default_storage
 from django.db import IntegrityError, connection, transaction
+from django.http import QueryDict
 from django.test import TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
 from django.utils import timezone
+from django.utils.datastructures import MultiValueDict
 
 from ..avatar_utils import clear_avatar_settings_cache, get_profile_avatar_url
 from ..models import (
@@ -37,6 +40,7 @@ from ..models import (
     SiteSettings,
     SMTPConfig,
     StaffClubRelation,
+    FileBlob,
     TimeSlot,
     UserProfile,
 )
@@ -45,6 +49,7 @@ from ..services.registration_service import (
     RegistrationTokenUnavailable,
     register_member_with_token,
 )
+from ..storage_backends import bind_client_md5_from_post
 from ..upload_security import validate_upload
 
 
@@ -1757,3 +1762,115 @@ class DepartmentEditAndProfileRobustnessTests(TestCase):
             contact_phone='13800000000',
         )
         self.assertIn('booking-no-profile', str(booking))
+
+
+class FileBlobDedupTests(TestCase):
+    """客户端 MD5 内容寻址去重：同文件只保存一份物理文件。"""
+
+    @staticmethod
+    def _make_file(name, data, content_type='application/octet-stream'):
+        uploaded = SimpleUploadedFile(name, data, content_type=content_type)
+        uploaded.client_md5 = md5(data).hexdigest()
+        return uploaded
+
+    def test_same_client_md5_reuses_single_blob_and_first_extension(self):
+        data = b'same-content-for-dedup-test'
+        first_name = default_storage.save(
+            'uploads/a.jpg', self._make_file('a.jpg', data)
+        )
+        second_name = default_storage.save(
+            'uploads/b.jpeg', self._make_file('b.jpeg', data)
+        )
+
+        self.assertEqual(first_name, second_name)
+        self.assertTrue(first_name.startswith('blobs/'))
+        self.assertTrue(first_name.endswith('.jpg'))
+        self.assertTrue(default_storage.exists(first_name))
+
+        blob = FileBlob.objects.get(md5=md5(data).hexdigest())
+        self.assertEqual(blob.storage_name, first_name)
+        self.assertEqual(blob.ref_count, 2)
+        self.assertEqual(FileBlob.objects.count(), 1)
+
+        # 清理：释放两份引用后物理文件与登记记录都应消失
+        default_storage.delete(first_name)
+        self.assertTrue(default_storage.exists(first_name))
+        default_storage.delete(second_name)
+        self.assertFalse(default_storage.exists(first_name))
+        self.assertFalse(FileBlob.objects.filter(md5=md5(data).hexdigest()).exists())
+
+    def test_delete_decrements_ref_count_before_last_reference(self):
+        data = b'ref-count-release-test'
+        digest = md5(data).hexdigest()
+        first_name = default_storage.save(
+            'uploads/first.bin', self._make_file('first.bin', data)
+        )
+        second_name = default_storage.save(
+            'uploads/second.bin', self._make_file('second.bin', data)
+        )
+        self.assertEqual(first_name, second_name)
+
+        default_storage.delete(first_name)
+        blob = FileBlob.objects.get(md5=digest)
+        self.assertEqual(blob.ref_count, 1)
+        self.assertTrue(default_storage.exists(first_name))
+
+        default_storage.delete(second_name)
+        self.assertFalse(default_storage.exists(first_name))
+        self.assertFalse(FileBlob.objects.filter(md5=digest).exists())
+
+    def test_retain_protects_historical_snapshot(self):
+        data = b'retain-snapshot-test'
+        digest = md5(data).hexdigest()
+        name = default_storage.save(
+            'uploads/snapshot.bin', self._make_file('snapshot.bin', data)
+        )
+
+        self.assertTrue(default_storage.retain(name))
+        blob = FileBlob.objects.get(md5=digest)
+        self.assertEqual(blob.ref_count, 2)
+
+        # 释放原引用后文件仍被历史快照保留
+        default_storage.delete(name)
+        self.assertTrue(default_storage.exists(name))
+        self.assertEqual(FileBlob.objects.get(md5=digest).ref_count, 1)
+
+        # 历史快照也释放后物理文件删除
+        default_storage.delete(name)
+        self.assertFalse(default_storage.exists(name))
+        self.assertFalse(FileBlob.objects.filter(md5=digest).exists())
+
+    def test_avatar_path_skips_dedup_even_with_client_md5(self):
+        data = b'avatar-content-not-deduped'
+        uploaded = self._make_file('avatar.png', data)
+        name = default_storage.save('avatars/avatar.png', uploaded)
+
+        self.assertTrue(name.startswith('avatars/'))
+        self.assertFalse(FileBlob.objects.exists())
+        default_storage.delete(name)
+        self.assertFalse(default_storage.exists(name))
+
+    def test_bind_client_md5_binds_in_order_and_ignores_invalid(self):
+        post = QueryDict(mutable=True)
+        post['md5_example_files'] = json.dumps([
+            md5(b'first').hexdigest(),
+            'not-a-valid-md5',
+        ])
+        first = SimpleUploadedFile('first.bin', b'first')
+        second = SimpleUploadedFile('second.bin', b'second')
+        files = MultiValueDict({'example_files': [first, second]})
+
+        bind_client_md5_from_post(post, files)
+
+        self.assertEqual(first.client_md5, md5(b'first').hexdigest())
+        self.assertFalse(hasattr(second, 'client_md5'))
+
+    def test_bind_client_md5_degrades_gracefully_on_bad_json(self):
+        post = QueryDict(mutable=True)
+        post['md5_example_files'] = '{bad json'
+        uploaded = SimpleUploadedFile('file.bin', b'data')
+        files = MultiValueDict({'example_files': [uploaded]})
+
+        bind_client_md5_from_post(post, files)
+
+        self.assertFalse(hasattr(uploaded, 'client_md5'))

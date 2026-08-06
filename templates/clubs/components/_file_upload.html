@@ -28,6 +28,8 @@
        {% if allowed_extensions %}accept="{{ allowed_extensions }}"{% endif %}
        {% if multiple %}multiple{% endif %}
        {% if is_required and not existing_file %}required{% endif %}>
+<input type="hidden" class="file-md5-input" data-md5-for="{% if input_id %}{{ input_id }}{% elif field_id %}{{ field_id }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_name }}{% endif %}"
+       name="md5_{% if field_name %}{{ field_name }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_id }}{% endif %}">
 {% else %}
 <div class="file-upload-component" id="container_{% if field_id %}{{ field_id }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_name }}{% endif %}">
     <label class="upload-label" for="{% if input_id %}{{ input_id }}{% elif field_id %}{{ field_id }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_name }}{% endif %}">
@@ -64,6 +66,8 @@
                {% if allowed_extensions %}accept="{{ allowed_extensions }}"{% endif %}
                {% if multiple %}multiple{% endif %}
                {% if is_required and not existing_file %}required{% endif %}>
+        <input type="hidden" class="file-md5-input" data-md5-for="{% if input_id %}{{ input_id }}{% elif field_id %}{{ field_id }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_name }}{% endif %}"
+               name="md5_{% if field_name %}{{ field_name }}{% elif field_number %}field_{{ field_number }}{% else %}{{ field_id }}{% endif %}">
     </div>
 
     {% if description %}
@@ -186,7 +190,23 @@
         font-weight: 600;
     }
 
+    .file-preview-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
     .file-preview-size { color: var(--md3-on-surface-variant); font-size: 0.75rem; }
+
+    .file-md5-status {
+        font-size: 0.72rem;
+        font-weight: 500;
+    }
+
+    .file-md5-status.is-pending { color: var(--md3-primary); }
+    .file-md5-status.is-done { color: var(--md3-tertiary); font-size: 0.85rem; }
+    .file-md5-status.is-error { color: var(--md3-error); }
 
     .file-preview-remove {
         display: inline-flex;

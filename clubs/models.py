@@ -1364,3 +1364,27 @@ class ConfigChangeLog(models.Model):
     class Meta:
         ordering = ['-created_at']
         indexes = [models.Index(fields=['category', '-created_at'], name='cfglog_category_time_idx')]
+
+
+class FileBlob(models.Model):
+    """内容寻址文件去重登记表。
+
+    存储路径统一为 ``blobs/<md5><扩展名>``。MD5 由用户浏览器计算后随
+    上传请求提交，服务器不读取文件内容自行计算。每个 FileBlob 记录对应
+    磁盘/对象存储中的一份物理文件，``ref_count`` 表示当前被多少个上传
+    记录（含历史快照）引用，归零时由存储层物理删除。
+    """
+
+    md5 = models.CharField(max_length=32, unique=True, verbose_name='文件MD5')
+    storage_name = models.CharField(max_length=512, unique=True, verbose_name='存储路径')
+    ref_count = models.PositiveIntegerField(default=1, verbose_name='引用计数')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
+    class Meta:
+        verbose_name = '文件去重记录'
+        verbose_name_plural = '文件去重记录'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.md5

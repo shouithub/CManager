@@ -1,4 +1,5 @@
 {% extends base_template %}
+{% load static %}
 
 {% block title %}{% if carousel %}编辑轮播{% else %}新增轮播{% endif %} - 管理后台{% endblock %}
 
@@ -639,4 +640,5 @@
     syncCopy();
 })();
 </script>
+<script src="{% static 'js/file-upload.js' %}"></script>
 {% endblock %}

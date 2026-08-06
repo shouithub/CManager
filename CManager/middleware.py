@@ -2,6 +2,34 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.db.utils import OperationalError, ProgrammingError
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
+class ClientFileMd5Middleware:
+    """把 multipart 请求中客户端计算的 MD5 绑定到对应上传文件对象。
+
+    模板的上传组件会为每个文件字段附带 ``md5_<字段名>`` 隐藏字段
+    （JSON 数组，顺序与文件选择顺序一致）。这里只负责读取与绑定，
+    服务器不读取文件内容计算 MD5。
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.method == 'POST':
+            content_type = request.headers.get('Content-Type', '') or ''
+            if 'multipart/form-data' in content_type:
+                try:
+                    from clubs.storage_backends import bind_client_md5_from_post
+                    bind_client_md5_from_post(request.POST, request.FILES)
+                except Exception:
+                    # 绑定失败不应阻断上传流程；该请求的文件按普通随机名保存
+                    logger.exception('绑定客户端文件 MD5 失败')
+        return self.get_response(request)
 
 
 class PartialRenderMiddleware:

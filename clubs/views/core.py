@@ -4027,8 +4027,8 @@ def _renamed_upload_name(field, uploaded, index=1, total=1):
 
 
 def _delete_uploaded_record(uploaded):
-    if uploaded.file:
-        uploaded.file.delete(save=False)
+    # 只删除记录；物理文件由 post_delete 信号统一删除（走引用计数），
+    # 避免同一文件被手动删除后再触发信号造成双重释放。
     uploaded.delete()
 
 
@@ -4574,19 +4574,25 @@ def _snapshot_attempt_history(submission):
         })
     files = []
     archive_dir = os.path.join('form_submissions', submission.public_id, 'history')
+    from ..storage_backends import ClubStorage
+    storage = ClubStorage()
     for uploaded in submission.uploaded_files.filter(is_generated=False).select_related('field'):
         storage_name = uploaded.file.name or ''
-        if uploaded.review_status == 'rejected' and storage_name:
-            # 记录删除会触发 post_delete 信号删除物理文件，先复制到归档目录，
-            # 保证被打回轮次的附件在历史中仍可下载。
+        if storage_name:
             try:
-                from ..storage_backends import ClubStorage
-                storage = ClubStorage()
-                with uploaded.file.open('rb') as source:
-                    storage_name = storage.save(
-                        os.path.join(archive_dir, f'attempt_{attempt}_{os.path.basename(storage_name)}'),
-                        source,
-                    )
+                if storage_name.startswith('blobs/'):
+                    # 内容寻址文件：历史快照只增加引用计数，不复制物理文件。
+                    # 无论当前审核状态，都保留引用，保证后续文件记录被替换/
+                    # 删除后旧轮次附件仍可下载。
+                    storage.retain(storage_name)
+                elif uploaded.review_status == 'rejected':
+                    # 旧路径文件：记录删除会触发 post_delete 信号删除物理文件，
+                    # 先复制到归档目录，保证被打回轮次的附件在历史中仍可下载。
+                    with uploaded.file.open('rb') as source:
+                        storage_name = storage.save(
+                            os.path.join(archive_dir, f'attempt_{attempt}_{os.path.basename(storage_name)}'),
+                            source,
+                        )
             except Exception:
                 logger.warning('归档历史提交文件失败：%s', uploaded.file.name or '')
         ext = os.path.splitext(storage_name)[1].lower()
@@ -5302,8 +5308,7 @@ def delete_audit_request(request, tab, item_key):
     submission = get_object_or_404(FormSubmission, public_id=item_key)
     slug = submission.channel.slug
     for uploaded in submission.uploaded_files.all():
-        if uploaded.file:
-            uploaded.file.delete(save=False)
+        _delete_uploaded_record(uploaded)
     _delete_attempt_history_files(submission)
     submission.delete()
     messages.success(request, '审核请求已删除')
@@ -5662,8 +5667,7 @@ def cancel_submission(request, submission_key):
         messages.error(request, '无权取消此提交')
         return redirect('clubs:user_dashboard')
     for uploaded in submission.uploaded_files.all():
-        if uploaded.file:
-            uploaded.file.delete(save=False)
+        _delete_uploaded_record(uploaded)
     _delete_attempt_history_files(submission)
     submission.delete()
     messages.success(request, '提交已取消')

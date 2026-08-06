@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from .models import (
     Announcement,
     CarouselImage,
+    ChannelExampleFile,
     Department,
     FormField,
     FormUploadedFile,
@@ -101,6 +102,7 @@ def invalidate_site_presentation_cache(sender, **kwargs):
 
 @receiver(post_delete, sender=UserProfile)
 @receiver(post_delete, sender=FormUploadedFile)
+@receiver(post_delete, sender=ChannelExampleFile)
 @receiver(post_delete, sender=Template)
 @receiver(post_delete, sender=FormField)
 @receiver(post_delete, sender=Announcement)

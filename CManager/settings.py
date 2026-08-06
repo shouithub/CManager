@@ -184,6 +184,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'CManager.middleware.ClientFileMd5Middleware',
     'CManager.middleware.PartialRenderMiddleware',
     'CManager.middleware.InitialSetupMiddleware',
     'CManager.middleware.VisitTrackingMiddleware',
