@@ -137,7 +137,6 @@ def manage_storage_config(request):
                     errors.append('切换到 S3 时必须填写 Secret Access Key')
                 config.s3_custom_domain = request.POST.get('s3_custom_domain', '').strip()
                 config.s3_addressing_style = request.POST.get('s3_addressing_style', 'auto').strip()
-                config.s3_use_path_style = request.POST.get('s3_use_path_style') == 'on'
                 try:
                     config.presigned_url_expiration = int(request.POST.get('presigned_url_expiration', '3600') or 3600)
                 except ValueError:

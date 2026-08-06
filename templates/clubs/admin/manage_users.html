@@ -1080,7 +1080,7 @@
                     <span class="user-meta-label">部门</span>
                     <span class="user-meta-value">
                         {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
-                            {{ user.profile.department_link.name|default:user.profile.department|default:"--" }}
+                            {{ user.profile.department|default:"--" }}
                         {% else %}
                             --
                         {% endif %}

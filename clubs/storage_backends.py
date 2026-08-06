@@ -353,10 +353,7 @@ class S3StorageBackend:
             return "%s/%s" % (base, key)
         if cfg.s3_endpoint_url:
             base = cfg.s3_endpoint_url.rstrip('/')
-            if cfg.s3_use_path_style or cfg.s3_addressing_style == 'path':
-                return "%s/%s/%s" % (base, cfg.s3_bucket_name, key)
-            else:
-                return "%s/%s/%s" % (base, cfg.s3_bucket_name, key)
+            return "%s/%s/%s" % (base, cfg.s3_bucket_name, key)
         # AWS S3 默认 URL（virtual-hosted）
         if cfg.s3_region:
             return "https://%s.s3.%s.amazonaws.com/%s" % (cfg.s3_bucket_name, cfg.s3_region, key)

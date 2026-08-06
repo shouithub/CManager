@@ -385,12 +385,6 @@
             </div>
         </div>
 
-        <div class="sc-checkbox-row">
-            <input type="checkbox" id="s3_use_path_style" name="s3_use_path_style"
-                   {% if config.s3_use_path_style %}checked{% endif %}>
-            <label for="s3_use_path_style">强制 Path Style（兼容 MinIO / 自建 S3；AWS S3 不要勾选）</label>
-        </div>
-
         <div class="sc-actions">
             <button type="submit" formaction="" name="action" value="save" class="sc-btn sc-btn-primary" form="mainForm">
                 <span class="material-icons">save</span>保存配置

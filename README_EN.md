@@ -23,10 +23,9 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
 - **QR Code Registration**: Supports generating registration tokens (QR codes) with configurable validity periods and usage limits for easy member onboarding.
 
 ### ♻️ Account Lifecycle
-- **Auto Inactivation**: Non-admin accounts are automatically marked inactive after lifecycle expiry.
 - **Extension Mechanism**: Inactive users can extend and restore active status for another year.
-- **Auto Deletion Policy**: Inactive accounts are automatically deleted after 1 year (admins excluded).
-- **Admin Controls**: Admins can enable/disable accounts and delete accounts with double confirmation.
+- **Admin Controls**: Admins can enable/disable accounts (disable starts the inactive period) and delete accounts with double confirmation.
+- **Separate States**: Account enablement is tracked by `account_status`, independent of the staff review `status`.
 
 ### 🏢 Club Lifecycle Management
 - **Club Application**: Full-process application and material submission for new club establishment, with automatic club and president creation upon approval.

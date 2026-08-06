@@ -116,7 +116,6 @@ class Command(BaseCommand):
         class_name="测试班级",
         is_staff=False,
         is_superuser=False,
-        department=None,
         staff_level="member",
     ):
         user, _ = User.objects.get_or_create(
@@ -154,7 +153,6 @@ class Command(BaseCommand):
                 "is_info_public": True,
                 "account_status": "active",
                 "active_until": timezone.now() + timedelta(days=365),
-                "department": department,
                 "staff_level": staff_level,
             },
         )
@@ -183,7 +181,6 @@ class Command(BaseCommand):
                 gender="female",
                 college="管理学院",
                 class_name="社管中心活动部",
-                department="活动管理部",
                 staff_level="director",
             ),
             "staff_general": self.upsert_user(
@@ -196,7 +193,6 @@ class Command(BaseCommand):
                 gender="male",
                 college="经济管理学院",
                 class_name="社管中心综合事务部",
-                department="综合事务部",
             ),
             "president_music": self.upsert_user(
                 "test_president_music",

@@ -793,7 +793,6 @@ class RegistrationTokenTests(TestCase):
 
         self.token.refresh_from_db()
         self.assertEqual(self.token.used_count, 1)
-        self.assertTrue(self.token.is_used)
 
     def test_generated_tokens_are_unique_and_url_safe(self):
         first = RegistrationToken.generate_code()

@@ -111,7 +111,6 @@ def register(request):
             errors.append('无效的角色选择')
         
         # 部门验证（仅干事）
-        department = None
         department_obj = None
         if role == 'staff':
             department_id = request.POST.get('department', '').strip()
@@ -121,7 +120,6 @@ def register(request):
                 from ..models import Department
                 try:
                     department_obj = Department.objects.get(id=department_id)
-                    department = department_obj.name
                 except (Department.DoesNotExist, ValueError):
                     errors.append('无效的部门选择')
 
@@ -164,7 +162,6 @@ def register(request):
             phone=phone,
             wechat=wechat,
             political_status=political_status if role == 'president' else 'non_member',
-            department=department,  # 保存部门名称
             department_link=department_obj  # 保存部门关联
         )
         
@@ -1074,26 +1071,16 @@ def manage_department_staff(request):
         return redirect('clubs:login')
     
     department_link = profile.department_link
-    department_name = profile.department
-    
-    if not department_link and not department_name:
+    if not department_link:
         messages.error(request, '您的部门信息未配置，无法管理部门人员')
         return redirect('clubs:index')
     
     # 获取本部门的所有干事
-    # 优先使用关联对象筛选，如果不存在则降级使用名称筛选
-    if department_link:
-        department_staff = UserProfile.objects.filter(
-            role='staff',
-            department_link=department_link
-        ).select_related('user').order_by('staff_level', 'user__username')
-        current_dept_name = department_link.name
-    else:
-        department_staff = UserProfile.objects.filter(
-            role='staff',
-            department=department_name
-        ).select_related('user').order_by('staff_level', 'user__username')
-        current_dept_name = department_name
+    department_staff = UserProfile.objects.filter(
+        role='staff',
+        department_link=department_link
+    ).select_related('user').order_by('staff_level', 'user__username')
+    current_dept_name = department_link.name
     
     # 分类统计
     directors = department_staff.filter(staff_level='director')

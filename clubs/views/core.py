@@ -127,11 +127,6 @@ def _is_president(user):
         return False
 
 
-def _is_staff(user):
-    """检查用户是否为干事"""
-    return has_any_role(user, 'staff')
-
-
 def _is_admin(user):
     """检查用户是否为管理员"""
     return has_any_role(user, 'admin')
@@ -442,8 +437,8 @@ def index(request):
         # 获取所有干事，消除 N+1：一次性批量查出所有干事-社团关系
         staff_users = list(
             UserProfile.objects.filter(role='staff', status='approved')
-            .select_related('user')
-            .only('id', 'real_name', 'department', 'staff_level', 'user__username')
+            .select_related('user', 'department_link')
+            .only('id', 'real_name', 'department_link__name', 'staff_level', 'user__username')
         )
         staff_ids = [s.id for s in staff_users]
 
@@ -1536,7 +1531,6 @@ def import_users_csv(request):
                     profile.phone = row_data['phone']
                     profile.wechat = row_data['wechat']
                     profile.political_status = row_data['political_status']
-                    profile.department = row_data['department_name'] if row_data['department_name'] else None
                     profile.department_link = row_data['department_obj']
                     if row_data['student_id']:
                         profile.student_id = row_data['student_id']
@@ -1552,7 +1546,6 @@ def import_users_csv(request):
                         phone=row_data['phone'],
                         wechat=row_data['wechat'],
                         political_status=row_data['political_status'],
-                        department=row_data['department_name'] if row_data['department_name'] else None,
                         department_link=row_data['department_obj'],
                         must_change_password=row_data['password'] == '123456',
                     )
@@ -1874,9 +1867,7 @@ def manage_users(request):
                         if want_active:
                             profile.account_status = 'active'
                             profile.inactive_since = None
-                            if profile.status == 'inactive':
-                                profile.status = 'approved'
-                            profile.save(update_fields=['account_status', 'inactive_since', 'status', 'updated_at'])
+                            profile.save(update_fields=['account_status', 'inactive_since', 'updated_at'])
                         else:
                             mark_profile_inactive(profile, reason='admin_disable')
                     except UserProfile.DoesNotExist:
@@ -1916,9 +1907,7 @@ def manage_users(request):
                         if target_user.is_active:
                             profile.account_status = 'active'
                             profile.inactive_since = None
-                            if profile.status == 'inactive':
-                                profile.status = 'approved'
-                            profile.save(update_fields=['account_status', 'inactive_since', 'status', 'updated_at'])
+                            profile.save(update_fields=['account_status', 'inactive_since', 'updated_at'])
                         else:
                             mark_profile_inactive(profile, reason='admin_disable')
                     except UserProfile.DoesNotExist:
@@ -2421,9 +2410,7 @@ def admin_edit_user_account(request, user_id):
                     if target_user.is_active:
                         profile.account_status = 'active'
                         profile.inactive_since = None
-                        if profile.status == 'inactive':
-                            profile.status = 'approved'
-                        profile.save(update_fields=['account_status', 'inactive_since', 'status', 'updated_at'])
+                        profile.save(update_fields=['account_status', 'inactive_since', 'updated_at'])
                     else:
                         mark_profile_inactive(profile, reason='admin_disable')
                 except UserProfile.DoesNotExist:
@@ -2549,15 +2536,14 @@ def change_staff_attributes(request, user_id):
             return redirect(next_url)
 
         try:
-            old_department = profile.department_link.name if profile.department_link else (profile.department or '未设定')
+            old_department = profile.department_link.name if profile.department_link else '未设定'
             old_level = profile.get_staff_level_display() if profile.staff_level else '未设定'
 
             profile.department_link = selected_department
-            profile.department = selected_department.name if selected_department else None
             profile.staff_level = staff_level if staff_level else profile.staff_level
             profile.save()
 
-            new_department = profile.department_link.name if profile.department_link else (profile.department or '未设定')
+            new_department = profile.department_link.name if profile.department_link else '未设定'
             new_level = profile.get_staff_level_display()
 
             messages.success(request, f'已修改 {target_user.username} 的干事属性：部门「{old_department}」→「{new_department}」，职级「{old_level}」→「{new_level}」')
@@ -4267,7 +4253,6 @@ def _create_uploaded_records(submission, field, uploaded_files):
     created_uploads = []
     total = len(uploaded_files)
     for index, uploaded in enumerate(uploaded_files, start=1):
-        source_name = uploaded.name
         renamed_name = _renamed_upload_name(field, uploaded, index=index, total=total)
         uploaded.name = renamed_name
         created_uploads.append(FormUploadedFile.objects.create(
@@ -4275,7 +4260,6 @@ def _create_uploaded_records(submission, field, uploaded_files):
             field=field,
             file=uploaded,
             original_name=renamed_name,
-            source_name=source_name,
         ))
     return created_uploads
 

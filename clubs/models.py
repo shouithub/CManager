@@ -28,11 +28,12 @@ class UserProfile(models.Model):
         ('admin', '管理员'),
     ]
     
+    # 干事审核状态：pending/approved/rejected。
+    # 注意：账号启用/禁用属于生命周期状态，请使用 account_status，不要写入此字段。
     STATUS_CHOICES = [
         ('pending', '待审核'),
         ('approved', '已批准'),
         ('rejected', '已拒绝'),
-        ('inactive', '不活跃'),
     ]
 
     ACCOUNT_STATUS_CHOICES = [
@@ -74,9 +75,13 @@ class UserProfile(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='approved', verbose_name='状态')
     
     # 干事专属字段 - 部门和职级
-    department = models.CharField(max_length=20, null=True, blank=True, verbose_name='部门')
     department_link = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='关联部门', related_name='staff_profiles')
     staff_level = models.CharField(max_length=20, choices=STAFF_LEVEL_CHOICES, default='member', verbose_name='部员/部长', help_text='仅对干事有效')
+
+    @property
+    def department(self):
+        """部门名称（统一由 department_link 提供，兼容历史模板/导出使用文本字段的写法）。"""
+        return self.department_link.name if self.department_link else None
     
     # 实名信息字段
     real_name = models.CharField(max_length=100, verbose_name='真名', blank=True)
@@ -100,7 +105,7 @@ class UserProfile(models.Model):
     # 首次登录强制改密
     must_change_password = models.BooleanField(default=False, verbose_name='是否需要修改密码')
 
-    # 账号生命周期状态（与审核状态分离）
+    # 账号生命周期状态（active/inactive），与上面的审核状态 status 完全分离。
     account_status = models.CharField(
         max_length=20,
         choices=ACCOUNT_STATUS_CHOICES,
@@ -197,7 +202,6 @@ class RegistrationToken(models.Model):
     expires_at = models.DateTimeField(verbose_name='过期时间')
     max_uses = models.IntegerField(null=True, blank=True, verbose_name='最大使用次数（null表示不限次数）')
     used_count = models.IntegerField(default=0, verbose_name='已使用次数')
-    is_used = models.BooleanField(default=False, verbose_name='是否已使用')
     used_at = models.DateTimeField(null=True, blank=True, verbose_name='使用时间')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 
@@ -205,7 +209,7 @@ class RegistrationToken(models.Model):
         verbose_name = '社员注册令牌'
         verbose_name_plural = '社员注册令牌'
         indexes = [
-            models.Index(fields=['club', 'expires_at', 'is_used'], name='rt_club_exp_used_idx'),
+            models.Index(fields=['club', 'expires_at'], name='rt_club_exp_idx'),
         ]
 
     def __str__(self):
@@ -269,12 +273,10 @@ class RegistrationToken(models.Model):
 
             locked.used_count += 1
             if locked.max_uses is not None and locked.used_count >= locked.max_uses:
-                locked.is_used = True
                 locked.used_at = timezone.now()
-            locked.save(update_fields=['used_count', 'is_used', 'used_at'])
+            locked.save(update_fields=['used_count', 'used_at'])
 
         self.used_count = locked.used_count
-        self.is_used = locked.is_used
         self.used_at = locked.used_at
 
 
@@ -646,9 +648,6 @@ class FormSubmission(models.Model):
     def approved_review_count(self):
         return self.current_attempt_reviews().filter(status='approved').count()
 
-    def rejected_review_count(self):
-        return self.current_attempt_reviews().filter(status='rejected').count()
-
     @property
     def reviewer_count(self):
         """本轮实际参与审核的人数（同一人重新审核不重复计数）。"""
@@ -734,7 +733,6 @@ class FormUploadedFile(models.Model):
     field = models.ForeignKey(FormField, on_delete=models.CASCADE, related_name='uploaded_files', verbose_name='字段')
     file = models.FileField(upload_to=form_submission_upload_path, verbose_name='文件')
     original_name = models.CharField(max_length=255, blank=True, verbose_name='显示文件名')
-    source_name = models.CharField(max_length=255, blank=True, verbose_name='上传原文件名')
     review_status = models.CharField(max_length=20, choices=REVIEW_STATUS_CHOICES, default='pending', verbose_name='文件审核状态')
     review_comment = models.TextField(blank=True, verbose_name='文件打回原因')
     is_generated = models.BooleanField(default=False, verbose_name='系统生成文件')
@@ -1036,12 +1034,6 @@ class Department(models.Model):
     def __str__(self):
         return self.name
     
-    def get_highlights_list(self):
-        """将highlights转换为列表"""
-        if self.highlights:
-            return [h.strip() for h in self.highlights.split('\n') if h.strip()]
-        return []
-
 
 class TimeSlot(models.Model):
     """时间段配置"""
@@ -1316,11 +1308,6 @@ class StorageConfig(models.Model):
         verbose_name='地址风格',
         help_text='MinIO / 自建 S3 通常选 Path Style；AWS S3 选 Virtual Hosted',
     )
-    s3_use_path_style = models.BooleanField(
-        default=True, verbose_name='强制 Path Style',
-        help_text='与 address_style 互补，兼容部分 MinIO 版本',
-    )
-
     presigned_url_expiration = models.IntegerField(
         default=3600, verbose_name='预签名 URL 有效期（秒）',
         help_text='私密 bucket 下载链接的有效时长，默认 1 小时',
