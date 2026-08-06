@@ -347,6 +347,19 @@
         gap: 6px;
     }
 
+    .review-history-row .attempt-cell {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+
+    .review-history-row .attempt-cell .meta-chip {
+        min-height: 24px;
+        font-size: 0.78rem;
+        padding: 0 8px;
+    }
+
     .review-history-comment {
         grid-column: 1 / -1;
         color: var(--md3-on-surface-variant);
@@ -509,6 +522,10 @@
         margin-top: 16px;
     }
 
+    .action-row > .override-actions {
+        width: 100%;
+    }
+
     .override-action-card {
         display: flex;
         align-items: flex-start;
@@ -548,7 +565,7 @@
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
-        margin-left: auto;
+        margin-left: 0;
     }
 
     @media (max-width: 768px) {
@@ -783,11 +800,14 @@
             <span class="material-icons">history</span>审核记录
         </div>
         <div class="review-history">
-            {% for review in current_reviews %}
+            {% for review in all_reviews %}
             <div class="review-history-row">
                 <strong>{{ review.reviewer.username }}</strong>
                 <span class="item-status {{ review.status }}">{{ review.get_status_display }}</span>
-                <span>第 {{ review.submission_attempt }} 次提交 · {{ review.reviewed_at|date:"Y-m-d H:i" }}</span>
+                <span class="attempt-cell">
+                    <span>第 {{ review.submission_attempt }} 次提交 · {{ review.reviewed_at|date:"Y-m-d H:i" }}</span>
+                    {% if review.submission_attempt == submission.resubmission_count %}<span class="meta-chip progress">本轮</span>{% endif %}
+                </span>
                 {% if review.comment %}<div class="review-history-comment">{{ review.comment }}</div>{% endif %}
             </div>
             {% empty %}
