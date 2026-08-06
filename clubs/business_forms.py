@@ -58,6 +58,12 @@ def get_business_action(key: str) -> BusinessFormAction | None:
     return BUSINESS_FORM_ACTIONS.get(key)
 
 
+def applies_business_action_on_approval(channel) -> bool:
+    """通道通过后是否会执行内置业务动作（此类通道不允许覆盖审核结果）。"""
+    action = get_business_action(getattr(channel, 'builtin_action', 'none'))
+    return bool(action and action.on_approved)
+
+
 def missing_required_field_keys(channel) -> list[str]:
     action = get_business_action(channel.builtin_action)
     if not action:

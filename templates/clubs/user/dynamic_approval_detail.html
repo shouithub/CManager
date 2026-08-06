@@ -342,6 +342,12 @@
         background: var(--md3-surface);
     }
 
+    .review-history-row .status-change {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
     .review-history-comment {
         grid-column: 1 / -1;
         color: var(--md3-on-surface-variant);
@@ -519,6 +525,7 @@
     <section class="content-card review-history-card">
         <div class="card-header">
             <span class="material-icons">history</span>审核记录
+            {% if reviewer_count %}<span class="meta-chip progress" style="margin-left:auto;">已审核 {{ reviewer_count }} 人</span>{% endif %}
         </div>
         <div class="review-history">
             {% for review in current_reviews %}
@@ -532,6 +539,32 @@
             <div class="empty-state">暂无审核记录</div>
             {% endfor %}
         </div>
+        {% with override_history=submission.metadata.review_override_history %}
+        {% if override_history %}
+        <div class="card-header">
+            <span class="material-icons">swap_horiz</span>重新审核记录
+        </div>
+        <div class="review-history">
+            {% for entry in override_history %}
+            <div class="review-history-row">
+                <strong>{{ entry.reviewer }}</strong>
+                <span class="status-change">
+                    <span class="item-status {{ entry.old_status }}">{{ entry.old_status_label }}</span>
+                    <span class="material-icons" style="font-size:1rem;">arrow_forward</span>
+                    <span class="item-status {{ entry.new_status }}">{{ entry.new_status_label }}</span>
+                    {% if entry.mode == 'reenter' %}
+                    <span class="meta-chip progress">重新进入审核</span>
+                    {% else %}
+                    <span class="meta-chip progress">直接修改</span>
+                    {% endif %}
+                </span>
+                <span>{{ entry.at_label }}</span>
+                {% if entry.new_comment %}<div class="review-history-comment">{{ entry.new_comment }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
     </section>
 </div>
 

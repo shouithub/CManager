@@ -341,6 +341,12 @@
         background: var(--md3-surface);
     }
 
+    .review-history-row .status-change {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
     .review-history-comment {
         grid-column: 1 / -1;
         color: var(--md3-on-surface-variant);
@@ -497,6 +503,54 @@
         margin-top: 18px;
     }
 
+    .override-modes {
+        display: grid;
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .override-mode-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 14px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-surface);
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .override-mode-row.is-selected {
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 1px var(--md3-primary) inset;
+    }
+
+    .override-mode-row .mode-label {
+        flex: 1 1 240px;
+        min-width: 0;
+    }
+
+    .override-mode-row .mode-label strong {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+        color: var(--md3-on-surface);
+    }
+
+    .override-mode-row .mode-label small {
+        color: var(--md3-on-surface-variant);
+        line-height: 1.45;
+    }
+
+    .override-mode-row .mode-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-left: auto;
+    }
+
     @media (max-width: 768px) {
         .review-page {
             padding: 16px;
@@ -528,6 +582,20 @@
             justify-content: center;
         }
 
+        .override-mode-row {
+            align-items: stretch;
+        }
+
+        .override-mode-row .mode-actions {
+            width: 100%;
+            margin-left: 0;
+        }
+
+        .override-mode-row .mode-actions .btn {
+            flex: 1 1 120px;
+            justify-content: center;
+        }
+
         .download-actions {
             grid-template-columns: 1fr;
             max-width: none;
@@ -550,6 +618,7 @@
                 <span class="meta-chip {{ submission.status }}">{{ submission.get_status_display }}</span>
                 <span class="meta-chip">第 {{ submission.resubmission_count }} 次提交</span>
                 <span class="meta-chip progress">通过 {{ approval_progress }}</span>
+                <span class="meta-chip progress">已审核 {{ reviewer_count }} 人</span>
                 {% if remaining_approval_count > 0 and submission.status == 'pending' %}
                 <span class="meta-chip pending">还需 {{ remaining_approval_count }} 次通过</span>
                 {% endif %}
@@ -648,15 +717,60 @@
             <label for="review-comment">审核意见</label>
             <textarea id="review-comment" name="comment">{{ submission.review_comment }}</textarea>
             <div class="action-row">
-                {% if submission.status == 'pending' and not user_has_reviewed_current_attempt %}
+                {% if submission.status == 'pending' and user_has_reviewed_current_attempt %}
+                <span class="meta-chip progress">你已审核本次提交，可修改你的审核结果</span>
+                <button class="btn btn-danger" name="decision" value="rejected" type="submit">
+                    <span class="material-icons">close</span>打回
+                </button>
+                <button class="btn btn-primary" name="decision" value="approved" type="submit">
+                    <span class="material-icons">check</span>通过
+                </button>
+                {% elif submission.status == 'pending' %}
                 <button class="btn btn-danger" name="decision" value="rejected" type="submit">
                     <span class="material-icons">close</span>拒绝
                 </button>
                 <button class="btn btn-primary" name="decision" value="approved" type="submit">
                     <span class="material-icons">check</span>通过
                 </button>
+                {% elif can_override_review %}
+                <div class="override-modes">
+                    <div class="override-mode-row js-mode-row" data-mode="direct">
+                        <label class="mode-label">
+                            <input type="radio" name="mode" value="direct" checked>
+                            <strong><span class="material-icons">swap_vert</span>直接修改审核结果</strong>
+                            <small>原地更新审核记录，请求直接切换为新的通过/打回结果，不重新累计审核人数。</small>
+                        </label>
+                        <div class="mode-actions">
+                            <button class="btn btn-danger" name="decision" value="rejected" type="submit">
+                                <span class="material-icons">close</span>改为不通过
+                            </button>
+                            <button class="btn btn-primary" name="decision" value="approved" type="submit">
+                                <span class="material-icons">check</span>改为通过
+                            </button>
+                        </div>
+                    </div>
+                    <div class="override-mode-row js-mode-row" data-mode="reenter">
+                        <label class="mode-label">
+                            <input type="radio" name="mode" value="reenter">
+                            <strong><span class="material-icons">replay</span>重新进入多人审核流程</strong>
+                            <small>原地更新自己的审核记录，请求回到待审核，按“凑够 N 人”继续累计通过数。</small>
+                        </label>
+                        <div class="mode-actions">
+                            <button class="btn btn-danger" name="decision" value="rejected" type="submit">
+                                <span class="material-icons">close</span>重新打回
+                            </button>
+                            <button class="btn btn-primary" name="decision" value="approved" type="submit">
+                                <span class="material-icons">check</span>重新通过
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% elif override_blocked_by_business_action %}
+                <span class="meta-chip progress">该通道绑定内置业务动作，审核结果不可覆盖修改</span>
                 {% elif user_has_reviewed_current_attempt %}
                 <span class="meta-chip progress">你已审核本次提交</span>
+                {% elif submission.status != 'pending' %}
+                <span class="meta-chip progress">该请求已完成审核，仅参与本次审核的审核人或管理员可修改结果</span>
                 {% endif %}
             </div>
         </form>
@@ -678,9 +792,52 @@
             <div class="empty-state">暂无审核记录</div>
             {% endfor %}
         </div>
+        {% with override_history=submission.metadata.review_override_history %}
+        {% if override_history %}
+        <div class="card-header" style="margin-top:18px;border-top:1px solid var(--md3-outline-variant);">
+            <span class="material-icons">swap_horiz</span>重新审核记录
+        </div>
+        <div class="review-history">
+            {% for entry in override_history %}
+            <div class="review-history-row">
+                <strong>{{ entry.reviewer }}</strong>
+                <span class="status-change">
+                    <span class="item-status {{ entry.old_status }}">{{ entry.old_status_label }}</span>
+                    <span class="material-icons" style="font-size:1rem;">arrow_forward</span>
+                    <span class="item-status {{ entry.new_status }}">{{ entry.new_status_label }}</span>
+                    {% if entry.mode == 'reenter' %}
+                    <span class="meta-chip progress">重新进入审核</span>
+                    {% else %}
+                    <span class="meta-chip progress">直接修改</span>
+                    {% endif %}
+                </span>
+                <span>{{ entry.at_label }}</span>
+                {% if entry.new_comment %}<div class="review-history-comment">{{ entry.new_comment }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
     </section>
 </div>
 
 {% include 'clubs/components/_office_preview_modal.html' %}
 <script src="{% static 'js/office-preview.js' %}"></script>
+<script>
+(function () {
+    var rows = document.querySelectorAll('.js-mode-row');
+    if (!rows.length) return;
+    function sync() {
+        rows.forEach(function (row) {
+            var radio = row.querySelector('input[name="mode"]');
+            row.classList.toggle('is-selected', !!(radio && radio.checked));
+        });
+    }
+    rows.forEach(function (row) {
+        var radio = row.querySelector('input[name="mode"]');
+        if (radio) radio.addEventListener('change', sync);
+    });
+    sync();
+})();
+</script>
 {% endblock %}

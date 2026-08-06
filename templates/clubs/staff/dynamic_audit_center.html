@@ -532,6 +532,7 @@
                         <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
                         <span>第 {{ item.resubmission_count }} 次提交</span>
                         <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
+                        <span>已审核 {{ item.reviewer_count }} 人</span>
                         <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                     </div>
                 </div>
@@ -572,6 +573,7 @@
                             <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
                             <span>第 {{ item.resubmission_count }} 次提交</span>
                             <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
+                            <span>已审核 {{ item.reviewer_count }} 人</span>
                         </div>
                     </div>
                     <div class="record-actions">
@@ -606,6 +608,7 @@
                         <span>第 {{ item.resubmission_count }} 次提交</span>
                         <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
                         <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
+                        <span>已审核 {{ item.reviewer_count }} 人</span>
                         {% if item.reviewer %}
                         <span>最后审核：{{ item.reviewer.username }}</span>
                         {% endif %}
@@ -651,6 +654,7 @@
                             <span>第 {{ item.resubmission_count }} 次提交</span>
                             <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
                             <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
+                            <span>已审核 {{ item.reviewer_count }} 人</span>
                             {% if item.reviewer %}<span>最后审核：{{ item.reviewer.username }}</span>{% endif %}
                         </div>
                     </div>

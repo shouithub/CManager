@@ -61,6 +61,7 @@ from ..models import (
 from ..business_forms import (
     BusinessActionError,
     apply_business_action,
+    applies_business_action_on_approval,
     create_form_cycle,
     externally_available_channels,
     is_locked_business_field,
@@ -4402,6 +4403,7 @@ def _submission_review_summary(submission):
         'all_reviews': submission.reviews.select_related('reviewer', 'reviewer__profile').order_by('-reviewed_at'),
         'approved_count': approved_count,
         'rejected_count': rejected_count,
+        'reviewer_count': current_reviews.values('reviewer').distinct().count(),
         'required_approval_count': required_count,
         'remaining_approval_count': max(0, required_count - approved_count),
         'approval_progress': f'{approved_count}/{required_count}',
@@ -4721,22 +4723,28 @@ def staff_audit_center(request, tab='all'):
 
 
 def _mark_submission_approved(submission, reviewer, comment):
-    if FormSubmissionReview.objects.filter(
-        submission=submission,
-        reviewer=reviewer,
-        submission_attempt=submission.resubmission_count,
-    ).exists():
-        raise BusinessActionError('您已经审核过本次提交，不能重复审核')
     if submission.status != 'pending':
         raise BusinessActionError('该请求已不在待审核状态，不能重复审核')
 
-    FormSubmissionReview.objects.create(
+    existing = FormSubmissionReview.objects.filter(
         submission=submission,
         reviewer=reviewer,
-        status='approved',
-        comment=comment,
         submission_attempt=submission.resubmission_count,
-    )
+    ).first()
+    if existing:
+        # 同一审核人同一轮次只有一条记录：原地更新投票，审核人数保持不变
+        existing.status = 'approved'
+        existing.comment = comment
+        existing.reviewed_at = timezone.now()
+        existing.save(update_fields=['status', 'comment', 'reviewed_at'])
+    else:
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=reviewer,
+            status='approved',
+            comment=comment,
+            submission_attempt=submission.resubmission_count,
+        )
     approved_count = submission.approved_review_count()
     required_count = submission.required_approval_count
 
@@ -4749,30 +4757,15 @@ def _mark_submission_approved(submission, reviewer, comment):
         submission.uploaded_files.update(review_status='approved', review_comment='')
         submission.status = 'approved'
         submission.save()
+        _refresh_submission_merge_files(submission)
         _apply_builtin_action(submission)
     else:
         submission.status = 'pending'
         submission.save()
 
 
-def _mark_submission_rejected(submission, reviewer, comment, post):
-    if FormSubmissionReview.objects.filter(
-        submission=submission,
-        reviewer=reviewer,
-        submission_attempt=submission.resubmission_count,
-    ).exists():
-        raise BusinessActionError('您已经审核过本次提交，不能重复审核')
-    if submission.status != 'pending':
-        raise BusinessActionError('该请求已不在待审核状态，不能重复审核')
-
-    FormSubmissionReview.objects.create(
-        submission=submission,
-        reviewer=reviewer,
-        status='rejected',
-        comment=comment,
-        submission_attempt=submission.resubmission_count,
-    )
-
+def _apply_rejected_fields(submission, comment, post):
+    """把字段/文件审核状态按打回选择应用到提交上。"""
     rejected_value_ids = {
         int(key.rsplit('_', 1)[1])
         for key in post
@@ -4813,12 +4806,134 @@ def _mark_submission_rejected(submission, reviewer, comment, post):
         if field:
             _refresh_generated_merge_file(submission, field)
 
+
+def _mark_submission_rejected(submission, reviewer, comment, post):
+    if submission.status != 'pending':
+        raise BusinessActionError('该请求已不在待审核状态，不能重复审核')
+
+    existing = FormSubmissionReview.objects.filter(
+        submission=submission,
+        reviewer=reviewer,
+        submission_attempt=submission.resubmission_count,
+    ).first()
+    if existing:
+        # 同一审核人同一轮次只有一条记录：原地更新投票，审核人数保持不变
+        existing.status = 'rejected'
+        existing.comment = comment
+        existing.reviewed_at = timezone.now()
+        existing.save(update_fields=['status', 'comment', 'reviewed_at'])
+    else:
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=reviewer,
+            status='rejected',
+            comment=comment,
+            submission_attempt=submission.resubmission_count,
+        )
+
+    _apply_rejected_fields(submission, comment, post)
+
     submission.status = 'rejected'
     submission.review_comment = comment
     submission.reviewer = reviewer
     submission.reviewed_at = timezone.now()
     submission.is_read = False
     submission.save()
+
+
+def _prepare_override_review(submission, reviewer, comment, decision, post, mode):
+    """重新审核的公共部分：校验权限、保留原结果轨迹、原地更新操作人自己的审核记录。"""
+    if submission.status not in ('approved', 'rejected'):
+        raise BusinessActionError('仅已完成审核的请求可以修改审核结果')
+    if applies_business_action_on_approval(submission.channel):
+        raise BusinessActionError('该通道通过后会自动执行业务动作，审核结果不允许覆盖修改')
+
+    attempt = submission.resubmission_count
+    existing = FormSubmissionReview.objects.filter(
+        submission=submission,
+        reviewer=reviewer,
+        submission_attempt=attempt,
+    ).first()
+    if not existing and not _is_admin(reviewer):
+        raise BusinessActionError('仅参与本次审核的审核人或管理员可以修改审核结果')
+    old_status = existing.status if existing else ''
+    old_comment = existing.comment if existing else ''
+
+    status_labels = dict(FormSubmissionReview.STATUS_CHOICES)
+    if mode == 'direct' and existing and existing.status == decision:
+        raise BusinessActionError(f'审核结果已是{status_labels.get(decision, decision)}，无需修改')
+
+    # 原审核结果写入审核轨迹，避免覆盖后原记录丢失
+    override_history = list(submission.metadata.get('review_override_history') or [])
+    override_history.append({
+        'reviewer_id': reviewer.id,
+        'reviewer': reviewer.username,
+        'old_status': old_status,
+        'old_status_label': status_labels.get(old_status, '未审核'),
+        'new_status': decision,
+        'new_status_label': status_labels.get(decision, decision),
+        'old_comment': old_comment,
+        'new_comment': comment,
+        'at_label': timezone.localtime().strftime('%Y-%m-%d %H:%M'),
+        'mode': mode,
+    })
+    submission.metadata['review_override_history'] = override_history[-50:]
+
+    # 同一审核人同一轮次只有一条记录：原位更新，审核人数保持不变
+    if existing:
+        existing.status = decision
+        existing.comment = comment
+        existing.reviewed_at = timezone.now()
+        existing.save(update_fields=['status', 'comment', 'reviewed_at'])
+    else:
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=reviewer,
+            status=decision,
+            comment=comment,
+            submission_attempt=attempt,
+        )
+
+    submission.reviewer = reviewer
+    submission.reviewed_at = timezone.now()
+    submission.is_read = False
+    submission.review_comment = comment
+
+
+def _override_review_direct(submission, reviewer, comment, decision, post):
+    """方式一：直接替换审核结果。原地更新审核记录，提交直接切换为新的终态。"""
+    _prepare_override_review(submission, reviewer, comment, decision, post, mode='direct')
+    if decision == 'approved':
+        submission.values.update(review_status='approved', review_comment='')
+        submission.uploaded_files.update(review_status='approved', review_comment='')
+        submission.status = 'approved'
+        _refresh_submission_merge_files(submission)
+    else:
+        _apply_rejected_fields(submission, comment, post)
+        submission.status = 'rejected'
+    submission.save()
+    return submission.status
+
+
+def _override_review_reenter(submission, reviewer, comment, decision, post):
+    """方式二：重新进入审核流程。原地更新自己的审核记录后回到待审核，继续凑够 N 人。"""
+    _prepare_override_review(submission, reviewer, comment, decision, post, mode='reenter')
+    # 字段/文件回到待审核状态，供本轮的审核人重新判断
+    submission.values.update(review_status='pending', review_comment='')
+    submission.uploaded_files.update(review_status='pending', review_comment='')
+    approved_count = submission.approved_review_count()
+    required_count = submission.required_approval_count
+    if approved_count >= required_count:
+        # 重新审核后当前通过数仍达标：直接通过，不再强制回到待审核造成死锁
+        submission.status = 'approved'
+        submission.values.update(review_status='approved', review_comment='')
+        submission.uploaded_files.update(review_status='approved', review_comment='')
+        _refresh_submission_merge_files(submission)
+    else:
+        submission.status = 'pending'
+    submission.save()
+
+    return submission.status
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -4833,22 +4948,54 @@ def staff_review_form_submission(request, submission_key):
         if decision not in ['approved', 'rejected']:
             messages.error(request, '请选择有效审核结果')
         else:
+            is_override = False
+            override_mode = request.POST.get('mode', 'direct')
             try:
                 with transaction.atomic():
                     submission = FormSubmission.objects.select_for_update().select_related(
                         'channel', 'club'
                     ).get(pk=submission.pk)
-                    if submission.status != 'pending':
-                        messages.error(request, '该请求已被其他审核人处理，无需重复审核')
-                        return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
-                    if decision == 'approved':
+                    is_override = submission.status != 'pending'
+                    if is_override:
+                        if override_mode == 'reenter':
+                            _override_review_reenter(
+                                submission, request.user, comment, decision, request.POST
+                            )
+                        else:
+                            _override_review_direct(
+                                submission, request.user, comment, decision, request.POST
+                            )
+                    elif decision == 'approved':
                         _mark_submission_approved(submission, request.user, comment)
                     else:
                         _mark_submission_rejected(submission, request.user, comment, request.POST)
             except BusinessActionError as exc:
                 messages.error(request, str(exc))
             else:
-                if decision == 'approved':
+                if is_override:
+                    if override_mode == 'reenter':
+                        if submission.status == 'approved':
+                            messages.success(
+                                request,
+                                '已重新审核，当前通过数已达标，请求已直接通过',
+                            )
+                        else:
+                            messages.success(
+                                request,
+                                f'已重新审核：请求回到待审核，当前通过进度 {submission.approval_progress_label}，等待其他审核人继续审核',
+                            )
+                    elif submission.status == 'pending':
+                        approved_count = submission.approved_review_count()
+                        required_count = submission.required_approval_count
+                        messages.success(
+                            request,
+                            f'已重新审核并记录本次通过，当前通过进度 {approved_count}/{required_count}，继续等待其他审核人',
+                        )
+                    elif submission.status == 'approved':
+                        messages.success(request, '已重新审核，结果已改为通过')
+                    else:
+                        messages.success(request, '已重新审核，结果已改为打回')
+                elif decision == 'approved':
                     approved_count = submission.approved_review_count()
                     required_count = submission.required_approval_count
                     if submission.status == 'approved':
@@ -4868,6 +5015,21 @@ def staff_review_form_submission(request, submission_key):
         reviewer=request.user,
         submission_attempt=submission.resubmission_count,
     ).exists()
+    context['can_override_review'] = (
+        submission.status in ('approved', 'rejected')
+        and (
+            submission.reviews.filter(
+                reviewer=request.user,
+                submission_attempt=submission.resubmission_count,
+            ).exists()
+            or _is_admin(request.user)
+        )
+        and not applies_business_action_on_approval(submission.channel)
+    )
+    context['override_blocked_by_business_action'] = (
+        submission.status in ('approved', 'rejected')
+        and applies_business_action_on_approval(submission.channel)
+    )
     return render(request, 'clubs/staff/dynamic_submission_review.html', context)
 
 

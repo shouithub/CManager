@@ -649,6 +649,18 @@ class FormSubmission(models.Model):
     def rejected_review_count(self):
         return self.current_attempt_reviews().filter(status='rejected').count()
 
+    @property
+    def reviewer_count(self):
+        """本轮实际参与审核的人数（同一人重新审核不重复计数）。"""
+        prefetched = getattr(self, '_prefetched_objects_cache', {}).get('reviews')
+        if prefetched is not None:
+            return len({
+                review.reviewer_id
+                for review in prefetched
+                if review.submission_attempt == self.resubmission_count
+            })
+        return self.current_attempt_reviews().values('reviewer').distinct().count()
+
     def approval_progress_label(self):
         return f'{self.approved_review_count()}/{self.required_approval_count}'
 
