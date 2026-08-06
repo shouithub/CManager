@@ -1127,3 +1127,236 @@ class StaticPageSmokeTests(TestCase):
         self.assertEqual(len(response.context['bookings']), 1)
         self.assertContains(response, '预约记录分页')
         self.assertContains(response, '第 2 / 2 页，共 25 条')
+
+
+class DynamicFormReReviewTests(TestCase):
+    """已完成审核请求的重新审核与修改自己的审核结果。"""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser('re-admin', '', 'test-password')
+        UserProfile.objects.get_or_create(
+            user=self.admin,
+            defaults={'role': 'admin', 'status': 'approved'},
+        )
+        self.reviewer = User.objects.create_user('re-reviewer', password='test-password')
+        UserProfile.objects.create(user=self.reviewer, role='staff', status='approved')
+        self.submitter = User.objects.create_user('re-submitter', password='test-password')
+        UserProfile.objects.create(user=self.submitter, role='member', status='approved')
+        self.club = Club.objects.create(name='重审社团', founded_date=date(2026, 1, 1))
+        self.channel = FormChannel.objects.create(
+            name='普通审核通道',
+            slug='plain-rereview',
+            is_active=True,
+            publish_status='published',
+            required_approval_count=2,
+        )
+
+    def make_rejected_submission(self, attempt=1):
+        submission = FormSubmission.objects.create(
+            channel=self.channel,
+            club=self.club,
+            submitter=self.submitter,
+            status='rejected',
+            resubmission_count=attempt,
+            review_comment='原打回意见',
+        )
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=self.reviewer,
+            status='rejected',
+            comment='原审核意见',
+            submission_attempt=attempt,
+        )
+        return submission
+
+    def test_admin_reenter_starts_new_review_round_keeping_history(self):
+        submission = self.make_rejected_submission()
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {'action': 'reenter', 'comment': '重新审核'},
+            secure=True,
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('clubs:staff_audit_center', args=[self.channel.slug]),
+            fetch_redirect_response=False,
+        )
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, 'pending')
+        self.assertEqual(submission.resubmission_count, 2)
+        self.assertIsNone(submission.reviewer)
+        self.assertIsNone(submission.reviewed_at)
+        self.assertEqual(submission.review_comment, '')
+        # 原审核记录保留在旧轮次，新轮次无任何投票
+        self.assertEqual(submission.reviews.count(), 1)
+        self.assertEqual(submission.reviews.first().submission_attempt, 1)
+        self.assertFalse(submission.reviews.filter(submission_attempt=2).exists())
+        self.assertEqual(submission.reviewer_count, 0)
+
+    def test_admin_reenter_approved_submission_allowed(self):
+        submission = self.make_rejected_submission()
+        submission.status = 'approved'
+        submission.review_comment = '已通过'
+        submission.save(update_fields=['status', 'review_comment'])
+        FormSubmissionReview.objects.filter(submission=submission).update(status='approved')
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {'action': 'reenter'},
+            secure=True,
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('clubs:staff_audit_center', args=[self.channel.slug]),
+            fetch_redirect_response=False,
+        )
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, 'pending')
+        self.assertEqual(submission.resubmission_count, 2)
+
+    def test_non_admin_cannot_reenter(self):
+        submission = self.make_rejected_submission()
+        self.client.force_login(self.reviewer)
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {'action': 'reenter'},
+            secure=True,
+        )
+        followed = self.client.get(response.url, secure=True)
+        self.assertContains(followed, '仅管理员可以重新审核')
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, 'rejected')
+        self.assertEqual(submission.resubmission_count, 1)
+
+    def test_reenter_rejected_on_pending_submission(self):
+        submission = FormSubmission.objects.create(
+            channel=self.channel,
+            club=self.club,
+            submitter=self.submitter,
+            status='pending',
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {'action': 'reenter'},
+            secure=True,
+        )
+        followed = self.client.get(response.url, secure=True)
+        self.assertContains(followed, '仅已完成审核的请求可以重新审核')
+
+    def test_business_action_channel_blocks_override_and_reenter(self):
+        channel = FormChannel.objects.create(
+            name='业务动作通道',
+            slug='biz-rereview',
+            builtin_action='club_application',
+            is_active=True,
+            publish_status='published',
+        )
+        submission = FormSubmission.objects.create(
+            channel=channel,
+            club=self.club,
+            submitter=self.submitter,
+            status='approved',
+        )
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=self.reviewer,
+            status='approved',
+            submission_attempt=1,
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {'action': 'reenter'},
+            secure=True,
+        )
+        self.assertContains(self.client.get(response.url, secure=True), '不允许重新审核')
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, 'approved')
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {'action': 'direct_reject'},
+            secure=True,
+        )
+        self.assertContains(self.client.get(response.url, secure=True), '不允许覆盖修改')
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, 'approved')
+
+    def test_direct_modify_only_changes_own_review(self):
+        second_reviewer = User.objects.create_user('re-reviewer-2', password='test-password')
+        UserProfile.objects.create(user=second_reviewer, role='staff', status='approved')
+        submission = self.make_rejected_submission()
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=second_reviewer,
+            status='rejected',
+            submission_attempt=1,
+        )
+        self.client.force_login(self.reviewer)
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {'action': 'direct_approve', 'comment': '改为通过'},
+            secure=True,
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            fetch_redirect_response=False,
+        )
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, 'approved')
+        self.assertEqual(
+            submission.reviews.get(reviewer=self.reviewer).status,
+            'approved',
+        )
+        self.assertEqual(
+            submission.reviews.get(reviewer=second_reviewer).status,
+            'rejected',
+        )
+        # 审核人数不因修改而增加
+        self.assertEqual(submission.reviewer_count, 2)
+        self.assertEqual(submission.reviews.count(), 2)
+
+    def test_reviewer_direct_modify_requires_participation(self):
+        outsider = User.objects.create_user('re-outsider', password='test-password')
+        UserProfile.objects.create(user=outsider, role='staff', status='approved')
+        submission = self.make_rejected_submission()
+        self.client.force_login(outsider)
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {'action': 'direct_approve'},
+            secure=True,
+        )
+        self.assertContains(self.client.get(response.url, secure=True), '仅参与本次审核的审核人或管理员可以修改审核结果')
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, 'rejected')
+
+    def test_review_page_context_permissions(self):
+        submission = self.make_rejected_submission()
+        self.client.force_login(self.reviewer)
+        response = self.client.get(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            secure=True,
+        )
+        self.assertTrue(response.context['can_edit_own_review'])
+        self.assertFalse(response.context['can_reenter_review'])
+
+        self.client.force_login(self.admin)
+        response = self.client.get(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            secure=True,
+        )
+        self.assertTrue(response.context['can_edit_own_review'])
+        self.assertTrue(response.context['can_reenter_review'])

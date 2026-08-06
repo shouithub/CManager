@@ -4547,6 +4547,22 @@ def revise_dynamic_submission(request, submission_key):
                 messages.error(request, error)
         else:
             with transaction.atomic():
+                # 行锁串行化与审核修改的竞争：若审核方先提交，
+                # 这里看到最新状态并拒绝覆盖；若本事务先提交，
+                # 审核方会看到新的 pending 轮次，按新提交审核。
+                submission = FormSubmission.objects.select_for_update().select_related(
+                    'channel', 'club'
+                ).get(pk=submission.pk)
+                if submission.status != 'rejected':
+                    messages.error(
+                        request,
+                        '该请求状态已变化（可能已被重新审核或修改结果），本次修改未保存，请刷新后重试',
+                    )
+                    return redirect(
+                        'clubs:approval_detail',
+                        item_type=submission.channel.slug,
+                        submission_key=submission.public_id,
+                    )
                 for field in fields:
                     if field.field_type == 'file':
                         for uploaded in submission.uploaded_files.filter(field=field, review_status='rejected', is_generated=False):
@@ -4916,25 +4932,42 @@ def _override_review_direct(submission, reviewer, comment, decision, post):
     return submission.status
 
 
-def _override_review_reenter(submission, reviewer, comment, decision, post):
-    """方式二：重新进入审核流程。原地更新自己的审核记录后回到待审核，继续凑够 N 人。"""
-    _prepare_override_review(submission, reviewer, comment, decision, post, mode='reenter')
-    # 字段/文件回到待审核状态，供本轮的审核人重新判断
+def _reenter_submission_review(submission, reviewer, comment):
+    """管理员重新审核：保留审核历史，开启新一轮审核，所有审核人重新投票。"""
+    if submission.status not in ('approved', 'rejected'):
+        raise BusinessActionError('仅已完成审核的请求可以重新审核')
+    if not _is_admin(reviewer):
+        raise BusinessActionError('仅管理员可以重新审核')
+    if applies_business_action_on_approval(submission.channel):
+        raise BusinessActionError('该通道通过后会自动执行业务动作，不允许重新审核')
+
+    status_labels = dict(FormSubmissionReview.STATUS_CHOICES)
+    override_history = list(submission.metadata.get('review_override_history') or [])
+    override_history.append({
+        'reviewer_id': reviewer.id,
+        'reviewer': reviewer.username,
+        'old_status': submission.status,
+        'old_status_label': status_labels.get(submission.status, submission.status),
+        'new_status': 'pending',
+        'new_status_label': '待审核（重新审核）',
+        'old_comment': submission.review_comment,
+        'new_comment': comment,
+        'at_label': timezone.localtime().strftime('%Y-%m-%d %H:%M'),
+        'mode': 'reenter',
+    })
+    submission.metadata['review_override_history'] = override_history[-50:]
+
+    # 像新审核一样：开启新审核轮次，字段/文件审核状态全部重置，
+    # 不创建或修改任何人的审核记录，原审核记录作为历史保留
     submission.values.update(review_status='pending', review_comment='')
     submission.uploaded_files.update(review_status='pending', review_comment='')
-    approved_count = submission.approved_review_count()
-    required_count = submission.required_approval_count
-    if approved_count >= required_count:
-        # 重新审核后当前通过数仍达标：直接通过，不再强制回到待审核造成死锁
-        submission.status = 'approved'
-        submission.values.update(review_status='approved', review_comment='')
-        submission.uploaded_files.update(review_status='approved', review_comment='')
-        _refresh_submission_merge_files(submission)
-    else:
-        submission.status = 'pending'
+    submission.status = 'pending'
+    submission.review_comment = ''
+    submission.reviewer = None
+    submission.reviewed_at = None
+    submission.is_read = False
+    submission.resubmission_count += 1
     submission.save()
-
-    return submission.status
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -4944,93 +4977,106 @@ def staff_review_form_submission(request, submission_key):
         return redirect('clubs:index')
     submission = _get_submission_or_404(submission_key)
     if request.method == 'POST':
-        decision = request.POST.get('decision')
         comment = request.POST.get('comment', '').strip()
-        if decision not in ['approved', 'rejected']:
+        action = request.POST.get('action')
+        decision = request.POST.get('decision')
+        override_mode = request.POST.get('mode', 'direct')
+        if action in ('approve', 'reject', 'direct_approve', 'direct_reject'):
+            decision = {
+                'approve': 'approved',
+                'reject': 'rejected',
+                'direct_approve': 'approved',
+                'direct_reject': 'rejected',
+            }[action]
+            if action.startswith('direct_'):
+                override_mode = 'direct'
+            else:
+                override_mode = None
+        elif action == 'reenter':
+            override_mode = 'reenter'
+
+        if override_mode == 'reenter':
+            is_override = True
+        elif decision not in ['approved', 'rejected']:
             messages.error(request, '请选择有效审核结果')
+            return redirect('clubs:staff_review_form_submission', submission_key=submission.public_id)
         else:
             is_override = False
-            override_mode = request.POST.get('mode', 'direct')
-            try:
-                with transaction.atomic():
-                    submission = FormSubmission.objects.select_for_update().select_related(
-                        'channel', 'club'
-                    ).get(pk=submission.pk)
+        try:
+            with transaction.atomic():
+                submission = FormSubmission.objects.select_for_update().select_related(
+                    'channel', 'club'
+                ).get(pk=submission.pk)
+                if override_mode == 'reenter':
+                    _reenter_submission_review(submission, request.user, comment)
+                    is_override = True
+                else:
                     is_override = submission.status != 'pending'
                     if is_override:
-                        if override_mode == 'reenter':
-                            _override_review_reenter(
-                                submission, request.user, comment, decision, request.POST
-                            )
-                        else:
-                            _override_review_direct(
-                                submission, request.user, comment, decision, request.POST
-                            )
+                        _override_review_direct(
+                            submission, request.user, comment, decision, request.POST
+                        )
                     elif decision == 'approved':
                         _mark_submission_approved(submission, request.user, comment)
                     else:
                         _mark_submission_rejected(submission, request.user, comment, request.POST)
-            except BusinessActionError as exc:
-                messages.error(request, str(exc))
-                return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
-            else:
-                if is_override:
-                    if override_mode == 'reenter':
-                        if submission.status == 'approved':
-                            messages.success(
-                                request,
-                                '已重新审核，当前通过数已达标，请求已直接通过',
-                            )
-                        else:
-                            messages.success(
-                                request,
-                                f'已重新审核：请求回到待审核，当前通过进度 {submission.approval_progress_label}，等待其他审核人继续审核',
-                            )
-                    elif submission.status == 'pending':
-                        approved_count = submission.approved_review_count()
-                        required_count = submission.required_approval_count
-                        messages.success(
-                            request,
-                            f'已重新审核并记录本次通过，当前通过进度 {approved_count}/{required_count}，继续等待其他审核人',
-                        )
-                    elif submission.status == 'approved':
-                        messages.success(request, '已重新审核，结果已改为通过')
-                    else:
-                        messages.success(request, '已重新审核，结果已改为打回')
-                elif decision == 'approved':
+        except BusinessActionError as exc:
+            messages.error(request, str(exc))
+            return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
+        else:
+            if override_mode == 'reenter':
+                messages.success(
+                    request,
+                    '已重新审核：请求已回到待审核，所有审核人需重新投票',
+                )
+            elif is_override:
+                if submission.status == 'pending':
                     approved_count = submission.approved_review_count()
                     required_count = submission.required_approval_count
-                    if submission.status == 'approved':
-                        messages.success(request, f'审核结果已保存，已达到 {approved_count}/{required_count} 次通过')
-                    else:
-                        messages.success(request, f'已记录本次通过，当前通过进度 {approved_count}/{required_count}')
+                    messages.success(
+                        request,
+                        f'已修改你的审核结果，当前通过进度 {approved_count}/{required_count}',
+                    )
+                elif submission.status == 'approved':
+                    messages.success(request, '已修改审核结果，请求已改为通过')
                 else:
-                    messages.success(request, '审核结果已保存，提交已打回')
-                if decision == 'approved' and (_show_word_downloads(submission) or _show_zip_download(submission)):
-                    return redirect('clubs:staff_review_form_submission', submission_key=submission.public_id)
-                return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
+                    messages.success(request, '已修改审核结果，请求已改为打回')
+            elif decision == 'approved':
+                approved_count = submission.approved_review_count()
+                required_count = submission.required_approval_count
+                if submission.status == 'approved':
+                    messages.success(request, f'审核结果已保存，已达到 {approved_count}/{required_count} 次通过')
+                else:
+                    messages.success(request, f'已记录本次通过，当前通过进度 {approved_count}/{required_count}')
+            else:
+                messages.success(request, '审核结果已保存，提交已打回')
+            if decision == 'approved' and (_show_word_downloads(submission) or _show_zip_download(submission)):
+                return redirect('clubs:staff_review_form_submission', submission_key=submission.public_id)
+            return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
     context = {
         'submission': submission,
     }
     context.update(_submission_common_context(submission, request=request))
-    context['user_has_reviewed_current_attempt'] = submission.reviews.filter(
+    user_reviewed = submission.reviews.filter(
         reviewer=request.user,
         submission_attempt=submission.resubmission_count,
     ).exists()
-    context['can_override_review'] = (
-        submission.status in ('approved', 'rejected')
-        and (
-            submission.reviews.filter(
-                reviewer=request.user,
-                submission_attempt=submission.resubmission_count,
-            ).exists()
-            or _is_admin(request.user)
-        )
-        and not applies_business_action_on_approval(submission.channel)
+    context['user_has_reviewed_current_attempt'] = user_reviewed
+    is_terminal = submission.status in ('approved', 'rejected')
+    blocked_by_business_action = applies_business_action_on_approval(submission.channel)
+    context['can_edit_own_review'] = (
+        is_terminal
+        and not blocked_by_business_action
+        and (user_reviewed or _is_admin(request.user))
+    )
+    context['can_reenter_review'] = (
+        is_terminal
+        and not blocked_by_business_action
+        and _is_admin(request.user)
     )
     context['override_blocked_by_business_action'] = (
         submission.status in ('approved', 'rejected')
-        and applies_business_action_on_approval(submission.channel)
+        and blocked_by_business_action
     )
     return render(request, 'clubs/staff/dynamic_submission_review.html', context)
 

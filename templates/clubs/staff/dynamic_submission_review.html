@@ -503,35 +503,29 @@
         margin-top: 18px;
     }
 
-    .override-modes {
+    .override-actions {
         display: grid;
         gap: 12px;
         margin-top: 16px;
     }
 
-    .override-mode-row {
+    .override-action-card {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 12px;
         flex-wrap: wrap;
         padding: 14px;
         border: 1px solid var(--md3-outline-variant);
         border-radius: var(--md3-radius-lg);
         background: var(--md3-surface);
-        transition: border-color .15s ease, box-shadow .15s ease;
     }
 
-    .override-mode-row.is-selected {
-        border-color: var(--md3-primary);
-        box-shadow: 0 0 0 1px var(--md3-primary) inset;
-    }
-
-    .override-mode-row .mode-label {
+    .override-action-card .override-caption {
         flex: 1 1 240px;
         min-width: 0;
     }
 
-    .override-mode-row .mode-label strong {
+    .override-action-card .override-caption strong {
         display: flex;
         align-items: center;
         gap: 6px;
@@ -539,12 +533,18 @@
         color: var(--md3-on-surface);
     }
 
-    .override-mode-row .mode-label small {
+    .override-action-card .override-caption small {
         color: var(--md3-on-surface-variant);
         line-height: 1.45;
     }
 
-    .override-mode-row .mode-actions {
+    .override-action-card .override-caption .meta-chip {
+        margin-top: 6px;
+        min-height: 24px;
+        font-size: 0.8rem;
+    }
+
+    .override-action-card .override-actions {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
@@ -582,16 +582,16 @@
             justify-content: center;
         }
 
-        .override-mode-row {
+        .override-action-card {
             align-items: stretch;
         }
 
-        .override-mode-row .mode-actions {
+        .override-action-card .override-actions {
             width: 100%;
             margin-left: 0;
         }
 
-        .override-mode-row .mode-actions .btn {
+        .override-action-card .override-actions .btn {
             flex: 1 1 120px;
             justify-content: center;
         }
@@ -718,59 +718,61 @@
             <textarea id="review-comment" name="comment">{{ submission.review_comment }}</textarea>
             <div class="action-row">
                 {% if submission.status == 'pending' and user_has_reviewed_current_attempt %}
-                <span class="meta-chip progress">你已审核本次提交，可修改你的审核结果</span>
-                <button class="btn btn-danger" name="decision" value="rejected" type="submit">
+                <span class="meta-chip progress">你已审核本轮提交，再次提交将修改你的审核结果</span>
+                <button class="btn btn-danger" name="action" value="reject" type="submit">
                     <span class="material-icons">close</span>打回
                 </button>
-                <button class="btn btn-primary" name="decision" value="approved" type="submit">
+                <button class="btn btn-primary" name="action" value="approve" type="submit">
                     <span class="material-icons">check</span>通过
                 </button>
                 {% elif submission.status == 'pending' %}
-                <button class="btn btn-danger" name="decision" value="rejected" type="submit">
+                <button class="btn btn-danger" name="action" value="reject" type="submit">
                     <span class="material-icons">close</span>拒绝
                 </button>
-                <button class="btn btn-primary" name="decision" value="approved" type="submit">
+                <button class="btn btn-primary" name="action" value="approve" type="submit">
                     <span class="material-icons">check</span>通过
                 </button>
-                {% elif can_override_review %}
-                <div class="override-modes">
-                    <div class="override-mode-row js-mode-row" data-mode="direct">
-                        <label class="mode-label">
-                            <input type="radio" name="mode" value="direct" checked>
-                            <strong><span class="material-icons">swap_vert</span>直接修改审核结果</strong>
-                            <small>原地更新审核记录，请求直接切换为新的通过/打回结果，不重新累计审核人数。</small>
-                        </label>
-                        <div class="mode-actions">
-                            <button class="btn btn-danger" name="decision" value="rejected" type="submit">
+                {% elif can_edit_own_review or can_reenter_review %}
+                <div class="override-actions">
+                    {% if can_edit_own_review %}
+                    <div class="override-action-card">
+                        <div class="override-caption">
+                            <strong><span class="material-icons">swap_vert</span>修改我的审核结果</strong>
+                            <small>只修改你自己的审核记录，其他审核人的投票和审核人数保持不变。</small>
+                            {% if not user_has_reviewed_current_attempt %}
+                            <span class="meta-chip progress">你尚未参与本轮审核，将作为审核人新增一条记录</span>
+                            {% endif %}
+                        </div>
+                        <div class="override-actions">
+                            <button class="btn btn-danger" name="action" value="direct_reject" type="submit">
                                 <span class="material-icons">close</span>改为不通过
                             </button>
-                            <button class="btn btn-primary" name="decision" value="approved" type="submit">
+                            <button class="btn btn-primary" name="action" value="direct_approve" type="submit">
                                 <span class="material-icons">check</span>改为通过
                             </button>
                         </div>
                     </div>
-                    <div class="override-mode-row js-mode-row" data-mode="reenter">
-                        <label class="mode-label">
-                            <input type="radio" name="mode" value="reenter">
-                            <strong><span class="material-icons">replay</span>重新进入多人审核流程</strong>
-                            <small>原地更新自己的审核记录，请求回到待审核，按“凑够 N 人”继续累计通过数。</small>
-                        </label>
-                        <div class="mode-actions">
-                            <button class="btn btn-danger" name="decision" value="rejected" type="submit">
-                                <span class="material-icons">close</span>重新打回
-                            </button>
-                            <button class="btn btn-primary" name="decision" value="approved" type="submit">
-                                <span class="material-icons">check</span>重新通过
+                    {% endif %}
+                    {% if can_reenter_review %}
+                    <div class="override-action-card">
+                        <div class="override-caption">
+                            <strong><span class="material-icons">replay</span>管理员重新审核</strong>
+                            <small>保留当前审核历史，开启新一轮审核，所有审核人需要重新投票。</small>
+                        </div>
+                        <div class="override-actions">
+                            <button class="btn btn-primary" name="action" value="reenter" type="submit">
+                                <span class="material-icons">replay</span>重新审核
                             </button>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
                 {% elif override_blocked_by_business_action %}
                 <span class="meta-chip progress">该通道绑定内置业务动作，审核结果不可覆盖修改</span>
                 {% elif user_has_reviewed_current_attempt %}
                 <span class="meta-chip progress">你已审核本次提交</span>
                 {% elif submission.status != 'pending' %}
-                <span class="meta-chip progress">该请求已完成审核，仅参与本次审核的审核人或管理员可修改结果</span>
+                <span class="meta-chip progress">该请求已完成审核，仅参与本轮审核的审核人或管理员可修改结果</span>
                 {% endif %}
             </div>
         </form>
@@ -823,21 +825,4 @@
 
 {% include 'clubs/components/_office_preview_modal.html' %}
 <script src="{% static 'js/office-preview.js' %}"></script>
-<script>
-(function () {
-    var rows = document.querySelectorAll('.js-mode-row');
-    if (!rows.length) return;
-    function sync() {
-        rows.forEach(function (row) {
-            var radio = row.querySelector('input[name="mode"]');
-            row.classList.toggle('is-selected', !!(radio && radio.checked));
-        });
-    }
-    rows.forEach(function (row) {
-        var radio = row.querySelector('input[name="mode"]');
-        if (radio) radio.addEventListener('change', sync);
-    });
-    sync();
-})();
-</script>
 {% endblock %}
