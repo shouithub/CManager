@@ -4860,8 +4860,9 @@ def _prepare_override_review(submission, reviewer, comment, decision, post, mode
     old_comment = existing.comment if existing else ''
 
     status_labels = dict(FormSubmissionReview.STATUS_CHOICES)
-    if mode == 'direct' and existing and existing.status == decision:
-        raise BusinessActionError(f'审核结果已是{status_labels.get(decision, decision)}，无需修改')
+    if mode == 'direct' and submission.status == decision:
+        # 无论操作人是否已有审核记录，结果与当前终态相同都属于重复审核
+        raise BusinessActionError(f'无需重复审核：该请求审核结果已{status_labels.get(decision, decision)}')
 
     # 原审核结果写入审核轨迹，避免覆盖后原记录丢失
     override_history = list(submission.metadata.get('review_override_history') or [])
@@ -4971,6 +4972,7 @@ def staff_review_form_submission(request, submission_key):
                         _mark_submission_rejected(submission, request.user, comment, request.POST)
             except BusinessActionError as exc:
                 messages.error(request, str(exc))
+                return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
             else:
                 if is_override:
                     if override_mode == 'reenter':
