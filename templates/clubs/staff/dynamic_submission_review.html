@@ -320,51 +320,8 @@
         color: var(--md3-on-error-container);
     }
 
-    .review-history {
-        display: grid;
-        gap: 10px;
-        padding: 20px;
-    }
-
     .review-history-card {
         margin-top: 32px;
-    }
-
-    .review-history-row {
-        display: grid;
-        grid-template-columns: minmax(120px, 1fr) auto auto;
-        gap: 10px;
-        align-items: center;
-        padding: 12px 14px;
-        border: 1px solid var(--md3-outline-variant);
-        border-radius: var(--md3-radius-lg);
-        background: var(--md3-surface);
-    }
-
-    .review-history-row .status-change {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .review-history-row .attempt-cell {
-        display: inline-flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 6px;
-    }
-
-    .review-history-row .attempt-cell .meta-chip {
-        min-height: 24px;
-        font-size: 0.78rem;
-        padding: 0 8px;
-    }
-
-    .review-history-comment {
-        grid-column: 1 / -1;
-        color: var(--md3-on-surface-variant);
-        font-size: 0.88rem;
-        line-height: 1.5;
     }
 
     .empty-state {
@@ -802,33 +759,6 @@
 
     <section class="content-card review-history-card">
         {% include 'clubs/components/_submission_attempt_history.html' %}
-        {% if not attempt_groups %}<div class="empty-state">暂无审核记录</div>{% endif %}
-        {% with override_history=submission.metadata.review_override_history %}
-        {% if override_history %}
-        <div class="card-header" style="margin-top:18px;border-top:1px solid var(--md3-outline-variant);">
-            <span class="material-icons">swap_horiz</span>重新审核记录
-        </div>
-        <div class="review-history">
-            {% for entry in override_history %}
-            <div class="review-history-row">
-                <strong>{{ entry.reviewer }}</strong>
-                <span class="status-change">
-                    <span class="item-status {{ entry.old_status }}">{{ entry.old_status_label }}</span>
-                    <span class="material-icons" style="font-size:1rem;">arrow_forward</span>
-                    <span class="item-status {{ entry.new_status }}">{{ entry.new_status_label }}</span>
-                    {% if entry.mode == 'reenter' %}
-                    <span class="meta-chip progress">重新进入审核</span>
-                    {% else %}
-                    <span class="meta-chip progress">直接修改</span>
-                    {% endif %}
-                </span>
-                <span>{{ entry.at_label }}</span>
-                {% if entry.new_comment %}<div class="review-history-comment">{{ entry.new_comment }}</div>{% endif %}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        {% endwith %}
     </section>
 </div>
 

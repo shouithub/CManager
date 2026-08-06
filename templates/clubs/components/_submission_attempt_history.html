@@ -1,275 +1,652 @@
 {% comment %}
-历史轮次折叠卡片（共享组件）。
+历史轮次时间线（共享组件）。
 配合视图 attempt_groups 使用：按提交轮次同时展示旧审核记录与
-被打回轮次的字段快照/归档附件，旧轮次默认折叠。
-需要上下文：submission、attempt_groups。
+被打回轮次的字段快照/归档附件；状态修改记录（重新审核/直接修改）
+也统一在此展示。需要上下文：submission、attempt_groups。
 {% endcomment %}
-{% if attempt_groups %}
+{% with override_history=submission.metadata.review_override_history %}
+{% if attempt_groups or override_history %}
 <style>
-    .attempt-history-block {
-        margin-top: 18px;
-        border-top: 1px solid var(--md3-outline-variant);
-        padding-top: 18px;
+    .ah-block {
+        background: var(--md3-surface, #fff);
     }
 
-    .attempt-history-list {
+    .ah-header {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px 10px;
+        padding: 16px 20px;
+        background: var(--md3-surface-container-low, #fdfbff);
+        border-bottom: 1px solid var(--md3-outline-variant, #c4c6d0);
+    }
+
+    .ah-header > .material-icons {
+        font-size: 1.35rem;
+        color: var(--md3-primary, #005ac1);
+    }
+
+    .ah-header-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--md3-on-surface, #1a1b1f);
+        margin-right: auto;
+    }
+
+    .ah-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 26px;
+        padding: 0 10px;
+        border-radius: var(--md3-radius-full, 999px);
+        background: var(--md3-surface-container-high, #e6e1e5);
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .ah-chip.progress {
+        background: var(--md3-info-container, #d3e4ff);
+        color: var(--md3-on-info-container, #001d36);
+    }
+
+    .ah-timeline {
         display: grid;
-        gap: 10px;
-        margin-top: 12px;
+        gap: 0;
+        padding: 20px;
     }
 
-    .attempt-history-item {
-        border: 1px solid var(--md3-outline-variant);
+    .ah-node {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr);
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .ah-rail {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .ah-dot {
+        width: 26px;
+        height: 26px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: var(--md3-primary-container, #d8e2ff);
+        color: var(--md3-on-primary-container, #001a41);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 0 3px var(--md3-surface, #fff);
+        z-index: 1;
+    }
+
+    .ah-dot .material-icons {
+        font-size: 1rem;
+    }
+
+    .ah-line {
+        flex: 1;
+        width: 2px;
+        min-height: 12px;
+        background: var(--md3-outline-variant, #c4c6d0);
+        margin: 4px 0;
+    }
+
+    .ah-node:not(.ah-node--override):last-child .ah-line {
+        display: none;
+    }
+
+    .ah-item {
+        border: 1px solid var(--md3-outline-variant, #c4c6d0);
         border-radius: var(--md3-radius-lg, 16px);
         background: var(--md3-surface, #fff);
-        overflow: hidden;
         box-shadow: var(--md3-elevation-1, 0 1px 2px rgba(0, 0, 0, 0.12));
+        overflow: hidden;
         transition: box-shadow 160ms ease;
+        margin-bottom: 20px;
     }
 
-    .attempt-history-item[open] {
+    .ah-item[open] {
         box-shadow: var(--md3-elevation-2, 0 2px 6px rgba(0, 0, 0, 0.16));
     }
 
-    .attempt-history-item summary {
+    .ah-item summary {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 13px 16px;
+        cursor: pointer;
+        list-style: none;
+        background: var(--md3-surface-container-lowest, #ffffff);
+        user-select: none;
+    }
+
+    .ah-item summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .ah-item-head {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
         gap: 8px;
-        padding: 13px 16px;
-        cursor: pointer;
-        list-style: none;
-        background: var(--md3-surface-container-low, #fdfbff);
+    }
+
+    .ah-item-head strong {
+        font-size: 0.95rem;
         color: var(--md3-on-surface, #1a1b1f);
-        font-weight: 700;
-        user-select: none;
+        margin-right: auto;
     }
 
-    .attempt-history-item summary::-webkit-details-marker {
-        display: none;
-    }
-
-    .attempt-history-item summary::after {
-        content: 'expand_more';
-        font-family: 'Material Icons';
-        font-size: 1.3rem;
-        margin-left: auto;
+    .ah-chevron {
+        font-size: 1.25rem !important;
+        color: var(--md3-on-surface-variant, #44474e) !important;
         transition: transform 0.18s ease;
-        color: var(--md3-on-surface-variant, #44474e);
     }
 
-    .attempt-history-item[open] summary::after {
+    .ah-item[open] .ah-chevron {
         transform: rotate(180deg);
     }
 
-    .attempt-history-item summary > .material-icons {
-        font-size: 1.2rem;
-        color: var(--md3-primary, #005ac1);
-    }
-
-    .attempt-time {
-        color: var(--md3-on-surface-variant, #44474e);
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-
-    .attempt-review-count {
-        display: inline-flex;
+    .ah-item-sub {
+        display: flex;
         align-items: center;
-        gap: 4px;
-        min-height: 24px;
-        padding: 0 8px;
-        border-radius: var(--md3-radius-full);
-        background: var(--md3-secondary-container, #d8e2ff);
-        color: var(--md3-on-secondary-container, #001a41);
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-
-    .attempt-history-body {
-        display: grid;
-        gap: 12px;
-        padding: 14px 16px 16px;
-        background: var(--md3-surface, #fff);
-    }
-
-    .history-review-list {
-        display: grid;
-        gap: 8px;
-    }
-
-    .history-review-row {
-        display: grid;
-        grid-template-columns: minmax(110px, 1fr) auto auto;
-        gap: 10px;
-        align-items: center;
-        padding: 11px 13px;
-        border: 1px solid var(--md3-outline-variant, #c4c6d0);
-        border-radius: var(--md3-radius-md, 12px);
-        background: var(--md3-surface-container-lowest, #ffffff);
-    }
-
-    .history-review-row .review-time {
+        gap: 5px;
         color: var(--md3-on-surface-variant, #44474e);
         font-size: 0.78rem;
         font-weight: 600;
     }
 
-    .history-review-comment {
-        grid-column: 1 / -1;
+    .ah-item-sub .material-icons {
+        font-size: 0.95rem;
+    }
+
+    .ah-body {
+        display: grid;
+        gap: 16px;
+        padding: 14px 16px 16px;
+        border-top: 1px solid var(--md3-outline-variant, #c4c6d0);
+    }
+
+    .ah-section {
+        display: grid;
+        gap: 8px;
+    }
+
+    .ah-section-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.78rem;
+        font-weight: 750;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .ah-section-title .material-icons {
+        font-size: 1.05rem;
+    }
+
+    .ah-reviews {
+        display: grid;
+        gap: 8px;
+    }
+
+    .ah-review {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: var(--md3-radius-md, 12px);
+        background: var(--md3-surface-container-low, #fdfbff);
+    }
+
+    .ah-review-avatar {
+        width: 32px;
+        height: 32px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: var(--md3-secondary-container, #d8e2ff);
+        color: var(--md3-on-secondary-container, #001a41);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    .ah-review-main {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ah-review-top {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px 8px;
+    }
+
+    .ah-review-top strong {
+        font-size: 0.9rem;
+        color: var(--md3-on-surface, #1a1b1f);
+    }
+
+    .ah-review-time {
+        margin-left: auto;
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.76rem;
+        font-weight: 600;
+    }
+
+    .ah-review-comment {
+        margin: 6px 0 0;
         color: var(--md3-on-surface-variant, #44474e);
         font-size: 0.85rem;
-        line-height: 1.5;
-    }
-
-    .history-field-row,
-    .history-file-row {
-        display: grid;
-        gap: 6px;
-        padding: 12px;
-        border: 1px solid var(--md3-outline-variant, #c4c6d0);
-        border-radius: var(--md3-radius-md, 12px);
-        background: var(--md3-surface-container-lowest, #ffffff);
-    }
-
-    .history-field-label {
-        color: var(--md3-on-surface-variant, #44474e);
-        font-size: 0.8rem;
-        font-weight: 750;
-    }
-
-    .history-field-value {
-        word-break: break-word;
         line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .ah-fields {
+        display: grid;
+        grid-template-columns: minmax(150px, 230px) minmax(0, 1fr);
+        padding: 2px 12px;
+        border-radius: var(--md3-radius-md, 12px);
+        background: var(--md3-surface-container-low, #fdfbff);
+    }
+
+    .ah-field {
+        display: contents;
+    }
+
+    .ah-field-label {
+        padding: 9px 0;
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .ah-field-value {
+        padding: 9px 0;
+        color: var(--md3-on-surface, #1a1b1f);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        word-break: break-word;
         white-space: pre-wrap;
     }
 
-    .history-file-row .file-entry {
+    .ah-field-comment {
+        display: block;
+        margin-top: 4px;
+        color: var(--md3-error, #ba1a1a);
+        font-size: 0.8rem;
+        font-weight: 650;
+    }
+
+    .ah-files {
+        display: grid;
+        gap: 8px;
+    }
+
+    .ah-file {
         display: flex;
         align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: var(--md3-radius-md, 12px);
+        background: var(--md3-surface-container-low, #fdfbff);
+    }
+
+    .ah-file-thumb {
+        flex: 0 0 auto;
+        display: block;
+        border-radius: var(--md3-radius-md, 12px);
+        overflow: hidden;
+        border: 1px solid var(--md3-outline-variant, #c4c6d0);
+        background: var(--md3-surface-container-high, #e6e1e5);
+    }
+
+    .ah-file-thumb img {
+        display: block;
+        width: 72px;
+        height: 72px;
+        object-fit: cover;
+    }
+
+    .ah-file-main {
+        flex: 1 1 220px;
+        min-width: 0;
+        display: grid;
+        gap: 8px;
+    }
+
+    .ah-file-name {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        font-size: 0.88rem;
+        font-weight: 650;
+        color: var(--md3-on-surface, #1a1b1f);
+        word-break: break-word;
+    }
+
+    .ah-file-name .material-icons {
+        flex: 0 0 auto;
+        font-size: 1.15rem;
+        color: var(--md3-primary, #005ac1);
+    }
+
+    .ah-file-actions {
+        display: flex;
         flex-wrap: wrap;
         gap: 8px;
     }
 
-    .history-file-row .file-entry img {
-        max-width: 100%;
-        max-height: 240px;
-        border-radius: var(--md3-radius-lg, 12px);
-        border: 1px solid var(--md3-outline-variant, #c4c6d0);
-        display: block;
+    .ah-file-comment {
+        grid-column: 1 / -1;
+        color: var(--md3-error, #ba1a1a);
+        font-size: 0.8rem;
+        font-weight: 650;
+        margin-top: 2px;
+    }
+
+    .ah-empty {
+        margin: 0;
+        padding: 14px;
+        text-align: center;
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.85rem;
+    }
+
+    .ah-node--override .ah-dot {
+        background: var(--md3-secondary-container, #d8e2ff);
+        color: var(--md3-on-secondary-container, #001a41);
+    }
+
+    .ah-override-block {
+        margin-bottom: 8px;
+    }
+
+    .ah-override-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.78rem;
+        font-weight: 750;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .ah-override-title .material-icons {
+        font-size: 1.05rem;
+    }
+
+    .ah-overrides {
+        display: grid;
+        gap: 8px;
+    }
+
+    .ah-override {
+        display: grid;
+        gap: 5px;
+        padding: 10px 12px;
+        border-radius: var(--md3-radius-md, 12px);
+        background: var(--md3-surface-container-low, #fdfbff);
+    }
+
+    .ah-override-top {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px 8px;
+    }
+
+    .ah-override-top strong {
+        font-size: 0.9rem;
+        color: var(--md3-on-surface, #1a1b1f);
+    }
+
+    .ah-change {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .ah-change .material-icons {
+        font-size: 1rem;
+        color: var(--md3-on-surface-variant, #44474e);
+    }
+
+    .ah-override-meta {
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.76rem;
+        font-weight: 600;
+    }
+
+    .ah-override-comment {
+        margin: 2px 0 0;
+        color: var(--md3-on-surface-variant, #44474e);
+        font-size: 0.85rem;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
     }
 
     @media (max-width: 600px) {
-        .attempt-history-item summary {
+        .ah-header {
+            padding: 13px 14px;
+        }
+
+        .ah-timeline {
+            padding: 14px;
+            grid-template-columns: 24px minmax(0, 1fr);
+            gap: 10px;
+        }
+
+        .ah-dot {
+            width: 24px;
+            height: 24px;
+        }
+
+        .ah-item summary {
             padding: 11px 12px;
         }
 
-        .attempt-history-item summary .item-status {
-            order: 3;
+        .ah-item-head strong {
+            font-size: 0.9rem;
         }
 
-        .attempt-time {
-            width: 100%;
+        .ah-fields {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .ah-field-label {
+            padding: 8px 0 0;
+        }
+
+        .ah-field-value {
+            padding: 2px 0 8px;
+        }
+
+        .ah-review-time {
             margin-left: 0;
-        }
-
-        .history-review-row {
-            grid-template-columns: 1fr auto;
-        }
-
-        .history-review-row .review-time {
-            grid-column: 1 / -1;
+            width: 100%;
         }
     }
 </style>
 
-<div class="attempt-history-block">
-    <div class="card-header">
-        <span class="material-icons">content_paste_history</span>历史提交与审核记录
+<div class="ah-block">
+    <div class="ah-header">
+        <span class="material-icons">content_paste_history</span>
+        <span class="ah-header-title">历史提交与审核记录</span>
+        {% if attempt_groups %}
+        <span class="ah-chip">共 {{ attempt_groups|length }} 次提交</span>
+        {% endif %}
         {% if reviewer_count %}
-        <span class="meta-chip progress" style="margin-left:auto;">已审核 {{ reviewer_count }} 人</span>
-        {% else %}
-        <span class="meta-chip" style="margin-left:auto;">旧轮次默认折叠</span>
+        <span class="ah-chip progress">已审核 {{ reviewer_count }} 人</span>
         {% endif %}
     </div>
-    <div class="attempt-history-list">
+
+    {% if attempt_groups %}
+    <div class="ah-timeline">
         {% for group in attempt_groups %}
-        <details class="attempt-history-item" {% if forloop.last %}open{% endif %}>
-            <summary>
-                <span class="material-icons">description</span>
-                第 {{ group.attempt }} 次提交
-                {% if group.status_label %}
-                <span class="item-status {{ group.status }}">{{ group.status_label }}</span>
-                {% endif %}
-                {% if group.reviews %}
-                <span class="attempt-review-count">
-                    <span class="material-icons">rate_review</span>{{ group.reviews|length }}
-                </span>
-                {% endif %}
-                <span class="attempt-time">{{ group.submitted_at|default:"—" }}</span>
-            </summary>
-            <div class="attempt-history-body">
-                {% if group.reviews %}
-                <div class="history-review-list">
-                    <span class="history-field-label">审核记录</span>
-                    {% for review in group.reviews %}
-                    <div class="history-review-row">
-                        <strong>{{ review.reviewer }}</strong>
-                        <span class="item-status {{ review.status }}">{{ review.status_label }}</span>
-                        <span class="review-time">{{ review.reviewed_at }}</span>
-                        {% if review.comment %}
-                        <div class="history-review-comment">{{ review.comment }}</div>
+        <div class="ah-node">
+            <div class="ah-rail">
+                <span class="ah-dot"><span class="material-icons">description</span></span>
+                {% if not forloop.last %}<span class="ah-line"></span>{% endif %}
+            </div>
+            <details class="ah-item" {% if forloop.last %}open{% endif %}>
+                <summary>
+                    <div class="ah-item-head">
+                        <strong>第 {{ group.attempt }} 次提交{% if forloop.last %}<span class="ah-chip" style="margin-left:6px;">当前轮次</span>{% endif %}</strong>
+                        {% if group.status_label %}
+                        <span class="item-status {{ group.status }}">{{ group.status_label }}</span>
+                        {% endif %}
+                        {% if group.reviews %}
+                        <span class="ah-chip">已审核 {{ group.reviews|length }} 人</span>
+                        {% endif %}
+                        <span class="ah-chevron material-icons">expand_more</span>
+                    </div>
+                    <div class="ah-item-sub">
+                        <span class="material-icons">schedule</span>
+                        <span>{{ group.submitted_at|default:"—" }}</span>
+                    </div>
+                </summary>
+                <div class="ah-body">
+                    {% if group.reviews %}
+                    <section class="ah-section">
+                        <h4 class="ah-section-title"><span class="material-icons">rate_review</span>审核记录</h4>
+                        <div class="ah-reviews">
+                            {% for review in group.reviews %}
+                            <div class="ah-review">
+                                <span class="ah-review-avatar">{{ review.reviewer|first|upper }}</span>
+                                <div class="ah-review-main">
+                                    <div class="ah-review-top">
+                                        <strong>{{ review.reviewer }}</strong>
+                                        <span class="item-status {{ review.status }}">{{ review.status_label }}</span>
+                                        <span class="ah-review-time">{{ review.reviewed_at }}</span>
+                                    </div>
+                                    {% if review.comment %}
+                                    <p class="ah-review-comment">{{ review.comment }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if group.fields or group.files %}
+                    <section class="ah-section">
+                        <h4 class="ah-section-title"><span class="material-icons">edit_note</span>提交内容</h4>
+                        {% if group.fields %}
+                        <div class="ah-fields">
+                            {% for field in group.fields %}
+                            {% if field.value is not None and field.value != '' %}
+                            <div class="ah-field">
+                                <span class="ah-field-label">{{ field.label }}</span>
+                                <span class="ah-field-value">
+                                    {% if field.field_type == 'checkbox' %}{{ field.value|join:"、" }}{% else %}{{ field.value }}{% endif %}
+                                    {% if field.review_comment %}<span class="ah-field-comment">{{ field.review_comment }}</span>{% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        {% for file in group.files %}
+                        <div class="ah-file">
+                            {% if file.is_image %}
+                            <a class="ah-file-thumb" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" target="_blank" rel="noopener" title="{{ file.file_name }}">
+                                <img src="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" alt="{{ file.file_name }}" loading="lazy">
+                            </a>
+                            {% endif %}
+                            <div class="ah-file-main">
+                                <span class="ah-file-name"><span class="material-icons">insert_drive_file</span>{{ file.file_name }}</span>
+                                <div class="ah-file-actions">
+                                    {% if file.office_preview_url %}
+                                    <button class="file-preview-button js-office-preview" type="button" data-office-preview-url="{{ file.office_preview_url }}" data-office-file-name="{{ file.file_name }}">
+                                        <span class="material-icons">visibility</span>预览
+                                    </button>
+                                    {% endif %}
+                                    {% if not file.is_image %}
+                                    <a class="file-preview-button" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" target="_blank" rel="noopener">
+                                        <span class="material-icons">open_in_new</span>查看
+                                    </a>
+                                    {% endif %}
+                                    <a class="file-link" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}" target="_blank" rel="noopener">
+                                        <span class="material-icons">download</span>下载
+                                    </a>
+                                </div>
+                                {% if file.review_comment %}
+                                <span class="ah-file-comment">{{ file.review_comment }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </section>
+                    {% elif not group.reviews %}
+                    <p class="ah-empty">该轮次没有可回溯的提交内容</p>
+                    {% endif %}
+                </div>
+            </details>
+        </div>
+        {% endfor %}
+
+        {% if override_history %}
+        <div class="ah-node ah-node--override">
+            <div class="ah-rail">
+                <span class="ah-line" style="flex:0 0 14px;min-height:14px;margin:0 0 4px;"></span>
+                <span class="ah-dot"><span class="material-icons">swap_horiz</span></span>
+            </div>
+            <div class="ah-override-block">
+                <div class="ah-override-title"><span class="material-icons">history</span>状态修改记录</div>
+                <div class="ah-overrides">
+                    {% for entry in override_history %}
+                    <div class="ah-override">
+                        <div class="ah-override-top">
+                            <strong>{{ entry.reviewer }}</strong>
+                            <span class="ah-change">
+                                <span class="item-status {{ entry.old_status }}">{{ entry.old_status_label }}</span>
+                                <span class="material-icons">arrow_forward</span>
+                                <span class="item-status {{ entry.new_status }}">{{ entry.new_status_label }}</span>
+                            </span>
+                            {% if entry.mode == 'reenter' %}
+                            <span class="ah-chip progress">重新进入审核</span>
+                            {% else %}
+                            <span class="ah-chip">直接修改</span>
+                            {% endif %}
+                        </div>
+                        <div class="ah-override-meta">{{ entry.at_label }}</div>
+                        {% if entry.new_comment %}
+                        <p class="ah-override-comment">{{ entry.new_comment }}</p>
                         {% endif %}
                     </div>
                     {% endfor %}
                 </div>
-                {% endif %}
-
-                {% for field in group.fields %}
-                {% if field.value is not None and field.value != '' %}
-                <div class="history-field-row">
-                    <span class="history-field-label">{{ field.label }}</span>
-                    <span class="history-field-value">
-                        {% if field.field_type == 'checkbox' %}{{ field.value|join:"、" }}{% else %}{{ field.value }}{% endif %}
-                    </span>
-                    {% if field.review_comment %}<span class="item-comment">{{ field.review_comment }}</span>{% endif %}
-                </div>
-                {% endif %}
-                {% empty %}
-                {% if not group.reviews %}
-                <div class="empty-state">该轮次没有可回溯的字段内容</div>
-                {% endif %}
-                {% endfor %}
-
-                {% for file in group.files %}
-                <div class="history-file-row">
-                    <span class="history-field-label">{{ file.field_label }}</span>
-                    <div class="file-entry">
-                        {% if file.is_image %}
-                        <a href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" target="_blank" rel="noopener" style="display:block;">
-                            <img src="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" alt="{{ file.file_name }}" loading="lazy">
-                        </a>
-                        {% endif %}
-                        {% if file.office_preview_url %}
-                        <button class="file-preview-button js-office-preview" type="button" data-office-preview-url="{{ file.office_preview_url }}" data-office-file-name="{{ file.file_name }}">
-                            <span class="material-icons">visibility</span>预览
-                        </button>
-                        {% endif %}
-                        {% if not file.is_image %}
-                        <a class="file-preview-button" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" target="_blank" rel="noopener">
-                            <span class="material-icons">open_in_new</span>查看
-                        </a>
-                        {% endif %}
-                        <a class="file-link" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}" target="_blank" rel="noopener">
-                            <span class="material-icons">download</span>{{ file.file_name }}
-                        </a>
-                        {% if file.review_comment %}<span class="item-comment">{{ file.review_comment }}</span>{% endif %}
-                    </div>
-                </div>
-                {% endfor %}
             </div>
-        </details>
-        {% endfor %}
+        </div>
+        {% endif %}
     </div>
+    {% else %}
+    {% if not override_history %}
+    <div class="empty-state">暂无审核记录</div>
+    {% endif %}
+    {% endif %}
 </div>
 {% endif %}
+{% endwith %}
