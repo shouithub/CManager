@@ -109,6 +109,41 @@
             position: relative;
         }
     </style>
+    <style>
+        /* 顶部 AJAX 加载进度条（MD3） */
+        #top-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            z-index: 2147483000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        #top-progress-bar.active {
+            opacity: 1;
+        }
+
+        #top-progress-bar-fill {
+            display: block;
+            height: 100%;
+            width: 0;
+            border-radius: 0 999px 999px 0;
+            background: var(--md3-primary, #6750a4);
+            box-shadow: 0 0 8px var(--md3-primary, #6750a4);
+            transition: width 0.2s ease;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #top-progress-bar,
+            #top-progress-bar-fill {
+                transition: none;
+            }
+        }
+    </style>
     <link rel="stylesheet" href="{% static 'css/ui-unified.css' %}?v=20260805a">
     <style>
         .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) {
@@ -242,6 +277,10 @@
     </script>
 </head>
 <body>
+    <div id="top-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-hidden="true">
+        <div id="top-progress-bar-fill"></div>
+    </div>
+
     <!-- 页面专属样式：软导航时整体替换，避免首屏页面 CSS 残留在 head 中泄漏到其他页面 -->
     <div id="soft-page-styles">{% block extra_css %}{% endblock %}</div>
 
@@ -902,6 +941,54 @@
         scriptsHost.id = 'soft-page-scripts';
         document.body.appendChild(scriptsHost);
         const executedPageScripts = window.__cmanagerExecutedScripts || (window.__cmanagerExecutedScripts = new Set());
+        const progressBar = document.getElementById('top-progress-bar');
+        const progressFill = document.getElementById('top-progress-bar-fill');
+        let progressTimer = null;
+
+        function setProgress(value) {
+            if (!progressFill) return;
+            progressFill.style.width = value + '%';
+            if (progressBar && value >= 100) progressBar.setAttribute('aria-valuenow', '100');
+        }
+
+        function startProgress() {
+            if (!progressBar || !progressFill) return;
+            clearInterval(progressTimer);
+            progressBar.classList.add('active');
+            progressBar.setAttribute('aria-hidden', 'false');
+            progressBar.setAttribute('aria-valuenow', '0');
+            progressFill.style.transition = 'none';
+            setProgress(0);
+            // 强制回流后恢复过渡，让起步宽度平滑过渡到 12%
+            void progressFill.offsetWidth;
+            progressFill.style.transition = '';
+            setProgress(12);
+            progressTimer = setInterval(function () {
+                const current = parseFloat(progressFill.style.width) || 12;
+                setProgress(Math.min(90, current + (Math.random() * 6 + 2)));
+            }, 320);
+        }
+
+        function finishProgress() {
+            if (!progressBar || !progressFill) return;
+            clearInterval(progressTimer);
+            setProgress(100);
+            setTimeout(function () {
+                progressBar.classList.remove('active');
+                progressBar.setAttribute('aria-hidden', 'true');
+                progressBar.setAttribute('aria-valuenow', '0');
+                setTimeout(function () { setProgress(0); }, 280);
+            }, 260);
+        }
+
+        function hideProgress() {
+            clearInterval(progressTimer);
+            if (progressBar) {
+                progressBar.classList.remove('active');
+                progressBar.setAttribute('aria-hidden', 'true');
+                progressBar.setAttribute('aria-valuenow', '0');
+            }
+        }
 
         function pageScriptKey(text) {
             let hash = 0;
@@ -951,6 +1038,7 @@
         }
 
         async function softNavigate(url) {
+            startProgress();
             try {
                 const response = await fetch(url, {
                     method: 'GET',
@@ -960,6 +1048,7 @@
                 const contentType = response.headers.get('content-type') || '';
                 // 重定向到其他地址（如登录页）时走整页跳转，避免登录页被塞进内容区
                 if (!response.ok || !contentType.includes('text/html') || response.url !== url) {
+                    hideProgress();
                     window.location.href = url;
                     return;
                 }
@@ -968,6 +1057,7 @@
                 const freshContent = doc.getElementById('soft-partial-content');
                 const main = document.querySelector('.main-content');
                 if (!freshContent || !main) {
+                    hideProgress();
                     window.location.href = url;
                     return;
                 }
@@ -1019,7 +1109,9 @@
                 updateActiveMenu(new URL(url).pathname);
                 window.scrollTo(0, 0);
                 window.dispatchEvent(new CustomEvent('page:updated', { detail: { url } }));
+                finishProgress();
             } catch (error) {
+                hideProgress();
                 window.location.href = url;
             }
         }
