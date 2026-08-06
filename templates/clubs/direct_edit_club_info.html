@@ -215,6 +215,11 @@
 
 {% block content %}
 <div class="edit-container">
+    <div class="page-back-row">
+        <a href="{% url 'clubs:club_detail' club.id %}" class="page-back-btn" title="返回社团详情" aria-label="返回社团详情">
+            <span class="material-icons">arrow_back</span>
+        </a>
+    </div>
     <!-- 页面标题 -->
     <div class="page-title">
         <span class="material-icons">edit</span>

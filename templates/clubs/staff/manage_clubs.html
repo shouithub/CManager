@@ -309,6 +309,11 @@
 
 {% block content %}
 <div class="manage-clubs-container">
+    <div class="page-back-row">
+        <a href="{% url 'clubs:index' %}" class="page-back-btn" title="返回首页" aria-label="返回首页">
+            <span class="material-icons">arrow_back</span>
+        </a>
+    </div>
     <!-- 页面标题 -->
     <div class="page-title">
         <span class="material-icons">assignment</span>
@@ -381,10 +386,6 @@
                     <span class="material-icons">save</span>
                     保存设置
                 </button>
-                <a href="{% url 'clubs:index' %}" class="btn-secondary">
-                    <span class="material-icons">arrow_back</span>
-                    返回仪表板
-                </a>
             </div>
         </form>
     </div>

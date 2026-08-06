@@ -302,6 +302,9 @@
             {% endif %}
             {% if channel.description %}<p>{{ channel.description }}</p>{% endif %}
         </div>
+        <a href="{% url 'clubs:user_dashboard' %}" class="page-back-btn" title="返回工作台" aria-label="返回工作台">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </section>
 
     {% if channel.example_files.all %}
@@ -401,9 +404,6 @@
         {% endfor %}
 
         <div class="form-actions">
-            <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-secondary">
-                <span class="material-icons">arrow_back</span>返回
-            </a>
             <button type="submit" class="btn btn-primary">
                 <span class="material-icons">send</span>{% if revision_mode %}提交修改{% else %}提交{% endif %}
             </button>

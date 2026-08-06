@@ -45,6 +45,9 @@
             <h1>切换到社长身份</h1>
             <p class="subtitle">当前账号还有 {{ president_club_count }} 个社团的现任社长身份</p>
         </div>
+        <a href="{% url 'clubs:index' %}" class="page-back-btn" title="返回首页" aria-label="返回首页">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </section>
 
     <section class="identity-card">
@@ -59,10 +62,6 @@
                     切换到社长身份
                 </button>
             </form>
-            <a href="{% url 'clubs:index' %}" class="btn btn-outlined">
-                <span class="material-icons">arrow_back</span>
-                返回首页
-            </a>
         </div>
     </section>
 </div>

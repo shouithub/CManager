@@ -604,13 +604,6 @@
             <h1>活动管理</h1>
             <p class="subtitle">查看和管理社团活动</p>
         </div>
-        {% if user.is_authenticated %}
-        <div class="header-actions">
-            <a href="{% url 'clubs:user_dashboard' %}" class="btn btn-primary">
-                <span>返回仪表板</span>
-            </a>
-        </div>
-        {% endif %}
     </div>
 
     <!-- 筛选和搜索表单 -->

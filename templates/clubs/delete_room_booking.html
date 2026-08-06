@@ -71,6 +71,9 @@
             <h1>取消预约</h1>
             <p class="subtitle">确认后将立即释放该房间时间段</p>
         </div>
+        <a href="{% url 'clubs:my_room_bookings' %}" class="page-back-btn" title="返回我的预约" aria-label="返回我的预约">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </div>
 
     <div class="card">
@@ -109,9 +112,6 @@
         <form method="post">
             {% csrf_token %}
             <div class="actions">
-                <a href="{% url 'clubs:my_room_bookings' %}" class="btn btn-secondary">
-                    <span class="material-icons">arrow_back</span> 返回
-                </a>
                 <button type="submit" class="btn btn-danger">
                     <span class="material-icons">delete_forever</span> 确认取消
                 </button>

@@ -10,6 +10,9 @@
             <h1>修改用户角色</h1>
             <p class="subtitle">调整用户在系统中的身份与权限范围</p>
         </div>
+        <a href="{% url 'clubs:manage_users' %}" class="page-back-btn" title="返回用户管理" aria-label="返回用户管理">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </div>
     
     {% if messages %}

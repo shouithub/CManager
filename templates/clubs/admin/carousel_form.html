@@ -461,8 +461,8 @@
             <h1>{% if carousel %}编辑轮播内容{% else %}新增轮播内容{% endif %}</h1>
             <p class="subtitle">{% if carousel %}调整图片、文案与发布状态，保存后首页会自动更新{% else %}上传横向主视觉，并配置访客点击后前往的页面{% endif %}</p>
         </div>
-        <a href="{% url 'clubs:manage_carousel' %}" class="carousel-back-action">
-            <span class="material-icons" aria-hidden="true">arrow_back</span>返回列表
+        <a href="{% url 'clubs:manage_carousel' %}" class="page-back-btn" title="返回轮播图管理" aria-label="返回轮播图管理">
+            <span class="material-icons" aria-hidden="true">arrow_back</span>
         </a>
     </header>
 

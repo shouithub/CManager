@@ -207,6 +207,9 @@
         <h1>存储设置</h1>
         <p class="subtitle">配置文件存储后端（本地存储 / S3 兼容对象存储）</p>
     </div>
+    <a href="{% url 'clubs:admin_dashboard' %}" class="page-back-btn" title="返回仪表板" aria-label="返回仪表板">
+        <span class="material-icons">arrow_back</span>
+    </a>
 </div>
 
 {% if messages %}
@@ -395,9 +398,6 @@
             <button type="submit" formaction="" name="action" value="test" class="sc-btn sc-btn-secondary" form="mainForm">
                 <span class="material-icons">network_check</span>测试连接
             </button>
-            <a href="{% url 'clubs:admin_dashboard' %}" class="sc-btn sc-btn-secondary">
-                <span class="material-icons">arrow_back</span>返回
-            </a>
         </div>
     </form>
 

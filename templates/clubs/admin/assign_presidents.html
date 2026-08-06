@@ -231,6 +231,9 @@
                 已绑定 {{ assigned_count }} / {{ total_clubs }}
             </span>
         </div>
+        <a href="{% url 'clubs:admin_dashboard' %}" class="page-back-btn" title="返回仪表板" aria-label="返回仪表板">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </div>
 
     {% if messages %}
@@ -304,10 +307,6 @@
         </div>
 
         <div class="actions-bar">
-            <a href="{% url 'clubs:admin_dashboard' %}" class="btn-save" style="background: var(--md3-surface-container); color: var(--md3-on-surface); text-decoration:none;">
-                <span class="material-icons">arrow_back</span>
-                返回仪表板
-            </a>
             <button type="submit" class="btn-save">
                 <span class="material-icons">save</span>
                 保存所有指定

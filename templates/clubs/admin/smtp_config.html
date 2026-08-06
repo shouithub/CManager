@@ -765,9 +765,8 @@
             <h1>SMTP邮箱配置</h1>
             <p class="subtitle">管理发信服务、授权凭据与当前启用配置</p>
         </div>
-        <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-secondary">
+        <a href="{% url 'clubs:admin_dashboard' %}" class="page-back-btn" title="返回管理面板" aria-label="返回管理面板">
             <span class="material-icons">arrow_back</span>
-            返回管理面板
         </a>
     </div>
 
@@ -987,10 +986,6 @@
                         <span class="material-icons">check</span>
                         创建配置
                     </button>
-                    <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-secondary">
-                        <span class="material-icons">arrow_back</span>
-                        返回
-                    </a>
                 </div>
             </form>
         </div>

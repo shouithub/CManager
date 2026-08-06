@@ -577,6 +577,9 @@
             </div>
             {% endif %}
         </div>
+        <a href="{% url 'clubs:staff_audit_center' submission.channel.slug %}" class="page-back-btn" title="返回审核中心" aria-label="返回审核中心">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </section>
 
     <section class="content-card">
@@ -645,9 +648,6 @@
             <label for="review-comment">审核意见</label>
             <textarea id="review-comment" name="comment">{{ submission.review_comment }}</textarea>
             <div class="action-row">
-                <a class="btn btn-secondary" href="{% url 'clubs:staff_audit_center' submission.channel.slug %}">
-                    <span class="material-icons">arrow_back</span>返回
-                </a>
                 {% if submission.status == 'pending' and not user_has_reviewed_current_attempt %}
                 <button class="btn btn-danger" name="decision" value="rejected" type="submit">
                     <span class="material-icons">close</span>拒绝

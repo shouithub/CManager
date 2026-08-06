@@ -321,14 +321,12 @@
         </div>
         
         {% if user.profile.role == 'staff' or user.is_superuser %}
-        <a href="{% url 'clubs:staff_management' %}" class="back-btn">
+        <a href="{% url 'clubs:staff_management' %}" class="page-back-btn" title="返回管理" aria-label="返回管理">
             <span class="material-icons">arrow_back</span>
-            返回管理
         </a>
         {% else %}
-        <a href="{% url 'clubs:user_dashboard' %}" class="back-btn">
+        <a href="{% url 'clubs:user_dashboard' %}" class="page-back-btn" title="返回工作台" aria-label="返回工作台">
             <span class="material-icons">arrow_back</span>
-            返回工作台
         </a>
         {% endif %}
     </div>

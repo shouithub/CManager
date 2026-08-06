@@ -14,15 +14,6 @@
     .page-header-content { flex: 1; }
     .page-header h1 { margin: 0 0 2px 0; font-size: 1.6rem; font-weight: 600; color: var(--md3-on-surface); }
     .page-header .subtitle { color: var(--md3-on-surface-variant); font-size: 0.875rem; margin: 0; }
-    .btn-back {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 40px; height: 40px; border-radius: var(--md3-radius-full);
-        background: var(--md3-surface-container-high); color: var(--md3-on-surface);
-        text-decoration: none; border: 1px solid var(--md3-outline-variant);
-        transition: all 0.2s; flex-shrink: 0;
-    }
-    .btn-back:hover { background: var(--md3-primary-container); color: var(--md3-on-primary-container); border-color: var(--md3-primary); }
-
     .content-card {
         background: var(--md3-surface-container);
         border: 1px solid var(--md3-outline-variant);
@@ -102,14 +93,14 @@
 {% block admin_main %}
 
 <div class="page-header">
-    <a href="{% url 'clubs:admin_dashboard' %}" class="btn-back" title="返回仪表板">
-        <span class="material-icons">arrow_back</span>
-    </a>
     <span class="material-icons">lock</span>
     <div class="page-header-content">
         <h1>被锁定账号</h1>
         <p class="subtitle">查看并解锁因多次登录失败而被锁定的用户账号</p>
     </div>
+    <a href="{% url 'clubs:admin_dashboard' %}" class="page-back-btn" title="返回仪表板" aria-label="返回仪表板">
+        <span class="material-icons">arrow_back</span>
+    </a>
 </div>
 
 <div class="content-card">

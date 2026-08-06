@@ -40,6 +40,9 @@
         <div class="page-header-content">
             <h1>{% if action == 'edit' %}编辑房间{% else %}添加房间{% endif %}</h1>
         </div>
+        <a href="{% url 'clubs:admin_booking_management' %}" class="page-back-btn" title="返回预约管理" aria-label="返回预约管理">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </div>
 
     <div class="row justify-content-center">

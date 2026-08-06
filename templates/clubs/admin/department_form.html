@@ -178,6 +178,9 @@
             <h1>{% if department %}编辑部门{% else %}添加部门{% endif %}</h1>
             <p class="subtitle">配置部门名称、介绍、亮点与展示图标</p>
         </div>
+        <a href="{% url 'clubs:manage_departments' %}" class="page-back-btn" title="返回部门管理" aria-label="返回部门管理">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </div>
     
     <div class="form-card">

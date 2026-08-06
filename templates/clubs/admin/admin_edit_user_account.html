@@ -23,16 +23,6 @@
     .page-header h1 { margin: 0 0 2px 0; font-size: 1.6rem; font-weight: 600; color: var(--md3-on-surface); }
     .page-header .subtitle { color: var(--md3-on-surface-variant); font-size: 0.875rem; margin: 0; }
     .page-header-desc { font-size: 0.8rem; color: var(--md3-on-surface-variant); margin-top: 4px; }
-    .btn-back {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 36px; height: 36px; border-radius: var(--md3-radius-full);
-        background: var(--md3-surface-container-high); color: var(--md3-on-surface);
-        text-decoration: none; border: 1px solid var(--md3-outline-variant);
-        transition: all 0.2s; flex-shrink: 0;
-    }
-    .btn-back > .material-icons { font-size: 1.2rem; }
-    .btn-back:hover { background: var(--md3-primary-container); color: var(--md3-on-primary-container); border-color: var(--md3-primary); }
-
     /* == 用户信息横幅 == */
     .user-banner {
         display: flex; align-items: center; gap: var(--md3-spacing-xl);
@@ -178,7 +168,7 @@
             <p class="page-header-desc">修改此用户的个人信息、账号权限和安全设置</p>
         </div>
     </div>
-    <a href="{% url 'clubs:manage_users' %}" class="btn-back" title="返回用户列表">
+    <a href="{% url 'clubs:manage_users' %}" class="page-back-btn" title="返回用户列表" aria-label="返回用户列表">
         <span class="material-icons">arrow_back</span>
     </a>
 </div>

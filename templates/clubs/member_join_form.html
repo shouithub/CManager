@@ -98,6 +98,9 @@
             <h1>加入社团：{{ club.name }}</h1>
             <div class="subtitle">请填写入会信息（学号为必填）</div>
         </div>
+        <a href="{% url 'clubs:index' %}" class="page-back-btn" title="返回首页" aria-label="返回首页">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </div>
 
     {% if errors %}

@@ -210,6 +210,9 @@
     <section class="hero">
         <span class="material-icons">assignment_ind</span>
         <h1>审核干事注册申请</h1>
+        <a href="{% url 'clubs:manage_users' %}" class="page-back-btn" title="返回用户管理" aria-label="返回用户管理">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </section>
 
     <section class="card">
@@ -282,10 +285,6 @@
                 <textarea id="review_comment" name="review_comment" class="textarea" placeholder="输入审核意见或说明..."></textarea>
 
                 <div class="actions">
-                    <a href="{% url 'clubs:manage_users' %}" class="btn btn-secondary">
-                        <span class="material-icons">arrow_back</span>
-                        返回用户管理
-                    </a>
                     <button type="submit" name="decision" value="approved" class="btn btn-primary">
                         <span class="material-icons">check</span>
                         快速批准

@@ -380,6 +380,9 @@
             <h1>发布系统公告</h1>
             <p class="subtitle">面向全校发布重要通知或活动信息，支持草稿与附件上传</p>
         </div>
+        <a href="{% url 'clubs:admin_dashboard' %}" class="page-back-btn" title="返回管理面板" aria-label="返回管理面板">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </div>
     
     {% if errors %}

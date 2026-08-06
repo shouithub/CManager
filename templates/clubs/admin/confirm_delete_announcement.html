@@ -4,6 +4,11 @@
 
 {% block content %}
 <div style="max-width: 600px; margin: 3rem auto; padding: 20px;">
+    <div class="page-back-row">
+        <a href="{% url 'clubs:manage_announcements' %}" class="page-back-btn" title="返回公告管理" aria-label="返回公告管理">
+            <span class="material-icons">arrow_back</span>
+        </a>
+    </div>
     <div class="card">
         <div class="card-header">
             <h2 style="margin: 0;">⚠️ 删除公告确认</h2>

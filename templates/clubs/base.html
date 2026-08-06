@@ -231,7 +231,43 @@
             border-radius: var(--md3-radius-full);
         }
 
-        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action, .page-header-actions, .header-actions) {
+        /* 统一随用随走页面的右上角圆形返回按钮 */
+        .page-back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            flex: 0 0 auto;
+            border-radius: 999px;
+            background: var(--md3-surface-container-high);
+            color: var(--md3-on-surface);
+            text-decoration: none;
+            border: 1px solid var(--md3-outline-variant);
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .page-back-btn:hover,
+        .page-back-btn:focus-visible {
+            background: var(--md3-primary-container);
+            color: var(--md3-on-primary-container);
+            border-color: var(--md3-primary);
+        }
+
+        .page-back-btn .material-icons {
+            font-size: 1.35rem;
+        }
+
+        /* 无 page-header 的页面，返回按钮独立悬浮在内容区右上角 */
+        .page-back-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 14px;
+        }
+
+        .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action, .page-header-actions, .header-actions, .page-back-btn) {
             margin-left: auto;
         }
 
@@ -242,6 +278,19 @@
                 border-radius: 24px;
                 align-items: flex-start;
                 flex-direction: column;
+                position: relative;
+            }
+
+            /* 手机端 header 纵向堆叠时，返回按钮仍固定悬浮在右上角 */
+            .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card):has(> .page-back-btn) {
+                padding-right: 66px;
+            }
+
+            .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > .page-back-btn {
+                position: absolute;
+                top: 14px;
+                right: 14px;
+                margin: 0;
             }
 
             .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) :is(h1, .page-title h1, .profile-name) {
@@ -253,7 +302,7 @@
                 justify-content: center;
             }
 
-            .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action, .page-header-actions, .header-actions) {
+            .main-content :is(.page-header, .builder-header, .header-card, .ia-page-header, .hero, .profile-header-card) > :is(.btn, .btn-action, .action-btn, .header-back, .carousel-back-action, .page-header-actions, .header-actions, .page-back-btn) {
                 margin-left: 0;
             }
         }
@@ -1046,10 +1095,11 @@
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 });
                 const contentType = response.headers.get('content-type') || '';
-                // 重定向到其他地址（如登录页）时走整页跳转，避免登录页被塞进内容区
+                // 重定向到其他地址（如登录页、无可用房间时的首页）时跳转到响应最终地址，
+                // 避免重新请求原始 URL 导致同一错误消息被添加两次
                 if (!response.ok || !contentType.includes('text/html') || response.url !== url) {
                     hideProgress();
-                    window.location.href = url;
+                    window.location.href = response.url !== url ? response.url : url;
                     return;
                 }
                 const html = await response.text();

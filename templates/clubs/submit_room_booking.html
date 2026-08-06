@@ -237,11 +237,9 @@
             <h1>预约房间</h1>
             <div class="subtitle">填写以下表单申请使用活动室，请提前规划时间</div>
         </div>
-        <div class="header-actions">
-            <a href="{% url 'clubs:room_calendar' %}" class="btn btn-primary">
-                <span>返回日历</span>
-            </a>
-        </div>
+        <a href="{% url 'clubs:room_calendar' %}" class="page-back-btn" title="返回房间日历" aria-label="返回房间日历">
+            <span class="material-icons">arrow_back</span>
+        </a>
     </div>
     
     <!-- 提示信息 -->
