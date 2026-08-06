@@ -257,25 +257,31 @@
 
     .ah-fields {
         display: grid;
-        grid-template-columns: minmax(150px, 230px) minmax(0, 1fr);
-        padding: 2px 12px;
-        border-radius: var(--md3-radius-md, 12px);
-        background: var(--md3-surface-container-low, #fdfbff);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        align-items: start;
     }
 
     .ah-field {
-        display: contents;
+        min-width: 0;
+        padding: 14px 16px;
+        border: 1px solid var(--md3-outline-variant, #c4c6d0);
+        border-radius: var(--md3-radius-lg, 16px);
+        background: var(--md3-surface, #fff);
     }
 
     .ah-field-label {
-        padding: 9px 0;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
         color: var(--md3-on-surface-variant, #44474e);
         font-size: 0.82rem;
         font-weight: 700;
     }
 
     .ah-field-value {
-        padding: 9px 0;
         color: var(--md3-on-surface, #1a1b1f);
         font-size: 0.9rem;
         line-height: 1.5;
@@ -470,15 +476,7 @@
 
         .ah-fields {
             grid-template-columns: 1fr;
-            gap: 0;
-        }
-
-        .ah-field-label {
-            padding: 8px 0 0;
-        }
-
-        .ah-field-value {
-            padding: 2px 0 8px;
+            gap: 10px;
         }
 
         .ah-review-time {
@@ -557,7 +555,10 @@
                             {% for field in group.fields %}
                             {% if field.value is not None and field.value != '' %}
                             <div class="ah-field">
-                                <span class="ah-field-label">{{ field.label }}</span>
+                                <span class="ah-field-label">
+                                    <span class="material-icons">{% if field.field_type == 'file' %}attach_file{% else %}notes{% endif %}</span>
+                                    {{ field.label }}
+                                </span>
                                 <span class="ah-field-value">
                                     {% if field.field_type == 'checkbox' %}{{ field.value|join:"、" }}{% else %}{{ field.value }}{% endif %}
                                     {% if field.review_comment %}<span class="ah-field-comment">{{ field.review_comment }}</span>{% endif %}
