@@ -736,6 +736,67 @@ class FormUploadedFile(models.Model):
         return self.original_name or self.file.name
 
 
+class Template(models.Model):
+    """材料模板模型 - 干事可以上传各类模板"""
+    TEMPLATE_TYPES = [
+        # 年审模板 - 根据实际上传材料细分
+        ('review_financial', '年审 - 财务报告'),
+        ('review_activity', '年审 - 活动报告'),
+        ('review_member_list', '年审 - 成员名单'),
+        ('review_self_assessment', '年审 - 自查表'),
+        ('review_club_constitution', '年审 - 社团章程'),
+        ('review_leader_report', '年审 - 负责人学习及工作情况表'),
+        ('review_annual_activity', '年审 - 社团年度活动清单'),
+        ('review_advisor_report', '年审 - 指导教师履职情况表'),
+        ('review_member_composition', '年审 - 社团成员构成表'),
+        ('review_media_account', '年审 - 新媒体账号及运维情况表'),
+        # 报销模板
+        ('reimbursement', '报销模板'),
+        # 社团申请模板
+        ('application_establishment', '社团申请 - 社团成立申请书'),
+        ('application_constitution', '社团申请 - 社团章程草案'),
+        ('application_three_year_plan', '社团申请 - 社团三年发展规划'),
+        ('application_leader_resume', '社团申请 - 负责人简历'),
+        ('application_advisor_resume', '社团申请 - 指导老师简历'),
+        ('application_id_copies', '社团申请 - 身份证复印件'),
+        ('application_monthly_plan', '社团申请 - 一个月活动计划'),
+        ('application_teacher_certificates', '社团申请 - 指导老师专业证书'),
+        # 社团注册模板
+        ('registration_form', '社团注册 - 社团注册申请表'),
+        ('registration_basic_info', '社团注册 - 学生社团基础信息表'),
+        ('registration_fee_form', '社团注册 - 会费表'),
+        ('registration_fee_exemption', '社团注册 - 免收会费说明书'),
+        ('registration_leader_change', '社团注册 - 负责人变动申请'),
+        ('registration_meeting_minutes', '社团注册 - 社团大会会议记录'),
+        ('registration_name_change', '社团注册 - 社团名称变更申请表'),
+        ('registration_advisor_change', '社团注册 - 指导老师变动申请表'),
+        ('registration_business_unit_change', '社团注册 - 业务指导单位变动申请表'),
+        ('registration_social_media', '社团注册 - 新媒体平台建立申请表'),
+        # 社团创建
+        ('club_creation', '社团创建文件'),
+        # 社长变更模板
+        ('leader_change', '社长变更申请'),
+    ]
+
+    name = models.CharField(max_length=200, verbose_name='模板名称')
+    template_type = models.CharField(max_length=50, choices=TEMPLATE_TYPES, verbose_name='模板类型')
+    description = models.TextField(blank=True, verbose_name='模板描述')
+    # 系统内置模板允许无文件，部署后可在后台补传
+    file = models.FileField(upload_to='templates/%Y/%m/', blank=True, null=True, verbose_name='模板文件')
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='上传者')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    is_active = models.BooleanField(default=True, verbose_name='是否启用')
+
+    class Meta:
+        verbose_name = '模板'
+        verbose_name_plural = '模板'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.get_template_type_display()})"
+
+
 class Announcement(models.Model):
     """公告模型 - 管理员发布，所有人可见"""
     STATUS_CHOICES = [
