@@ -522,7 +522,7 @@
                     </div>
                     <div class="ah-item-sub">
                         <span class="material-icons">schedule</span>
-                        <span>{{ group.submitted_at|default:"—" }}</span>
+                        <span>{% if group.submitted_at %}{{ group.submitted_at }}{% else %}没有数据{% endif %}</span>
                     </div>
                 </summary>
                 <div class="ah-body">

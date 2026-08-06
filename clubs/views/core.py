@@ -5165,6 +5165,10 @@ def _reenter_submission_review(submission, reviewer, comment):
     })
     submission.metadata['review_override_history'] = override_history[-50:]
 
+    # 与社长补交一致：先保存当前轮次的内容快照，再开启新审核轮次，
+    # 保证已审核的旧轮次在历史中保留内容和提交时间
+    _snapshot_attempt_history(submission)
+
     # 像新审核一样：开启新审核轮次，字段/文件审核状态全部重置，
     # 不创建或修改任何人的审核记录，原审核记录作为历史保留
     submission.values.update(review_status='pending', review_comment='')

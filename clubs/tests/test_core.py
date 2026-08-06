@@ -16,6 +16,7 @@ from django.db import IntegrityError, connection, transaction
 from django.test import TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
+from django.utils import timezone
 
 from ..avatar_utils import clear_avatar_settings_cache, get_profile_avatar_url
 from ..models import (
@@ -1199,6 +1200,113 @@ class DynamicFormReReviewTests(TestCase):
         self.assertEqual(submission.reviews.first().submission_attempt, 1)
         self.assertFalse(submission.reviews.filter(submission_attempt=2).exists())
         self.assertEqual(submission.reviewer_count, 0)
+
+    def test_admin_reenter_snapshots_previous_round_content_and_time(self):
+        text_field = FormField.objects.create(
+            channel=self.channel,
+            field_key='reason',
+            label='事由',
+            field_type='text',
+            is_active=True,
+        )
+        submission = FormSubmission.objects.create(
+            channel=self.channel,
+            club=self.club,
+            submitter=self.submitter,
+            status='rejected',
+        )
+        FormFieldValue.objects.create(
+            submission=submission,
+            field=text_field,
+            value_text='第一轮内容',
+            review_status='rejected',
+        )
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=self.reviewer,
+            status='rejected',
+            comment='原审核意见',
+            submission_attempt=1,
+        )
+        self.client.force_login(self.admin)
+
+        self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {'action': 'reenter', 'comment': '重新审核'},
+            secure=True,
+        )
+
+        submission.refresh_from_db()
+        history = submission.metadata.get('attempt_history') or []
+        old_round = next(
+            (entry for entry in history if entry.get('attempt') == 1),
+            None,
+        )
+        self.assertIsNotNone(old_round)
+        self.assertEqual(
+            old_round['submitted_at'],
+            timezone.localtime(submission.submitted_at).strftime('%Y-%m-%d %H:%M'),
+        )
+        self.assertEqual(old_round['status_label'], '已拒绝')
+        self.assertEqual(old_round['fields'][0]['value'], '第一轮内容')
+
+        # 新轮次收到投票后，时间线应同时展示两个轮次且都有提交时间
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=self.reviewer,
+            status='approved',
+            comment='第二轮通过',
+            submission_attempt=2,
+        )
+        response = self.client.get(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            secure=True,
+        )
+        groups = response.context['attempt_groups']
+        self.assertEqual(len(groups), 2)
+        self.assertTrue(all(group.get('submitted_at') for group in groups))
+        self.assertFalse(any(group.get('submitted_at_approx') for group in groups))
+
+    def test_attempt_groups_do_not_fake_time_for_review_only_rounds(self):
+        submission = FormSubmission.objects.create(
+            channel=self.channel,
+            club=self.club,
+            submitter=self.submitter,
+            status='pending',
+            resubmission_count=2,
+        )
+        old_review = FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=self.reviewer,
+            status='rejected',
+            comment='第一轮意见',
+            submission_attempt=1,
+        )
+        old_time = timezone.now() - timezone.timedelta(days=2)
+        FormSubmissionReview.objects.filter(pk=old_review.pk).update(reviewed_at=old_time)
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=self.reviewer,
+            status='approved',
+            comment='第二轮意见',
+            submission_attempt=2,
+        )
+        self.client.force_login(self.reviewer)
+
+        response = self.client.get(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            secure=True,
+        )
+        groups = response.context['attempt_groups']
+        self.assertEqual(len(groups), 2)
+        first, second = groups
+        # 无内容快照的旧轮次不伪造提交时间，交给模板显示“没有数据”
+        self.assertNotIn('submitted_at', first)
+        self.assertEqual(
+            second['submitted_at'],
+            timezone.localtime(submission.submitted_at).strftime('%Y-%m-%d %H:%M'),
+        )
+        self.assertNotIn('submitted_at_approx', second)
 
     def test_admin_reenter_approved_submission_allowed(self):
         submission = self.make_rejected_submission()
