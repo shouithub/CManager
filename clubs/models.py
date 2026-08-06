@@ -1377,6 +1377,7 @@ class FileBlob(models.Model):
 
     md5 = models.CharField(max_length=32, unique=True, verbose_name='文件MD5')
     storage_name = models.CharField(max_length=512, unique=True, verbose_name='存储路径')
+    size = models.PositiveBigIntegerField(null=True, blank=True, verbose_name='文件大小(字节)')
     ref_count = models.PositiveIntegerField(default=1, verbose_name='引用计数')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')

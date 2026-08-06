@@ -643,12 +643,25 @@ class ClubStorage(Storage):
 
         存储名固定为 ``blobs/<md5><扩展名>``。并发下依赖 md5 唯一索引：
         两个请求同时写入时，后提交者捕获 IntegrityError 后转为复用。
+
+        MD5 完全由客户端计算，服务器不读取文件内容，因此以客户端同时提交的
+        文件大小（``content.size`` 元数据，同样不读取内容）作为第二校验条件：
+        若命中已有 blob 但大小不一致，说明客户端 MD5 异常，退回普通随机名
+        保存，避免把新文件错误地指向旧文件内容。
         """
         from .models import FileBlob
         extension = os.path.splitext(original_name)[1].lower()[:16]
         blob_name = f'blobs/{md5}{extension}'
+        content_size = getattr(content, 'size', None)
         existing = FileBlob.objects.filter(md5=md5).first()
         if existing is not None:
+            if self._blob_size_conflict(existing, content_size):
+                logger.warning(
+                    '客户端 MD5 命中已有 blob 但文件大小不一致，退回随机名保存: '
+                    'md5=%s existing_size=%s incoming_size=%s',
+                    md5, existing.size, content_size,
+                )
+                return self._save_randomized(original_name, content)
             # 已存在：不再写物理文件，仅增加引用计数
             FileBlob.objects.filter(pk=existing.pk).update(ref_count=F('ref_count') + 1)
             # 必须以登记表中的实际存储名为准：同一 MD5 可能先以
@@ -657,7 +670,9 @@ class ClubStorage(Storage):
         try:
             with transaction.atomic():
                 self._backend().save(blob_name, content)
-                FileBlob.objects.create(md5=md5, storage_name=blob_name, ref_count=1)
+                FileBlob.objects.create(
+                    md5=md5, storage_name=blob_name, ref_count=1, size=content_size
+                )
         except IntegrityError:
             # 并发下其他请求已创建同一 blob：回滚到 savepoint 后复用
             blob = FileBlob.objects.filter(md5=md5).first()
@@ -665,11 +680,39 @@ class ClubStorage(Storage):
                 # 记录被并发删除的极端情况，退回普通随机名保存
                 logger.warning('FileBlob 并发创建冲突后未找到记录，回退普通保存: %s', md5)
                 return self._save_randomized(original_name, content)
+            if self._blob_size_conflict(blob, content_size):
+                logger.warning(
+                    'FileBlob 并发冲突后大小不一致，退回随机名保存: '
+                    'md5=%s existing_size=%s incoming_size=%s',
+                    md5, blob.size, content_size,
+                )
+                return self._save_randomized(original_name, content)
             FileBlob.objects.filter(pk=blob.pk).update(ref_count=F('ref_count') + 1)
             return blob.storage_name
         return blob_name
 
+    @staticmethod
+    def _blob_size_conflict(blob, content_size):
+        """判断是否因文件大小不一致而放弃去重。
+
+        旧数据（size 为空）无法比对，按原有行为继续复用，避免影响历史记录。
+        只有两侧都明确给出大小且不一致时才视为冲突。
+        """
+        if blob.size is None or content_size is None:
+            return False
+        try:
+            return int(blob.size) != int(content_size)
+        except (TypeError, ValueError):
+            return False
+
     def _save_randomized(self, original_name, content):
+        # 回退路径可能收到已被读取过的 content（如并发冲突后重试），
+        # 可 seek 时先回到开头，避免写出空文件。
+        if hasattr(content, 'seek'):
+            try:
+                content.seek(0)
+            except (OSError, ValueError):
+                pass
         directory, filename = os.path.split(original_name)
         extension = os.path.splitext(filename)[1].lower()[:16]
         name = os.path.join(directory, f'{uuid.uuid4().hex}{extension}')

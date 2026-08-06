@@ -5309,7 +5309,6 @@ def delete_audit_request(request, tab, item_key):
     slug = submission.channel.slug
     for uploaded in submission.uploaded_files.all():
         _delete_uploaded_record(uploaded)
-    _delete_attempt_history_files(submission)
     submission.delete()
     messages.success(request, '审核请求已删除')
     return redirect('clubs:staff_audit_center', tab=slug)
@@ -5494,8 +5493,19 @@ def save_form_field(request, channel_id, field_id=None):
         if example_error:
             messages.error(request, example_error)
             return redirect('clubs:manage_form_channels_detail', channel_id=channel.id)
+        # 替换旧示例文件：先释放旧文件的引用/物理文件，避免去重引用泄漏
+        if field.example_file:
+            try:
+                field.example_file.delete(save=False)
+            except Exception:
+                pass
         field.example_file = example_upload
     if request.POST.get('clear_example') == 'on':
+        if field.example_file:
+            try:
+                field.example_file.delete(save=False)
+            except Exception:
+                pass
         field.example_file = None
     if not field.label or not field.field_key:
         messages.error(request, '字段名称和标识不能为空')
@@ -5668,7 +5678,6 @@ def cancel_submission(request, submission_key):
         return redirect('clubs:user_dashboard')
     for uploaded in submission.uploaded_files.all():
         _delete_uploaded_record(uploaded)
-    _delete_attempt_history_files(submission)
     submission.delete()
     messages.success(request, '提交已取消')
     return redirect('clubs:approval_center', tab='all')

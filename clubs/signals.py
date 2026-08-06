@@ -9,6 +9,7 @@ from .models import (
     ChannelExampleFile,
     Department,
     FormField,
+    FormSubmission,
     FormUploadedFile,
     StorageConfig,
     SiteSettings,
@@ -115,3 +116,20 @@ def delete_file_fields_after_model_delete(sender, instance, **kwargs):
         file_value = getattr(instance, field.name, None)
         if hasattr(file_value, 'delete') and getattr(file_value, 'name', ''):
             file_value.delete(save=False)
+
+
+@receiver(post_delete, sender=FormSubmission)
+def release_attempt_history_files(sender, instance, **kwargs):
+    """提交被删除（含通道/社团/用户级联删除）时，释放历史快照中的引用。
+
+    历史快照对内容寻址文件只增加引用（不复制），普通路径的打回文件则归档为
+    独立副本；两者都记录在 ``metadata['attempt_history']`` 中。若只在这两条
+    手动删除视图里释放，级联删除路径会导致引用泄漏、物理文件永不清理。
+    """
+    try:
+        from .views.core import _delete_attempt_history_files
+        _delete_attempt_history_files(instance)
+    except Exception:
+        # 删除提交不应被历史文件清理失败阻断；失败仅意味着物理文件可能保留
+        import logging
+        logging.getLogger(__name__).exception('释放提交历史文件引用失败')

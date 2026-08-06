@@ -1790,6 +1790,7 @@ class FileBlobDedupTests(TestCase):
         blob = FileBlob.objects.get(md5=md5(data).hexdigest())
         self.assertEqual(blob.storage_name, first_name)
         self.assertEqual(blob.ref_count, 2)
+        self.assertEqual(blob.size, len(data))
         self.assertEqual(FileBlob.objects.count(), 1)
 
         # 清理：释放两份引用后物理文件与登记记录都应消失
@@ -1798,6 +1799,145 @@ class FileBlobDedupTests(TestCase):
         default_storage.delete(second_name)
         self.assertFalse(default_storage.exists(first_name))
         self.assertFalse(FileBlob.objects.filter(md5=md5(data).hexdigest()).exists())
+
+    def test_same_claimed_md5_different_size_falls_back_to_random_file(self):
+        digest = md5(b'first-size').hexdigest()
+        first_name = default_storage.save(
+            'uploads/a.bin', self._make_file('a.bin', b'first-size')
+        )
+        # 客户端声称同一 MD5，但文件大小不同：不得复用旧 blob，必须单独落盘
+        second = SimpleUploadedFile('b.bin', b'second-size-is-longer')
+        second.client_md5 = digest
+        second_name = default_storage.save('uploads/b.bin', second)
+
+        self.assertNotEqual(first_name, second_name)
+        self.assertTrue(first_name.startswith('blobs/'))
+        self.assertFalse(second_name.startswith('blobs/'))
+        with default_storage.open(second_name, 'rb') as handle:
+            self.assertEqual(handle.read(), b'second-size-is-longer')
+
+        blob = FileBlob.objects.get(md5=digest)
+        self.assertEqual(blob.ref_count, 1)
+        self.assertEqual(blob.size, len(b'first-size'))
+        self.assertEqual(FileBlob.objects.count(), 1)
+
+        default_storage.delete(first_name)
+        default_storage.delete(second_name)
+        self.assertFalse(default_storage.exists(first_name))
+        self.assertFalse(FileBlob.objects.filter(md5=digest).exists())
+
+    def test_submission_cascade_delete_releases_history_snapshot_reference(self):
+        from ..models import FormUploadedFile
+        from ..views.core import _snapshot_attempt_history
+
+        data = b'history-snapshot-release-test'
+        digest = md5(data).hexdigest()
+        channel = FormChannel.objects.create(
+            name='历史释放通道', slug='history-release', is_active=True
+        )
+        club = Club.objects.create(name='历史释放社团', founded_date=date(2026, 1, 1))
+        submitter = User.objects.create_superuser(
+            username='blob-history-admin', email='', password='test-password'
+        )
+        submission = FormSubmission.objects.create(
+            channel=channel,
+            club=club,
+            submitter=submitter,
+        )
+        field = FormField.objects.create(
+            channel=channel, field_key='doc', label='附件', field_type='file'
+        )
+        storage_name = default_storage.save(
+            'form_submissions/x/doc.bin', self._make_file('doc.bin', data)
+        )
+        FormUploadedFile.objects.create(
+            submission=submission,
+            field=field,
+            # 直接引用已存在的 blob 路径（字符串赋值不触发重写物理文件）
+            file=storage_name,
+            original_name='doc.bin',
+        )
+
+        _snapshot_attempt_history(submission)
+        blob = FileBlob.objects.get(md5=digest)
+        self.assertEqual(blob.ref_count, 2)
+
+        # 直接级联删除提交（模拟通道/社团/用户删除），历史快照引用也必须释放
+        submission.delete()
+
+        self.assertFalse(FileBlob.objects.filter(md5=digest).exists())
+        self.assertFalse(default_storage.exists(storage_name))
+
+    def test_field_example_file_replace_and_clear_release_old_blob(self):
+        admin = User.objects.create_superuser(
+            username='blob-field-admin', email='', password='test-password'
+        )
+        self.client.force_login(admin)
+        channel = FormChannel.objects.create(
+            name='示例替换通道', slug='example-replace', is_active=True
+        )
+        field = FormField.objects.create(
+            channel=channel, field_key='doc', label='示例', field_type='file'
+        )
+
+        first_data = b'%PDF-1.4 example-first'
+        first_digest = md5(first_data).hexdigest()
+        response = self.client.post(
+            reverse('clubs:edit_form_field', args=[channel.id, field.id]),
+            {
+                'label': '示例',
+                'field_key': 'doc',
+                'field_type': 'file',
+                'md5_example_file': json.dumps([first_digest]),
+                'example_file': SimpleUploadedFile(
+                    'example.pdf', first_data, content_type='application/pdf'
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        first_blob = FileBlob.objects.get(md5=first_digest)
+        self.assertEqual(first_blob.ref_count, 1)
+        field.refresh_from_db()
+        self.assertEqual(field.example_file.name, first_blob.storage_name)
+
+        # 替换示例文件：旧 blob 引用必须释放并物理删除
+        second_data = b'%PDF-1.4 example-second-longer'
+        second_digest = md5(second_data).hexdigest()
+        response = self.client.post(
+            reverse('clubs:edit_form_field', args=[channel.id, field.id]),
+            {
+                'label': '示例',
+                'field_key': 'doc',
+                'field_type': 'file',
+                'md5_example_file': json.dumps([second_digest]),
+                'example_file': SimpleUploadedFile(
+                    'example.pdf', second_data, content_type='application/pdf'
+                ),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(FileBlob.objects.filter(md5=first_digest).exists())
+        self.assertFalse(default_storage.exists(first_blob.storage_name))
+        second_blob = FileBlob.objects.get(md5=second_digest)
+        self.assertEqual(second_blob.ref_count, 1)
+        field.refresh_from_db()
+        self.assertEqual(field.example_file.name, second_blob.storage_name)
+
+        # 清空示例文件：引用必须释放并物理删除
+        response = self.client.post(
+            reverse('clubs:edit_form_field', args=[channel.id, field.id]),
+            {
+                'label': '示例',
+                'field_key': 'doc',
+                'field_type': 'file',
+                'clear_example': 'on',
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(FileBlob.objects.filter(md5=second_digest).exists())
+        self.assertFalse(default_storage.exists(second_blob.storage_name))
+        field.refresh_from_db()
+        self.assertFalse(field.example_file)
 
     def test_delete_decrements_ref_count_before_last_reference(self):
         data = b'ref-count-release-test'
