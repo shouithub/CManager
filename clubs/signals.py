@@ -67,6 +67,12 @@ def save_user_profile(sender, instance, **kwargs):
             )
 
 
+@receiver([post_save, post_delete], sender=UserProfile)
+def invalidate_oobe_admin_cache(sender, **kwargs):
+    """管理员档案变化后立即清除首启引导缓存，避免刚创建/删除管理员后仍被旧缓存拦截。"""
+    cache.delete('oobe:has_admin')
+
+
 @receiver(post_save, sender=StorageConfig)
 def invalidate_storage_config_cache(sender, **kwargs):
     from .storage_backends import clear_storage_config_cache

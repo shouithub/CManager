@@ -888,6 +888,11 @@ class SecurityInfrastructureTests(TestCase):
         self.assertIn('不安全的路径', error)
 
     def test_generic_download_requires_staff_role(self):
+        User.objects.create_superuser(
+            username='download-admin',
+            email='',
+            password='test-password',
+        )
         member = User.objects.create_user('ordinary-member', password='password')
         self.client.force_login(member)
 
