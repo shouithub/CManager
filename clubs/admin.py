@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Club, Officer, UserProfile, FormChannel, FormCycle, FormChannelClubState, FormField, FormSubmission,
-    FormFieldValue, FormUploadedFile, Template, Announcement,
+    FormFieldValue, FormUploadedFile, Announcement,
     EmailVerificationCode, SMTPConfig, CarouselImage, Department, Room,
     TimeSlot, RoomBooking, PublishedActivity, ActivityRegistration,
     StorageConfig,
@@ -130,14 +130,6 @@ class OfficerAdmin(admin.ModelAdmin):
     def get_student_id(self, obj):
         return obj.user_profile.student_id
     get_student_id.short_description = '学号'  # type: ignore
-
-
-@admin.register(Template)
-class TemplateAdmin(admin.ModelAdmin):
-    list_display = ('name', 'template_type', 'uploaded_by', 'is_active', 'created_at')
-    list_filter = ('template_type', 'is_active', 'created_at')
-    search_fields = ('name', 'description')
-    readonly_fields = ('created_at', 'updated_at')
 
 
 @admin.register(Announcement)

@@ -11,7 +11,6 @@ from .models import (
     FormUploadedFile,
     StorageConfig,
     SiteSettings,
-    Template,
     UserProfile,
 )
 
@@ -95,7 +94,6 @@ def invalidate_site_presentation_cache(sender, **kwargs):
 
 @receiver(post_delete, sender=UserProfile)
 @receiver(post_delete, sender=FormUploadedFile)
-@receiver(post_delete, sender=Template)
 @receiver(post_delete, sender=FormField)
 @receiver(post_delete, sender=Announcement)
 @receiver(post_delete, sender=CarouselImage)
