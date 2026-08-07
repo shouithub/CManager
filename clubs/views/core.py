@@ -4455,6 +4455,8 @@ def _submission_attempt_groups(submission, request=None):
     """
     history_by_attempt = {}
     for entry in submission.metadata.get('attempt_history') or []:
+        if not isinstance(entry, dict):
+            continue
         attempt = entry.get('attempt')
         if attempt is not None:
             history_by_attempt[attempt] = dict(entry)
@@ -4466,7 +4468,7 @@ def _submission_attempt_groups(submission, request=None):
     )
     for review in reviews:
         reviews_by_attempt[review.submission_attempt].append({
-            'reviewer': review.reviewer.username,
+            'reviewer': review.reviewer.username if review.reviewer else '已注销用户',
             'status': review.status,
             'status_label': review.get_status_display(),
             'comment': review.comment,
@@ -4539,7 +4541,7 @@ def _snapshot_attempt_history(submission):
     history = [
         entry
         for entry in (metadata.get('attempt_history') or [])
-        if entry.get('attempt') != attempt
+        if isinstance(entry, dict) and entry.get('attempt') != attempt
     ]
     fields = []
     for value in submission.values.select_related('field'):
@@ -4606,7 +4608,11 @@ def _delete_attempt_history_files(submission):
     from ..storage_backends import ClubStorage
     storage = ClubStorage()
     for entry in history:
+        if not isinstance(entry, dict):
+            continue
         for file_info in entry.get('files') or []:
+            if not isinstance(file_info, dict):
+                continue
             storage_name = file_info.get('storage_name') or ''
             if not storage_name:
                 continue
@@ -4623,7 +4629,10 @@ def history_submission_file(request, submission_key, attempt, index):
     if not (is_staff_or_admin(request.user) or _is_president_of_club(request.user, submission.club)):
         return HttpResponseForbidden('无权下载该材料')
     history = submission.metadata.get('attempt_history') or []
-    entry = next((item for item in history if item.get('attempt') == attempt), None)
+    entry = next(
+        (item for item in history if isinstance(item, dict) and item.get('attempt') == attempt),
+        None,
+    )
     if not entry:
         raise Http404('历史提交不存在')
     files = entry.get('files') or []

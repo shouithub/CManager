@@ -91,6 +91,133 @@
         line-height: 1.5;
     }
 
+    .revision-banner {
+        display: flex;
+        gap: var(--md3-spacing-md);
+        align-items: flex-start;
+        padding: var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-lg);
+        border: 1px solid color-mix(in srgb, var(--md3-error) 35%, transparent);
+        border-radius: var(--md3-radius-lg);
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .revision-banner-icon {
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--md3-error) 16%, transparent);
+        color: var(--md3-error);
+    }
+
+    .revision-banner-icon .material-icons { font-size: 1.4rem; }
+
+    .revision-banner h2 {
+        margin: 0 0 4px;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .revision-banner p {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.55;
+        opacity: 0.92;
+    }
+
+    .revision-banner .revision-reason {
+        display: inline-block;
+        margin-top: 6px;
+        padding: 4px 10px;
+        border-radius: var(--md3-radius-full);
+        background: color-mix(in srgb, var(--md3-error) 14%, transparent);
+        font-weight: 600;
+    }
+
+    .revision-old-card {
+        padding: var(--md3-spacing-md);
+        margin-bottom: var(--md3-spacing-md);
+        border: 1px solid var(--md3-outline-variant);
+        border-left: 4px solid var(--md3-error);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container-low);
+    }
+
+    .revision-old-head {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-on-surface);
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+
+    .revision-old-head .material-icons {
+        color: var(--md3-error);
+        font-size: 1.1rem;
+    }
+
+    .revision-old-comment {
+        margin-left: auto;
+        padding: 2px 10px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .revision-old-value {
+        color: var(--md3-on-surface);
+        font-size: 0.9rem;
+        line-height: 1.55;
+        word-break: break-word;
+        white-space: pre-wrap;
+    }
+
+    .revision-file-row {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: 8px 10px;
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container);
+        margin-top: var(--md3-spacing-xs);
+        flex-wrap: wrap;
+    }
+
+    .revision-file-icon {
+        color: var(--md3-error);
+        flex: 0 0 auto;
+    }
+
+    .revision-file-meta {
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .revision-file-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--md3-on-surface);
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .revision-file-comment {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.75rem;
+    }
+
     .field-control {
         width: 100%;
         min-height: 48px;
@@ -243,6 +370,16 @@
         margin-top: var(--md3-spacing-xl);
     }
 
+    .revision-replace-hint {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-xs);
+        margin-bottom: var(--md3-spacing-sm);
+        color: var(--md3-primary);
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
     .empty-state {
         padding: var(--md3-spacing-xl);
         text-align: center;
@@ -297,15 +434,23 @@
         <div>
             <h1>{{ channel.name }}</h1>
             <p>{{ club.name }}</p>
-            {% if revision_mode %}
-            <p>补交请求：{{ submission.public_id }}。这里只显示被打回的内容。</p>
-            {% endif %}
             {% if channel.description %}<p>{{ channel.description }}</p>{% endif %}
         </div>
         <a href="{% url 'clubs:user_dashboard' %}" class="page-back-btn" title="返回工作台" aria-label="返回工作台">
             <span class="material-icons">arrow_back</span>
         </a>
     </section>
+
+    {% if revision_mode %}
+    <div class="revision-banner">
+        <span class="revision-banner-icon"><span class="material-icons">assignment_late</span></span>
+        <div>
+            <h2>补交请求 {{ submission.public_id }}</h2>
+            <p>本次提交已被打回，以下仅显示需要修改的内容，共 {{ field_items|length }} 项。请补充或修改后重新提交。</p>
+            <span class="revision-reason">待修改</span>
+        </div>
+    </div>
+    {% endif %}
 
     {% if channel.example_files.all %}
     <div style="margin-bottom:16px;padding:12px 14px;border:1px solid var(--md3-outline-variant);border-radius:var(--md3-radius-lg);background:var(--md3-surface-container-low);">
@@ -340,23 +485,41 @@
             {% if field.help_text %}<div class="field-help">{{ field.help_text }}</div>{% endif %}
             {% if revision_mode %}
                 {% if field.field_type == 'file' and item.files %}
-                <div class="field-help">
-                    被打回文件：
+                <div class="revision-old-card">
+                    <div class="revision-old-head">
+                        <span class="material-icons">assignment_return</span>
+                        被打回文件
+                        {% if item.review_comment %}<span class="revision-old-comment">{{ item.review_comment }}</span>{% endif %}
+                    </div>
                     {% for uploaded in item.files %}
                         {% if uploaded.review_status == 'rejected' %}
-                        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
-                            <span class="material-icons" style="font-size:1rem;">insert_drive_file</span>
-                            <strong>{{ uploaded.original_name }}</strong>{% if uploaded.review_comment %}（{{ uploaded.review_comment }}）{% endif %}
-                            <a href="{% url 'clubs:download_submission_file' uploaded.id %}" class="btn btn-outlined btn-sm">下载</a>
+                        <div class="revision-file-row">
+                            <span class="material-icons revision-file-icon">insert_drive_file</span>
+                            <div class="revision-file-meta">
+                                <span class="revision-file-name">{{ uploaded.original_name }}</span>
+                                {% if uploaded.review_comment %}<span class="revision-file-comment">打回原因：{{ uploaded.review_comment }}</span>{% endif %}
+                            </div>
+                            <a href="{% url 'clubs:download_submission_file' uploaded.id %}" class="btn btn-outlined btn-sm">
+                                <span class="material-icons">download</span>下载
+                            </a>
                             <button type="button" class="btn btn-outlined btn-sm js-office-preview"
                                     data-office-preview-url="{{ uploaded|office_preview_url:request }}"
-                                    data-office-file-name="{{ uploaded.original_name }}">预览</button>
+                                    data-office-file-name="{{ uploaded.original_name }}">
+                                <span class="material-icons">visibility</span>预览
+                            </button>
                         </div>
                         {% endif %}
                     {% endfor %}
                 </div>
                 {% elif item.value %}
-                <div class="field-help">原内容：{{ item.value }}{% if item.review_comment %}（{{ item.review_comment }}）{% endif %}</div>
+                <div class="revision-old-card">
+                    <div class="revision-old-head">
+                        <span class="material-icons">assignment_return</span>
+                        原内容
+                        {% if item.review_comment %}<span class="revision-old-comment">{{ item.review_comment }}</span>{% endif %}
+                    </div>
+                    <div class="revision-old-value">{{ item.value }}</div>
+                </div>
                 {% endif %}
             {% endif %}
             {% if field.example_file %}
@@ -391,6 +554,12 @@
                 {% endfor %}
             </div>
             {% elif field.field_type == 'file' %}
+            {% if revision_mode %}
+            <div class="revision-replace-hint">
+                <span class="material-icons">swap_horiz</span>
+                选择新文件后将替换上方被打回的文件
+            </div>
+            {% endif %}
             {% with file_accept=field.allowed_extensions|join:"," %}
             {% include 'clubs/components/_file_upload.html' with field_number=field.id label=field.label is_required=field.required allowed_extensions=file_accept max_size_mb=field.max_size_mb multiple=field.allow_multiple_files %}
             {% endwith %}

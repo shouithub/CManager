@@ -1745,6 +1745,188 @@ class DynamicFormReReviewTests(TestCase):
         )
 
 
+class ReviseSubmissionUploadTests(TestCase):
+    """被打回提交的补交上传回归测试（含客户端 MD5、同内容去重与已注销审核人）。"""
+
+    def setUp(self):
+        from ..models import FormUploadedFile
+
+        self.admin = User.objects.create_superuser(
+            username='revise-upload-admin',
+            email='',
+            password='test-password',
+        )
+        UserProfile.objects.get_or_create(
+            user=self.admin,
+            defaults={'role': 'admin', 'status': 'approved'},
+        )
+        self.submitter = User.objects.create_user(
+            'revise-upload-sub',
+            password='test-password',
+        )
+        self.profile = UserProfile.objects.create(
+            user=self.submitter,
+            role='president',
+            status='approved',
+        )
+        self.club = Club.objects.create(
+            name='补交上传社团',
+            founded_date=date(2026, 1, 1),
+        )
+        Officer.objects.create(
+            club=self.club,
+            user_profile=self.profile,
+            position='president',
+            appointed_date=date(2026, 1, 1),
+        )
+        self.channel = FormChannel.objects.create(
+            name='补交通道',
+            slug='revise-upload-channel',
+            is_active=True,
+        )
+        self.field = FormField.objects.create(
+            channel=self.channel,
+            field_key='doc',
+            label='附件',
+            field_type='file',
+            is_active=True,
+        )
+        self.submission = FormSubmission.objects.create(
+            channel=self.channel,
+            club=self.club,
+            submitter=self.submitter,
+            status='rejected',
+        )
+        FormUploadedFile.objects.create(
+            submission=self.submission,
+            field=self.field,
+            file=SimpleUploadedFile(
+                'old.pdf',
+                b'%PDF-1.4 old',
+                content_type='application/pdf',
+            ),
+            original_name='old.pdf',
+            review_status='rejected',
+        )
+        self.client.force_login(self.submitter)
+
+    def test_revise_upload_simple(self):
+        new_file = SimpleUploadedFile(
+            'new.pdf',
+            b'%PDF-1.4 new',
+            content_type='application/pdf',
+        )
+        response = self.client.post(
+            reverse(
+                'clubs:revise_dynamic_submission',
+                args=[self.submission.public_id],
+            ),
+            {f'field_{self.field.id}': new_file},
+            secure=True,
+        )
+        self.assertEqual(response.status_code, 302, response.content[:500])
+
+    def test_revise_upload_with_client_md5(self):
+        data = b'%PDF-1.4 md5-upload'
+        new_file = SimpleUploadedFile(
+            'new.pdf',
+            data,
+            content_type='application/pdf',
+        )
+        digest = md5(data).hexdigest()
+        response = self.client.post(
+            reverse(
+                'clubs:revise_dynamic_submission',
+                args=[self.submission.public_id],
+            ),
+            {
+                f'field_{self.field.id}': new_file,
+                f'md5_field_{self.field.id}': f'["{digest}"]',
+            },
+            secure=True,
+        )
+        self.assertEqual(response.status_code, 302, response.content[:500])
+
+    def test_revise_upload_same_content_as_old(self):
+        from ..models import FormUploadedFile
+
+        data = b'%PDF-1.4 same-content'
+        self.submission.uploaded_files.all().delete()
+        FormUploadedFile.objects.create(
+            submission=self.submission,
+            field=self.field,
+            file=SimpleUploadedFile(
+                'old.pdf',
+                data,
+                content_type='application/pdf',
+            ),
+            original_name='old.pdf',
+            review_status='rejected',
+        )
+        old_name = self.submission.uploaded_files.get().file.name
+        new_file = SimpleUploadedFile(
+            'new.pdf',
+            data,
+            content_type='application/pdf',
+        )
+        digest = md5(data).hexdigest()
+        response = self.client.post(
+            reverse(
+                'clubs:revise_dynamic_submission',
+                args=[self.submission.public_id],
+            ),
+            {
+                f'field_{self.field.id}': new_file,
+                f'md5_field_{self.field.id}': f'["{digest}"]',
+            },
+            secure=True,
+        )
+        self.assertEqual(response.status_code, 302, response.content[:500])
+        self.submission.refresh_from_db()
+        self.assertTrue(old_name)
+
+    def test_approval_detail_with_deleted_reviewer_does_not_500(self):
+        from ..models import FormSubmissionReview
+
+        reviewer = User.objects.create_user(
+            'revise-upload-deleted-reviewer',
+            password='test-password',
+        )
+        review = FormSubmissionReview.objects.create(
+            submission=self.submission,
+            reviewer=reviewer,
+            status='rejected',
+            comment='打回原因',
+            submission_attempt=1,
+        )
+        reviewer.delete()
+        review.refresh_from_db()
+        self.assertIsNone(review.reviewer)
+
+        response = self.client.get(
+            reverse(
+                'clubs:approval_detail',
+                args=[self.channel.slug, self.submission.public_id],
+            ),
+            secure=True,
+        )
+        self.assertEqual(response.status_code, 200, response.content[:500])
+
+    def test_revise_page_renders_revision_ui(self):
+        response = self.client.get(
+            reverse(
+                'clubs:revise_dynamic_submission',
+                args=[self.submission.public_id],
+            ),
+            secure=True,
+        )
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        self.assertContains(response, 'revision-banner')
+        self.assertContains(response, 'revision-old-card')
+        self.assertContains(response, 'revision-replace-hint')
+        self.assertContains(response, 'old.pdf')
+
+
 class DepartmentEditAndProfileRobustnessTests(TestCase):
     """审计修复回归测试：非法表单参数不产生 500，缺失 profile 的用户操作有兜底。"""
 
