@@ -3,7 +3,7 @@
 from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser, User
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from ..models import ErrorLog, SMTPConfig
@@ -66,6 +66,14 @@ class ErrorHandlerTests(TestCase):
         self.assertIn('boom', log.exception_message)
         self.assertFalse(log.help_requested)
 
+    @override_settings(USE_X_FORWARDED_FOR=True)
+    def test_handler500_records_leftmost_forwarded_ip(self):
+        request = self._request('/broken/page/')
+        request.META['HTTP_X_FORWARDED_FOR'] = '203.0.113.5, 104.16.1.1, 10.0.0.1'
+        handler500(request, ValueError('boom'))
+        log = ErrorLog.objects.get()
+        self.assertEqual(log.ip, '203.0.113.5')
+
     def test_error_page_help_button_only_when_smtp_enabled(self):
         make_smtp_config()
         request = self._request('/missing/page/')
@@ -75,6 +83,24 @@ class ErrorHandlerTests(TestCase):
         SMTPConfig.objects.update(enable_error_help=False)
         response = handler404(request)
         self.assertNotContains(response, '请求帮助', status_code=404)
+
+    def test_help_request_rejected_when_switch_disabled(self):
+        make_smtp_config()
+        SMTPConfig.objects.update(enable_error_help=False)
+        with patch('clubs.views.errors.send_email_with_config') as send_mock:
+            response = self.client.post(
+                reverse('clubs:error_help_request'),
+                {
+                    'error_type': '500',
+                    'error_path': '/broken/page/',
+                    'contact_email': 'user@example.com',
+                },
+                HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            )
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(response.json()['success'])
+        self.assertEqual(ErrorLog.objects.count(), 0)
+        send_mock.assert_not_called()
 
     def test_help_request_updates_log_and_sends_email(self):
         make_smtp_config()

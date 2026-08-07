@@ -5606,15 +5606,22 @@ def admin_dashboard(request):
     overall_rejection_rate = round(rejected_total / decided_total * 100, 1) if decided_total else 0
 
     # BUG 日志：未处理优先展示，求助记录单独突出
-    unresolved_bug_logs = list(
-        ErrorLog.objects.filter(resolved=False).order_by('-created_at')[:20]
-    )
-    help_request_logs = [log for log in unresolved_bug_logs if log.help_requested]
-    bug_log_counts = {
-        'unresolved': ErrorLog.objects.filter(resolved=False).count(),
-        'help': ErrorLog.objects.filter(help_requested=True, resolved=False).count(),
-        'all': ErrorLog.objects.count(),
-    }
+    # 表缺失/迁移未应用时降级为空数据，避免仪表板整体 500。
+    unresolved_bug_logs = []
+    help_request_logs = []
+    bug_log_counts = {'unresolved': 0, 'help': 0, 'all': 0}
+    try:
+        unresolved_bug_logs = list(
+            ErrorLog.objects.filter(resolved=False).order_by('-created_at')[:20]
+        )
+        help_request_logs = [log for log in unresolved_bug_logs if log.help_requested]
+        bug_log_counts = {
+            'unresolved': ErrorLog.objects.filter(resolved=False).count(),
+            'help': ErrorLog.objects.filter(help_requested=True, resolved=False).count(),
+            'all': ErrorLog.objects.count(),
+        }
+    except Exception:
+        logger.exception('读取 BUG 日志失败，仪表板降级展示')
 
     return render(request, 'clubs/admin/dashboard.html', {
         'total_clubs': total_clubs,

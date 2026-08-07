@@ -42,14 +42,15 @@ logger = logging.getLogger(__name__)
 def _client_ip(request):
     """返回用于限速的客户端 IP。
 
-    反代场景下 Nginx 会把真实 IP 追加到 X-Forwarded-For 末尾，因此取最右侧
-    非空值；未开启代理头或没有该请求头时回退到 REMOTE_ADDR。
+    反代链路中 X-Forwarded-For 由各层代理从左到右追加，最左侧才是真实客户端
+    IP（例如 Cloudflare -> Nginx 时格式为“客户端IP, Cloudflare节点IP”）。
+    因此取最左侧非空值；未开启代理头或没有该请求头时回退到 REMOTE_ADDR。
     """
     forwarded = (request.META.get('HTTP_X_FORWARDED_FOR') or '').strip()
     if getattr(settings, 'USE_X_FORWARDED_FOR', False) and forwarded:
         parts = [part.strip() for part in forwarded.split(',') if part.strip()]
         if parts:
-            return parts[-1]
+            return parts[0]
     return request.META.get('REMOTE_ADDR', '')
 
 

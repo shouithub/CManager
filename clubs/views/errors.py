@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 def _client_ip(request):
-    """反代场景下取 X-Forwarded-For 最右侧真实 IP，与登录限速保持一致。"""
+    """反代场景下取 X-Forwarded-For 最左侧真实 IP，与登录限速保持一致。"""
     forwarded = (request.META.get('HTTP_X_FORWARDED_FOR') or '').strip()
     if getattr(settings, 'USE_X_FORWARDED_FOR', False) and forwarded:
         parts = [part.strip() for part in forwarded.split(',') if part.strip()]
         if parts:
-            return parts[-1]
+            return parts[0]
     return request.META.get('REMOTE_ADDR', '')
 
 
@@ -126,7 +126,7 @@ def error_help_request(request):
 
     log_id = (request.POST.get('error_log_id') or '').strip()
     contact = (request.POST.get('contact_email') or '').strip()
-    note = (request.POST.get('note') or '').strip()
+    note = (request.POST.get('note') or '').strip()[:2000]
     error_type = (request.POST.get('error_type') or '500').strip()
     error_path = (request.POST.get('error_path') or request.path or '/').strip()[:500]
 
@@ -192,12 +192,15 @@ def error_help_request(request):
                     "此邮件由系统自动发送，请勿直接回复。"
                 )
                 for recipient in recipients:
-                    send_email_with_config(
-                        config=config,
-                        to_email=recipient,
-                        subject=f'[CManager] 用户请求帮助（日志 #{log.pk}）',
-                        text_body=text,
-                    )
+                    try:
+                        send_email_with_config(
+                            config=config,
+                            to_email=recipient,
+                            subject=f'[CManager] 用户请求帮助（日志 #{log.pk}）',
+                            text_body=text,
+                        )
+                    except Exception:
+                        logger.exception('发送求助通知邮件给 %s 失败', recipient)
     except Exception:
         logger.exception('发送求助通知邮件失败')
 

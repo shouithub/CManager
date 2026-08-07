@@ -262,6 +262,31 @@ class AvatarServiceTests(TestCase):
 
         self.assertContains(response, '登录尝试过多')
 
+    @override_settings(USE_X_FORWARDED_FOR=True)
+    def test_login_lockout_uses_leftmost_forwarded_ip(self):
+        from ..views import auth as auth_views
+
+        self.client.logout()
+        login_url = reverse('clubs:login')
+        # 多级代理时 XFF 形如“客户端IP, 代理IP”，限速必须按最左侧客户端 IP 计数。
+        for index in range(auth_views.MAX_LOGIN_ATTEMPTS):
+            self.client.post(
+                login_url,
+                {'username': f'unknown-user-multi-{index}', 'password': 'wrong-password'},
+                HTTP_X_FORWARDED_FOR=f'10.0.0.{index}, 198.51.100.9',
+                secure=True,
+            )
+
+        response = self.client.post(
+            login_url,
+            {'username': 'unknown-user-multi-final', 'password': 'wrong-password'},
+            HTTP_X_FORWARDED_FOR='10.0.0.99, 198.51.100.9',
+            secure=True,
+        )
+
+        # 每次来源 IP 不同，不应触发 IP 限速。
+        self.assertNotContains(response, '登录尝试过多')
+
     def test_login_lockout_ignores_forwarded_for_without_proxy(self):
         from ..views import auth as auth_views
 

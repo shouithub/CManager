@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Count
 from urllib.parse import urlsplit
-from .models import FormChannel, FormSubmission, Officer
+from .models import FormChannel, FormSubmission, Officer, UserProfile
 from .business_forms import externally_available_channels
 from .identity import (
     active_identity_label,
@@ -139,15 +139,19 @@ def audit_center_counts(request):
 
     try:
         role = request.user.profile.role
+    except UserProfile.DoesNotExist:
+        # 无 profile 的用户属于异常账号，静默按空数据展示，不刷错误日志。
+        return empty
     except Exception:
+        logger.exception('读取用户身份失败，侧边栏按空数据展示')
         return empty
 
-    active_identity = get_active_identity(request)
-    is_president_identity = active_identity == IDENTITY_PRESIDENT
-    identities = available_identities(request)
-
-    # 数据库异常（例如触发 500 的原因）时不得让错误页渲染再次失败。
     try:
+        active_identity = get_active_identity(request)
+        is_president_identity = active_identity == IDENTITY_PRESIDENT
+        identities = available_identities(request)
+
+        # 数据库异常（例如触发 500 的原因）时不得让错误页渲染再次失败。
         channels = externally_available_channels(
             FormChannel.objects.filter(is_active=True)
             .exclude(slug='')
@@ -184,26 +188,25 @@ def audit_center_counts(request):
             ).values('channel__slug').annotate(total=Count('id'))
             approval_channels = {row['channel__slug']: row['total'] for row in counts}
             approval_total = sum(approval_channels.values())
+        result = {
+            'audit_center_counts': {
+                'total': audit_total,
+                'channels': audit_channels,
+            },
+            'unread_approval_counts': {'total': approval_total, 'channels': approval_channels},
+            'active_form_channels': channels,
+            'sidebar_primary_club': primary_club,
+            'sidebar_president_clubs': [item.club for item in president_clubs],
+            'active_identity': active_identity,
+            'active_identity_label': active_identity_label(request),
+            'available_identities': identities,
+            'has_president_identity': has_president_officer(request.user) or role == 'president',
+            'is_president_identity': is_president_identity,
+        }
+        return result
     except Exception:
         logger.exception('侧边栏统计上下文处理器数据库查询失败')
         return empty
-
-    result = {
-        'audit_center_counts': {
-            'total': audit_total,
-            'channels': audit_channels,
-        },
-        'unread_approval_counts': {'total': approval_total, 'channels': approval_channels},
-        'active_form_channels': channels,
-        'sidebar_primary_club': primary_club,
-        'sidebar_president_clubs': [item.club for item in president_clubs],
-        'active_identity': active_identity,
-        'active_identity_label': active_identity_label(request),
-        'available_identities': identities,
-        'has_president_identity': has_president_officer(request.user) or role == 'president',
-        'is_president_identity': is_president_identity,
-    }
-    return result
 
 
 def unread_approvals(request):
