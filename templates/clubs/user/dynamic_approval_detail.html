@@ -102,14 +102,93 @@
         color: var(--md3-on-info-container);
     }
 
-    .review-comment {
-        margin-top: 16px;
-        padding: 14px 16px;
+    .review-summary-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px 18px;
+        margin-bottom: 20px;
         border: 1px solid var(--md3-outline-variant);
         border-radius: var(--md3-radius-lg);
         background: var(--md3-surface-container-low);
+        box-shadow: var(--md3-elevation-1);
+        box-sizing: border-box;
+    }
+
+    .review-summary-icon {
+        flex: 0 0 auto;
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-info-container);
+        color: var(--md3-on-info-container);
+    }
+
+    .review-summary-icon .material-icons {
+        font-size: 1.35rem;
+    }
+
+    .review-summary-card.approved .review-summary-icon {
+        background: var(--md3-success-container);
+        color: var(--md3-on-success-container);
+    }
+
+    .review-summary-card.rejected .review-summary-icon {
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+    }
+
+    .review-summary-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: grid;
+        gap: 6px;
+    }
+
+    .review-summary-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.78rem;
+        font-weight: 750;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .review-summary-title .material-icons {
+        font-size: 1rem;
+    }
+
+    .review-summary-text {
         color: var(--md3-on-surface);
-        line-height: 1.6;
+        font-size: 0.95rem;
+        line-height: 1.65;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .review-summary-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .review-summary-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .review-summary-meta .material-icons {
+        font-size: 0.95rem;
     }
 
     .card-header {
@@ -430,6 +509,11 @@
             font-size: 1.22rem;
         }
 
+        .review-summary-card {
+            padding: 14px;
+            gap: 12px;
+        }
+
         .field-list {
             grid-template-columns: 1fr;
             padding: 16px;
@@ -460,9 +544,6 @@
                 <span class="meta-chip pending">还需 {{ remaining_approval_count }} 次通过</span>
                 {% endif %}
             </div>
-            {% if submission.review_comment %}
-            <div class="review-comment"><strong>审核意见：</strong>{{ submission.review_comment }}</div>
-            {% endif %}
             <div class="detail-actions">
                 {% if show_word_downloads or show_zip_download %}
                     {% for merged in generated_merge_files %}
@@ -495,6 +576,24 @@
             <span class="material-icons">arrow_back</span>
         </a>
     </section>
+
+    {% if submission.review_comment %}
+    <section class="review-summary-card {{ submission.status }}">
+        <div class="review-summary-icon">
+            <span class="material-icons">{% if submission.status == 'approved' %}verified{% elif submission.status == 'rejected' %}block{% else %}rate_review{% endif %}</span>
+        </div>
+        <div class="review-summary-main">
+            <div class="review-summary-title">总审核意见</div>
+            <div class="review-summary-text">{{ submission.review_comment }}</div>
+            <div class="review-summary-meta">
+                <span><span class="material-icons">person</span>{{ reviewer_label }}</span>
+                {% if submission.reviewed_at %}
+                <span><span class="material-icons">schedule</span>{{ submission.reviewed_at|date:"Y-m-d H:i" }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
 
     <section class="content-card">
         <div class="card-header">

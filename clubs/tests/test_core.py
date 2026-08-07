@@ -789,6 +789,10 @@ class StaffRegistrationReviewTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(ChannelExampleFile.objects.filter(channel=channel).count(), 2)
+        self.assertEqual(
+            set(ChannelExampleFile.objects.values_list('original_name', flat=True)),
+            {'a.docx', 'b.docx'},
+        )
 
 
 class BookingServiceTests(TestCase):
@@ -1204,6 +1208,63 @@ class StaticPageSmokeTests(TestCase):
         self.assertContains(response, 'js-material-icon-input')
         self.assertContains(response, '正在预览：description')
         self.assertContains(response, 'https://mui.com/material-ui/material-icons/')
+
+    def test_submit_page_renders_channel_example_files(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        from ..models import ChannelExampleFile, Club, FormChannel, Officer, User, UserProfile
+
+        president = User.objects.create_user(
+            'example-file-president',
+            password='test-password',
+        )
+        UserProfile.objects.create(
+            user=president,
+            role='president',
+            status='approved',
+        )
+        club = Club.objects.create(name='示例社团', founded_date=date(2026, 1, 1))
+        Officer.objects.create(
+            club=club,
+            user_profile=president.profile,
+            position='president',
+            appointed_date=date(2026, 1, 1),
+            is_current=True,
+        )
+        channel = FormChannel.objects.create(
+            name='示例通道',
+            slug='example-submit-ui',
+            publish_status='published',
+            is_active=True,
+        )
+        ChannelExampleFile.objects.create(
+            channel=channel,
+            file=SimpleUploadedFile(
+                'sample.docx',
+                b'fake-docx-content',
+                content_type=(
+                    'application/vnd.openxmlformats-officedocument.'
+                    'wordprocessingml.document'
+                ),
+            ),
+            original_name='sample.docx',
+        )
+        self.client.force_login(president)
+
+        response = self.client.get(
+            reverse(
+                'clubs:submit_dynamic_form',
+                args=[channel.slug, club.id],
+            ),
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        self.assertContains(response, 'example-files-card')
+        self.assertContains(response, 'example-file-row')
+        self.assertContains(response, 'sample.docx')
+        self.assertContains(response, '下载')
+        self.assertContains(response, '预览')
 
     def test_staff_management_query_count_does_not_scale_per_club(self):
         profile = self.admin.profile
@@ -1708,6 +1769,102 @@ class DynamicFormReReviewTests(TestCase):
         )
         self.assertTrue(response.context['can_edit_own_review'])
         self.assertTrue(response.context['can_reenter_review'])
+
+    def test_approve_keeps_per_item_review_comments(self):
+        from ..models import FormFieldValue
+
+        field = FormField.objects.create(
+            channel=FormChannel.objects.create(
+                name='单人通过通道',
+                slug='single-approve',
+                is_active=True,
+                publish_status='published',
+                required_approval_count=1,
+            ),
+            field_key='reason',
+            label='事由',
+            field_type='text',
+            is_active=True,
+        )
+        submission = FormSubmission.objects.create(
+            channel=field.channel,
+            club=self.club,
+            submitter=self.submitter,
+            status='pending',
+        )
+        value = FormFieldValue.objects.create(
+            submission=submission,
+            field=field,
+            value_text='活动方案',
+            review_status='pending',
+        )
+        self.client.force_login(self.reviewer)
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {
+                'action': 'approve',
+                'comment': '整体通过',
+                f'comment_value_{value.id}': '这项写得很清楚',
+            },
+            secure=True,
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                'clubs:staff_review_form_submission',
+                args=[submission.public_id],
+            ),
+            fetch_redirect_response=False,
+        )
+        submission.refresh_from_db()
+        value.refresh_from_db()
+        self.assertEqual(submission.status, 'approved')
+        self.assertEqual(submission.review_comment, '整体通过')
+        self.assertEqual(value.review_status, 'approved')
+        self.assertEqual(value.review_comment, '这项写得很清楚')
+
+    def test_direct_approve_keeps_existing_per_item_comments(self):
+        from ..models import FormFieldValue
+
+        field = FormField.objects.create(
+            channel=self.channel,
+            field_key='reason',
+            label='事由',
+            field_type='text',
+            is_active=True,
+        )
+        submission = self.make_rejected_submission()
+        value = FormFieldValue.objects.create(
+            submission=submission,
+            field=field,
+            value_text='活动方案',
+            review_status='rejected',
+            review_comment='这项需要补充预算',
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            {
+                'action': 'direct_approve',
+                'comment': '改为通过',
+                f'comment_value_{value.id}': '预算已补全',
+            },
+            secure=True,
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            fetch_redirect_response=False,
+        )
+        submission.refresh_from_db()
+        value.refresh_from_db()
+        self.assertEqual(submission.status, 'approved')
+        self.assertEqual(value.review_status, 'approved')
+        self.assertEqual(value.review_comment, '预算已补全')
 
     def test_revise_preserves_rejected_round_content_in_history(self):
         from django.core.files.base import ContentFile

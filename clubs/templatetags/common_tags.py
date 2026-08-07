@@ -41,6 +41,16 @@ def is_image_file(value):
 
 
 @register.filter
+def file_basename(value):
+    """提取文件对象的基础文件名，隐藏 upload_to 目录前缀。"""
+    name = (
+        getattr(value, 'name', '') or ''
+        or getattr(getattr(value, 'file', None), 'name', '') or ''
+    )
+    return os.path.basename(str(name))
+
+
+@register.filter
 def file_exists(value):
     """文件对象所指向的物理文件/存储对象是否仍然存在。
 

@@ -429,6 +429,7 @@ class ChannelExampleFile(models.Model):
 
     channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='example_files', verbose_name='通道')
     file = models.FileField(upload_to='channel_examples/%Y/%m/', verbose_name='示例文件')
+    original_name = models.CharField(max_length=255, blank=True, default='', verbose_name='显示文件名')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
 
     class Meta:
@@ -438,6 +439,11 @@ class ChannelExampleFile(models.Model):
 
     def __str__(self):
         return self.file.name
+
+    @property
+    def display_name(self):
+        """优先显示用户上传时的原始文件名，历史数据回退到存储文件名。"""
+        return self.original_name or os.path.basename(self.file.name)
 
 
 class FormCycle(models.Model):

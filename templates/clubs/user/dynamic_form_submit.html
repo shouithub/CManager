@@ -424,6 +424,165 @@
         color: var(--md3-on-surface-variant);
     }
 
+    .example-files-card {
+        margin-bottom: var(--md3-spacing-xl);
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-xl);
+        background: var(--md3-surface-container);
+        box-shadow: var(--md3-elevation-1);
+        overflow: hidden;
+    }
+
+    .example-files-header {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        padding: 14px 16px;
+        background: var(--md3-surface-container-low);
+        border-bottom: 1px solid var(--md3-outline-variant);
+    }
+
+    .example-files-header > .material-icons {
+        color: var(--md3-primary);
+        font-size: 1.35rem;
+    }
+
+    .example-files-title {
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+        margin-right: auto;
+    }
+
+    .example-files-title strong {
+        color: var(--md3-on-surface);
+        font-size: 0.95rem;
+    }
+
+    .example-files-title small {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.78rem;
+    }
+
+    .example-files-count {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 10px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .example-files-list {
+        display: grid;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-md);
+    }
+
+    .example-file-row {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-sm);
+        min-width: 0;
+        padding: 10px 12px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface);
+        box-sizing: border-box;
+    }
+
+    .example-file-thumb,
+    .example-file-icon {
+        flex: 0 0 auto;
+        width: 56px;
+        height: 56px;
+        border-radius: var(--md3-radius-sm);
+        overflow: hidden;
+    }
+
+    .example-file-thumb {
+        display: block;
+        border: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container-high);
+    }
+
+    .example-file-thumb img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .example-file-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--md3-primary-container);
+        color: var(--md3-on-primary-container);
+    }
+
+    .example-file-icon .material-icons {
+        font-size: 1.6rem;
+    }
+
+    .example-file-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+    }
+
+    .example-file-name {
+        color: var(--md3-on-surface);
+        font-size: 0.9rem;
+        font-weight: 650;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+    .example-file-caption {
+        color: var(--md3-on-surface-variant);
+        font-size: 0.76rem;
+    }
+
+    .example-file-actions {
+        flex: 0 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: flex-end;
+    }
+
+    .example-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 34px;
+        padding: 0 12px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-surface-container-low);
+        color: var(--md3-primary);
+        font: inherit;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .example-action-btn .material-icons {
+        font-size: 1.05rem;
+    }
+
+    .example-action-btn:hover {
+        background: var(--md3-secondary-container);
+        color: var(--md3-on-secondary-container);
+    }
+
     @media (max-width: 768px) {
         .submit-page {
             padding: var(--md3-spacing-lg);
@@ -445,6 +604,16 @@
 
         .field-block {
             padding: var(--md3-spacing-md);
+        }
+
+        .example-file-row {
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .example-file-actions {
+            width: 100%;
+            justify-content: flex-start;
         }
 
         .option-grid {
@@ -491,24 +660,49 @@
     {% endif %}
 
     {% if channel.example_files.all %}
-    <div style="margin-bottom:16px;padding:12px 14px;border:1px solid var(--md3-outline-variant);border-radius:var(--md3-radius-lg);background:var(--md3-surface-container-low);">
-        <div style="display:flex;align-items:center;gap:6px;font-weight:700;color:var(--md3-on-surface);margin-bottom:8px;">
-            <span class="material-icons" style="color:var(--md3-primary);">description</span>
-            通道示例文件
-        </div>
-        <div style="display:grid;gap:8px;">
-            {% for example in channel.example_files.all %}
-            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
-                <span class="material-icons" style="color:var(--md3-primary);font-size:1.1rem;">insert_drive_file</span>
-                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--md3-on-surface);font-size:0.875rem;">{{ example.file.name|slice:"-30:" }}</span>
-                <a href="{{ example.file.url }}" target="_blank" rel="noopener" class="btn btn-outlined btn-sm">下载</a>
-                <button type="button" class="btn btn-outlined btn-sm js-office-preview"
-                        data-office-preview-url="{{ example.file|office_preview_url:request }}"
-                        data-office-file-name="{{ example.file.name|slice:'-30:' }}">预览</button>
+    <section class="example-files-card">
+        <div class="example-files-header">
+            <span class="material-icons">folder_shared</span>
+            <div class="example-files-title">
+                <strong>通道示例文件</strong>
+                <small>可下载或在线预览，参考其中的格式填写</small>
             </div>
+            <span class="example-files-count">{{ channel.example_files.count }} 个文件</span>
+        </div>
+        <div class="example-files-list">
+            {% for example in channel.example_files.all %}
+            {% with preview_url=example.file|office_preview_url:request %}
+            <div class="example-file-row">
+                {% if example.file|is_image_file and example.file|file_exists %}
+                <a class="example-file-thumb" href="{{ example.file.url }}" target="_blank" rel="noopener" title="查看原图">
+                    <img src="{{ example.file.url }}" alt="{{ example.display_name }}" loading="lazy">
+                </a>
+                {% else %}
+                <span class="example-file-icon"><span class="material-icons">insert_drive_file</span></span>
+                {% endif %}
+                <div class="example-file-main">
+                    <span class="example-file-name" title="{{ example.display_name }}">{{ example.display_name }}</span>
+                    {% if example.file|is_image_file and example.file|file_exists %}
+                    <span class="example-file-caption">图片示例，点击缩略图查看原图</span>
+                    {% endif %}
+                </div>
+                <div class="example-file-actions">
+                    <a class="example-action-btn" href="{{ example.file.url }}" target="_blank" rel="noopener">
+                        <span class="material-icons">download</span>下载
+                    </a>
+                    {% if preview_url and not example.file|is_image_file %}
+                    <button type="button" class="example-action-btn js-office-preview"
+                            data-office-preview-url="{{ preview_url }}"
+                            data-office-file-name="{{ example.display_name }}">
+                        <span class="material-icons">visibility</span>预览
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endwith %}
             {% endfor %}
         </div>
-    </div>
+    </section>
     {% endif %}
 
     <form method="post" enctype="multipart/form-data" class="form-card">

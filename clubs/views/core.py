@@ -4927,10 +4927,21 @@ def approval_detail(request, item_type, submission_key):
     if not (is_president_mode(request) or is_staff_or_admin(request.user)):
         messages.error(request, '无权查看此提交')
         return redirect('clubs:index')
+    reviewer = submission.reviewer
+    if reviewer:
+        profile = getattr(reviewer, 'profile', None)
+        reviewer_label = (
+            profile.get_full_name()
+            if profile is not None
+            else (reviewer.get_full_name() or reviewer.username)
+        )
+    else:
+        reviewer_label = '已注销用户'
     context = {
         'item': submission,
         'submission': submission,
         'item_type': submission.channel.slug,
+        'reviewer_label': reviewer_label,
     }
     context.update(_submission_common_context(submission, request=request))
     return render(request, 'clubs/user/dynamic_approval_detail.html', context)
@@ -4967,7 +4978,28 @@ def staff_audit_center(request, tab='all'):
 
 
 
-def _mark_submission_approved(submission, reviewer, comment):
+def _apply_approval_item_comments(submission, post):
+    """保存审核人在逐项意见输入框中填写的单项意见。
+
+    审核页的 comment_value_*/comment_file_* 输入框在通过时也会随表单提交，
+    之前通过流程直接丢弃了这些内容，导致“通过后只剩一条总意见”。这里把非空
+    意见写回字段/文件记录，空意见不覆盖已有内容。
+    """
+    if not post:
+        return
+    for value in submission.values.select_related('field'):
+        comment = post.get(f'comment_value_{value.id}', '').strip()
+        if comment:
+            value.review_comment = comment
+            value.save(update_fields=['review_comment', 'updated_at'])
+    for uploaded in submission.uploaded_files.select_related('field'):
+        comment = post.get(f'comment_file_{uploaded.id}', '').strip()
+        if comment:
+            uploaded.review_comment = comment
+            uploaded.save(update_fields=['review_comment'])
+
+
+def _mark_submission_approved(submission, reviewer, comment, post=None):
     if submission.status != 'pending':
         raise BusinessActionError('该请求已不在待审核状态，不能重复审核')
 
@@ -4990,6 +5022,7 @@ def _mark_submission_approved(submission, reviewer, comment):
             comment=comment,
             submission_attempt=submission.resubmission_count,
         )
+    _apply_approval_item_comments(submission, post)
     approved_count = submission.approved_review_count()
     required_count = submission.required_approval_count
 
@@ -4998,8 +5031,10 @@ def _mark_submission_approved(submission, reviewer, comment):
     submission.is_read = False
     submission.review_comment = comment
     if approved_count >= required_count:
-        submission.values.update(review_status='approved', review_comment='')
-        submission.uploaded_files.update(review_status='approved', review_comment='')
+        # 通过时保留每个字段/文件已有的单项审核意见（如之前打回时写下的原因），
+        # 只推进审核状态，避免通过后单项意见全部丢失。
+        submission.values.update(review_status='approved')
+        submission.uploaded_files.update(review_status='approved')
         submission.status = 'approved'
         submission.save()
         _refresh_submission_merge_files(submission)
@@ -5150,8 +5185,10 @@ def _override_review_direct(submission, reviewer, comment, decision, post):
     """方式一：直接替换审核结果。原地更新审核记录，提交直接切换为新的终态。"""
     _prepare_override_review(submission, reviewer, comment, decision, post, mode='direct')
     if decision == 'approved':
-        submission.values.update(review_status='approved', review_comment='')
-        submission.uploaded_files.update(review_status='approved', review_comment='')
+        # 直接改为通过时同样保留历史单项意见，只推进审核状态
+        submission.values.update(review_status='approved')
+        submission.uploaded_files.update(review_status='approved')
+        _apply_approval_item_comments(submission, post)
         submission.status = 'approved'
         _refresh_submission_merge_files(submission)
     else:
@@ -5250,7 +5287,12 @@ def staff_review_form_submission(request, submission_key):
                             submission, request.user, comment, decision, request.POST
                         )
                     elif decision == 'approved':
-                        _mark_submission_approved(submission, request.user, comment)
+                        _mark_submission_approved(
+                            submission,
+                            request.user,
+                            comment,
+                            request.POST,
+                        )
                     else:
                         _mark_submission_rejected(submission, request.user, comment, request.POST)
         except BusinessActionError as exc:
@@ -5433,7 +5475,12 @@ def save_form_channel(request, channel_id=None):
                     return redirect('clubs:manage_form_channels_detail', channel_id=channel.id)
             if example_files:
                 ChannelExampleFile.objects.bulk_create([
-                    ChannelExampleFile(channel=channel, file=upload) for upload in example_files
+                    ChannelExampleFile(
+                        channel=channel,
+                        file=upload,
+                        original_name=upload.name or '',
+                    )
+                    for upload in example_files
                 ])
             delete_ids = [
                 int(item) for item in request.POST.getlist('delete_example_file') if item.isdigit()
