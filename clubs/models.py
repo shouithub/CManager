@@ -1387,7 +1387,9 @@ class FileBlob(models.Model):
     """
 
     md5 = models.CharField(max_length=32, unique=True, verbose_name='文件MD5')
-    storage_name = models.CharField(max_length=512, unique=True, verbose_name='存储路径')
+    # MySQL 对 utf8mb4 唯一索引有限制（旧版本 767 字节 / 4 = 191 字符），
+    # 而实际 blob 路径最长为 blobs/<md5><扩展名>，约 55 字符，191 完全够用。
+    storage_name = models.CharField(max_length=191, unique=True, verbose_name='存储路径')
     size = models.PositiveBigIntegerField(null=True, blank=True, verbose_name='文件大小(字节)')
     ref_count = models.PositiveIntegerField(default=1, verbose_name='引用计数')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
