@@ -208,26 +208,6 @@ def is_staff_or_admin(user):
 
 
 
-@roles_required('staff', 'admin')
-def download_file(request):
-    """Stream a media object without exposing arbitrary filesystem paths."""
-    from pathlib import PurePosixPath
-    from django.core.files.storage import default_storage
-
-    raw_path = request.GET.get('file_path', '').split('?', 1)[0].split('#', 1)[0]
-    if raw_path.startswith(settings.MEDIA_URL):
-        raw_path = raw_path[len(settings.MEDIA_URL):]
-    normalized = str(PurePosixPath(raw_path.lstrip('/')))
-    if not normalized or normalized == '.' or '..' in PurePosixPath(normalized).parts:
-        raise Http404('文件不存在')
-    if not default_storage.exists(normalized):
-        raise Http404('文件不存在')
-    filename = os.path.basename(request.GET.get('filename', '')) or os.path.basename(normalized)
-    response = FileResponse(default_storage.open(normalized, 'rb'), as_attachment=True, filename=filename)
-    response['X-Content-Type-Options'] = 'nosniff'
-    return response
-
-
 @login_required(login_url=settings.LOGIN_URL)
 @require_GET
 def download_submission_file(request, file_id):

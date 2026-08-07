@@ -530,10 +530,10 @@
                         <div class="ah-reviews">
                             {% for review in group.reviews %}
                             <div class="ah-review">
-                                <span class="ah-review-avatar">{{ review.reviewer|first|upper }}</span>
+                                <span class="ah-review-avatar">{% if review.reviewer %}{{ review.reviewer|first|upper }}{% else %}?{% endif %}</span>
                                 <div class="ah-review-main">
                                     <div class="ah-review-top">
-                                        <strong>{{ review.reviewer }}</strong>
+                                        <strong>{% if review.reviewer %}{{ review.reviewer }}{% else %}已注销用户{% endif %}</strong>
                                         <span class="item-status {{ review.status }}">{{ review.status_label }}</span>
                                         <span class="ah-review-time">{{ review.reviewed_at }}</span>
                                     </div>

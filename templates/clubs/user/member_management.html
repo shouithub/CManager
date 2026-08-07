@@ -438,20 +438,45 @@ async function loadTokenList(clubId) {
             list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">暂无有效的二维码链接</div>';
             return;
         }
-        list.innerHTML = data.tokens.map(t => `
-            <div class="token-item" id="titem-${t.id}">
-                <div class="token-item-info">
-                    <div style="font-size:0.82rem;word-break:break-all;color:var(--md3-on-surface-variant);">${t.join_url}</div>
-                    <div style="font-size:0.78rem;margin-top:3px;color:var(--md3-on-surface-variant);">过期：${t.expires_at} &nbsp;|&nbsp; 使用：${t.uses_info} &nbsp;|&nbsp; 创建：${t.created_at}</div>
-                </div>
-                <div style="display:flex;gap:6px;flex-shrink:0;">
-                    <button class="mini-btn" type="button" onclick="copyText('${t.join_url}')">复制</button>
-                    <button class="mini-btn danger" type="button" onclick="deleteToken(${clubId}, ${t.id})">删除</button>
-                </div>
-            </div>
-        `).join('');
+        list.innerHTML = '';
+        data.tokens.forEach(t => {
+            const item = document.createElement('div');
+            item.className = 'token-item';
+            item.id = `titem-${t.id}`;
+
+            const info = document.createElement('div');
+            info.className = 'token-item-info';
+            const urlEl = document.createElement('div');
+            urlEl.style.cssText = 'font-size:0.82rem;word-break:break-all;color:var(--md3-on-surface-variant);';
+            urlEl.textContent = t.join_url;
+            const metaEl = document.createElement('div');
+            metaEl.style.cssText = 'font-size:0.78rem;margin-top:3px;color:var(--md3-on-surface-variant);';
+            metaEl.textContent = `过期：${t.expires_at}  |  使用：${t.uses_info}  |  创建：${t.created_at}`;
+            info.append(urlEl, metaEl);
+
+            const actions = document.createElement('div');
+            actions.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'mini-btn';
+            copyBtn.type = 'button';
+            copyBtn.textContent = '复制';
+            copyBtn.addEventListener('click', () => copyText(t.join_url));
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'mini-btn danger';
+            deleteBtn.type = 'button';
+            deleteBtn.textContent = '删除';
+            deleteBtn.addEventListener('click', () => deleteToken(clubId, t.id));
+            actions.append(copyBtn, deleteBtn);
+
+            item.append(info, actions);
+            list.appendChild(item);
+        });
     } catch (e) {
-        list.innerHTML = `<div style="padding:16px;color:var(--md3-error);">加载失败：${e.message}</div>`;
+        list.innerHTML = '';
+        const errEl = document.createElement('div');
+        errEl.style.cssText = 'padding:16px;color:var(--md3-error);';
+        errEl.textContent = `加载失败：${e.message}`;
+        list.appendChild(errEl);
     }
 }
 async function deleteToken(clubId, tokenId) {

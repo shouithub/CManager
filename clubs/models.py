@@ -662,7 +662,7 @@ class FormSubmissionReview(models.Model):
     ]
 
     submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='reviews', verbose_name='提交')
-    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='form_submission_reviews', verbose_name='审核人')
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='form_submission_reviews', verbose_name='审核人')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='审核结果')
     comment = models.TextField(blank=True, verbose_name='审核意见')
     submission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
@@ -679,7 +679,8 @@ class FormSubmissionReview(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.reviewer.username} - {self.submission.public_id} - {self.get_status_display()}'
+        reviewer_label = self.reviewer.username if self.reviewer else '已注销用户'
+        return f'{reviewer_label} - {self.submission.public_id} - {self.get_status_display()}'
 
 
 class FormFieldValue(models.Model):
@@ -911,10 +912,13 @@ class ActivityRegistration(models.Model):
 
 class EmailVerificationCode(models.Model):
     """邮箱验证码模型"""
+    MAX_FAILED_ATTEMPTS = 5
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_verification', verbose_name='用户')
     email = models.EmailField(verbose_name='待验证邮箱')
     code = models.CharField(max_length=6, verbose_name='验证码')
     is_verified = models.BooleanField(default=False, verbose_name='是否已验证')
+    failed_attempts = models.PositiveSmallIntegerField(default=0, verbose_name='连续错误次数')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     expires_at = models.DateTimeField(verbose_name='过期时间')
     
@@ -940,8 +944,15 @@ class EmailVerificationCode(models.Model):
             return False, "验证码已使用"
         if self.is_expired():
             return False, "验证码已过期"
+        if self.failed_attempts >= self.MAX_FAILED_ATTEMPTS:
+            return False, "验证码错误次数过多，请重新发送验证码"
         if code != self.code:
+            self.failed_attempts = models.F('failed_attempts') + 1
+            self.save(update_fields=['failed_attempts'])
             return False, "验证码不正确"
+        if self.failed_attempts:
+            self.failed_attempts = 0
+            self.save(update_fields=['failed_attempts'])
         return True, "验证成功"
 
 

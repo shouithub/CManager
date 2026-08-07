@@ -27,6 +27,7 @@ from ..models import (
     ChannelExampleFile,
     Club,
     ClubMember,
+    EmailVerificationCode,
     FormChannel,
     FormCycle,
     FormField,
@@ -893,22 +894,117 @@ class SecurityInfrastructureTests(TestCase):
 
         self.assertIn('不安全的路径', error)
 
-    def test_generic_download_requires_staff_role(self):
-        User.objects.create_superuser(
-            username='download-admin',
+class AccountSecurityAndHistoryTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        admin = User.objects.create_superuser(
+            username='security-admin',
             email='',
             password='test-password',
         )
-        member = User.objects.create_user('ordinary-member', password='password')
-        self.client.force_login(member)
+        UserProfile.objects.get_or_create(
+            user=admin,
+            defaults={'role': 'admin', 'status': 'approved'},
+        )
 
-        response = self.client.get(
-            reverse('clubs:download_file'),
-            {'file_path': 'anything.pdf'},
+    def test_staff_cannot_self_assign_responsible_club(self):
+        club = Club.objects.create(name='受限社团', founded_date=date(2026, 1, 1))
+        staff = User.objects.create_user('staff-self-assign', password='test-password')
+        UserProfile.objects.create(user=staff, role='staff', status='approved')
+        self.client.force_login(staff)
+
+        response = self.client.post(
+            reverse('clubs:manage_staff_clubs'),
+            {'club_ids': [club.pk]},
             secure=True,
         )
 
-        self.assertRedirects(response, reverse('clubs:index'), fetch_redirect_response=False)
+        self.assertRedirects(
+            response,
+            reverse('clubs:manage_staff_clubs'),
+            fetch_redirect_response=False,
+        )
+        self.assertFalse(
+            StaffClubRelation.objects.filter(
+                staff=staff.profile,
+                club=club,
+                is_active=True,
+            ).exists()
+        )
+
+    def test_email_verification_locks_after_five_wrong_attempts(self):
+        user = User.objects.create_user('verify-lock', password='test-password')
+        UserProfile.objects.create(user=user, role='member', status='approved')
+        code = EmailVerificationCode.generate_code()
+        EmailVerificationCode.objects.create(
+            user=user,
+            email='verify-lock@example.com',
+            code=code,
+            expires_at=timezone.now() + timezone.timedelta(minutes=15),
+        )
+        self.client.force_login(user)
+
+        for _ in range(5):
+            self.client.post(
+                reverse('clubs:verify_email'),
+                {'code': '000000'},
+                secure=True,
+            )
+
+        verification = EmailVerificationCode.objects.get(user=user)
+        self.assertGreaterEqual(verification.failed_attempts, 5)
+        success, message = verification.verify(code)
+        self.assertFalse(success)
+        self.assertIn('错误次数过多', message)
+
+    @patch('clubs.email_utils.send_verification_email', return_value=(True, '已发送'))
+    def test_resend_verification_code_has_cooldown(self, mock_send):
+        user = User.objects.create_user('resend-limit', password='test-password')
+        UserProfile.objects.create(user=user, role='member', status='approved')
+        EmailVerificationCode.objects.create(
+            user=user,
+            email='resend-limit@example.com',
+            code=EmailVerificationCode.generate_code(),
+            expires_at=timezone.now() + timezone.timedelta(minutes=15),
+        )
+        self.client.force_login(user)
+
+        self.client.post(reverse('clubs:resend_verification_code'), secure=True)
+        self.client.post(reverse('clubs:resend_verification_code'), secure=True)
+
+        self.assertEqual(mock_send.call_count, 1)
+
+    def test_deleting_reviewer_keeps_review_history(self):
+        channel = FormChannel.objects.create(
+            name='历史保留通道',
+            slug='history-review-channel',
+            is_active=True,
+            publish_status='published',
+        )
+        club = Club.objects.create(name='历史保留社团', founded_date=date(2026, 1, 1))
+        reviewer = User.objects.create_user('deleted-reviewer', password='test-password')
+        UserProfile.objects.create(user=reviewer, role='staff', status='approved')
+        submitter = User.objects.create_user('history-submitter', password='test-password')
+        UserProfile.objects.create(user=submitter, role='member', status='approved')
+        submission = FormSubmission.objects.create(
+            channel=channel,
+            club=club,
+            submitter=submitter,
+            status='approved',
+        )
+        FormSubmissionReview.objects.create(
+            submission=submission,
+            reviewer=reviewer,
+            status='approved',
+            submission_attempt=1,
+        )
+
+        reviewer.delete()
+
+        review = FormSubmissionReview.objects.get(submission=submission)
+        self.assertIsNone(review.reviewer)
+        self.assertEqual(submission.reviewer_count, 1)
+        self.assertEqual(submission.approved_review_count(), 1)
 
 
 class StaticPageSmokeTests(TestCase):
@@ -1863,6 +1959,54 @@ class FileBlobDedupTests(TestCase):
         self.assertEqual(blob.ref_count, 2)
 
         # 直接级联删除提交（模拟通道/社团/用户删除），历史快照引用也必须释放
+        submission.delete()
+
+        self.assertFalse(FileBlob.objects.filter(md5=digest).exists())
+        self.assertFalse(default_storage.exists(storage_name))
+
+    def test_multiple_reenter_snapshots_release_all_references_on_delete(self):
+        """多轮重新审核后整条删除：当前记录与每轮历史快照的引用都要释放。"""
+        from ..models import FormUploadedFile
+        from ..views.core import _snapshot_attempt_history
+
+        data = b'multi-reenter-release-test'
+        digest = md5(data).hexdigest()
+        channel = FormChannel.objects.create(
+            name='多轮重新审核通道', slug='multi-reenter', is_active=True
+        )
+        club = Club.objects.create(name='多轮重新审核社团', founded_date=date(2026, 1, 1))
+        submitter = User.objects.create_superuser(
+            username='blob-multi-reenter-admin', email='', password='test-password'
+        )
+        submission = FormSubmission.objects.create(
+            channel=channel,
+            club=club,
+            submitter=submitter,
+        )
+        field = FormField.objects.create(
+            channel=channel, field_key='doc', label='附件', field_type='file'
+        )
+        storage_name = default_storage.save(
+            'form_submissions/x/doc.bin', self._make_file('doc.bin', data)
+        )
+        FormUploadedFile.objects.create(
+            submission=submission,
+            field=field,
+            file=storage_name,
+            original_name='doc.bin',
+        )
+
+        # 模拟两轮“重新审核”：每轮对当前文件快照 retain 一次
+        _snapshot_attempt_history(submission)
+        submission.resubmission_count += 1
+        _snapshot_attempt_history(submission)
+        submission.resubmission_count += 1
+        submission.save()
+
+        blob = FileBlob.objects.get(md5=digest)
+        # 当前记录 1 份 + 两轮历史快照各 1 份
+        self.assertEqual(blob.ref_count, 3)
+
         submission.delete()
 
         self.assertFalse(FileBlob.objects.filter(md5=digest).exists())

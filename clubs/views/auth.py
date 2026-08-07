@@ -431,6 +431,12 @@ def manage_staff_clubs(request):
         return redirect('clubs:login')
     
     if request.method == 'POST':
+        # 干事只能查看页面，分配负责社团仅允许管理员操作，
+        # 否则普通干事可自行把任意社团设为负责并取得该社团管理权限。
+        if profile.role != 'admin':
+            messages.error(request, '仅管理员可以分配干事负责的社团')
+            return redirect('clubs:manage_staff_clubs')
+
         # 获取所有选中的社团ID
         selected_club_ids = request.POST.getlist('club_ids', [])
         
@@ -466,7 +472,8 @@ def manage_staff_clubs(request):
     context = {
         'user': user,
         'all_clubs': all_clubs,
-        'selected_club_ids': selected_club_ids
+        'selected_club_ids': selected_club_ids,
+        'is_admin': profile.role == 'admin',
     }
     
     return render(request, 'clubs/staff/manage_clubs.html', context)
@@ -1023,6 +1030,8 @@ def verify_email(request):
 @login_required(login_url=settings.LOGIN_URL)
 def resend_verification_code(request):
     """重新发送验证码"""
+    from django.core.cache import cache
+
     from ..email_utils import send_verification_email
     from ..models import EmailVerificationCode
     
@@ -1037,12 +1046,18 @@ def resend_verification_code(request):
     if verification.is_verified:
         messages.info(request, '邮箱已验证，无需重新发送')
         return redirect('clubs:user_dashboard')
+
+    cooldown_key = f'email_code_resend:{user.id}'
+    if cache.get(cooldown_key):
+        messages.error(request, '发送过于频繁，请稍后再试')
+        return redirect('clubs:verify_email')
     
     # 生成新的验证码
     new_code = EmailVerificationCode.generate_code()
     verification.code = new_code
     verification.created_at = timezone.now()
     verification.expires_at = timezone.now() + timezone.timedelta(minutes=15)
+    verification.failed_attempts = 0
     verification.save()
     
     # 发送邮件
@@ -1050,6 +1065,7 @@ def resend_verification_code(request):
     
     if success:
         messages.success(request, msg)
+        cache.set(cooldown_key, 1, 60)
     else:
         messages.error(request, msg)
     

@@ -1099,6 +1099,15 @@
                 result.className = 'oobe-mail-test';
                 result.style.display = 'flex';
                 result.innerHTML = '<span class="material-icons">hourglass_top</span><span>正在发送测试邮件...</span>';
+                const setMailResult = (icon, text) => {
+                    result.innerHTML = '';
+                    const iconEl = document.createElement('span');
+                    iconEl.className = 'material-icons';
+                    iconEl.textContent = icon;
+                    const textEl = document.createElement('span');
+                    textEl.textContent = text;
+                    result.append(iconEl, textEl);
+                };
 
                 try {
                     const resp = await fetch('{% url "clubs:oobe_test_email" %}', {
@@ -1109,14 +1118,14 @@
                     const data = await resp.json();
                     if (resp.ok && data.ok) {
                         result.className = 'oobe-mail-test ok';
-                        result.innerHTML = `<span class="material-icons">check_circle</span><span>${data.message || '测试邮件发送成功'}</span>`;
+                        setMailResult('check_circle', data.message || '测试邮件发送成功');
                     } else {
                         result.className = 'oobe-mail-test err';
-                        result.innerHTML = `<span class="material-icons">error</span><span>${data.message || '测试邮件发送失败'}</span>`;
+                        setMailResult('error', data.message || '测试邮件发送失败');
                     }
                 } catch (err) {
                     result.className = 'oobe-mail-test err';
-                    result.innerHTML = '<span class="material-icons">wifi_off</span><span>网络异常，测试邮件发送失败</span>';
+                    setMailResult('wifi_off', '网络异常，测试邮件发送失败');
                 } finally {
                     testBtn.disabled = false;
                 }
