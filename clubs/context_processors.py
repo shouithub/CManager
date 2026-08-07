@@ -25,6 +25,26 @@ THIRD_PARTY_CDN_DEFAULT_SRI = {
     'cropper_js': 'sha384-jrOgQzBlDeUNdmQn3rUt/PZD+pdcRBdWd/HWRqRo+n2OR2QtGyjSaJC0GiCeH+ir',
     'cropper_css': 'sha384-6LFfkTKLRlzFtgx8xsWyBdKGpcMMQTkv+dB7rAbugeJAu1Ym2q1Aji1cjHBG12Xh',
 }
+
+
+def _safe_asset_url(value, fallback=''):
+    """只允许 http(s) 或协议相对地址进入页面资源标签。
+
+    站点设置里 font_icon_url / body_font_url 是自由文本，历史数据或误操作
+    可能写入 file://、javascript:、本地绝对路径等，浏览器会直接拦截并报
+    “不可以加载或者链接至 file:///” 安全错误，因此渲染前必须统一清洗。
+    """
+    candidate = str(value or '').strip()
+    if not candidate:
+        return fallback
+    if candidate.startswith('//'):
+        return candidate
+    parsed = urlsplit(candidate)
+    if parsed.scheme in ('http', 'https') and parsed.netloc:
+        return candidate
+    return fallback
+
+
 def site_settings(request):
     cached = cache.get('site:presentation:v1')
     if cached is not None:
@@ -65,8 +85,11 @@ def site_settings(request):
     try:
         from .models import SiteSettings
         font_cfg = SiteSettings.get_settings()
-        font_icon_url = font_cfg.font_icon_url or 'https://fonts.font.im/icon?family=Material+Icons'
-        body_font_url = font_cfg.body_font_url or ''
+        font_icon_url = _safe_asset_url(
+            font_cfg.font_icon_url,
+            'https://fonts.font.im/icon?family=Material+Icons',
+        )
+        body_font_url = _safe_asset_url(font_cfg.body_font_url)
         body_font_family = font_cfg.body_font_family or ''
         third_party_cdn_base_url = font_cfg.third_party_cdn_base_url or 'https://cdn.bootcdn.net'
         stored_cdn_sri = font_cfg.third_party_cdn_sri

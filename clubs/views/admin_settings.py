@@ -14,6 +14,14 @@ from ..permissions import roles_required
 from ..storage_backends import ClubStorage
 
 
+def _error_help_enabled_value():
+    """读取站点级求助开关，字段尚未迁移时降级为关闭而非 500。"""
+    try:
+        return bool(SiteSettings.get_settings().error_help_enabled)
+    except Exception:
+        return False
+
+
 @roles_required('admin')
 @require_http_methods(['GET', 'POST'])
 def manage_smtp_config(request):
@@ -21,13 +29,17 @@ def manage_smtp_config(request):
         action = request.POST.get('action', '')
         config_id = request.POST.get('config_id', '')
         if action == 'error_help':
-            settings = SiteSettings.get_settings()
-            settings.error_help_enabled = request.POST.get('error_help_enabled') == 'on'
-            settings.save(update_fields=['error_help_enabled'])
-            messages.success(
-                request,
-                '错误页求助按钮已%s' % ('开启' if settings.error_help_enabled else '关闭'),
-            )
+            try:
+                settings = SiteSettings.get_settings()
+                settings.error_help_enabled = request.POST.get('error_help_enabled') == 'on'
+                settings.save(update_fields=['error_help_enabled'])
+            except Exception:
+                messages.error(
+                    request,
+                    '保存失败：站点缺少 error_help_enabled 字段，请先执行 python manage.py migrate',
+                )
+                return redirect('clubs:manage_smtp_config')
+            messages.success(request, '错误页求助按钮已保存')
             return redirect('clubs:manage_smtp_config')
         if action in {'create', 'edit'}:
             config = get_object_or_404(SMTPConfig, pk=config_id) if action == 'edit' else SMTPConfig()
@@ -86,7 +98,7 @@ def manage_smtp_config(request):
 
     return render(request, 'clubs/admin/smtp_config.html', {
         'configs': SMTPConfig.objects.all(),
-        'error_help_enabled': SiteSettings.get_settings().error_help_enabled,
+        'error_help_enabled': _error_help_enabled_value(),
     })
 
 

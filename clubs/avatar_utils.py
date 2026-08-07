@@ -68,7 +68,12 @@ def get_profile_avatar_url(profile, request=None, size=160):
     avatar = getattr(profile, 'avatar', None)
     if avatar:
         try:
-            return avatar.url
+            url = avatar.url
         except Exception:
             return ''
+        # 只允许 http(s) 或站内相对路径，防止历史异常文件名
+        # （file://、javascript:、本地绝对路径）被拼进 <img> 触发浏览器拦截。
+        if url.startswith(('http://', 'https://', '/')):
+            return url
+        return ''
     return ''

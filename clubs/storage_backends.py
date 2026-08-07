@@ -206,7 +206,10 @@ class LocalStorageBackend:
         # 本地模式下返回 MEDIA_URL 相对路径
         if self.base_url is None:
             raise ValueError("MEDIA_URL 未配置")
-        return urljoin(self.base_url, name).replace('\\', '/')
+        # 历史数据可能写入过 file://、绝对路径等异常文件名，统一在拼 URL 前清洗，
+        # 防止 file:// 或本地绝对路径泄漏到页面导致浏览器安全拦截。
+        safe_name = _sanitize_storage_name(name)
+        return urljoin(self.base_url, safe_name).replace('\\', '/')
 
     def path(self, name):
         # 本地直接返回真实路径
@@ -394,7 +397,8 @@ class S3StorageBackend:
             3. AWS 默认 https://<bucket>.s3.<region>.amazonaws.com/<key>
         """
         cfg = self.config
-        key = quote(name, safe='/')
+        # 历史数据可能写入过 file://、绝对路径等异常文件名，统一清洗后再拼直链。
+        key = quote(_sanitize_storage_name(name), safe='/')
         if cfg.s3_custom_domain:
             base = cfg.s3_custom_domain.rstrip('/')
             # 自定义域名通常不包含 bucket
@@ -464,7 +468,7 @@ class S3StorageBackend:
         client = self._get_client()
         return client.generate_presigned_url(
             'get_object',
-            Params={'Bucket': self.bucket, 'Key': name},
+            Params={'Bucket': self.bucket, 'Key': _sanitize_storage_name(name)},
             ExpiresIn=expiration,
             HttpMethod='GET',
         )

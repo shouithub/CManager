@@ -3693,12 +3693,25 @@ def manage_site_settings(request):
             messages.success(request, '站点名称与首页标题已保存，刷新页面后生效')
             return redirect('clubs:site_settings')
         elif form_type == 'font_settings':
+            from urllib.parse import urlsplit
+
+            def _valid_font_url(value):
+                value = (value or '').strip()
+                if not value:
+                    return True
+                if value.startswith('//'):
+                    return True
+                parsed = urlsplit(value)
+                return parsed.scheme in ('http', 'https') and bool(parsed.netloc)
+
             cfg = SiteSettings.get_settings()
-            cfg.font_icon_url = (
-                request.POST.get('font_icon_url', '').strip()
-                or 'https://fonts.font.im/icon?family=Material+Icons'
-            )
-            cfg.body_font_url = request.POST.get('body_font_url', '').strip()
+            font_icon_url = request.POST.get('font_icon_url', '').strip()
+            body_font_url = request.POST.get('body_font_url', '').strip()
+            if not _valid_font_url(font_icon_url) or not _valid_font_url(body_font_url):
+                messages.error(request, '字体地址仅支持 http/https 或协议相对地址（//），请检查后重试。')
+                return redirect('clubs:site_settings')
+            cfg.font_icon_url = font_icon_url or 'https://fonts.font.im/icon?family=Material+Icons'
+            cfg.body_font_url = body_font_url
             cfg.body_font_family = request.POST.get('body_font_family', '').strip()
             cfg.save()
             messages.success(request, '站点字体设置已保存，刷新页面后生效')

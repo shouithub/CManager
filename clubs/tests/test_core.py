@@ -328,7 +328,7 @@ class AvatarServiceTests(TestCase):
             self.assertEqual(parsed.scheme, 'https')
             self.assertEqual(parsed.hostname, 'public.example.com')
 
-    def test_office_preview_url_rejects_non_http_schemes(self):
+    def test_office_preview_url_never_leaks_file_scheme(self):
         from django.core.files.base import ContentFile
         from django.test import RequestFactory
 
@@ -356,7 +356,10 @@ class AvatarServiceTests(TestCase):
         uploaded.file.name = 'file:///etc/passwd.docx'
 
         request = RequestFactory().get('/')
-        self.assertEqual(_office_preview_url(request, uploaded), '')
+        preview_url = _office_preview_url(request, uploaded)
+        self.assertTrue(preview_url.startswith('https://view.officeapps.live.com/op/embed.aspx?'))
+        self.assertNotIn('file://', preview_url)
+        self.assertIn('%2Fmedia%2Fetc%2Fpasswd.docx', preview_url)
 
     def test_storage_name_sanitization(self):
         from ..storage_backends import _sanitize_storage_name
@@ -366,6 +369,57 @@ class AvatarServiceTests(TestCase):
         self.assertEqual(_sanitize_storage_name('form_submissions/abc/x.docx'), 'form_submissions/abc/x.docx')
         self.assertEqual(_sanitize_storage_name('a/../b.docx'), 'b.docx')
         self.assertEqual(_sanitize_storage_name(''), 'unnamed')
+
+    def test_storage_url_never_leaks_file_scheme(self):
+        from ..storage_backends import LocalStorageBackend
+
+        backend = LocalStorageBackend()
+        url = backend.url('file:///etc/passwd.docx')
+        self.assertTrue(url.startswith('/media/'))
+        self.assertNotIn('file://', url)
+        self.assertNotIn('://', url)
+
+    def test_site_settings_rejects_file_font_urls(self):
+        original = self.config.font_icon_url
+        response = self.client.post(
+            reverse('clubs:site_settings'),
+            {
+                'form_type': 'font_settings',
+                'font_icon_url': 'file:///tmp/font.css',
+                'body_font_url': 'file:///tmp/body.css',
+                'body_font_family': '',
+            },
+            secure=True,
+        )
+
+        self.assertRedirects(response, reverse('clubs:site_settings'), fetch_redirect_response=False)
+        self.config.refresh_from_db()
+        self.assertEqual(self.config.font_icon_url, original)
+
+    def test_context_processor_sanitizes_file_font_urls(self):
+        from ..context_processors import site_settings
+
+        self.config.font_icon_url = 'file:///tmp/font.css'
+        self.config.body_font_url = 'file:///tmp/body.css'
+        self.config.save()
+        cache.clear()
+        try:
+            context = site_settings(None)
+        finally:
+            cache.clear()
+        self.assertTrue(context['font_icon_url'].startswith('https://'))
+        self.assertNotIn('file://', context['font_icon_url'])
+        self.assertEqual(context['body_font_url'], '')
+
+    def test_avatar_url_rejects_file_scheme(self):
+        profile = self.user.profile
+        profile.avatar_source = 'local'
+        profile.avatar.name = 'file:///tmp/evil-avatar.png'
+        profile.save(update_fields=['avatar_source', 'avatar'])
+
+        avatar_url = get_profile_avatar_url(profile)
+        self.assertNotIn('file://', avatar_url)
+        self.assertTrue(avatar_url.startswith('/media/'))
 
     def test_admin_can_change_third_party_cdn(self):
         response = self.client.post(
