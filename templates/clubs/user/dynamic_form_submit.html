@@ -187,6 +187,19 @@
         background: var(--md3-surface-container-low);
     }
 
+    .revision-file-missing {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 36px;
+        padding: 0 12px;
+        border-radius: var(--md3-radius-full);
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        font-size: 0.84rem;
+        font-weight: 700;
+    }
+
     .revision-file-link,
     .revision-preview-btn,
     .revision-view-btn {
@@ -515,9 +528,13 @@
                         {% if uploaded.review_status == 'rejected' %}
                         <div class="revision-file-entry">
                             {% if uploaded|is_image_file %}
+                            {% if uploaded|file_exists %}
                             <a class="revision-image-link" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
                                 <img src="{{ uploaded.file.url }}" alt="{{ uploaded.original_name|default:uploaded.file.name }}" loading="lazy">
                             </a>
+                            {% else %}
+                            <span class="revision-file-missing">文件已丢失</span>
+                            {% endif %}
                             {% else %}
                             <a class="revision-view-btn" href="{% url 'clubs:download_submission_file' uploaded.id %}?inline=1" target="_blank" rel="noopener">
                                 <span class="material-icons">open_in_new</span>查看

@@ -1954,6 +1954,36 @@ class ReviseSubmissionUploadTests(TestCase):
         self.assertContains(response, '<img')
         self.assertContains(response, 'old.png')
 
+    def test_revise_page_handles_missing_image_without_broken_img(self):
+        from ..models import FormUploadedFile
+
+        self.submission.uploaded_files.all().delete()
+        uploaded = FormUploadedFile.objects.create(
+            submission=self.submission,
+            field=self.field,
+            file=SimpleUploadedFile(
+                'missing.png',
+                b'\x89PNG\r\n\x1a\nfake-image',
+                content_type='image/png',
+            ),
+            original_name='missing.png',
+            review_status='rejected',
+        )
+        missing_url = uploaded.file.url
+        uploaded.file.storage.delete(uploaded.file.name)
+
+        response = self.client.get(
+            reverse(
+                'clubs:revise_dynamic_submission',
+                args=[self.submission.public_id],
+            ),
+            secure=True,
+        )
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        self.assertContains(response, 'revision-file-missing')
+        self.assertContains(response, '文件已丢失')
+        self.assertNotContains(response, missing_url)
+
 
 class DepartmentEditAndProfileRobustnessTests(TestCase):
     """审计修复回归测试：非法表单参数不产生 500，缺失 profile 的用户操作有兜底。"""

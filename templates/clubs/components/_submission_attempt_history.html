@@ -4,6 +4,7 @@
 被打回轮次的字段快照/归档附件；状态修改记录（重新审核/直接修改）
 也统一在此展示。需要上下文：submission、attempt_groups。
 {% endcomment %}
+{% load common_tags %}
 {% with override_history=submission.metadata.review_override_history %}
 {% if attempt_groups or override_history %}
 <style>
@@ -328,6 +329,22 @@
         object-fit: cover;
     }
 
+    .ah-file-missing {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        border-radius: var(--md3-radius-md, 12px);
+        border: 1px solid var(--md3-outline-variant, #c4c6d0);
+        background: var(--md3-error-container, #ffdad6);
+        color: var(--md3-on-error-container, #410002);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-align: center;
+    }
+
     .ah-file-main {
         flex: 1 1 220px;
         min-width: 0;
@@ -572,9 +589,13 @@
                         {% for file in group.files %}
                         <div class="ah-file">
                             {% if file.is_image %}
+                            {% if file|file_exists %}
                             <a class="ah-file-thumb" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" target="_blank" rel="noopener" title="{{ file.file_name }}">
                                 <img src="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" alt="{{ file.file_name }}" loading="lazy">
                             </a>
+                            {% else %}
+                            <span class="ah-file-missing">文件已丢失</span>
+                            {% endif %}
                             {% endif %}
                             <div class="ah-file-main">
                                 <span class="ah-file-name"><span class="material-icons">insert_drive_file</span>{{ file.file_name }}</span>

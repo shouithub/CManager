@@ -237,11 +237,11 @@ def download_submission_file(request, file_id):
 
     filename = uploaded.original_name or os.path.basename(uploaded.file.name)
     inline = request.GET.get('inline') == '1'
-    response = FileResponse(
-        uploaded.file.open('rb'),
-        as_attachment=not inline,
-        filename=filename,
-    )
+    try:
+        file_handle = uploaded.file.open('rb')
+    except Exception:
+        raise Http404('文件不存在')
+    response = FileResponse(file_handle, as_attachment=not inline, filename=filename)
     response['X-Content-Type-Options'] = 'nosniff'
     return response
 

@@ -13,9 +13,13 @@
             {% for uploaded in row.files %}
             <div class="file-entry">
                 {% if uploaded|is_image_file %}
+                {% if uploaded|file_exists %}
                 <a href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener" style="display:block;margin-bottom:4px;">
                     <img src="{{ uploaded.file.url }}" alt="{{ uploaded.original_name|default:uploaded.file.name }}" loading="lazy" style="max-width:100%;height:auto;max-height:320px;border-radius:12px;border:1px solid var(--md3-outline-variant);display:block;">
                 </a>
+                {% else %}
+                <span class="file-missing">文件已丢失</span>
+                {% endif %}
                 {% endif %}
                 {% if not uploaded|is_image_file %}
                 <a class="file-preview-button" href="{% url 'clubs:download_submission_file' uploaded.id %}?inline=1" target="_blank" rel="noopener">
