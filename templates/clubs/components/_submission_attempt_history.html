@@ -600,7 +600,7 @@
                             <div class="ah-file-main">
                                 <span class="ah-file-name"><span class="material-icons">insert_drive_file</span>{{ file.file_name }}</span>
                                 <div class="ah-file-actions">
-                                    {% if file.office_preview_url %}
+                                    {% if file.office_preview_url and not file.is_image %}
                                     <button class="file-preview-button js-office-preview" type="button" data-office-preview-url="{{ file.office_preview_url }}" data-office-file-name="{{ file.file_name }}">
                                         <span class="material-icons">visibility</span>预览
                                     </button>

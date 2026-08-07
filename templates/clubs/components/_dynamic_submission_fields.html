@@ -29,7 +29,7 @@
                 <a class="file-link" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
                     <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
                 </a>
-                {% if uploaded.office_preview_url %}
+                {% if uploaded.office_preview_url and not uploaded|is_image_file %}
                 <button class="file-preview-button js-office-preview" type="button" data-office-preview-url="{{ uploaded.office_preview_url }}" data-office-file-name="{{ uploaded.original_name|default:uploaded.file.name }}">
                     <span class="material-icons">visibility</span>预览
                 </button>
