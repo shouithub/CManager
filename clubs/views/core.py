@@ -49,6 +49,7 @@ from ..models import (
     FormSubmission,
     FormSubmissionReview,
     FormUploadedFile,
+    ErrorLog,
     Officer,
     RegistrationToken,
     Room,
@@ -5604,6 +5605,17 @@ def admin_dashboard(request):
     overall_approval_rate = round(approved_total / decided_total * 100, 1) if decided_total else 0
     overall_rejection_rate = round(rejected_total / decided_total * 100, 1) if decided_total else 0
 
+    # BUG 日志：未处理优先展示，求助记录单独突出
+    unresolved_bug_logs = list(
+        ErrorLog.objects.filter(resolved=False).order_by('-created_at')[:20]
+    )
+    help_request_logs = [log for log in unresolved_bug_logs if log.help_requested]
+    bug_log_counts = {
+        'unresolved': ErrorLog.objects.filter(resolved=False).count(),
+        'help': ErrorLog.objects.filter(help_requested=True, resolved=False).count(),
+        'all': ErrorLog.objects.count(),
+    }
+
     return render(request, 'clubs/admin/dashboard.html', {
         'total_clubs': total_clubs,
         'total_users': total_users,
@@ -5630,6 +5642,9 @@ def admin_dashboard(request):
         'type_approved_json': json.dumps(type_approved, ensure_ascii=False),
         'type_rejected_json': json.dumps(type_rejected, ensure_ascii=False),
         'redis_info': None,
+        'unresolved_bug_logs': unresolved_bug_logs,
+        'help_request_logs': help_request_logs,
+        'bug_log_counts': bug_log_counts,
     })
 
 

@@ -819,6 +819,10 @@
                                 <span class="config-details-label">加密</span>
                                 <span class="config-details-value">{% if config.use_tls %}TLS{% else %}无{% endif %}</span>
                             </div>
+                            <div class="config-details-row">
+                                <span class="config-details-label">错误页求助</span>
+                                <span class="config-details-value">{% if config.enable_error_help %}已开启{% else %}未开启{% endif %}</span>
+                            </div>
                         </div>
                         <div class="config-expand-hint">
                             <span class="material-icons">expand_more</span>
@@ -828,7 +832,7 @@
                     <div class="config-actions-panel">
                         <div class="config-actions-grid">
                             <button type="button" class="config-action-btn" 
-                                    onclick="openEditModal({{ config.id }}, '{{ config.provider }}', '{{ config.smtp_host }}', {{ config.smtp_port }}, '{{ config.sender_email }}', {{ config.use_tls|yesno:'true,false' }})">
+                                    onclick="openEditModal({{ config.id }}, '{{ config.provider }}', '{{ config.smtp_host }}', {{ config.smtp_port }}, '{{ config.sender_email }}', {{ config.use_tls|yesno:'true,false' }}, {{ config.enable_error_help|yesno:'true,false' }}, '{{ config.help_recipient_email|default:'' }}')">
                                 <span class="material-icons">edit</span>
                                 <span>编辑配置</span>
                             </button>
@@ -981,6 +985,27 @@
                     </div>
                 </div>
 
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label class="form-label" for="help_recipient_email">
+                            求助通知收件邮箱
+                        </label>
+                        <input type="email" class="form-input" id="help_recipient_email" name="help_recipient_email"
+                               value="{{ form_data.help_recipient_email }}" placeholder="留空则通知所有管理员账号邮箱">
+                        <div class="form-helper">
+                            <span class="material-icons">info</span>
+                            用户在错误页点击“请求帮助”后，系统将向该邮箱发送通知
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkbox-row" style="margin-bottom: 0;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enable_error_help" name="enable_error_help">
+                        <label for="enable_error_help">开启错误页求助按钮</label>
+                    </div>
+                </div>
+
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary">
                         <span class="material-icons">check</span>
@@ -1047,7 +1072,7 @@ function toggleTestEmail(element) {
 }
 
 // 打开编辑弹窗
-function openEditModal(id, provider, host, port, email, useTls) {
+function openEditModal(id, provider, host, port, email, useTls, enableErrorHelp, helpRecipientEmail) {
     const modal = document.getElementById('editModal');
     document.getElementById('edit_config_id').value = id;
     document.getElementById('edit_provider').value = provider;
@@ -1055,6 +1080,8 @@ function openEditModal(id, provider, host, port, email, useTls) {
     document.getElementById('edit_smtp_port').value = port;
     document.getElementById('edit_sender_email').value = email;
     document.getElementById('edit_use_tls').checked = useTls;
+    document.getElementById('edit_enable_error_help').checked = !!enableErrorHelp;
+    document.getElementById('edit_help_recipient_email').value = helpRecipientEmail || '';
     document.getElementById('edit_sender_password').value = '';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1178,6 +1205,23 @@ function fillEditSmtpDefaults(provider) {
                     <div class="checkbox-group">
                         <input type="checkbox" id="edit_use_tls" name="use_tls">
                         <label for="edit_use_tls">使用TLS加密</label>
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label class="form-label" for="edit_help_recipient_email">
+                            求助通知收件邮箱
+                        </label>
+                        <input type="email" class="form-input" id="edit_help_recipient_email" name="help_recipient_email"
+                               placeholder="留空则通知所有管理员账号邮箱">
+                    </div>
+                </div>
+
+                <div class="checkbox-row" style="margin-bottom: 0;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="edit_enable_error_help" name="enable_error_help">
+                        <label for="edit_enable_error_help">开启错误页求助按钮</label>
                     </div>
                 </div>
             </div>

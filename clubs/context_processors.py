@@ -1,4 +1,5 @@
 """上下文处理器：动态表单导航、审核数量和站点设置。"""
+import logging
 import os
 from django.conf import settings
 from django.core.cache import cache
@@ -13,6 +14,8 @@ from .identity import (
     has_president_officer,
     IDENTITY_PRESIDENT,
 )
+
+logger = logging.getLogger(__name__)
 
 
 THIRD_PARTY_CDN_DEFAULT_SRI = {
@@ -143,42 +146,47 @@ def audit_center_counts(request):
     is_president_identity = active_identity == IDENTITY_PRESIDENT
     identities = available_identities(request)
 
-    channels = externally_available_channels(
-        FormChannel.objects.filter(is_active=True)
-        .exclude(slug='')
-        .prefetch_related('fields')
-        .order_by('order', 'id')
-    )
-    audit_channels = {}
-    approval_channels = {}
-    audit_total = 0
-    approval_total = 0
+    # 数据库异常（例如触发 500 的原因）时不得让错误页渲染再次失败。
+    try:
+        channels = externally_available_channels(
+            FormChannel.objects.filter(is_active=True)
+            .exclude(slug='')
+            .prefetch_related('fields')
+            .order_by('order', 'id')
+        )
+        audit_channels = {}
+        approval_channels = {}
+        audit_total = 0
+        approval_total = 0
 
-    if not is_president_identity and (role in ['staff', 'admin'] or request.user.is_superuser):
-        counts = FormSubmission.objects.filter(
-            channel__in=channels,
-            status='pending',
-        ).values('channel__slug').annotate(total=Count('id'))
-        audit_channels = {row['channel__slug']: row['total'] for row in counts}
-        audit_total = sum(audit_channels.values())
+        if not is_president_identity and (role in ['staff', 'admin'] or request.user.is_superuser):
+            counts = FormSubmission.objects.filter(
+                channel__in=channels,
+                status='pending',
+            ).values('channel__slug').annotate(total=Count('id'))
+            audit_channels = {row['channel__slug']: row['total'] for row in counts}
+            audit_total = sum(audit_channels.values())
 
-    president_clubs = []
-    primary_club = None
-    if is_president_identity:
-        president_clubs = list(Officer.objects.filter(
-            user_profile__user=request.user,
-            position='president',
-            is_current=True,
-        ).select_related('club').order_by('club__name'))
-        primary_club = president_clubs[0].club if president_clubs else None
-        club_ids = [item.club_id for item in president_clubs]
-        counts = FormSubmission.objects.filter(
-            channel__in=channels,
-            club_id__in=club_ids,
-            status__in=['pending', 'rejected'],
-        ).values('channel__slug').annotate(total=Count('id'))
-        approval_channels = {row['channel__slug']: row['total'] for row in counts}
-        approval_total = sum(approval_channels.values())
+        president_clubs = []
+        primary_club = None
+        if is_president_identity:
+            president_clubs = list(Officer.objects.filter(
+                user_profile__user=request.user,
+                position='president',
+                is_current=True,
+            ).select_related('club').order_by('club__name'))
+            primary_club = president_clubs[0].club if president_clubs else None
+            club_ids = [item.club_id for item in president_clubs]
+            counts = FormSubmission.objects.filter(
+                channel__in=channels,
+                club_id__in=club_ids,
+                status__in=['pending', 'rejected'],
+            ).values('channel__slug').annotate(total=Count('id'))
+            approval_channels = {row['channel__slug']: row['total'] for row in counts}
+            approval_total = sum(approval_channels.values())
+    except Exception:
+        logger.exception('侧边栏统计上下文处理器数据库查询失败')
+        return empty
 
     result = {
         'audit_center_counts': {

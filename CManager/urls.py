@@ -21,6 +21,11 @@ from django.conf.urls.static import static
 from django.http import HttpResponse
 from django.contrib.staticfiles import finders
 
+
+handler404 = 'clubs.views.errors.handler404'
+handler500 = 'clubs.views.errors.handler500'
+
+
 def service_worker_view(request):
     """以正确的 Service-Worker-Allowed 头提供 sw.js，使其作用域覆盖整个站点。"""
     sw_path = finders.find('js/sw.js')

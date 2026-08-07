@@ -6,12 +6,15 @@ from .views import auth as auth_views
 from .views import exports as export_views
 from .views import activities as activity_views
 from .views import admin_settings as admin_settings_views
+from .views import errors as error_views
+from .views import bug_logs as bug_log_views
 
 app_name = 'clubs'
 
 urlpatterns = [
     path('oobe/', oobe_views.oobe_setup, name='oobe_setup'),
     path('oobe/test-email/', oobe_views.oobe_test_email, name='oobe_test_email'),
+    path('error-report/help/', error_views.error_help_request, name='error_help_request'),
     # API endpoints
     path('api/notification-counts/', views.notification_counts, name='notification_counts'),
 
@@ -109,6 +112,7 @@ urlpatterns = [
     
     # 管理员功能
     path('admin-panel/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin-panel/bug-logs/', bug_log_views.manage_bug_logs, name='manage_bug_logs'),
     path('admin-panel/carousel/', views.manage_carousel, name='manage_carousel'),
     path('admin-panel/carousel/add/', views.add_carousel, name='add_carousel'),
     path('admin-panel/carousel/edit/<int:carousel_id>/', views.edit_carousel, name='edit_carousel'),

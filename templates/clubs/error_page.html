@@ -1,0 +1,324 @@
+{% load static %}
+<!DOCTYPE html>
+{% if request.COOKIES.md3_effective_theme == 'dark' %}
+<html lang="zh-hans" data-theme="dark" style="color-scheme: dark; background-color: #141218;">
+{% else %}
+<html lang="zh-hans" data-theme="light" style="color-scheme: light; background-color: #fffbfe;">
+{% endif %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex">
+    <title>{% if error_status_code == 404 %}页面不存在{% else %}服务器开小差了{% endif %} - {{ site_name|default:'社团管理系统' }}</title>
+    <script>
+        (function() {
+            var stored;
+            try { stored = localStorage.getItem('md3-theme-mode'); } catch (error) { stored = 'auto'; }
+            var theme;
+            if (stored === 'light' || stored === 'dark') {
+                theme = stored;
+            } else {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.style.colorScheme = theme;
+            var background = theme === 'dark' ? '#141218' : '#fffbfe';
+            document.documentElement.style.backgroundColor = background;
+        })();
+    </script>
+    <link rel="preload" href="{{ font_icon_url|default:'https://fonts.font.im/icon?family=Material+Icons' }}" as="style">
+    <link href="{{ font_icon_url|default:'https://fonts.font.im/icon?family=Material+Icons' }}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260805b">
+    <style>
+        .error-body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            box-sizing: border-box;
+            background: var(--md3-surface-container-lowest, #fffbfe);
+        }
+
+        .error-card {
+            width: 100%;
+            max-width: 560px;
+            background: var(--md3-surface-container, #f3eef7);
+            border: 1px solid var(--md3-outline-variant, #cac4d0);
+            border-radius: 28px;
+            box-shadow: var(--md3-elevation-2, 0 2px 6px rgba(0,0,0,.2));
+            padding: clamp(24px, 5vw, 48px);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .error-icon {
+            width: 96px;
+            height: 96px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--md3-error-container, #f9dedc);
+            color: var(--md3-error, #b3261e);
+        }
+
+        .error-icon .material-icons {
+            font-size: 52px;
+        }
+
+        .error-code {
+            font-size: 3.25rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--md3-on-surface, #1c1b1f);
+            margin: 0 0 8px;
+        }
+
+        .error-title {
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: var(--md3-on-surface, #1c1b1f);
+            margin: 0 0 12px;
+        }
+
+        .error-desc {
+            font-size: 0.9375rem;
+            color: var(--md3-on-surface-variant, #49454e);
+            line-height: 1.7;
+            margin: 0 auto 20px;
+            max-width: 420px;
+        }
+
+        .error-path {
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.8125rem;
+            font-family: 'Roboto Mono', monospace;
+            color: var(--md3-on-surface-variant, #49454e);
+            background: var(--md3-surface-container-highest, #e6e0e9);
+            border-radius: 999px;
+            padding: 6px 16px;
+            margin-bottom: 8px;
+        }
+
+        .error-log-id {
+            font-size: 0.8125rem;
+            color: var(--md3-on-surface-variant, #49454e);
+            margin-bottom: 24px;
+        }
+
+        .error-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .error-actions .btn-error {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 0 22px;
+            border-radius: 999px;
+            border: none;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: box-shadow var(--md3-motion-duration-short2, 200ms) ease;
+        }
+
+        .btn-error-primary {
+            background: var(--md3-primary, #6750a4);
+            color: var(--md3-on-primary, #ffffff);
+        }
+
+        .btn-error-secondary {
+            background: var(--md3-surface-container-high, #ece6f0);
+            color: var(--md3-primary, #6750a4);
+            border: 1px solid var(--md3-outline-variant, #cac4d0);
+        }
+
+        .error-help {
+            margin-top: 28px;
+            border-top: 1px dashed var(--md3-outline-variant, #cac4d0);
+            padding-top: 22px;
+        }
+
+        .error-help .btn-help {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--md3-secondary-container, #e8def8);
+            color: var(--md3-on-secondary-container, #1d192b);
+            border: none;
+            border-radius: 999px;
+            padding: 10px 22px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .help-form {
+            margin-top: 16px;
+            text-align: left;
+            background: var(--md3-surface-container-high, #ece6f0);
+            border-radius: 16px;
+            padding: 16px;
+            display: none;
+        }
+
+        .help-form input,
+        .help-form textarea {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid var(--md3-outline-variant, #cac4d0);
+            border-radius: 10px;
+            background: var(--md3-surface, #fffbfe);
+            color: var(--md3-on-surface, #1c1b1f);
+            padding: 10px 12px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            margin-bottom: 10px;
+            resize: vertical;
+        }
+
+        .help-form input:focus,
+        .help-form textarea:focus {
+            outline: 2px solid var(--md3-primary, #6750a4);
+            outline-offset: 1px;
+        }
+
+        .help-form .btn-submit-help {
+            width: 100%;
+            background: var(--md3-primary, #6750a4);
+            color: var(--md3-on-primary, #ffffff);
+            border: none;
+            border-radius: 999px;
+            min-height: 42px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .help-result {
+            margin-top: 12px;
+            font-size: 0.875rem;
+            color: var(--md3-success, #2e7d32);
+        }
+
+        .help-result.error {
+            color: var(--md3-error, #b3261e);
+        }
+    </style>
+</head>
+<body class="error-body">
+    <div class="error-card">
+        <div class="error-icon">
+            <span class="material-icons">
+                {% if error_status_code == 404 %}sentiment_dissatisfied{% else %}error_outline{% endif %}
+            </span>
+        </div>
+        <h1 class="error-code">{{ error_status_code|default:500 }}</h1>
+        <p class="error-title">
+            {% if error_status_code == 404 %}页面走丢了{% else %}服务器开小差了{% endif %}
+        </p>
+        <p class="error-desc">
+            {% if error_status_code == 404 %}
+            你访问的地址不存在、已被移动，或者你无权查看该页面。
+            {% else %}
+            系统在处理请求时遇到了意外问题，技术团队已收到通知。请稍后重试，或提交求助让管理员尽快处理。
+            {% endif %}
+        </p>
+        <p class="error-path" title="{{ error_path }}">{{ error_path }}</p>
+        {% if error_log_id %}
+        <p class="error-log-id">错误编号：#{{ error_log_id }}</p>
+        {% endif %}
+
+        <div class="error-actions">
+            <a href="/" class="btn-error btn-error-primary">
+                <span class="material-icons">home</span>
+                返回首页
+            </a>
+            {% if error_status_code != 404 %}
+            <button type="button" class="btn-error btn-error-secondary" onclick="location.reload();">
+                <span class="material-icons">refresh</span>
+                重新加载
+            </button>
+            {% endif %}
+        </div>
+
+        {% if error_help_enabled %}
+        <div class="error-help">
+            <button type="button" class="btn-help" id="errorHelpBtn">
+                <span class="material-icons">support_agent</span>
+                请求帮助
+            </button>
+            <form class="help-form" id="errorHelpForm">
+                {% csrf_token %}
+                <input type="hidden" name="error_log_id" value="{{ error_log_id|default_if_none:'' }}">
+                <input type="hidden" name="error_type" value="{{ error_status_code|default:500 }}">
+                <input type="hidden" name="error_path" value="{{ error_path }}">
+                <input type="email" name="contact_email" autocomplete="email" placeholder="你的联系邮箱（选填）">
+                <textarea name="note" rows="2" placeholder="简单描述你遇到的问题（选填）"></textarea>
+                <button type="submit" class="btn-submit-help">提交求助</button>
+            </form>
+            <p class="help-result" id="errorHelpResult"></p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        (function () {
+            var helpBtn = document.getElementById('errorHelpBtn');
+            var helpForm = document.getElementById('errorHelpForm');
+            var helpResult = document.getElementById('errorHelpResult');
+            if (helpBtn) {
+                helpBtn.addEventListener('click', function () {
+                    helpForm.style.display = helpForm.style.display === 'block' ? 'none' : 'block';
+                    if (helpForm.style.display === 'block') {
+                        helpForm.querySelector('input[type="email"]').focus();
+                    }
+                });
+            }
+            if (helpForm) {
+                helpForm.addEventListener('submit', async function (event) {
+                    event.preventDefault();
+                    var submitBtn = helpForm.querySelector('.btn-submit-help');
+                    submitBtn.disabled = true;
+                    helpResult.textContent = '';
+                    helpResult.className = 'help-result';
+                    try {
+                        var response = await fetch('{% url "clubs:error_help_request" %}', {
+                            method: 'POST',
+                            body: new FormData(helpForm),
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        var data = await response.json();
+                        helpResult.textContent = data.message || (data.success ? '已提交求助' : '提交失败，请稍后重试');
+                        if (!data.success) {
+                            helpResult.classList.add('error');
+                        } else {
+                            helpForm.style.display = 'none';
+                            helpBtn.style.display = 'none';
+                        }
+                    } catch (error) {
+                        helpResult.textContent = '网络异常，请稍后重试';
+                        helpResult.classList.add('error');
+                    } finally {
+                        submitBtn.disabled = false;
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

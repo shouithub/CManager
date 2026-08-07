@@ -47,6 +47,8 @@ def manage_smtp_config(request):
                 config.sender_password = sender_password
             config.use_tls = request.POST.get('use_tls') == 'on'
             config.is_active = request.POST.get('is_active') == 'on'
+            config.enable_error_help = request.POST.get('enable_error_help') == 'on'
+            config.help_recipient_email = (request.POST.get('help_recipient_email') or '').strip()
             config.save()
             ConfigChangeLog.objects.create(actor=request.user, category='smtp', action=action)
             messages.success(request, 'SMTP 配置已保存')

@@ -494,6 +494,118 @@
         gap: var(--md3-spacing-md);
     }
 
+    /* BUG 日志 */
+    .card h3 .help-badge {
+        margin-left: auto;
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border-radius: var(--md3-radius-full);
+        padding: 4px 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .card h3 .help-badge .material-icons {
+        font-size: 0.9375rem;
+        color: inherit;
+    }
+
+    .bug-help-alert {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        background: var(--md3-error-container);
+        color: var(--md3-on-error-container);
+        border-radius: var(--md3-radius-lg);
+        padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+        margin-bottom: var(--md3-spacing-lg);
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .bug-help-alert .material-icons {
+        font-size: 1.5rem;
+        flex: 0 0 auto;
+    }
+
+    .bug-help-alert .bug-help-user {
+        font-weight: 700;
+    }
+
+    .bug-help-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--md3-spacing-sm);
+    }
+
+    .bug-log-item {
+        display: flex;
+        align-items: center;
+        gap: var(--md3-spacing-md);
+        padding: var(--md3-spacing-sm) var(--md3-spacing-md);
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-lg);
+        border: 1px solid var(--md3-outline-variant);
+        min-width: 0;
+    }
+
+    .bug-log-item .bug-log-icon {
+        color: var(--md3-error);
+        flex: 0 0 auto;
+    }
+
+    .bug-log-item.help .bug-log-icon {
+        color: var(--md3-tertiary);
+    }
+
+    .bug-log-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .bug-log-path {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .bug-log-meta {
+        font-size: 0.75rem;
+        color: var(--md3-on-surface-variant);
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 2px;
+    }
+
+    .bug-log-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--md3-spacing-sm);
+        padding: var(--md3-spacing-xl);
+        color: var(--md3-on-surface-variant);
+        font-size: 0.875rem;
+        background: var(--md3-surface-container-highest);
+        border-radius: var(--md3-radius-lg);
+    }
+
+    .bug-log-empty .material-icons {
+        color: var(--md3-success);
+    }
+
+    .bug-log-footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: var(--md3-spacing-lg);
+    }
+
     @media (max-width: 1500px) {
         .dashboard-container {
             padding: clamp(16px, 2.5vw, 28px);
@@ -750,6 +862,60 @@
                 <div class="stat-card" style="border-left:4px solid var(--md3-error);">
                     <div class="stat-value" style="color:var(--md3-error);">{{ overall_rejection_rate }}%</div>
                     <div class="stat-label">历史总体拒绝率</div>
+                </div>
+            </div>
+
+            <!-- BUG 日志 -->
+            <div class="card">
+                <h3>
+                    <span class="material-icons">bug_report</span>
+                    BUG日志
+                    {% if bug_log_counts.help %}
+                    <span class="help-badge">
+                        <span class="material-icons">support_agent</span>
+                        {{ bug_log_counts.help }} 条求助
+                    </span>
+                    {% endif %}
+                </h3>
+                {% if help_request_logs %}
+                <div class="bug-help-alert">
+                    <span class="material-icons">notifications_active</span>
+                    <div>
+                        有用户正在等待帮助：
+                        {% for log in help_request_logs %}
+                        <span class="bug-help-user">{{ log.user_identifier|default:'未登录用户' }}</span>{% if not forloop.last %}、{% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="bug-help-list">
+                    {% for log in unresolved_bug_logs %}
+                    <div class="bug-log-item {% if log.help_requested %}help{% endif %}">
+                        <span class="material-icons bug-log-icon">
+                            {% if log.help_requested %}support_agent{% elif log.status_code == 404 %}link_off{% else %}error{% endif %}
+                        </span>
+                        <div class="bug-log-info">
+                            <div class="bug-log-path" title="{{ log.path }}">{{ log.path }}</div>
+                            <div class="bug-log-meta">
+                                <span>{{ log.created_at|date:"m-d H:i" }}</span>
+                                <span>HTTP {{ log.status_code }}</span>
+                                {% if log.exception_name %}<span>{{ log.exception_name }}</span>{% endif %}
+                                {% if log.user_identifier %}<span>{{ log.user_identifier }}</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="bug-log-empty">
+                        <span class="material-icons">check_circle</span>
+                        暂无未处理的错误日志
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="bug-log-footer">
+                    <a href="{% url 'clubs:manage_bug_logs' %}" class="btn-action btn-edit">
+                        <span class="material-icons">list_alt</span>
+                        查看全部 BUG 日志{% if bug_log_counts.unresolved %}（{{ bug_log_counts.unresolved }} 条未处理）{% endif %}
+                    </a>
                 </div>
             </div>
 

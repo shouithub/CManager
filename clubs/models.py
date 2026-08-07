@@ -973,6 +973,17 @@ class SMTPConfig(models.Model):
     sender_password = EncryptedCharField(max_length=500, verbose_name='邮箱密码/授权码', help_text='在数据库中加密存储；留空表示保持原值')
     use_tls = models.BooleanField(default=True, verbose_name='是否使用TLS加密')
     is_active = models.BooleanField(default=True, verbose_name='是否激活')
+    enable_error_help = models.BooleanField(
+        default=False,
+        verbose_name='开启错误页求助按钮',
+        help_text='开启后，404/500 错误页将显示“请求帮助”按钮',
+    )
+    help_recipient_email = models.EmailField(
+        blank=True,
+        default='',
+        verbose_name='求助通知收件邮箱',
+        help_text='用户点击求助时通知此邮箱；留空则通知所有管理员账号邮箱',
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     
@@ -1402,3 +1413,53 @@ class FileBlob(models.Model):
 
     def __str__(self):
         return self.md5
+
+
+class ErrorLog(models.Model):
+    """系统错误日志（500 等）与用户在错误页发出的求助记录。"""
+
+    STATUS_CODE_CHOICES = [
+        (500, '500 服务器错误'),
+        (404, '404 页面不存在'),
+    ]
+
+    status_code = models.PositiveSmallIntegerField(
+        choices=STATUS_CODE_CHOICES,
+        default=500,
+        verbose_name='状态码',
+    )
+    path = models.CharField(max_length=500, blank=True, default='', verbose_name='请求地址')
+    method = models.CharField(max_length=10, default='GET', verbose_name='请求方法')
+    referer = models.CharField(max_length=500, blank=True, default='', verbose_name='来源页面')
+    user_agent = models.CharField(max_length=500, blank=True, default='', verbose_name='浏览器UA')
+    ip = models.CharField(max_length=100, blank=True, default='', verbose_name='客户端IP')
+    exception_name = models.CharField(max_length=200, blank=True, default='', verbose_name='异常类型')
+    exception_message = models.TextField(blank=True, default='', verbose_name='异常信息')
+    user_identifier = models.CharField(max_length=200, blank=True, default='', verbose_name='用户标识')
+    help_requested = models.BooleanField(default=False, verbose_name='用户请求帮助')
+    help_requested_at = models.DateTimeField(null=True, blank=True, verbose_name='求助时间')
+    help_email = models.EmailField(blank=True, default='', verbose_name='求助联系邮箱')
+    help_note = models.TextField(blank=True, default='', verbose_name='用户补充说明')
+    resolved = models.BooleanField(default=False, verbose_name='已处理')
+    resolved_at = models.DateTimeField(null=True, blank=True, verbose_name='处理时间')
+    resolved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='resolved_error_logs',
+        verbose_name='处理人',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='发生时间')
+
+    class Meta:
+        verbose_name = '错误日志'
+        verbose_name_plural = '错误日志'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at'], name='errlog_created_idx'),
+            models.Index(fields=['help_requested', 'resolved'], name='errlog_help_state_idx'),
+        ]
+
+    def __str__(self):
+        return f"#{self.pk} {self.status_code} {self.path}"
