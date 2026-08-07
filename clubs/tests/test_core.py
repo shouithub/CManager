@@ -29,6 +29,7 @@ from ..models import (
     Club,
     ClubMember,
     EmailVerificationCode,
+    ErrorLog,
     FormChannel,
     FormCycle,
     FormField,
@@ -937,6 +938,60 @@ class RegistrationTokenTests(TestCase):
             )
 
         self.assertFalse(User.objects.filter(username='should-not-exist').exists())
+
+
+class MemberTokenEndpointTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        # 超级用户信号会自动创建 admin 角色 UserProfile，避免触发 OOBE 重定向
+        self.president = User.objects.create_superuser('qr-president', 'president@example.com', 'password')
+        self.normal = User.objects.create_superuser('qr-normal', 'normal@example.com', 'password')
+        self.club = Club.objects.create(name='二维码接口测试社团', founded_date=date(2020, 1, 1))
+        Officer.objects.create(
+            club=self.club,
+            user_profile=self.president.profile,
+            position='president',
+            appointed_date=date(2020, 1, 1),
+            is_current=True,
+        )
+
+    def _post_token(self, user, minutes=10, max_uses='1'):
+        self.client.force_login(user)
+        return self.client.post(
+            reverse('clubs:generate_member_join_token', args=[self.club.pk]),
+            {'minutes': minutes, 'max_uses': max_uses},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            HTTP_HOST='127.0.0.1:8000',
+        )
+
+    def test_president_gets_json_success(self):
+        response = self._post_token(self.president)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'].split(';')[0], 'application/json')
+        payload = response.json()
+        self.assertTrue(payload['success'])
+        self.assertTrue(payload['qr_data_uri'].startswith('data:image/png;base64,'))
+        self.assertIn(payload['join_path'], payload['join_url'])
+
+    def test_non_president_gets_json_403(self):
+        response = self._post_token(self.normal)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response['Content-Type'].split(';')[0], 'application/json')
+        self.assertFalse(response.json()['success'])
+
+    def test_unexpected_error_returns_json_500_and_logs_bug(self):
+        url = reverse('clubs:generate_member_join_token', args=[self.club.pk])
+        with patch(
+            'clubs.views.core.RegistrationToken.create_for_club',
+            side_effect=RuntimeError('db boom'),
+        ):
+            response = self._post_token(self.president)
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response['Content-Type'].split(';')[0], 'application/json')
+        payload = response.json()
+        self.assertFalse(payload['success'])
+        self.assertIn('BUG日志', payload['message'])
+        self.assertTrue(ErrorLog.objects.filter(status_code=500, path=url).exists())
 
 
 class SecurityInfrastructureTests(TestCase):

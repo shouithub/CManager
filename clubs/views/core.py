@@ -584,10 +584,22 @@ def generate_member_join_token(request, club_id):
     except (ValueError, TypeError):
         return JsonResponse({'success': False, 'message': '参数格式错误'}, status=400)
 
-    token = RegistrationToken.create_for_club(club=club, created_by=request.user, minutes=minutes, max_uses=max_uses)
-    join_path = reverse('clubs:member_join_by_token', args=[token.code])
-    join_url = _build_external_url(request, join_path)
-    qr_data_uri = _make_qr_data_uri(join_url)
+    try:
+        token = RegistrationToken.create_for_club(
+            club=club, created_by=request.user, minutes=minutes, max_uses=max_uses
+        )
+        join_path = reverse('clubs:member_join_by_token', args=[token.code])
+        join_url = _build_external_url(request, join_path)
+        qr_data_uri = _make_qr_data_uri(join_url)
+    except Exception as exc:
+        # 统一返回 JSON，避免错误页 HTML 被前端当作 JSON 解析（JSON.parse 裸报错）
+        from .errors import log_error
+        log_error(request, exc)
+        return JsonResponse({
+            'success': False,
+            'message': '二维码生成失败：服务器内部错误，详情已记录到BUG日志，请稍后重试或联系管理员',
+        }, status=500)
+
     qr_error = '' if qr_data_uri else '二维码图片生成失败，请确认已安装 qrcode[pil] 依赖'
 
     uses_info = '不限次数' if max_uses is None else f'{max_uses}次'

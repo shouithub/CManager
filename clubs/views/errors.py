@@ -90,14 +90,13 @@ def handler404(request, exception=None):
     )
 
 
-def handler500(request, exception=None):
-    """500 页面：记录错误日志并渲染友好页面。"""
-    log_id = None
+def log_error(request, exception=None, status_code=500):
+    """记录一条 BUG 日志，返回日志 ID；失败时返回 None 且不影响主流程。"""
     try:
         username, email = _user_label(request)
         exception_name, exception_message = _exception_details(exception)
         log = ErrorLog.objects.create(
-            status_code=500,
+            status_code=status_code,
             path=(request.path or '/')[:500],
             method=request.method or 'GET',
             referer=(request.META.get('HTTP_REFERER') or '')[:500],
@@ -108,10 +107,16 @@ def handler500(request, exception=None):
             user_identifier=username,
             help_email=email,
         )
-        log_id = log.pk
-        logger.error('已记录 500 错误日志 #%s: %s %s', log_id, request.method, request.path)
+        logger.error('已记录 %s 错误日志 #%s: %s %s', status_code, log.pk, request.method, request.path)
+        return log.pk
     except Exception:
-        logger.exception('写入 500 错误日志失败，不影响错误页展示')
+        logger.exception('写入 %s 错误日志失败，不影响主流程', status_code)
+        return None
+
+
+def handler500(request, exception=None):
+    """500 页面：记录错误日志并渲染友好页面。"""
+    log_id = log_error(request, exception)
     return render(
         request,
         'clubs/error_page.html',

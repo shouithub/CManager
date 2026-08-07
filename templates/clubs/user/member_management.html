@@ -293,6 +293,28 @@
 </div>
 
 <script>
+async function parseMemberTokenResponse(res) {
+    let data = null;
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    if (contentType.includes('application/json')) {
+        try {
+            data = await res.json();
+        } catch (e) {
+            data = null;
+        }
+    }
+    if (res.redirected) {
+        throw new Error('登录状态已失效，请刷新页面后重试');
+    }
+    if (!res.ok) {
+        throw new Error((data && data.message) ? data.message : `请求失败（HTTP ${res.status}），请稍后重试或联系管理员`);
+    }
+    if (!data) {
+        throw new Error('服务器返回了无法解析的数据，请稍后重试或联系管理员');
+    }
+    return data;
+}
+
 async function generateMemberJoinQRCode(clubId) {
     const panel = document.getElementById('memberQrPanel');
     const urlEl = document.getElementById('memberQrUrl');
@@ -315,7 +337,7 @@ async function generateMemberJoinQRCode(clubId) {
             },
             body: `minutes=${minutes}&max_uses=${maxUses}`
         });
-        const data = await res.json();
+        const data = await parseMemberTokenResponse(res);
         if (!data.success) {
             throw new Error(data.message || '生成失败');
         }
