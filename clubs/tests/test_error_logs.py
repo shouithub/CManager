@@ -6,7 +6,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import ErrorLog, SMTPConfig
+from ..models import ErrorLog, SMTPConfig, SiteSettings
 from ..views.errors import handler404, handler500
 
 
@@ -19,11 +19,18 @@ def make_smtp_config(**kwargs):
         'sender_password': 'secret',
         'use_tls': True,
         'is_active': True,
-        'enable_error_help': True,
         'help_recipient_email': 'ops@example.com',
     }
     defaults.update(kwargs)
     return SMTPConfig.objects.create(**defaults)
+
+
+def enable_site_error_help(enabled=True):
+    """开启/关闭站点级错误页求助开关（不依赖 SMTP 配置）。"""
+    settings = SiteSettings.get_settings()
+    settings.error_help_enabled = enabled
+    settings.save(update_fields=['error_help_enabled'])
+    return settings
 
 
 class ErrorHandlerTests(TestCase):
@@ -74,19 +81,20 @@ class ErrorHandlerTests(TestCase):
         log = ErrorLog.objects.get()
         self.assertEqual(log.ip, '203.0.113.5')
 
-    def test_error_page_help_button_only_when_smtp_enabled(self):
-        make_smtp_config()
+    def test_error_page_help_button_controlled_by_site_switch(self):
+        # 开关开启时，未配置 SMTP 也显示求助按钮。
+        enable_site_error_help(True)
         request = self._request('/missing/page/')
         response = handler404(request)
         self.assertContains(response, '请求帮助', status_code=404)
 
-        SMTPConfig.objects.update(enable_error_help=False)
+        enable_site_error_help(False)
         response = handler404(request)
         self.assertNotContains(response, '请求帮助', status_code=404)
 
     def test_help_request_rejected_when_switch_disabled(self):
         make_smtp_config()
-        SMTPConfig.objects.update(enable_error_help=False)
+        enable_site_error_help(False)
         with patch('clubs.views.errors.send_email_with_config') as send_mock:
             response = self.client.post(
                 reverse('clubs:error_help_request'),
@@ -104,6 +112,7 @@ class ErrorHandlerTests(TestCase):
 
     def test_help_request_updates_log_and_sends_email(self):
         make_smtp_config()
+        enable_site_error_help(True)
         request = self._request('/broken/page/')
         handler500(request, RuntimeError('bad'))
         log = ErrorLog.objects.get()
@@ -133,6 +142,7 @@ class ErrorHandlerTests(TestCase):
 
     def test_help_request_without_log_creates_record_for_404(self):
         make_smtp_config()
+        enable_site_error_help(True)
         with patch('clubs.views.errors.send_email_with_config') as send_mock:
             response = self.client.post(
                 reverse('clubs:error_help_request'),
@@ -150,6 +160,29 @@ class ErrorHandlerTests(TestCase):
         self.assertEqual(log.path, '/lost/page/')
         self.assertEqual(log.help_email, 'helper@example.com')
         self.assertEqual(send_mock.call_count, 1)
+
+    def test_help_request_works_without_smtp_config(self):
+        # 未配置 SMTP 时求助仍然有效：记录 BUG 日志，但不发邮件。
+        enable_site_error_help(True)
+        with patch('clubs.views.errors.send_email_with_config') as send_mock:
+            response = self.client.post(
+                reverse('clubs:error_help_request'),
+                {
+                    'error_type': '500',
+                    'error_path': '/broken/page/',
+                    'contact_email': 'user@example.com',
+                    'note': '没有 SMTP 也要能求助',
+                },
+                HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['success'])
+        log = ErrorLog.objects.get()
+        self.assertTrue(log.help_requested)
+        self.assertEqual(log.path, '/broken/page/')
+        self.assertEqual(log.help_email, 'user@example.com')
+        self.assertEqual(log.help_note, '没有 SMTP 也要能求助')
+        send_mock.assert_not_called()
 
 
 class BugLogAdminTests(TestCase):
@@ -216,25 +249,15 @@ class BugLogAdminTests(TestCase):
         self.assertRedirects(response, reverse('clubs:manage_bug_logs'))
         self.assertFalse(ErrorLog.objects.filter(pk=log.pk).exists())
 
-    def test_smtp_config_page_saves_error_help_settings(self):
+    def test_smtp_config_page_saves_error_help_site_switch(self):
         self.client.force_login(self.admin)
         response = self.client.post(reverse('clubs:manage_smtp_config'), {
-            'action': 'create',
-            'provider': 'custom',
-            'smtp_host': 'smtp.test.com',
-            'smtp_port': '587',
-            'sender_email': 'noreply@test.com',
-            'sender_password': 'secret',
-            'is_active': 'on',
-            'enable_error_help': 'on',
-            'help_recipient_email': 'ops@example.com',
+            'action': 'error_help',
+            'error_help_enabled': 'on',
         })
         self.assertRedirects(response, reverse('clubs:manage_smtp_config'))
-        config = SMTPConfig.objects.get()
-        self.assertTrue(config.is_active)
-        self.assertTrue(config.enable_error_help)
-        self.assertEqual(config.help_recipient_email, 'ops@example.com')
+        self.assertTrue(SiteSettings.get_settings().error_help_enabled)
 
         get_response = self.client.get(reverse('clubs:manage_smtp_config'))
         self.assertContains(get_response, '错误页求助')
-        self.assertContains(get_response, '已开启')
+        self.assertContains(get_response, 'error_help_enabled')

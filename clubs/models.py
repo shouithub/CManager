@@ -973,16 +973,11 @@ class SMTPConfig(models.Model):
     sender_password = EncryptedCharField(max_length=500, verbose_name='邮箱密码/授权码', help_text='在数据库中加密存储；留空表示保持原值')
     use_tls = models.BooleanField(default=True, verbose_name='是否使用TLS加密')
     is_active = models.BooleanField(default=True, verbose_name='是否激活')
-    enable_error_help = models.BooleanField(
-        default=False,
-        verbose_name='开启错误页求助按钮',
-        help_text='开启后，404/500 错误页将显示“请求帮助”按钮',
-    )
     help_recipient_email = models.EmailField(
         blank=True,
         default='',
         verbose_name='求助通知收件邮箱',
-        help_text='用户点击求助时通知此邮箱；留空则通知所有管理员账号邮箱',
+        help_text='配置 SMTP 后，用户点击求助时通知此邮箱；留空则通知所有管理员账号邮箱',
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
@@ -1242,6 +1237,11 @@ class SiteSettings(models.Model):
         default=20,
         verbose_name='成员数量告警阈值',
         help_text='成员数低于该值的社团会在干事社团管理页触发“社团成员数量预警”。',
+    )
+    error_help_enabled = models.BooleanField(
+        default=False,
+        verbose_name='开启错误页求助按钮',
+        help_text='开启后，404/500 错误页将显示“请求帮助”按钮，不依赖 SMTP 配置',
     )
 
     class Meta:

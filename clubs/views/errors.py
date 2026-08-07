@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from ..email_utils import send_email_with_config
-from ..models import ErrorLog, SMTPConfig
+from ..models import ErrorLog, SMTPConfig, SiteSettings
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +37,11 @@ def _user_label(request):
 
 
 def error_help_enabled():
-    """错误页求助按钮是否可用：需要激活的 SMTP 配置且开启开关。"""
+    """错误页求助按钮是否可用：站点级开关，不依赖 SMTP 配置。"""
     try:
-        config = SMTPConfig.get_active_config()
-        return bool(config and config.is_active and config.enable_error_help)
+        return bool(SiteSettings.get_settings().error_help_enabled)
     except Exception:
-        logger.debug('读取 SMTP 求助开关失败，按关闭处理', exc_info=True)
+        logger.debug('读取站点求助开关失败，按关闭处理', exc_info=True)
         return False
 
 

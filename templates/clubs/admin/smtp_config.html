@@ -784,6 +784,36 @@
     </div>
     {% endif %}
 
+    <!-- 错误页求助开关（站点级，不依赖 SMTP 配置） -->
+    <div class="md3-card">
+        <div class="md3-card-header">
+            <span class="material-icons">support_agent</span>
+            <h2>错误页求助</h2>
+        </div>
+        <div class="md3-card-body">
+            <form method="post" class="error-help-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="error_help">
+                <div class="checkbox-row" style="margin-bottom: 0;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="error_help_enabled" name="error_help_enabled"
+                               {% if error_help_enabled %}checked{% endif %}>
+                        <label for="error_help_enabled">开启错误页求助按钮</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <span class="material-icons">save</span>
+                        保存
+                    </button>
+                </div>
+                <div class="form-helper">
+                    <span class="material-icons">info</span>
+                    开启后，404/500 错误页将显示“请求帮助”按钮；求助请求始终会记录到 BUG 日志，
+                    配置了 SMTP 时还会向管理员发送通知邮件。
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- 现有配置列表 -->
     {% if configs %}
     <div class="md3-card">
@@ -819,10 +849,6 @@
                                 <span class="config-details-label">加密</span>
                                 <span class="config-details-value">{% if config.use_tls %}TLS{% else %}无{% endif %}</span>
                             </div>
-                            <div class="config-details-row">
-                                <span class="config-details-label">错误页求助</span>
-                                <span class="config-details-value">{% if config.enable_error_help %}已开启{% else %}未开启{% endif %}</span>
-                            </div>
                         </div>
                         <div class="config-expand-hint">
                             <span class="material-icons">expand_more</span>
@@ -832,7 +858,7 @@
                     <div class="config-actions-panel">
                         <div class="config-actions-grid">
                             <button type="button" class="config-action-btn" 
-                                    onclick="openEditModal({{ config.id }}, '{{ config.provider }}', '{{ config.smtp_host }}', {{ config.smtp_port }}, '{{ config.sender_email }}', {{ config.use_tls|yesno:'true,false' }}, {{ config.enable_error_help|yesno:'true,false' }}, '{{ config.help_recipient_email|default:'' }}')">
+                                    onclick="openEditModal({{ config.id }}, '{{ config.provider }}', '{{ config.smtp_host }}', {{ config.smtp_port }}, '{{ config.sender_email }}', {{ config.use_tls|yesno:'true,false' }}, '{{ config.help_recipient_email|default:'' }}')">
                                 <span class="material-icons">edit</span>
                                 <span>编辑配置</span>
                             </button>
@@ -994,15 +1020,8 @@
                                value="{{ form_data.help_recipient_email }}" placeholder="留空则通知所有管理员账号邮箱">
                         <div class="form-helper">
                             <span class="material-icons">info</span>
-                            用户在错误页点击“请求帮助”后，系统将向该邮箱发送通知
+                            配置 SMTP 后，用户点击“请求帮助”时系统将向该邮箱发送通知；留空则通知所有管理员账号邮箱
                         </div>
-                    </div>
-                </div>
-
-                <div class="checkbox-row" style="margin-bottom: 0;">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="enable_error_help" name="enable_error_help">
-                        <label for="enable_error_help">开启错误页求助按钮</label>
                     </div>
                 </div>
 
@@ -1072,7 +1091,7 @@ function toggleTestEmail(element) {
 }
 
 // 打开编辑弹窗
-function openEditModal(id, provider, host, port, email, useTls, enableErrorHelp, helpRecipientEmail) {
+function openEditModal(id, provider, host, port, email, useTls, helpRecipientEmail) {
     const modal = document.getElementById('editModal');
     document.getElementById('edit_config_id').value = id;
     document.getElementById('edit_provider').value = provider;
@@ -1080,7 +1099,6 @@ function openEditModal(id, provider, host, port, email, useTls, enableErrorHelp,
     document.getElementById('edit_smtp_port').value = port;
     document.getElementById('edit_sender_email').value = email;
     document.getElementById('edit_use_tls').checked = useTls;
-    document.getElementById('edit_enable_error_help').checked = !!enableErrorHelp;
     document.getElementById('edit_help_recipient_email').value = helpRecipientEmail || '';
     document.getElementById('edit_sender_password').value = '';
     modal.classList.add('active');
@@ -1215,13 +1233,6 @@ function fillEditSmtpDefaults(provider) {
                         </label>
                         <input type="email" class="form-input" id="edit_help_recipient_email" name="help_recipient_email"
                                placeholder="留空则通知所有管理员账号邮箱">
-                    </div>
-                </div>
-
-                <div class="checkbox-row" style="margin-bottom: 0;">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="edit_enable_error_help" name="enable_error_help">
-                        <label for="edit_enable_error_help">开启错误页求助按钮</label>
                     </div>
                 </div>
             </div>

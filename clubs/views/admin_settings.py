@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
 from ..email_utils import send_test_email_with_config
-from ..models import ConfigChangeLog, SMTPConfig, StorageConfig
+from ..models import ConfigChangeLog, SMTPConfig, SiteSettings, StorageConfig
 from ..permissions import roles_required
 from ..storage_backends import ClubStorage
 
@@ -20,6 +20,15 @@ def manage_smtp_config(request):
     if request.method == 'POST':
         action = request.POST.get('action', '')
         config_id = request.POST.get('config_id', '')
+        if action == 'error_help':
+            settings = SiteSettings.get_settings()
+            settings.error_help_enabled = request.POST.get('error_help_enabled') == 'on'
+            settings.save(update_fields=['error_help_enabled'])
+            messages.success(
+                request,
+                '错误页求助按钮已%s' % ('开启' if settings.error_help_enabled else '关闭'),
+            )
+            return redirect('clubs:manage_smtp_config')
         if action in {'create', 'edit'}:
             config = get_object_or_404(SMTPConfig, pk=config_id) if action == 'edit' else SMTPConfig()
             provider = request.POST.get('provider', '').strip()
@@ -47,7 +56,6 @@ def manage_smtp_config(request):
                 config.sender_password = sender_password
             config.use_tls = request.POST.get('use_tls') == 'on'
             config.is_active = request.POST.get('is_active') == 'on'
-            config.enable_error_help = request.POST.get('enable_error_help') == 'on'
             config.help_recipient_email = (request.POST.get('help_recipient_email') or '').strip()
             config.save()
             ConfigChangeLog.objects.create(actor=request.user, category='smtp', action=action)
@@ -76,7 +84,10 @@ def manage_smtp_config(request):
             messages.success(request, msg) if success else messages.error(request, msg)
             return redirect('clubs:manage_smtp_config')
 
-    return render(request, 'clubs/admin/smtp_config.html', {'configs': SMTPConfig.objects.all()})
+    return render(request, 'clubs/admin/smtp_config.html', {
+        'configs': SMTPConfig.objects.all(),
+        'error_help_enabled': SiteSettings.get_settings().error_help_enabled,
+    })
 
 
 @roles_required('admin')
