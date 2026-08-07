@@ -604,9 +604,11 @@
         </div>
     </section>
 
+    {% if attempt_groups or submission.metadata.review_override_history %}
     <section class="content-card review-history-card">
         {% include 'clubs/components/_submission_attempt_history.html' %}
     </section>
+    {% endif %}
 </div>
 
 {% include 'clubs/components/_office_preview_modal.html' %}
