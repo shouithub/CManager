@@ -43,7 +43,7 @@ from urllib.parse import urljoin, quote
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
-from django.db.utils import IntegrityError
+from django.db.utils import DatabaseError, IntegrityError
 from django.core.files.storage import Storage
 from django.core.exceptions import SuspiciousFileOperation
 from django.utils.deconstruct import deconstructible
@@ -648,12 +648,19 @@ class ClubStorage(Storage):
         文件大小（``content.size`` 元数据，同样不读取内容）作为第二校验条件：
         若命中已有 blob 但大小不一致，说明客户端 MD5 异常，退回普通随机名
         保存，避免把新文件错误地指向旧文件内容。
+
+        FileBlob 表缺失（迁移未应用）时同样退回普通随机名保存并记录告警，
+        避免线上因表缺失导致上传 500；迁移补齐后去重能力自动恢复。
         """
         from .models import FileBlob
         extension = os.path.splitext(original_name)[1].lower()[:16]
         blob_name = f'blobs/{md5}{extension}'
         content_size = getattr(content, 'size', None)
-        existing = FileBlob.objects.filter(md5=md5).first()
+        try:
+            existing = FileBlob.objects.filter(md5=md5).first()
+        except DatabaseError as exc:
+            logger.warning('FileBlob 表不可用，退回随机名保存: %s', exc)
+            return self._save_randomized(original_name, content)
         if existing is not None:
             if self._blob_size_conflict(existing, content_size):
                 logger.warning(
@@ -689,6 +696,15 @@ class ClubStorage(Storage):
                 return self._save_randomized(original_name, content)
             FileBlob.objects.filter(pk=blob.pk).update(ref_count=F('ref_count') + 1)
             return blob.storage_name
+        except DatabaseError as exc:
+            # 表缺失/数据库异常：已写出的 blobs 物理文件无登记记录，
+            # 先清理避免孤儿文件，再退回普通随机名保存。
+            logger.warning('FileBlob 登记失败，退回随机名保存: %s', exc)
+            try:
+                self._backend().delete(blob_name)
+            except Exception:
+                pass
+            return self._save_randomized(original_name, content)
         return blob_name
 
     @staticmethod

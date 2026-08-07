@@ -1,3 +1,4 @@
+import base64
 import json
 import zipfile
 from datetime import date, time
@@ -1845,7 +1846,7 @@ class ReviseSubmissionUploadTests(TestCase):
             },
             secure=True,
         )
-        self.assertEqual(response.status_code, 302, response.content[:500])
+        self.assertEqual(response.status_code, 302, response.content.decode('utf-8', 'replace')[-3000:])
 
     def test_revise_upload_same_content_as_old(self):
         from ..models import FormUploadedFile
@@ -1884,6 +1885,51 @@ class ReviseSubmissionUploadTests(TestCase):
         self.assertEqual(response.status_code, 302, response.content[:500])
         self.submission.refresh_from_db()
         self.assertTrue(old_name)
+
+    def test_revise_upload_with_missing_old_file(self):
+        """旧文件物理缺失时补交不应 500（线上 404 坏图场景回归）。"""
+        from ..models import FormUploadedFile
+
+        self.submission.uploaded_files.all().delete()
+        uploaded = FormUploadedFile.objects.create(
+            submission=self.submission,
+            field=self.field,
+            file=SimpleUploadedFile(
+                '图片.jpg',
+                b'fake-old-image',
+                content_type='image/jpeg',
+            ),
+            original_name='图片.jpg',
+            review_status='rejected',
+        )
+        uploaded.file.storage.delete(uploaded.file.name)
+        # 模拟线上内容寻址文件：blobs/ 路径但登记记录与物理文件都缺失
+        uploaded.file.name = 'blobs/2cd8bde463f5d82aae0f0cec061d6b8f.jpg'
+        uploaded.save(update_fields=['file'])
+
+        new_file = SimpleUploadedFile(
+            'new.png',
+            base64.b64decode(
+                'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+            ),
+            content_type='image/png',
+        )
+        response = self.client.post(
+            reverse(
+                'clubs:revise_dynamic_submission',
+                args=[self.submission.public_id],
+            ),
+            {f'field_{self.field.id}': new_file},
+            secure=True,
+        )
+        from django.contrib.messages import get_messages
+
+        debug_msgs = [str(item) for item in get_messages(response.wsgi_request)]
+        self.assertEqual(
+            response.status_code,
+            302,
+            f'messages={debug_msgs}',
+        )
 
     def test_approval_detail_with_deleted_reviewer_does_not_500(self):
         from ..models import FormSubmissionReview
@@ -2371,6 +2417,48 @@ class FileBlobDedupTests(TestCase):
 
         self.assertTrue(name.startswith('avatars/'))
         self.assertFalse(FileBlob.objects.exists())
+        default_storage.delete(name)
+        self.assertFalse(default_storage.exists(name))
+
+    def test_missing_fileblob_table_query_failure_falls_back_to_random_name(self):
+        """FileBlob 表缺失（迁移未应用）时查询失败必须降级，不能 500。"""
+        from django.db.utils import ProgrammingError
+
+        data = b'missing-table-query-fallback'
+        uploaded = self._make_file('missing.bin', data)
+        with patch.object(
+            FileBlob.objects,
+            'filter',
+            side_effect=ProgrammingError('no such table: clubs_fileblob'),
+        ):
+            name = default_storage.save('uploads/missing.bin', uploaded)
+
+        self.assertFalse(name.startswith('blobs/'))
+        with default_storage.open(name, 'rb') as handle:
+            self.assertEqual(handle.read(), data)
+        default_storage.delete(name)
+        self.assertFalse(default_storage.exists(name))
+
+    def test_missing_fileblob_table_create_failure_falls_back_and_cleans_blob(self):
+        """登记 FileBlob 失败时已写出的 blobs 物理文件必须清理并降级保存。"""
+        from django.db.utils import ProgrammingError
+
+        data = b'missing-table-create-fallback'
+        uploaded = self._make_file('missing.bin', data)
+        with patch.object(
+            FileBlob.objects,
+            'filter',
+            return_value=FileBlob.objects.none(),
+        ), patch.object(
+            FileBlob.objects,
+            'create',
+            side_effect=ProgrammingError('no such table: clubs_fileblob'),
+        ):
+            name = default_storage.save('uploads/missing.bin', uploaded)
+
+        self.assertFalse(name.startswith('blobs/'))
+        with default_storage.open(name, 'rb') as handle:
+            self.assertEqual(handle.read(), data)
         default_storage.delete(name)
         self.assertFalse(default_storage.exists(name))
 
