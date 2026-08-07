@@ -1922,9 +1922,37 @@ class ReviseSubmissionUploadTests(TestCase):
         )
         self.assertEqual(response.status_code, 200, response.content[:500])
         self.assertContains(response, 'revision-banner')
-        self.assertContains(response, 'revision-old-card')
+        self.assertContains(response, 'revision-files')
+        self.assertContains(response, 'revision-file-entry')
         self.assertContains(response, 'revision-replace-hint')
         self.assertContains(response, 'old.pdf')
+
+    def test_revise_page_renders_rejected_image_inline(self):
+        from ..models import FormUploadedFile
+
+        self.submission.uploaded_files.all().delete()
+        FormUploadedFile.objects.create(
+            submission=self.submission,
+            field=self.field,
+            file=SimpleUploadedFile(
+                'old.png',
+                b'\x89PNG\r\n\x1a\nfake-image',
+                content_type='image/png',
+            ),
+            original_name='old.png',
+            review_status='rejected',
+        )
+        response = self.client.get(
+            reverse(
+                'clubs:revise_dynamic_submission',
+                args=[self.submission.public_id],
+            ),
+            secure=True,
+        )
+        self.assertEqual(response.status_code, 200, response.content[:500])
+        self.assertContains(response, 'revision-image-link')
+        self.assertContains(response, '<img')
+        self.assertContains(response, 'old.png')
 
 
 class DepartmentEditAndProfileRobustnessTests(TestCase):
