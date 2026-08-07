@@ -584,6 +584,18 @@
         margin-top: 2px;
     }
 
+    .bug-log-error {
+        font-size: 0.75rem;
+        color: var(--md3-error);
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .bug-log-item.help .bug-log-error {
+        color: var(--md3-tertiary);
+    }
+
     .bug-log-empty {
         display: flex;
         align-items: center;
@@ -902,6 +914,9 @@
                                 {% if log.exception_name %}<span>{{ log.exception_name }}</span>{% endif %}
                                 {% if log.user_identifier %}<span>{{ log.user_identifier }}</span>{% endif %}
                             </div>
+                            {% if log.exception_message %}
+                            <div class="bug-log-error" title="{{ log.exception_message }}">{{ log.exception_message|truncatechars:120 }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     {% empty %}

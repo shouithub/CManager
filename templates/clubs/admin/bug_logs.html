@@ -227,13 +227,72 @@
         vertical-align: -2px;
     }
     .bl-exception {
-        font-size: 0.8125rem;
-        color: var(--md3-on-surface-variant);
+        margin-top: 8px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: 12px;
         background: var(--md3-surface-container-high);
-        border-radius: 8px;
-        padding: 6px 10px;
+        overflow: hidden;
+    }
+    .bl-exception-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        font-size: 0.8125rem;
+        color: var(--md3-error);
+        background: var(--md3-error-container);
+    }
+    .bl-exception-head .material-icons {
+        font-size: 1rem;
+    }
+    .bl-exception-head strong {
+        font-weight: 600;
+        color: var(--md3-on-error-container);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .bl-exception-details summary {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+        list-style: none;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.8125rem;
+    }
+    .bl-exception-details summary::-webkit-details-marker {
+        display: none;
+    }
+    .bl-exception-preview {
+        flex: 1;
+        min-width: 0;
         margin-top: 6px;
         word-break: break-word;
+    }
+    .bl-exception-arrow {
+        flex-shrink: 0;
+        font-size: 1.1rem;
+        color: var(--md3-on-surface-variant);
+        transition: transform 0.2s ease;
+    }
+    .bl-exception-details[open] .bl-exception-arrow {
+        transform: rotate(180deg);
+    }
+    .bl-exception-trace {
+        margin: 0;
+        padding: 10px 12px;
+        border-top: 1px solid var(--md3-outline-variant);
+        background: var(--md3-surface-container-lowest);
+        color: var(--md3-on-surface);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.75rem;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 320px;
+        overflow: auto;
     }
     .bl-help-note {
         font-size: 0.875rem;
@@ -407,7 +466,23 @@
             </div>
             {% if log.exception_name %}
             <div class="bl-exception">
-                <strong>{{ log.exception_name }}</strong>{% if log.exception_message %}：{{ log.exception_message|truncatechars:300 }}{% endif %}
+                <div class="bl-exception-head">
+                    <span class="material-icons">bug_report</span>
+                    <strong title="{{ log.exception_name }}">{{ log.exception_name }}</strong>
+                </div>
+                {% if log.exception_message %}
+                {% if log.exception_message|length > 260 %}
+                <details class="bl-exception-details">
+                    <summary>
+                        <span class="bl-exception-preview">{{ log.exception_message|truncatechars:260 }}</span>
+                        <span class="material-icons bl-exception-arrow">expand_more</span>
+                    </summary>
+                    <pre class="bl-exception-trace">{{ log.exception_message }}</pre>
+                </details>
+                {% else %}
+                <div class="bl-exception-preview" style="padding: 8px 12px;">{{ log.exception_message }}</div>
+                {% endif %}
+                {% endif %}
             </div>
             {% endif %}
             {% if log.help_requested %}

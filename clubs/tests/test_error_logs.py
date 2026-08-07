@@ -73,6 +73,29 @@ class ErrorHandlerTests(TestCase):
         self.assertIn('boom', log.exception_message)
         self.assertFalse(log.help_requested)
 
+    def test_handler500_records_exception_from_exc_info_when_not_passed(self):
+        """生产环境普通 500 不传异常对象，需从 sys.exc_info 兜底取回。"""
+        request = self._request('/broken/page/')
+        try:
+            raise KeyError('missing-key')
+        except KeyError:
+            response = handler500(request)
+        self.assertEqual(response.status_code, 500)
+        log = ErrorLog.objects.get()
+        self.assertEqual(log.exception_name, 'KeyError')
+        self.assertIn('missing-key', log.exception_message)
+        self.assertIn('KeyError', log.exception_message)
+
+    def test_handler500_stores_full_traceback_in_log(self):
+        request = self._request('/broken/page/')
+        try:
+            raise ValueError('detail-message')
+        except ValueError:
+            handler500(request)
+        log = ErrorLog.objects.get()
+        self.assertIn('detail-message', log.exception_message)
+        self.assertIn('test_error_logs.py', log.exception_message)
+
     @override_settings(USE_X_FORWARDED_FOR=True)
     def test_handler500_records_leftmost_forwarded_ip(self):
         request = self._request('/broken/page/')
@@ -207,12 +230,18 @@ class BugLogAdminTests(TestCase):
         self.assertRedirects(response, reverse('clubs:index'))
 
         self.client.force_login(self.admin)
-        ErrorLog.objects.create(status_code=500, path='/boom/', exception_name='ValueError')
+        ErrorLog.objects.create(
+            status_code=500,
+            path='/boom/',
+            exception_name='ValueError',
+            exception_message='ValueError: boom',
+        )
         response = self.client.get(reverse('clubs:manage_bug_logs'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'BUG日志')
         self.assertContains(response, '/boom/')
         self.assertContains(response, 'ValueError')
+        self.assertContains(response, 'boom')
 
     def test_dashboard_shows_help_request_alert_and_jump_button(self):
         self.client.force_login(self.admin)
@@ -220,6 +249,7 @@ class BugLogAdminTests(TestCase):
             status_code=500,
             path='/broken/',
             exception_name='KeyError',
+            exception_message='KeyError: missing-key',
             help_requested=True,
             user_identifier='tester',
         )
@@ -228,6 +258,7 @@ class BugLogAdminTests(TestCase):
         self.assertContains(response, 'BUG日志')
         self.assertContains(response, '有用户正在等待帮助')
         self.assertContains(response, 'tester')
+        self.assertContains(response, 'missing-key')
         self.assertContains(response, reverse('clubs:manage_bug_logs'))
 
     def test_resolve_and_delete_actions(self):

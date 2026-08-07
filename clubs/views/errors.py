@@ -1,6 +1,8 @@
 """自定义 404/500 错误页与用户求助入口。"""
 
 import logging
+import sys
+import traceback
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -36,6 +38,30 @@ def _user_label(request):
     return '', ''
 
 
+def _exception_details(exception):
+    """提取异常类型与完整 traceback。
+
+    Django 生产环境对普通 500 是通过 handle_uncaught_exception 调用
+    handler500(request) 的，并不会把异常对象传进来，因此需要在当前
+    线程异常上下文（sys.exc_info）中兜底取回，否则日志只剩错误码。
+    """
+    if exception is None:
+        exc_info = sys.exc_info()
+        if exc_info is not None and exc_info[1] is not None:
+            exception = exc_info[1]
+    if exception is None:
+        return '', ''
+    name = type(exception).__name__
+    try:
+        lines = traceback.format_exception(
+            type(exception), exception, getattr(exception, '__traceback__', None)
+        )
+        message = ''.join(lines).strip() or str(exception)
+    except Exception:
+        message = str(exception) or ''
+    return name, message[:20000]
+
+
 def error_help_enabled():
     """错误页求助按钮是否可用：站点级开关，不依赖 SMTP 配置。"""
     try:
@@ -69,6 +95,7 @@ def handler500(request, exception=None):
     log_id = None
     try:
         username, email = _user_label(request)
+        exception_name, exception_message = _exception_details(exception)
         log = ErrorLog.objects.create(
             status_code=500,
             path=(request.path or '/')[:500],
@@ -76,8 +103,8 @@ def handler500(request, exception=None):
             referer=(request.META.get('HTTP_REFERER') or '')[:500],
             user_agent=(request.META.get('HTTP_USER_AGENT') or '')[:500],
             ip=_client_ip(request)[:100],
-            exception_name=type(exception).__name__ if exception is not None else '',
-            exception_message=(str(exception) or '')[:4000],
+            exception_name=exception_name[:200],
+            exception_message=exception_message,
             user_identifier=username,
             help_email=email,
         )
