@@ -532,6 +532,23 @@
                 </a>
             </div>
             
+            <div class="sidebar-lang-toggle" onclick="toggleLangDropdown(event)" title="{% trans '界面语言' %}">
+                <span class="material-icons">language</span>
+                <span class="lang-text">{% trans '语言' %}</span>
+            </div>
+            <div class="sidebar-user-dropdown sidebar-lang-dropdown" id="langDropdown">
+                {% get_available_languages as LANGUAGES %}
+                {% get_language_info_list for LANGUAGES as languages %}
+                {% for lang in languages %}
+                <button type="button" onclick="switchLanguage('{{ lang.code }}')"{% if lang.code == LANGUAGE_CODE %} class="current"{% endif %}>
+                    <span class="lang-name">{{ lang.name_local }}</span>
+                    {% if lang.code == LANGUAGE_CODE %}
+                    <span class="material-icons">check</span>
+                    {% endif %}
+                </button>
+                {% endfor %}
+            </div>
+
             <div class="sidebar-theme-toggle" onclick="toggleTheme(event)" title="{% trans '切换主题' %}">
                 <span id="theme-icon" class="material-icons">brightness_4</span>
                 <span class="theme-text">{% trans '切换主题' %}</span>
