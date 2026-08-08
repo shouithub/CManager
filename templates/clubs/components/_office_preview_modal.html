@@ -1,3 +1,4 @@
+{% load i18n %}
 {% comment %}
 Office 在线预览弹窗（共享组件）。
 页面引入一次，并加载 static/js/office-preview.js；
@@ -83,11 +84,11 @@ Office 在线预览弹窗（共享组件）。
 <div class="office-preview-modal" id="officePreviewModal" aria-hidden="true">
     <div class="office-preview-surface" role="dialog" aria-modal="true" aria-labelledby="officePreviewTitle">
         <div class="office-preview-header">
-            <h2 class="office-preview-title" id="officePreviewTitle">在线预览</h2>
-            <button class="office-preview-close" type="button" id="officePreviewClose" aria-label="关闭预览">
+            <h2 class="office-preview-title" id="officePreviewTitle">{% trans '在线预览' %}</h2>
+            <button class="office-preview-close" type="button" id="officePreviewClose" aria-label="{% trans '关闭预览' %}">
                 <span class="material-icons">close</span>
             </button>
         </div>
-        <iframe class="office-preview-frame" id="officePreviewFrame" title="Office 在线预览" allowfullscreen></iframe>
+        <iframe class="office-preview-frame" id="officePreviewFrame" title="{% trans 'Office 在线预览' %}" allowfullscreen=></iframe>
     </div>
 </div>

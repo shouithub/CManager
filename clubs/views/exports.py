@@ -14,6 +14,7 @@ import urllib.parse
 
 from ..models import RoomBooking, Room, TimeSlot, FormSubmission, PublishedActivity
 from ..permissions import has_any_role
+from django.utils.translation import gettext as _
 
 
 _CSV_FORMULA_PREFIXES = ('=', '+', '-', '@', '\t', '\r')
@@ -35,7 +36,7 @@ def export_room_bookings_weekly(request):
     """
     # 检查权限
     if not has_any_role(request.user, 'staff', 'admin'):
-        messages.error(request, '您没有权限导出日程安排')
+        messages.error(request, _('您没有权限导出日程安排'))
         return redirect('clubs:room_calendar')
     
     # 获取房间
@@ -46,7 +47,7 @@ def export_room_bookings_weekly(request):
         # 默认使用第一个房间
         room = Room.objects.first()
         if not room:
-            messages.error(request, '系统中没有房间')
+            messages.error(request, _('系统中没有房间'))
             return redirect('clubs:room_calendar')
 
     # 获取周开始日期
@@ -55,7 +56,7 @@ def export_room_bookings_weekly(request):
         try:
             chosen_date = datetime.strptime(week_start_str, '%Y-%m-%d').date()
         except ValueError:
-            messages.error(request, '无效的日期格式')
+            messages.error(request, _('无效的日期格式'))
             return redirect('clubs:room_calendar')
         # 无论选择周几，都归一到该周的周一作为周起始
         week_start = chosen_date - timedelta(days=chosen_date.weekday())

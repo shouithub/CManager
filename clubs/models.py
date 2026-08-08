@@ -8,6 +8,8 @@ import os
 import uuid
 from datetime import timedelta
 from .crypto_fields import EncryptedCharField
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 
 def generate_submission_public_id():
@@ -68,15 +70,15 @@ class UserProfile(models.Model):
         ('non_member', '群众'),
     ]
     
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name='用户')
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='president', verbose_name='角色')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name=gettext_lazy('用户'))
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='president', verbose_name=gettext_lazy('角色'))
     
     # 审核状态 - 只有干事需要审核
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='approved', verbose_name='状态')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='approved', verbose_name=gettext_lazy('状态'))
     
     # 干事专属字段 - 部门和职级
-    department_link = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='关联部门', related_name='staff_profiles')
-    staff_level = models.CharField(max_length=20, choices=STAFF_LEVEL_CHOICES, default='member', verbose_name='部员/部长', help_text='仅对干事有效')
+    department_link = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=gettext_lazy('关联部门'), related_name='staff_profiles')
+    staff_level = models.CharField(max_length=20, choices=STAFF_LEVEL_CHOICES, default='member', verbose_name=gettext_lazy('部员/部长'), help_text=gettext_lazy('仅对干事有效'))
 
     @property
     def department(self):
@@ -84,54 +86,54 @@ class UserProfile(models.Model):
         return self.department_link.name if self.department_link else None
     
     # 实名信息字段
-    real_name = models.CharField(max_length=100, verbose_name='真名', blank=True)
-    student_id = models.CharField(max_length=50, verbose_name='学号', blank=True)
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True, verbose_name='性别')
-    college = models.CharField(max_length=100, blank=True, verbose_name='学院')
-    class_name = models.CharField(max_length=100, blank=True, verbose_name='班级')
-    phone = models.CharField(max_length=20, verbose_name='电话', blank=True)
+    real_name = models.CharField(max_length=100, verbose_name=gettext_lazy('真名'), blank=True)
+    student_id = models.CharField(max_length=50, verbose_name=gettext_lazy('学号'), blank=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True, verbose_name=gettext_lazy('性别'))
+    college = models.CharField(max_length=100, blank=True, verbose_name=gettext_lazy('学院'))
+    class_name = models.CharField(max_length=100, blank=True, verbose_name=gettext_lazy('班级'))
+    phone = models.CharField(max_length=20, verbose_name=gettext_lazy('电话'), blank=True)
     qq = models.CharField(max_length=30, verbose_name='QQ', blank=True)
-    wechat = models.CharField(max_length=100, verbose_name='微信', blank=True)
+    wechat = models.CharField(max_length=100, verbose_name=gettext_lazy('微信'), blank=True)
     political_status = models.CharField(
         max_length=40, 
         choices=POLITICAL_STATUS_CHOICES, 
         default='non_member', 
-        verbose_name='政治面貌'
+        verbose_name=gettext_lazy('政治面貌')
     )
     
     # 信息披露设置
-    is_info_public = models.BooleanField(default=False, verbose_name='是否公开个人信息')
+    is_info_public = models.BooleanField(default=False, verbose_name=gettext_lazy('是否公开个人信息'))
 
     # 首次登录强制改密
-    must_change_password = models.BooleanField(default=False, verbose_name='是否需要修改密码')
+    must_change_password = models.BooleanField(default=False, verbose_name=gettext_lazy('是否需要修改密码'))
 
     # 账号生命周期状态（active/inactive），与上面的审核状态 status 完全分离。
     account_status = models.CharField(
         max_length=20,
         choices=ACCOUNT_STATUS_CHOICES,
         default='active',
-        verbose_name='账号活跃状态'
+        verbose_name=gettext_lazy('账号活跃状态')
     )
-    inactive_since = models.DateTimeField(null=True, blank=True, verbose_name='不活跃起始时间')
-    active_until = models.DateTimeField(null=True, blank=True, verbose_name='活跃有效期至')
+    inactive_since = models.DateTimeField(null=True, blank=True, verbose_name=gettext_lazy('不活跃起始时间'))
+    active_until = models.DateTimeField(null=True, blank=True, verbose_name=gettext_lazy('活跃有效期至'))
     
     # 头像
-    avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True, verbose_name='头像')
+    avatar = models.ImageField(upload_to='avatars/%Y/%m/', null=True, blank=True, verbose_name=gettext_lazy('头像'))
     avatar_source = models.CharField(
         max_length=20,
         choices=[('local', '本站上传'), ('cravatar', 'Cravatar')],
         default='local',
-        verbose_name='头像来源',
+        verbose_name=gettext_lazy('头像来源'),
     )
     avatar_email = models.EmailField(
         blank=True,
         default='',
-        verbose_name='Cravatar 邮箱',
-        help_text='仅在用户选择 Cravatar 头像时使用，不公开显示邮箱明文。',
+        verbose_name=gettext_lazy('Cravatar 邮箱'),
+        help_text=gettext_lazy('仅在用户选择 Cravatar 头像时使用，不公开显示邮箱明文。'),
     )
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
     
     def get_full_name(self):
         """
@@ -157,8 +159,8 @@ class UserProfile(models.Model):
         return f"{self.user.username} ({self.get_full_name()}) - {self.get_role_display()}"
     
     class Meta:
-        verbose_name = '用户角色'
-        verbose_name_plural = '用户角色'
+        verbose_name = gettext_lazy('用户角色')
+        verbose_name_plural = gettext_lazy('用户角色')
         indexes = [
             models.Index(fields=['role', 'status'], name='up_role_status_idx'),
             models.Index(fields=['role', 'staff_level'], name='up_role_staff_lvl_idx'),
@@ -174,15 +176,15 @@ class ClubMember(models.Model):
         ('inactive', '不活跃'),
     ]
 
-    club = models.ForeignKey('Club', on_delete=models.CASCADE, related_name='memberships', verbose_name='社团')
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='club_memberships', verbose_name='成员')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='成员状态')
-    joined_at = models.DateTimeField(auto_now_add=True, verbose_name='加入时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    club = models.ForeignKey('Club', on_delete=models.CASCADE, related_name='memberships', verbose_name=gettext_lazy('社团'))
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='club_memberships', verbose_name=gettext_lazy('成员'))
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name=gettext_lazy('成员状态'))
+    joined_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('加入时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
 
     class Meta:
-        verbose_name = '社团成员'
-        verbose_name_plural = '社团成员'
+        verbose_name = gettext_lazy('社团成员')
+        verbose_name_plural = gettext_lazy('社团成员')
         constraints = [models.UniqueConstraint(fields=['club', 'user_profile'], name='unique_club_member')]
         indexes = [
             models.Index(fields=['club', 'status'], name='cm_club_status_idx'),
@@ -196,18 +198,18 @@ class ClubMember(models.Model):
 class RegistrationToken(models.Model):
     """社员扫码注册令牌，支持可配置有效期和使用次数。"""
 
-    code = models.CharField(max_length=64, unique=True, verbose_name='一次性校验码')
-    club = models.ForeignKey('Club', on_delete=models.CASCADE, related_name='registration_tokens', verbose_name='社团')
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_registration_tokens', verbose_name='创建人')
-    expires_at = models.DateTimeField(verbose_name='过期时间')
-    max_uses = models.IntegerField(null=True, blank=True, verbose_name='最大使用次数（null表示不限次数）')
-    used_count = models.IntegerField(default=0, verbose_name='已使用次数')
-    used_at = models.DateTimeField(null=True, blank=True, verbose_name='使用时间')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    code = models.CharField(max_length=64, unique=True, verbose_name=gettext_lazy('一次性校验码'))
+    club = models.ForeignKey('Club', on_delete=models.CASCADE, related_name='registration_tokens', verbose_name=gettext_lazy('社团'))
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_registration_tokens', verbose_name=gettext_lazy('创建人'))
+    expires_at = models.DateTimeField(verbose_name=gettext_lazy('过期时间'))
+    max_uses = models.IntegerField(null=True, blank=True, verbose_name=gettext_lazy('最大使用次数（null表示不限次数）'))
+    used_count = models.IntegerField(default=0, verbose_name=gettext_lazy('已使用次数'))
+    used_at = models.DateTimeField(null=True, blank=True, verbose_name=gettext_lazy('使用时间'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
 
     class Meta:
-        verbose_name = '社员注册令牌'
-        verbose_name_plural = '社员注册令牌'
+        verbose_name = gettext_lazy('社员注册令牌')
+        verbose_name_plural = gettext_lazy('社员注册令牌')
         indexes = [
             models.Index(fields=['club', 'expires_at'], name='rt_club_exp_idx'),
         ]
@@ -269,7 +271,7 @@ class RegistrationToken(models.Model):
         with transaction.atomic():
             locked = type(self).objects.select_for_update().get(pk=self.pk)
             if not locked.can_use():
-                raise ValidationError('注册链接已失效或使用次数已耗尽')
+                raise ValidationError(_('注册链接已失效或使用次数已耗尽'))
 
             locked.used_count += 1
             if locked.max_uses is not None and locked.used_count >= locked.max_uses:
@@ -283,15 +285,15 @@ class RegistrationToken(models.Model):
 class InactiveExtensionHistory(models.Model):
     """不活跃账号延期记录。"""
 
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='inactive_extensions', verbose_name='用户')
-    extended_at = models.DateTimeField(auto_now_add=True, verbose_name='延期时间')
-    previous_active_until = models.DateTimeField(null=True, blank=True, verbose_name='延期前有效期')
-    new_active_until = models.DateTimeField(verbose_name='延期后有效期')
-    reason = models.CharField(max_length=100, blank=True, verbose_name='延期原因')
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='inactive_extensions', verbose_name=gettext_lazy('用户'))
+    extended_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('延期时间'))
+    previous_active_until = models.DateTimeField(null=True, blank=True, verbose_name=gettext_lazy('延期前有效期'))
+    new_active_until = models.DateTimeField(verbose_name=gettext_lazy('延期后有效期'))
+    reason = models.CharField(max_length=100, blank=True, verbose_name=gettext_lazy('延期原因'))
 
     class Meta:
-        verbose_name = '不活跃延期记录'
-        verbose_name_plural = '不活跃延期记录'
+        verbose_name = gettext_lazy('不活跃延期记录')
+        verbose_name_plural = gettext_lazy('不活跃延期记录')
         ordering = ['-extended_at']
 
     def __str__(self):
@@ -306,17 +308,17 @@ class Club(models.Model):
         ('suspended', '停止'),
     ]
     
-    name = models.CharField(max_length=100, unique=True, verbose_name='社团名称')
-    description = models.TextField(blank=True, verbose_name='社团介绍')
-    founded_date = models.DateField(verbose_name='成立日期')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='状态')
-    members_count = models.IntegerField(default=0, verbose_name='成员数')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    name = models.CharField(max_length=100, unique=True, verbose_name=gettext_lazy('社团名称'))
+    description = models.TextField(blank=True, verbose_name=gettext_lazy('社团介绍'))
+    founded_date = models.DateField(verbose_name=gettext_lazy('成立日期'))
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name=gettext_lazy('状态'))
+    members_count = models.IntegerField(default=0, verbose_name=gettext_lazy('成员数'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
     
     class Meta:
-        verbose_name = '社团'
-        verbose_name_plural = '社团'
+        verbose_name = gettext_lazy('社团')
+        verbose_name_plural = gettext_lazy('社团')
         ordering = ['-created_at']
     
     def __str__(self):
@@ -341,16 +343,16 @@ class Officer(models.Model):
         ('president', '社长'),
     ]
     
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='officers', verbose_name='社团')
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True, verbose_name='用户信息')
-    position = models.CharField(max_length=20, choices=POSITION_CHOICES, verbose_name='职位')
-    appointed_date = models.DateField(verbose_name='任命日期')
-    end_date = models.DateField(null=True, blank=True, verbose_name='结束日期')
-    is_current = models.BooleanField(default=True, verbose_name='是否现任')
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='officers', verbose_name=gettext_lazy('社团'))
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, blank=True, verbose_name=gettext_lazy('用户信息'))
+    position = models.CharField(max_length=20, choices=POSITION_CHOICES, verbose_name=gettext_lazy('职位'))
+    appointed_date = models.DateField(verbose_name=gettext_lazy('任命日期'))
+    end_date = models.DateField(null=True, blank=True, verbose_name=gettext_lazy('结束日期'))
+    is_current = models.BooleanField(default=True, verbose_name=gettext_lazy('是否现任'))
     
     class Meta:
-        verbose_name = '社团干部'
-        verbose_name_plural = '社团干部'
+        verbose_name = gettext_lazy('社团干部')
+        verbose_name_plural = gettext_lazy('社团干部')
         constraints = [models.UniqueConstraint(fields=['club', 'user_profile', 'position'], name='unique_club_officer_role')]
         ordering = ['-appointed_date']
         indexes = [
@@ -395,29 +397,29 @@ class FormChannel(models.Model):
         ('published', '已发布'),
     ]
 
-    name = models.CharField(max_length=100, verbose_name='通道名称')
-    slug = models.SlugField(max_length=80, unique=True, verbose_name='通道标识')
-    icon = models.CharField(max_length=50, default='description', verbose_name='图标')
-    description = models.TextField(blank=True, verbose_name='说明')
-    order = models.IntegerField(default=0, verbose_name='排序')
-    is_active = models.BooleanField(default=True, verbose_name='启用')
-    publish_status = models.CharField(max_length=20, choices=PUBLISH_STATUS_CHOICES, default='draft', verbose_name='发布状态')
-    is_builtin = models.BooleanField(default=False, verbose_name='内置通道')
-    builtin_action = models.CharField(max_length=50, choices=BUILTIN_ACTION_CHOICES, default='none', verbose_name='内置动作')
-    submission_policy = models.CharField(max_length=20, choices=SUBMISSION_POLICY_CHOICES, default='repeatable', verbose_name='提交策略')
-    required_approval_count = models.PositiveSmallIntegerField(default=1, verbose_name='所需通过次数')
-    show_zip_download = models.BooleanField(default=True, verbose_name='显示打包 ZIP 下载')
+    name = models.CharField(max_length=100, verbose_name=gettext_lazy('通道名称'))
+    slug = models.SlugField(max_length=80, unique=True, verbose_name=gettext_lazy('通道标识'))
+    icon = models.CharField(max_length=50, default='description', verbose_name=gettext_lazy('图标'))
+    description = models.TextField(blank=True, verbose_name=gettext_lazy('说明'))
+    order = models.IntegerField(default=0, verbose_name=gettext_lazy('排序'))
+    is_active = models.BooleanField(default=True, verbose_name=gettext_lazy('启用'))
+    publish_status = models.CharField(max_length=20, choices=PUBLISH_STATUS_CHOICES, default='draft', verbose_name=gettext_lazy('发布状态'))
+    is_builtin = models.BooleanField(default=False, verbose_name=gettext_lazy('内置通道'))
+    builtin_action = models.CharField(max_length=50, choices=BUILTIN_ACTION_CHOICES, default='none', verbose_name=gettext_lazy('内置动作'))
+    submission_policy = models.CharField(max_length=20, choices=SUBMISSION_POLICY_CHOICES, default='repeatable', verbose_name=gettext_lazy('提交策略'))
+    required_approval_count = models.PositiveSmallIntegerField(default=1, verbose_name=gettext_lazy('所需通过次数'))
+    show_zip_download = models.BooleanField(default=True, verbose_name=gettext_lazy('显示打包 ZIP 下载'))
     show_unsubmitted_status = models.BooleanField(default=False, verbose_name='show unsubmitted status')
-    show_unsubmitted_alert = models.BooleanField(default=False, verbose_name='显示未提交告警')
-    alert_color = models.CharField(max_length=20, default='#b3261e', verbose_name='告警颜色')
+    show_unsubmitted_alert = models.BooleanField(default=False, verbose_name=gettext_lazy('显示未提交告警'))
+    alert_color = models.CharField(max_length=20, default='#b3261e', verbose_name=gettext_lazy('告警颜色'))
     allow_staff_toggle = models.BooleanField(default=False, verbose_name='allow staff toggle')
-    cycle_type = models.CharField(max_length=20, choices=CYCLE_TYPE_CHOICES, default='none', verbose_name='周期判断方式')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    cycle_type = models.CharField(max_length=20, choices=CYCLE_TYPE_CHOICES, default='none', verbose_name=gettext_lazy('周期判断方式'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
 
     class Meta:
-        verbose_name = '提交通道'
-        verbose_name_plural = '提交通道'
+        verbose_name = gettext_lazy('提交通道')
+        verbose_name_plural = gettext_lazy('提交通道')
         ordering = ['order', 'id']
 
     def __str__(self):
@@ -427,14 +429,14 @@ class FormChannel(models.Model):
 class ChannelExampleFile(models.Model):
     """通道级示例文件（可多个，显示在提交页顶部）。"""
 
-    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='example_files', verbose_name='通道')
-    file = models.FileField(upload_to='channel_examples/%Y/%m/', verbose_name='示例文件')
-    original_name = models.CharField(max_length=255, blank=True, default='', verbose_name='显示文件名')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
+    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='example_files', verbose_name=gettext_lazy('通道'))
+    file = models.FileField(upload_to='channel_examples/%Y/%m/', verbose_name=gettext_lazy('示例文件'))
+    original_name = models.CharField(max_length=255, blank=True, default='', verbose_name=gettext_lazy('显示文件名'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('上传时间'))
 
     class Meta:
-        verbose_name = '通道示例文件'
-        verbose_name_plural = '通道示例文件'
+        verbose_name = gettext_lazy('通道示例文件')
+        verbose_name_plural = gettext_lazy('通道示例文件')
         ordering = ['-created_at']
 
     def __str__(self):
@@ -449,18 +451,18 @@ class ChannelExampleFile(models.Model):
 class FormCycle(models.Model):
     """动态表单通道的提交周期。"""
 
-    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='cycles', verbose_name='通道')
-    name = models.CharField(max_length=120, verbose_name='周期名称')
-    sequence = models.PositiveIntegerField(default=1, verbose_name='周期序号')
-    is_active = models.BooleanField(default=True, verbose_name='启用')
-    starts_at = models.DateTimeField(default=timezone.now, verbose_name='开始时间')
-    ends_at = models.DateTimeField(null=True, blank=True, verbose_name='结束时间')
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_form_cycles', verbose_name='创建人')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='cycles', verbose_name=gettext_lazy('通道'))
+    name = models.CharField(max_length=120, verbose_name=gettext_lazy('周期名称'))
+    sequence = models.PositiveIntegerField(default=1, verbose_name=gettext_lazy('周期序号'))
+    is_active = models.BooleanField(default=True, verbose_name=gettext_lazy('启用'))
+    starts_at = models.DateTimeField(default=timezone.now, verbose_name=gettext_lazy('开始时间'))
+    ends_at = models.DateTimeField(null=True, blank=True, verbose_name=gettext_lazy('结束时间'))
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_form_cycles', verbose_name=gettext_lazy('创建人'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
 
     class Meta:
-        verbose_name = '表单周期'
-        verbose_name_plural = '表单周期'
+        verbose_name = gettext_lazy('表单周期')
+        verbose_name_plural = gettext_lazy('表单周期')
         ordering = ['channel', '-sequence', '-starts_at']
         constraints = [models.UniqueConstraint(fields=['channel', 'sequence'], name='unique_channel_cycle_seq')]
 
@@ -471,15 +473,15 @@ class FormCycle(models.Model):
 class FormChannelClubState(models.Model):
     """按社团控制动态通道是否开放。"""
 
-    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='club_states', verbose_name='通道')
-    club = models.ForeignKey('Club', on_delete=models.CASCADE, related_name='form_channel_states', verbose_name='社团')
-    is_enabled = models.BooleanField(default=True, verbose_name='启用')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
-    updated_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='updated_form_channel_states', verbose_name='更新人')
+    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='club_states', verbose_name=gettext_lazy('通道'))
+    club = models.ForeignKey('Club', on_delete=models.CASCADE, related_name='form_channel_states', verbose_name=gettext_lazy('社团'))
+    is_enabled = models.BooleanField(default=True, verbose_name=gettext_lazy('启用'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
+    updated_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='updated_form_channel_states', verbose_name=gettext_lazy('更新人'))
 
     class Meta:
-        verbose_name = '社团通道状态'
-        verbose_name_plural = '社团通道状态'
+        verbose_name = gettext_lazy('社团通道状态')
+        verbose_name_plural = gettext_lazy('社团通道状态')
         constraints = [models.UniqueConstraint(fields=['channel', 'club'], name='unique_channel_club_state')]
 
     def __str__(self):
@@ -507,24 +509,24 @@ class FormField(models.Model):
         ('file', '文件'),
     ]
 
-    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='fields', verbose_name='所属通道')
-    label = models.CharField(max_length=120, verbose_name='字段名称')
-    field_key = models.SlugField(max_length=80, verbose_name='字段标识')
-    field_type = models.CharField(max_length=20, choices=FIELD_TYPE_CHOICES, verbose_name='字段类型')
-    required = models.BooleanField(default=True, verbose_name='必填')
-    order = models.IntegerField(default=0, verbose_name='排序')
-    help_text = models.TextField(blank=True, verbose_name='提示')
-    placeholder = models.CharField(max_length=200, blank=True, verbose_name='占位提示')
-    options = models.JSONField(default=list, blank=True, verbose_name='选项')
-    validation = models.JSONField(default=dict, blank=True, verbose_name='校验规则')
-    example_file = models.FileField(upload_to='form_examples/%Y/%m/', blank=True, null=True, verbose_name='示例文件')
-    is_active = models.BooleanField(default=True, verbose_name='启用')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='fields', verbose_name=gettext_lazy('所属通道'))
+    label = models.CharField(max_length=120, verbose_name=gettext_lazy('字段名称'))
+    field_key = models.SlugField(max_length=80, verbose_name=gettext_lazy('字段标识'))
+    field_type = models.CharField(max_length=20, choices=FIELD_TYPE_CHOICES, verbose_name=gettext_lazy('字段类型'))
+    required = models.BooleanField(default=True, verbose_name=gettext_lazy('必填'))
+    order = models.IntegerField(default=0, verbose_name=gettext_lazy('排序'))
+    help_text = models.TextField(blank=True, verbose_name=gettext_lazy('提示'))
+    placeholder = models.CharField(max_length=200, blank=True, verbose_name=gettext_lazy('占位提示'))
+    options = models.JSONField(default=list, blank=True, verbose_name=gettext_lazy('选项'))
+    validation = models.JSONField(default=dict, blank=True, verbose_name=gettext_lazy('校验规则'))
+    example_file = models.FileField(upload_to='form_examples/%Y/%m/', blank=True, null=True, verbose_name=gettext_lazy('示例文件'))
+    is_active = models.BooleanField(default=True, verbose_name=gettext_lazy('启用'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
 
     class Meta:
-        verbose_name = '表单字段'
-        verbose_name_plural = '表单字段'
+        verbose_name = gettext_lazy('表单字段')
+        verbose_name_plural = gettext_lazy('表单字段')
         ordering = ['channel', 'order', 'id']
         constraints = [models.UniqueConstraint(fields=['channel', 'field_key'], name='unique_channel_field_key')]
 
@@ -574,23 +576,23 @@ class FormSubmission(models.Model):
         ('rejected', '已拒绝'),
     ]
 
-    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='submissions', verbose_name='通道')
-    public_id = models.CharField(max_length=32, unique=True, default=generate_submission_public_id, verbose_name='请求编号')
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='form_submissions', verbose_name='社团')
-    submitter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='form_submissions', verbose_name='提交人')
-    cycle = models.ForeignKey(FormCycle, on_delete=models.SET_NULL, null=True, blank=True, related_name='submissions', verbose_name='周期')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='状态')
-    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_form_submissions', verbose_name='审核人')
-    review_comment = models.TextField(blank=True, verbose_name='审核意见')
-    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name='提交时间')
-    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='审核时间')
-    resubmission_count = models.IntegerField(default=1, verbose_name='提交次数')
-    is_read = models.BooleanField(default=False, verbose_name='已读')
-    metadata = models.JSONField(default=dict, blank=True, verbose_name='扩展信息')
+    channel = models.ForeignKey(FormChannel, on_delete=models.CASCADE, related_name='submissions', verbose_name=gettext_lazy('通道'))
+    public_id = models.CharField(max_length=32, unique=True, default=generate_submission_public_id, verbose_name=gettext_lazy('请求编号'))
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='form_submissions', verbose_name=gettext_lazy('社团'))
+    submitter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='form_submissions', verbose_name=gettext_lazy('提交人'))
+    cycle = models.ForeignKey(FormCycle, on_delete=models.SET_NULL, null=True, blank=True, related_name='submissions', verbose_name=gettext_lazy('周期'))
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name=gettext_lazy('状态'))
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_form_submissions', verbose_name=gettext_lazy('审核人'))
+    review_comment = models.TextField(blank=True, verbose_name=gettext_lazy('审核意见'))
+    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('提交时间'))
+    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name=gettext_lazy('审核时间'))
+    resubmission_count = models.IntegerField(default=1, verbose_name=gettext_lazy('提交次数'))
+    is_read = models.BooleanField(default=False, verbose_name=gettext_lazy('已读'))
+    metadata = models.JSONField(default=dict, blank=True, verbose_name=gettext_lazy('扩展信息'))
 
     class Meta:
-        verbose_name = '动态表单提交'
-        verbose_name_plural = '动态表单提交'
+        verbose_name = gettext_lazy('动态表单提交')
+        verbose_name_plural = gettext_lazy('动态表单提交')
         ordering = ['-submitted_at']
         indexes = [
             models.Index(fields=['channel', 'status', '-submitted_at'], name='fs_channel_status_idx'),
@@ -667,16 +669,16 @@ class FormSubmissionReview(models.Model):
         ('rejected', '已拒绝'),
     ]
 
-    submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='reviews', verbose_name='提交')
-    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='form_submission_reviews', verbose_name='审核人')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='审核结果')
-    comment = models.TextField(blank=True, verbose_name='审核意见')
-    submission_attempt = models.IntegerField(default=1, verbose_name='提交次数')
-    reviewed_at = models.DateTimeField(auto_now_add=True, verbose_name='审核时间')
+    submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='reviews', verbose_name=gettext_lazy('提交'))
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='form_submission_reviews', verbose_name=gettext_lazy('审核人'))
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name=gettext_lazy('审核结果'))
+    comment = models.TextField(blank=True, verbose_name=gettext_lazy('审核意见'))
+    submission_attempt = models.IntegerField(default=1, verbose_name=gettext_lazy('提交次数'))
+    reviewed_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('审核时间'))
 
     class Meta:
-        verbose_name = '动态表单审核记录'
-        verbose_name_plural = '动态表单审核记录'
+        verbose_name = gettext_lazy('动态表单审核记录')
+        verbose_name_plural = gettext_lazy('动态表单审核记录')
         ordering = ['-reviewed_at']
         constraints = [models.UniqueConstraint(fields=['submission', 'reviewer', 'submission_attempt'], name='unique_submission_review')]
         indexes = [
@@ -698,18 +700,18 @@ class FormFieldValue(models.Model):
         ('rejected', '需修改'),
     ]
 
-    submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='values', verbose_name='提交')
-    field = models.ForeignKey(FormField, on_delete=models.CASCADE, related_name='values', verbose_name='字段')
-    value_text = models.TextField(blank=True, verbose_name='文本值')
-    value_json = models.JSONField(default=dict, blank=True, verbose_name='结构化值')
-    review_status = models.CharField(max_length=20, choices=REVIEW_STATUS_CHOICES, default='pending', verbose_name='字段审核状态')
-    review_comment = models.TextField(blank=True, verbose_name='字段打回原因')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='values', verbose_name=gettext_lazy('提交'))
+    field = models.ForeignKey(FormField, on_delete=models.CASCADE, related_name='values', verbose_name=gettext_lazy('字段'))
+    value_text = models.TextField(blank=True, verbose_name=gettext_lazy('文本值'))
+    value_json = models.JSONField(default=dict, blank=True, verbose_name=gettext_lazy('结构化值'))
+    review_status = models.CharField(max_length=20, choices=REVIEW_STATUS_CHOICES, default='pending', verbose_name=gettext_lazy('字段审核状态'))
+    review_comment = models.TextField(blank=True, verbose_name=gettext_lazy('字段打回原因'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
 
     class Meta:
-        verbose_name = '表单字段值'
-        verbose_name_plural = '表单字段值'
+        verbose_name = gettext_lazy('表单字段值')
+        verbose_name_plural = gettext_lazy('表单字段值')
         constraints = [models.UniqueConstraint(fields=['submission', 'field'], name='unique_submission_field')]
 
     def __str__(self):
@@ -725,18 +727,18 @@ class FormUploadedFile(models.Model):
         ('rejected', '需修改'),
     ]
 
-    submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='uploaded_files', verbose_name='提交')
-    field = models.ForeignKey(FormField, on_delete=models.CASCADE, related_name='uploaded_files', verbose_name='字段')
-    file = models.FileField(upload_to=form_submission_upload_path, verbose_name='文件')
-    original_name = models.CharField(max_length=255, blank=True, verbose_name='显示文件名')
-    review_status = models.CharField(max_length=20, choices=REVIEW_STATUS_CHOICES, default='pending', verbose_name='文件审核状态')
-    review_comment = models.TextField(blank=True, verbose_name='文件打回原因')
-    is_generated = models.BooleanField(default=False, verbose_name='系统生成文件')
-    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
+    submission = models.ForeignKey(FormSubmission, on_delete=models.CASCADE, related_name='uploaded_files', verbose_name=gettext_lazy('提交'))
+    field = models.ForeignKey(FormField, on_delete=models.CASCADE, related_name='uploaded_files', verbose_name=gettext_lazy('字段'))
+    file = models.FileField(upload_to=form_submission_upload_path, verbose_name=gettext_lazy('文件'))
+    original_name = models.CharField(max_length=255, blank=True, verbose_name=gettext_lazy('显示文件名'))
+    review_status = models.CharField(max_length=20, choices=REVIEW_STATUS_CHOICES, default='pending', verbose_name=gettext_lazy('文件审核状态'))
+    review_comment = models.TextField(blank=True, verbose_name=gettext_lazy('文件打回原因'))
+    is_generated = models.BooleanField(default=False, verbose_name=gettext_lazy('系统生成文件'))
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('上传时间'))
 
     class Meta:
-        verbose_name = '表单上传文件'
-        verbose_name_plural = '表单上传文件'
+        verbose_name = gettext_lazy('表单上传文件')
+        verbose_name_plural = gettext_lazy('表单上传文件')
         ordering = ['uploaded_at']
 
     def __str__(self):
@@ -785,19 +787,19 @@ class Template(models.Model):
         ('leader_change', '社长变更申请'),
     ]
 
-    name = models.CharField(max_length=200, verbose_name='模板名称')
-    template_type = models.CharField(max_length=50, choices=TEMPLATE_TYPES, verbose_name='模板类型')
-    description = models.TextField(blank=True, verbose_name='模板描述')
+    name = models.CharField(max_length=200, verbose_name=gettext_lazy('模板名称'))
+    template_type = models.CharField(max_length=50, choices=TEMPLATE_TYPES, verbose_name=gettext_lazy('模板类型'))
+    description = models.TextField(blank=True, verbose_name=gettext_lazy('模板描述'))
     # 系统内置模板允许无文件，部署后可在后台补传
-    file = models.FileField(upload_to='templates/%Y/%m/', blank=True, null=True, verbose_name='模板文件')
-    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='上传者')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
-    is_active = models.BooleanField(default=True, verbose_name='是否启用')
+    file = models.FileField(upload_to='templates/%Y/%m/', blank=True, null=True, verbose_name=gettext_lazy('模板文件'))
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name=gettext_lazy('上传者'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
+    is_active = models.BooleanField(default=True, verbose_name=gettext_lazy('是否启用'))
 
     class Meta:
-        verbose_name = '模板'
-        verbose_name_plural = '模板'
+        verbose_name = gettext_lazy('模板')
+        verbose_name_plural = gettext_lazy('模板')
         ordering = ['-created_at']
 
     def __str__(self):
@@ -812,25 +814,25 @@ class Announcement(models.Model):
         ('archived', '已归档'),
     ]
     
-    title = models.CharField(max_length=200, verbose_name='公告标题')
-    content = models.TextField(verbose_name='公告内容')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', verbose_name='状态')
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='发布者')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
-    published_at = models.DateTimeField(null=True, blank=True, verbose_name='发布时间')
-    expires_at = models.DateTimeField(null=True, blank=True, verbose_name='过期时间')
-    attachment = models.FileField(upload_to='announcements/%Y/%m/', blank=True, null=True, verbose_name='附件')
+    title = models.CharField(max_length=200, verbose_name=gettext_lazy('公告标题'))
+    content = models.TextField(verbose_name=gettext_lazy('公告内容'))
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', verbose_name=gettext_lazy('状态'))
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name=gettext_lazy('发布者'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
+    published_at = models.DateTimeField(null=True, blank=True, verbose_name=gettext_lazy('发布时间'))
+    expires_at = models.DateTimeField(null=True, blank=True, verbose_name=gettext_lazy('过期时间'))
+    attachment = models.FileField(upload_to='announcements/%Y/%m/', blank=True, null=True, verbose_name=gettext_lazy('附件'))
     link_url = models.CharField(
         max_length=500,
         blank=True,
-        verbose_name='跳转链接',
-        help_text='可填写站内路径（如 /clubs/）或 http(s) 完整地址'
+        verbose_name=gettext_lazy('跳转链接'),
+        help_text=gettext_lazy('可填写站内路径（如 /clubs/）或 http(s) 完整地址')
     )
     
     class Meta:
-        verbose_name = '公告'
-        verbose_name_plural = '公告'
+        verbose_name = gettext_lazy('公告')
+        verbose_name_plural = gettext_lazy('公告')
         ordering = ['-published_at', '-created_at']
         indexes = [
             models.Index(fields=['status', '-published_at'], name='ann_status_pub_idx'),
@@ -845,14 +847,14 @@ class Announcement(models.Model):
 
 class StaffClubRelation(models.Model):
     """干事与社团的关联模型"""
-    staff = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='managed_clubs', verbose_name='干事')
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='responsible_staff', verbose_name='社团')
-    assigned_at = models.DateTimeField(auto_now_add=True, verbose_name='分配时间')
-    is_active = models.BooleanField(default=True, verbose_name='是否有效')
+    staff = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='managed_clubs', verbose_name=gettext_lazy('干事'))
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='responsible_staff', verbose_name=gettext_lazy('社团'))
+    assigned_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('分配时间'))
+    is_active = models.BooleanField(default=True, verbose_name=gettext_lazy('是否有效'))
     
     class Meta:
-        verbose_name = '干事负责社团'
-        verbose_name_plural = '干事负责社团'
+        verbose_name = gettext_lazy('干事负责社团')
+        verbose_name_plural = gettext_lazy('干事负责社团')
         constraints = [models.UniqueConstraint(fields=['staff', 'club'], name='unique_staff_club')]
         indexes = [
             models.Index(fields=['staff', 'is_active'], name='scr_staff_active_idx'),
@@ -875,26 +877,26 @@ class PublishedActivity(models.Model):
         ('其他', '其他'),
     ]
 
-    source_submission = models.OneToOneField(FormSubmission, on_delete=models.CASCADE, related_name='published_activity', verbose_name='来源提交')
-    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='published_activities', verbose_name='社团')
-    activity_name = models.CharField(max_length=200, verbose_name='活动名称')
-    activity_type = models.CharField(max_length=40, choices=ACTIVITY_TYPE_CHOICES, default='其他', verbose_name='活动类型')
-    activity_description = models.TextField(verbose_name='活动描述')
-    activity_date = models.DateField(verbose_name='活动日期')
-    activity_time_start = models.TimeField(verbose_name='活动开始时间')
-    activity_time_end = models.TimeField(verbose_name='活动结束时间')
-    activity_location = models.CharField(max_length=200, verbose_name='活动地点')
-    expected_participants = models.IntegerField(default=0, verbose_name='预计参与人数')
-    budget = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='活动预算')
-    contact_person = models.CharField(max_length=100, verbose_name='联系人')
-    contact_phone = models.CharField(max_length=20, blank=True, verbose_name='联系电话')
-    is_public = models.BooleanField(default=False, verbose_name='是否公开报名')
-    published_at = models.DateTimeField(default=timezone.now, verbose_name='发布时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    source_submission = models.OneToOneField(FormSubmission, on_delete=models.CASCADE, related_name='published_activity', verbose_name=gettext_lazy('来源提交'))
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name='published_activities', verbose_name=gettext_lazy('社团'))
+    activity_name = models.CharField(max_length=200, verbose_name=gettext_lazy('活动名称'))
+    activity_type = models.CharField(max_length=40, choices=ACTIVITY_TYPE_CHOICES, default='其他', verbose_name=gettext_lazy('活动类型'))
+    activity_description = models.TextField(verbose_name=gettext_lazy('活动描述'))
+    activity_date = models.DateField(verbose_name=gettext_lazy('活动日期'))
+    activity_time_start = models.TimeField(verbose_name=gettext_lazy('活动开始时间'))
+    activity_time_end = models.TimeField(verbose_name=gettext_lazy('活动结束时间'))
+    activity_location = models.CharField(max_length=200, verbose_name=gettext_lazy('活动地点'))
+    expected_participants = models.IntegerField(default=0, verbose_name=gettext_lazy('预计参与人数'))
+    budget = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=gettext_lazy('活动预算'))
+    contact_person = models.CharField(max_length=100, verbose_name=gettext_lazy('联系人'))
+    contact_phone = models.CharField(max_length=20, blank=True, verbose_name=gettext_lazy('联系电话'))
+    is_public = models.BooleanField(default=False, verbose_name=gettext_lazy('是否公开报名'))
+    published_at = models.DateTimeField(default=timezone.now, verbose_name=gettext_lazy('发布时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
 
     class Meta:
-        verbose_name = '已发布活动'
-        verbose_name_plural = '已发布活动'
+        verbose_name = gettext_lazy('已发布活动')
+        verbose_name_plural = gettext_lazy('已发布活动')
         ordering = ['-activity_date', '-published_at']
 
     def __str__(self):
@@ -903,13 +905,13 @@ class PublishedActivity(models.Model):
 
 class ActivityRegistration(models.Model):
     """活动报名记录。"""
-    activity = models.ForeignKey('PublishedActivity', on_delete=models.CASCADE, related_name='registrations', verbose_name='活动')
-    user_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE, related_name='activity_registrations', verbose_name='报名用户')
-    registered_at = models.DateTimeField(auto_now_add=True, verbose_name='报名时间')
+    activity = models.ForeignKey('PublishedActivity', on_delete=models.CASCADE, related_name='registrations', verbose_name=gettext_lazy('活动'))
+    user_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE, related_name='activity_registrations', verbose_name=gettext_lazy('报名用户'))
+    registered_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('报名时间'))
 
     class Meta:
-        verbose_name = '活动报名'
-        verbose_name_plural = '活动报名'
+        verbose_name = gettext_lazy('活动报名')
+        verbose_name_plural = gettext_lazy('活动报名')
         constraints = [models.UniqueConstraint(fields=['activity', 'user_profile'], name='unique_activity_user')]
 
     def __str__(self):
@@ -920,17 +922,17 @@ class EmailVerificationCode(models.Model):
     """邮箱验证码模型"""
     MAX_FAILED_ATTEMPTS = 5
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_verification', verbose_name='用户')
-    email = models.EmailField(verbose_name='待验证邮箱')
-    code = models.CharField(max_length=6, verbose_name='验证码')
-    is_verified = models.BooleanField(default=False, verbose_name='是否已验证')
-    failed_attempts = models.PositiveSmallIntegerField(default=0, verbose_name='连续错误次数')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    expires_at = models.DateTimeField(verbose_name='过期时间')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_verification', verbose_name=gettext_lazy('用户'))
+    email = models.EmailField(verbose_name=gettext_lazy('待验证邮箱'))
+    code = models.CharField(max_length=6, verbose_name=gettext_lazy('验证码'))
+    is_verified = models.BooleanField(default=False, verbose_name=gettext_lazy('是否已验证'))
+    failed_attempts = models.PositiveSmallIntegerField(default=0, verbose_name=gettext_lazy('连续错误次数'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    expires_at = models.DateTimeField(verbose_name=gettext_lazy('过期时间'))
     
     class Meta:
-        verbose_name = '邮箱验证码'
-        verbose_name_plural = '邮箱验证码'
+        verbose_name = gettext_lazy('邮箱验证码')
+        verbose_name_plural = gettext_lazy('邮箱验证码')
     
     def __str__(self):
         return f"{self.user.username} - {self.email}"
@@ -972,25 +974,25 @@ class SMTPConfig(models.Model):
         ('custom', '自定义'),
     ]
     
-    provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES, verbose_name='邮箱服务商')
-    smtp_host = models.CharField(max_length=100, verbose_name='SMTP服务器地址')
-    smtp_port = models.IntegerField(verbose_name='SMTP端口')
-    sender_email = models.EmailField(verbose_name='发送邮箱地址')
-    sender_password = EncryptedCharField(max_length=500, verbose_name='邮箱密码/授权码', help_text='在数据库中加密存储；留空表示保持原值')
-    use_tls = models.BooleanField(default=True, verbose_name='是否使用TLS加密')
-    is_active = models.BooleanField(default=True, verbose_name='是否激活')
+    provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES, verbose_name=gettext_lazy('邮箱服务商'))
+    smtp_host = models.CharField(max_length=100, verbose_name=gettext_lazy('SMTP服务器地址'))
+    smtp_port = models.IntegerField(verbose_name=gettext_lazy('SMTP端口'))
+    sender_email = models.EmailField(verbose_name=gettext_lazy('发送邮箱地址'))
+    sender_password = EncryptedCharField(max_length=500, verbose_name=gettext_lazy('邮箱密码/授权码'), help_text=gettext_lazy('在数据库中加密存储；留空表示保持原值'))
+    use_tls = models.BooleanField(default=True, verbose_name=gettext_lazy('是否使用TLS加密'))
+    is_active = models.BooleanField(default=True, verbose_name=gettext_lazy('是否激活'))
     help_recipient_email = models.EmailField(
         blank=True,
         default='',
-        verbose_name='求助通知收件邮箱',
-        help_text='配置 SMTP 后，用户点击求助时通知此邮箱；留空则通知所有管理员账号邮箱',
+        verbose_name=gettext_lazy('求助通知收件邮箱'),
+        help_text=gettext_lazy('配置 SMTP 后，用户点击求助时通知此邮箱；留空则通知所有管理员账号邮箱'),
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
     
     class Meta:
-        verbose_name = 'SMTP配置'
-        verbose_name_plural = 'SMTP配置'
+        verbose_name = gettext_lazy('SMTP配置')
+        verbose_name_plural = gettext_lazy('SMTP配置')
     
     def __str__(self):
         return f"{self.get_provider_display()} - {self.sender_email}"
@@ -1003,18 +1005,18 @@ class SMTPConfig(models.Model):
 
 class CarouselImage(models.Model):
     """首页轮播图片模型"""
-    image = models.ImageField(upload_to='carousel/', verbose_name='轮播图片')
-    title = models.CharField(max_length=200, blank=True, verbose_name='标题')
-    description = models.TextField(blank=True, verbose_name='描述')
-    link = models.URLField(blank=True, verbose_name='跳转链接', help_text='点击轮播图跳转的地址')
-    order = models.IntegerField(default=0, verbose_name='排序', help_text='数字越小越靠前')
-    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='上传者')
-    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
-    is_active = models.BooleanField(default=True, verbose_name='是否激活')
+    image = models.ImageField(upload_to='carousel/', verbose_name=gettext_lazy('轮播图片'))
+    title = models.CharField(max_length=200, blank=True, verbose_name=gettext_lazy('标题'))
+    description = models.TextField(blank=True, verbose_name=gettext_lazy('描述'))
+    link = models.URLField(blank=True, verbose_name=gettext_lazy('跳转链接'), help_text=gettext_lazy('点击轮播图跳转的地址'))
+    order = models.IntegerField(default=0, verbose_name=gettext_lazy('排序'), help_text=gettext_lazy('数字越小越靠前'))
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=gettext_lazy('上传者'))
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('上传时间'))
+    is_active = models.BooleanField(default=True, verbose_name=gettext_lazy('是否激活'))
     
     class Meta:
-        verbose_name = '轮播图片'
-        verbose_name_plural = '轮播图片'
+        verbose_name = gettext_lazy('轮播图片')
+        verbose_name_plural = gettext_lazy('轮播图片')
         ordering = ['order', '-uploaded_at']
         indexes = [
             models.Index(fields=['is_active', 'order', '-uploaded_at'], name='carousel_active_ord_idx'),
@@ -1026,22 +1028,22 @@ class CarouselImage(models.Model):
 
 class Department(models.Model):
     """部门模型"""
-    name = models.CharField(max_length=50, unique=True, verbose_name='部门名称')
-    description = models.TextField(verbose_name='职责描述')
-    highlights = models.TextField(blank=True, help_text='多个重点工作用换行分隔', verbose_name='重点工作')
-    icon = models.CharField(max_length=50, default='work', help_text='Material Icons图标名称', verbose_name='图标名称')
-    order = models.IntegerField(default=0, verbose_name='排序')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    name = models.CharField(max_length=50, unique=True, verbose_name=gettext_lazy('部门名称'))
+    description = models.TextField(verbose_name=gettext_lazy('职责描述'))
+    highlights = models.TextField(blank=True, help_text=gettext_lazy('多个重点工作用换行分隔'), verbose_name=gettext_lazy('重点工作'))
+    icon = models.CharField(max_length=50, default='work', help_text=gettext_lazy('Material Icons图标名称'), verbose_name=gettext_lazy('图标名称'))
+    order = models.IntegerField(default=0, verbose_name=gettext_lazy('排序'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
     updated_by = models.ForeignKey(
         User, 
         on_delete=models.SET_NULL, 
         null=True,
-        verbose_name='更新者'
+        verbose_name=gettext_lazy('更新者')
     )
     
     class Meta:
-        verbose_name = '部门'
-        verbose_name_plural = '部门'
+        verbose_name = gettext_lazy('部门')
+        verbose_name_plural = gettext_lazy('部门')
         ordering = ['order', 'name']
     
     def __str__(self):
@@ -1050,14 +1052,14 @@ class Department(models.Model):
 
 class TimeSlot(models.Model):
     """时间段配置"""
-    start_time = models.TimeField(verbose_name='开始时间')
-    end_time = models.TimeField(verbose_name='结束时间')
-    label = models.CharField(max_length=50, verbose_name='显示名称')
-    is_active = models.BooleanField(default=True, verbose_name='是否启用')
+    start_time = models.TimeField(verbose_name=gettext_lazy('开始时间'))
+    end_time = models.TimeField(verbose_name=gettext_lazy('结束时间'))
+    label = models.CharField(max_length=50, verbose_name=gettext_lazy('显示名称'))
+    is_active = models.BooleanField(default=True, verbose_name=gettext_lazy('是否启用'))
     
     class Meta:
-        verbose_name = '时间段'
-        verbose_name_plural = '时间段'
+        verbose_name = gettext_lazy('时间段')
+        verbose_name_plural = gettext_lazy('时间段')
         ordering = ['start_time']
         
     def __str__(self):
@@ -1071,17 +1073,17 @@ class Room(models.Model):
         ('closed', '关闭'),
     ]
     
-    name = models.CharField(max_length=100, unique=True, verbose_name='房间名称')
-    capacity = models.IntegerField(default=50, verbose_name='容纳人数')
-    location = models.CharField(max_length=200, blank=True, verbose_name='位置')
-    description = models.TextField(blank=True, verbose_name='描述')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available', verbose_name='状态')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    name = models.CharField(max_length=100, unique=True, verbose_name=gettext_lazy('房间名称'))
+    capacity = models.IntegerField(default=50, verbose_name=gettext_lazy('容纳人数'))
+    location = models.CharField(max_length=200, blank=True, verbose_name=gettext_lazy('位置'))
+    description = models.TextField(blank=True, verbose_name=gettext_lazy('描述'))
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available', verbose_name=gettext_lazy('状态'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
     
     class Meta:
-        verbose_name = '房间'
-        verbose_name_plural = '房间'
+        verbose_name = gettext_lazy('房间')
+        verbose_name_plural = gettext_lazy('房间')
         ordering = ['name']
     
     def __str__(self):
@@ -1096,32 +1098,32 @@ class RoomBooking(models.Model):
     ]
     
     # 关联房间
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='bookings', verbose_name='房间')
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='bookings', verbose_name=gettext_lazy('房间'))
     
     # 借用人信息（可以是社团或个人）
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room_bookings', verbose_name='借用人')
-    club = models.ForeignKey(Club, on_delete=models.SET_NULL, null=True, blank=True, related_name='room_bookings', verbose_name='所属社团')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='room_bookings', verbose_name=gettext_lazy('借用人'))
+    club = models.ForeignKey(Club, on_delete=models.SET_NULL, null=True, blank=True, related_name='room_bookings', verbose_name=gettext_lazy('所属社团'))
     
     # 借用时间
-    booking_date = models.DateField(verbose_name='借用日期')
-    start_time = models.TimeField(verbose_name='开始时间')
-    end_time = models.TimeField(verbose_name='结束时间')
+    booking_date = models.DateField(verbose_name=gettext_lazy('借用日期'))
+    start_time = models.TimeField(verbose_name=gettext_lazy('开始时间'))
+    end_time = models.TimeField(verbose_name=gettext_lazy('结束时间'))
     
     # 借用信息
-    purpose = models.TextField(verbose_name='借用目的')
-    participant_count = models.IntegerField(verbose_name='预计使用人数')
-    contact_phone = models.CharField(max_length=20, verbose_name='联系电话')
+    purpose = models.TextField(verbose_name=gettext_lazy('借用目的'))
+    participant_count = models.IntegerField(verbose_name=gettext_lazy('预计使用人数'))
+    contact_phone = models.CharField(max_length=20, verbose_name=gettext_lazy('联系电话'))
     
     # 特殊需求
-    special_requirements = models.TextField(blank=True, verbose_name='特殊需求', help_text='如需要投影仪、音响等设备')
+    special_requirements = models.TextField(blank=True, verbose_name=gettext_lazy('特殊需求'), help_text=gettext_lazy('如需要投影仪、音响等设备'))
     
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name='状态')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', verbose_name=gettext_lazy('状态'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
     
     class Meta:
-        verbose_name = '房间借用'
-        verbose_name_plural = '房间借用'
+        verbose_name = gettext_lazy('房间借用')
+        verbose_name_plural = gettext_lazy('房间借用')
         ordering = ['booking_date', 'start_time']
         # 防止同一房间同一时间段重复预订
         constraints = [
@@ -1191,68 +1193,68 @@ class SiteSettings(models.Model):
     site_name = models.CharField(
         max_length=120,
         default='社团管理系统',
-        verbose_name='站点名称（浏览器标题）',
-        help_text='显示在浏览器标签页标题中，修改后刷新页面生效',
+        verbose_name=gettext_lazy('站点名称（浏览器标题）'),
+        help_text=gettext_lazy('显示在浏览器标签页标题中，修改后刷新页面生效'),
     )
     homepage_title = models.CharField(
         max_length=120,
         default='社团管理服务中心',
-        verbose_name='首页主标题',
-        help_text='显示在首页顶部横幅中的大标题',
+        verbose_name=gettext_lazy('首页主标题'),
+        help_text=gettext_lazy('显示在首页顶部横幅中的大标题'),
     )
     homepage_subtitle = models.CharField(
         max_length=300,
         default='致力于为社团提供全方位的管理与服务支持，促进社团健康发展',
-        verbose_name='首页副标题',
-        help_text='显示在首页顶部横幅中主标题下方',
+        verbose_name=gettext_lazy('首页副标题'),
+        help_text=gettext_lazy('显示在首页顶部横幅中主标题下方'),
     )
     third_party_cdn_base_url = models.CharField(
         max_length=500,
         default='https://cdn.bootcdn.net',
-        verbose_name='第三方资源 CDN 基础地址',
-        help_text='用于加载 Chart.js、Swiper 和 Cropper.js 等 cdnjs 资源。',
+        verbose_name=gettext_lazy('第三方资源 CDN 基础地址'),
+        help_text=gettext_lazy('用于加载 Chart.js、Swiper 和 Cropper.js 等 cdnjs 资源。'),
     )
     third_party_cdn_sri = models.JSONField(
         default=dict,
         blank=True,
-        verbose_name='第三方资源 SRI 校验值',
-        help_text='由管理页面在切换 CDN 时自动计算。',
+        verbose_name=gettext_lazy('第三方资源 SRI 校验值'),
+        help_text=gettext_lazy('由管理页面在切换 CDN 时自动计算。'),
     )
     font_icon_url = models.CharField(
         max_length=500,
         default='https://fonts.font.im/icon?family=Material+Icons',
-        verbose_name='图标字体 CSS 地址',
-        help_text='Material Icons CSS 的完整 URL，修改后刷新页面生效',
+        verbose_name=gettext_lazy('图标字体 CSS 地址'),
+        help_text=gettext_lazy('Material Icons CSS 的完整 URL，修改后刷新页面生效'),
     )
     body_font_url = models.CharField(
         max_length=500, blank=True, default='',
-        verbose_name='正文 Web 字体 CSS 地址',
-        help_text='Google Fonts / 镜像字体的 CSS URL（留空则不加载额外字体）',
+        verbose_name=gettext_lazy('正文 Web 字体 CSS 地址'),
+        help_text=gettext_lazy('Google Fonts / 镜像字体的 CSS URL（留空则不加载额外字体）'),
     )
     body_font_family = models.CharField(
         max_length=300, blank=True, default='',
-        verbose_name='正文字体族',
-        help_text='CSS font-family 值，例如：\'Noto Sans SC\', sans-serif（留空则使用系统字体）',
+        verbose_name=gettext_lazy('正文字体族'),
+        help_text=gettext_lazy("CSS font-family 值，例如：'Noto Sans SC', sans-serif（留空则使用系统字体）"),
     )
     cravatar_enabled = models.BooleanField(
         default=False,
-        verbose_name='允许使用 Cravatar',
-        help_text='开启后，用户可在本站上传头像与 Cravatar 之间自行选择。',
+        verbose_name=gettext_lazy('允许使用 Cravatar'),
+        help_text=gettext_lazy('开启后，用户可在本站上传头像与 Cravatar 之间自行选择。'),
     )
     low_member_alert_threshold = models.PositiveSmallIntegerField(
         default=20,
-        verbose_name='成员数量告警阈值',
-        help_text='成员数低于该值的社团会在干事社团管理页触发“社团成员数量预警”。',
+        verbose_name=gettext_lazy('成员数量告警阈值'),
+        help_text=gettext_lazy('成员数低于该值的社团会在干事社团管理页触发“社团成员数量预警”。'),
     )
     error_help_enabled = models.BooleanField(
         default=False,
-        verbose_name='开启错误页求助按钮',
-        help_text='开启后，404/500 错误页将显示“请求帮助”按钮，不依赖 SMTP 配置',
+        verbose_name=gettext_lazy('开启错误页求助按钮'),
+        help_text=gettext_lazy('开启后，404/500 错误页将显示“请求帮助”按钮，不依赖 SMTP 配置'),
     )
 
     class Meta:
-        verbose_name = '站点设置'
-        verbose_name_plural = '站点设置'
+        verbose_name = gettext_lazy('站点设置')
+        verbose_name_plural = gettext_lazy('站点设置')
 
     def __str__(self):
         return '站点全局设置'
@@ -1282,29 +1284,29 @@ class StorageConfig(models.Model):
 
     backend_type = models.CharField(
         max_length=20, choices=BACKEND_CHOICES, default='local',
-        verbose_name='后端类型',
-        help_text='选择文件存储位置。切换后立即生效，已存文件不会自动迁移。',
+        verbose_name=gettext_lazy('后端类型'),
+        help_text=gettext_lazy('选择文件存储位置。切换后立即生效，已存文件不会自动迁移。'),
     )
     is_active = models.BooleanField(
-        default=True, verbose_name='是否启用',
-        help_text='关闭后强制降级到本地存储（紧急回退用）',
+        default=True, verbose_name=gettext_lazy('是否启用'),
+        help_text=gettext_lazy('关闭后强制降级到本地存储（紧急回退用）'),
     )
 
     # ============ S3 配置 ============
     s3_endpoint_url = models.CharField(
         max_length=500, blank=True, default='',
         verbose_name='S3 Endpoint URL',
-        help_text='AWS S3 留空；MinIO/阿里云/腾讯云等填兼容端点，如 https://s3.cn-north-1.amazonaws.com.cn',
+        help_text=gettext_lazy('AWS S3 留空；MinIO/阿里云/腾讯云等填兼容端点，如 https://s3.cn-north-1.amazonaws.com.cn'),
     )
     s3_region = models.CharField(
         max_length=100, blank=True, default='',
         verbose_name='Region',
-        help_text='AWS S3 必填，如 us-east-1；MinIO 可留空',
+        help_text=gettext_lazy('AWS S3 必填，如 us-east-1；MinIO 可留空'),
     )
     s3_bucket_name = models.CharField(
         max_length=255, blank=True, default='',
-        verbose_name='Bucket 名称',
-        help_text='需提前在 S3 控制台创建；Office Online 预览要求 bucket 可公网匿名访问',
+        verbose_name=gettext_lazy('Bucket 名称'),
+        help_text=gettext_lazy('需提前在 S3 控制台创建；Office Online 预览要求 bucket 可公网匿名访问'),
     )
     s3_access_key_id = models.CharField(
         max_length=255, blank=True, default='',
@@ -1313,30 +1315,29 @@ class StorageConfig(models.Model):
     s3_secret_access_key = EncryptedCharField(
         max_length=500, blank=True, default='',
         verbose_name='Secret Access Key',
-        help_text='在数据库中加密存储；管理页面不会回显原值',
+        help_text=gettext_lazy('在数据库中加密存储；管理页面不会回显原值'),
     )
     s3_custom_domain = models.CharField(
         max_length=500, blank=True, default='',
-        verbose_name='自定义域名 / CDN',
-        help_text='如已配置 CDN，填写 CDN 域名（如 https://cdn.example.com）。'
-                  '留空则使用 S3 默认 URL。',
+        verbose_name=gettext_lazy('自定义域名 / CDN'),
+        help_text=gettext_lazy('如已配置 CDN，填写 CDN 域名（如 https://cdn.example.com）。留空则使用 S3 默认 URL。'),
     )
     s3_addressing_style = models.CharField(
         max_length=20, choices=ADDRESSING_CHOICES, default='auto',
-        verbose_name='地址风格',
-        help_text='MinIO / 自建 S3 通常选 Path Style；AWS S3 选 Virtual Hosted',
+        verbose_name=gettext_lazy('地址风格'),
+        help_text=gettext_lazy('MinIO / 自建 S3 通常选 Path Style；AWS S3 选 Virtual Hosted'),
     )
     presigned_url_expiration = models.IntegerField(
-        default=3600, verbose_name='预签名 URL 有效期（秒）',
-        help_text='私密 bucket 下载链接的有效时长，默认 1 小时',
+        default=3600, verbose_name=gettext_lazy('预签名 URL 有效期（秒）'),
+        help_text=gettext_lazy('私密 bucket 下载链接的有效时长，默认 1 小时'),
     )
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
 
     class Meta:
-        verbose_name = '存储配置'
-        verbose_name_plural = '存储配置'
+        verbose_name = gettext_lazy('存储配置')
+        verbose_name_plural = gettext_lazy('存储配置')
 
     def __str__(self):
         backend_label = dict(self.BACKEND_CHOICES).get(self.backend_type, self.backend_type)
@@ -1369,12 +1370,12 @@ class StorageConfig(models.Model):
 
 class DailyStat(models.Model):
     """每日访问统计"""
-    date = models.DateField(unique=True, verbose_name='日期')
-    visits = models.PositiveIntegerField(default=0, verbose_name='访问次数')
+    date = models.DateField(unique=True, verbose_name=gettext_lazy('日期'))
+    visits = models.PositiveIntegerField(default=0, verbose_name=gettext_lazy('访问次数'))
 
     class Meta:
-        verbose_name = '每日统计'
-        verbose_name_plural = '每日统计'
+        verbose_name = gettext_lazy('每日统计')
+        verbose_name_plural = gettext_lazy('每日统计')
         ordering = ['-date']
 
     def __str__(self):
@@ -1403,18 +1404,18 @@ class FileBlob(models.Model):
     记录（含历史快照）引用，归零时由存储层物理删除。
     """
 
-    md5 = models.CharField(max_length=32, unique=True, verbose_name='文件MD5')
+    md5 = models.CharField(max_length=32, unique=True, verbose_name=gettext_lazy('文件MD5'))
     # MySQL 对 utf8mb4 唯一索引有限制（旧版本 767 字节 / 4 = 191 字符），
     # 而实际 blob 路径最长为 blobs/<md5><扩展名>，约 55 字符，191 完全够用。
-    storage_name = models.CharField(max_length=191, unique=True, verbose_name='存储路径')
-    size = models.PositiveBigIntegerField(null=True, blank=True, verbose_name='文件大小(字节)')
-    ref_count = models.PositiveIntegerField(default=1, verbose_name='引用计数')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    storage_name = models.CharField(max_length=191, unique=True, verbose_name=gettext_lazy('存储路径'))
+    size = models.PositiveBigIntegerField(null=True, blank=True, verbose_name=gettext_lazy('文件大小(字节)'))
+    ref_count = models.PositiveIntegerField(default=1, verbose_name=gettext_lazy('引用计数'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
 
     class Meta:
-        verbose_name = '文件去重记录'
-        verbose_name_plural = '文件去重记录'
+        verbose_name = gettext_lazy('文件去重记录')
+        verbose_name_plural = gettext_lazy('文件去重记录')
         ordering = ['-created_at']
 
     def __str__(self):
@@ -1432,35 +1433,35 @@ class ErrorLog(models.Model):
     status_code = models.PositiveSmallIntegerField(
         choices=STATUS_CODE_CHOICES,
         default=500,
-        verbose_name='状态码',
+        verbose_name=gettext_lazy('状态码'),
     )
-    path = models.CharField(max_length=500, blank=True, default='', verbose_name='请求地址')
-    method = models.CharField(max_length=10, default='GET', verbose_name='请求方法')
-    referer = models.CharField(max_length=500, blank=True, default='', verbose_name='来源页面')
-    user_agent = models.CharField(max_length=500, blank=True, default='', verbose_name='浏览器UA')
-    ip = models.CharField(max_length=100, blank=True, default='', verbose_name='客户端IP')
-    exception_name = models.CharField(max_length=200, blank=True, default='', verbose_name='异常类型')
-    exception_message = models.TextField(blank=True, default='', verbose_name='异常信息')
-    user_identifier = models.CharField(max_length=200, blank=True, default='', verbose_name='用户标识')
-    help_requested = models.BooleanField(default=False, verbose_name='用户请求帮助')
-    help_requested_at = models.DateTimeField(null=True, blank=True, verbose_name='求助时间')
-    help_email = models.EmailField(blank=True, default='', verbose_name='求助联系邮箱')
-    help_note = models.TextField(blank=True, default='', verbose_name='用户补充说明')
-    resolved = models.BooleanField(default=False, verbose_name='已处理')
-    resolved_at = models.DateTimeField(null=True, blank=True, verbose_name='处理时间')
+    path = models.CharField(max_length=500, blank=True, default='', verbose_name=gettext_lazy('请求地址'))
+    method = models.CharField(max_length=10, default='GET', verbose_name=gettext_lazy('请求方法'))
+    referer = models.CharField(max_length=500, blank=True, default='', verbose_name=gettext_lazy('来源页面'))
+    user_agent = models.CharField(max_length=500, blank=True, default='', verbose_name=gettext_lazy('浏览器UA'))
+    ip = models.CharField(max_length=100, blank=True, default='', verbose_name=gettext_lazy('客户端IP'))
+    exception_name = models.CharField(max_length=200, blank=True, default='', verbose_name=gettext_lazy('异常类型'))
+    exception_message = models.TextField(blank=True, default='', verbose_name=gettext_lazy('异常信息'))
+    user_identifier = models.CharField(max_length=200, blank=True, default='', verbose_name=gettext_lazy('用户标识'))
+    help_requested = models.BooleanField(default=False, verbose_name=gettext_lazy('用户请求帮助'))
+    help_requested_at = models.DateTimeField(null=True, blank=True, verbose_name=gettext_lazy('求助时间'))
+    help_email = models.EmailField(blank=True, default='', verbose_name=gettext_lazy('求助联系邮箱'))
+    help_note = models.TextField(blank=True, default='', verbose_name=gettext_lazy('用户补充说明'))
+    resolved = models.BooleanField(default=False, verbose_name=gettext_lazy('已处理'))
+    resolved_at = models.DateTimeField(null=True, blank=True, verbose_name=gettext_lazy('处理时间'))
     resolved_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='resolved_error_logs',
-        verbose_name='处理人',
+        verbose_name=gettext_lazy('处理人'),
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='发生时间')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('发生时间'))
 
     class Meta:
-        verbose_name = '错误日志'
-        verbose_name_plural = '错误日志'
+        verbose_name = gettext_lazy('错误日志')
+        verbose_name_plural = gettext_lazy('错误日志')
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['-created_at'], name='errlog_created_idx'),

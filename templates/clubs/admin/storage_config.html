@@ -1,6 +1,7 @@
 {% extends 'clubs/admin/base.html' %}
+{% load i18n %}
 
-{% block title %}存储设置 - 管理员{% endblock %}
+{% block title %}{% trans '存储设置 - 管理员' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -204,8 +205,8 @@
 <div class="page-header">
     <span class="material-icons">cloud_sync</span>
     <div class="page-header-content">
-        <h1>存储设置</h1>
-        <p class="subtitle">配置文件存储后端（本地存储 / S3 兼容对象存储）</p>
+        <h1>{% trans '存储设置' %}</h1>
+        <p class="subtitle">{% trans '配置文件存储后端（本地存储 / S3 兼容对象存储）' %}</p>
     </div>
     <a href="{% url 'clubs:admin_dashboard' %}" class="page-back-btn" title="返回仪表板" aria-label="返回仪表板">
         <span class="material-icons">arrow_back</span>
@@ -233,44 +234,33 @@
 <!-- 当前状态 -->
 <div class="sc-card">
     <h3 class="sc-card-title">
-        <span class="material-icons">info</span>
-        当前状态
-    </h3>
+        <span class="material-icons">info</span>{% trans '当前状态' %}</h3>
     <div class="sc-status-bar">
         <div class="sc-status-info">
             {% if not config.is_active %}
                 <span class="sc-status-badge disabled">
-                    <span class="material-icons" style="font-size:1rem;">block</span>
-                    存储已禁用（紧急降级到本地）
-                </span>
+                    <span class="material-icons" style="font-size:1rem;">block</span>{% trans '存储已禁用（紧急降级到本地）' %}</span>
             {% elif config.backend_type == 's3' %}
                 <span class="sc-status-badge s3">
-                    <span class="material-icons" style="font-size:1rem;">cloud</span>
-                    S3 对象存储
-                </span>
+                    <span class="material-icons" style="font-size:1rem;">cloud</span>{% trans 'S3 对象存储' %}</span>
             {% else %}
                 <span class="sc-status-badge local">
-                    <span class="material-icons" style="font-size:1rem;">folder</span>
-                    本地存储
-                </span>
+                    <span class="material-icons" style="font-size:1rem;">folder</span>{% trans '本地存储' %}</span>
             {% endif %}
             <span class="sc-status-meta">
                 {% if config.backend_type == 's3' and config.is_active %}
                     Bucket：<strong>{{ config.s3_bucket_name }}</strong>
                     {% if config.s3_custom_domain %} · CDN：<strong>{{ config.s3_custom_domain }}</strong>{% endif %}
-                {% else %}
-                    路径：<strong>{{ MEDIA_ROOT }}</strong>
-                {% endif %}
-                · 更新于 {{ config.updated_at|date:"Y-m-d H:i" }}
-            </span>
+                {% else %}{% trans '路径：' %}<strong>{{ MEDIA_ROOT }}</strong>
+                {% endif %}{% blocktrans with __i18n1=config.updated_at|date:"Y-m-d H:i" %}
+                · 更新于 {{ __i18n1 }}
+            {% endblocktrans %}</span>
         </div>
         <form method="post" style="display:inline;">
             {% csrf_token %}
             <input type="hidden" name="action" value="reset_local">
-            <button type="submit" class="sc-btn sc-btn-danger"
-                    onclick="return confirm('确定紧急回退到本地存储吗？已存文件不会自动迁移。');">
-                <span class="material-icons">restore</span>紧急回退本地
-            </button>
+            <button type="submit" class="sc-btn sc-btn-danger" onclick="return confirm(gettext('确定紧急回退到本地存储吗？已存文件不会自动迁移。'));">
+                <span class="material-icons">restore</span>{% trans '紧急回退本地' %}</button>
         </form>
     </div>
 </div>
@@ -278,21 +268,19 @@
 <!-- 主配置表单 -->
 <div class="sc-card">
     <h3 class="sc-card-title">
-        <span class="material-icons">settings</span>
-        后端配置
-    </h3>
+        <span class="material-icons">settings</span>{% trans '后端配置' %}</h3>
 
     <!-- 后端类型选择 -->
     <div class="sc-field">
-        <label class="sc-field-label">后端类型</label>
+        <label class="sc-field-label">{% trans '后端类型' %}</label>
         <div class="sc-backend-tabs">
             <label class="sc-backend-tab {% if config.backend_type == 'local' %}selected{% endif %}" id="tab-local">
                 <input type="radio" name="backend_type" value="local" form="mainForm"
                        {% if config.backend_type == 'local' %}checked{% endif %}>
                 <span class="material-icons">folder</span>
                 <div class="sc-backend-tab-body">
-                    <h3>本地存储</h3>
-                    <p>文件保存在服务器本地磁盘。适合单机部署或带宽充足场景。</p>
+                    <h3>{% trans '本地存储' %}</h3>
+                    <p>{% trans '文件保存在服务器本地磁盘。适合单机部署或带宽充足场景。' %}</p>
                 </div>
             </label>
             <label class="sc-backend-tab {% if config.backend_type == 's3' %}selected{% endif %}" id="tab-s3">
@@ -300,8 +288,8 @@
                        {% if config.backend_type == 's3' %}checked{% endif %}>
                 <span class="material-icons">cloud</span>
                 <div class="sc-backend-tab-body">
-                    <h3>S3 对象存储</h3>
-                    <p>兼容 AWS S3 / MinIO / 阿里云 OSS / 腾讯云 COS。提升大文件上传下载速度，降低服务器带宽压力。</p>
+                    <h3>{% trans 'S3 对象存储' %}</h3>
+                    <p>{% trans '兼容 AWS S3 / MinIO / 阿里云 OSS / 腾讯云 COS。提升大文件上传下载速度，降低服务器带宽压力。' %}</p>
                 </div>
             </label>
         </div>
@@ -309,24 +297,24 @@
 
     <div class="sc-checkbox-row">
         <input type="checkbox" id="is_active" name="is_active" form="mainForm" {% if config.is_active %}checked{% endif %}>
-        <label for="is_active">启用存储抽象层（关闭后强制降级到本地存储，用于紧急回退）</label>
+        <label for="is_active">{% trans '启用存储抽象层（关闭后强制降级到本地存储，用于紧急回退）' %}</label>
     </div>
 
     <hr class="sc-section-divider">
-    <div class="sc-section-divider-label">S3 连接参数</div>
+    <div class="sc-section-divider-label">{% trans 'S3 连接参数' %}</div>
 
     <form id="mainForm" method="post">
         {% csrf_token %}
 
         <div class="sc-grid-2">
             <div class="sc-field">
-                <label class="sc-field-label">Endpoint URL <span class="hint">AWS S3 留空</span></label>
+                <label class="sc-field-label">Endpoint URL <span class="hint">{% trans 'AWS S3 留空' %}</span></label>
                 <input type="text" class="sc-input" name="s3_endpoint_url"
                        value="{{ test_form.s3_endpoint_url|default:config.s3_endpoint_url }}"
                        placeholder="https://s3.cn-north-1.amazonaws.com.cn 或 MinIO 端点">
             </div>
             <div class="sc-field">
-                <label class="sc-field-label">Region <span class="hint">AWS S3 必填</span></label>
+                <label class="sc-field-label">Region <span class="hint">{% trans 'AWS S3 必填' %}</span></label>
                 <input type="text" class="sc-input" name="s3_region"
                        value="{{ test_form.s3_region|default:config.s3_region }}"
                        placeholder="us-east-1 / cn-north-1 等">
@@ -334,7 +322,7 @@
         </div>
 
         <div class="sc-field">
-            <label class="sc-field-label">Bucket 名称 <span class="req">*</span></label>
+            <label class="sc-field-label">{% trans 'Bucket 名称' %}<span class="req">*</span></label>
             <input type="text" class="sc-input" name="s3_bucket_name"
                    value="{{ test_form.s3_bucket_name|default:config.s3_bucket_name }}"
                    placeholder="my-club-bucket">
@@ -348,7 +336,7 @@
                        placeholder="AKIAIOSFODNN7EXAMPLE">
             </div>
             <div class="sc-field">
-                <label class="sc-field-label">Secret Access Key <span class="hint">留空保持不变</span></label>
+                <label class="sc-field-label">Secret Access Key <span class="hint">{% trans '留空保持不变' %}</span></label>
                 <input type="password" class="sc-input" name="s3_secret_access_key"
                        value="{{ test_form.s3_secret_access_key|default:'' }}"
                        placeholder="{% if config.s3_secret_access_key %}（已配置，留空保持不变）{% else %}wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY{% endif %}">
@@ -356,21 +344,19 @@
         </div>
 
         <hr class="sc-section-divider">
-        <div class="sc-section-divider-label">访问域名 / 预签名</div>
+        <div class="sc-section-divider-label">{% trans '访问域名 / 预签名' %}</div>
 
         <div class="sc-field">
-            <label class="sc-field-label">自定义域名 / CDN <span class="hint">用于直链访问</span></label>
+            <label class="sc-field-label">{% trans '自定义域名 / CDN' %}<span class="hint">{% trans '用于直链访问' %}</span></label>
             <input type="text" class="sc-input" name="s3_custom_domain"
                    value="{{ test_form.s3_custom_domain|default:config.s3_custom_domain }}"
                    placeholder="https://cdn.example.com">
-            <p style="margin: 6px 0 0; font-size: 0.78rem; color: var(--md3-on-surface-variant);">
-                Office Online 预览必须能公网匿名访问该域名；建议通过 CDN 加速，否则直链仍走 S3 默认 URL。
-            </p>
+            <p style="margin: 6px 0 0; font-size: 0.78rem; color: var(--md3-on-surface-variant);">{% trans 'Office Online 预览必须能公网匿名访问该域名；建议通过 CDN 加速，否则直链仍走 S3 默认 URL。' %}</p>
         </div>
 
         <div class="sc-grid-2">
             <div class="sc-field">
-                <label class="sc-field-label">地址风格</label>
+                <label class="sc-field-label">{% trans '地址风格' %}</label>
                 <select name="s3_addressing_style" class="sc-input">
                     {% for value, label in config.ADDRESSING_CHOICES %}
                     <option value="{{ value }}" {% if config.s3_addressing_style == value %}selected{% endif %}>{{ label }}</option>
@@ -378,7 +364,7 @@
                 </select>
             </div>
             <div class="sc-field">
-                <label class="sc-field-label">预签名 URL 有效期（秒）</label>
+                <label class="sc-field-label">{% trans '预签名 URL 有效期（秒）' %}</label>
                 <input type="number" class="sc-input" name="presigned_url_expiration"
                        value="{{ config.presigned_url_expiration }}"
                        min="60" max="604800" step="60">
@@ -387,17 +373,15 @@
 
         <div class="sc-actions">
             <button type="submit" formaction="" name="action" value="save" class="sc-btn sc-btn-primary" form="mainForm">
-                <span class="material-icons">save</span>保存配置
-            </button>
+                <span class="material-icons">save</span>{% trans '保存配置' %}</button>
             <button type="submit" formaction="" name="action" value="test" class="sc-btn sc-btn-secondary" form="mainForm">
-                <span class="material-icons">network_check</span>测试连接
-            </button>
+                <span class="material-icons">network_check</span>{% trans '测试连接' %}</button>
         </div>
     </form>
 
     {% if test_result %}
     <div class="sc-test-result {% if test_result.0 %}ok{% else %}fail{% endif %}">
-        <strong>{% if test_result.0 %}连接成功{% else %}连接失败{% endif %}</strong>：{{ test_result.1 }}
+        <strong>{% if test_result.0 %}{% trans '连接成功' %}{% else %}{% trans '连接失败' %}{% endif %}</strong>：{{ test_result.1 }}
     </div>
     {% endif %}
 </div>
@@ -405,20 +389,18 @@
 <!-- 注意事项 -->
 <div class="sc-card">
     <h3 class="sc-card-title">
-        <span class="material-icons">help_outline</span>
-        说明与注意事项
-    </h3>
+        <span class="material-icons">help_outline</span>{% trans '说明与注意事项' %}</h3>
     <div style="font-size: 0.88rem; line-height: 1.7; color: var(--md3-on-surface-variant);">
-        <p><strong>1. 切换后端不会自动迁移历史文件。</strong>切换到 S3 前，建议先停止写入新文件，手动迁移后再启用。</p>
-        <p><strong>2. Office Online 预览依赖直链。</strong>S3 模式下，传给 Office Online embedding 的 URL 必须能被微软服务器公网匿名访问，因此：</p>
+        <p><strong>{% trans '1. 切换后端不会自动迁移历史文件。' %}</strong>{% trans '切换到 S3 前，建议先停止写入新文件，手动迁移后再启用。' %}</p>
+        <p><strong>{% trans '2. Office Online 预览依赖直链。' %}</strong>{% trans 'S3 模式下，传给 Office Online embedding 的 URL 必须能被微软服务器公网匿名访问，因此：' %}</p>
         <ul style="margin: 4px 0 12px 24px;">
-            <li>Bucket ACL 必须允许匿名读取（或为对应文件设置公开读取）；</li>
-            <li>建议配置 <strong>自定义域名 / CDN</strong> 加速预览，避免 S3 跨地域拉取慢；</li>
-            <li>未配置 CDN 时使用 S3 默认 URL，需保证 endpoint 域名可公网解析。</li>
+            <li>{% trans 'Bucket ACL 必须允许匿名读取（或为对应文件设置公开读取）；' %}</li>
+            <li>{% trans '建议配置' %}<strong>{% trans '自定义域名 / CDN' %}</strong>{% trans '加速预览，避免 S3 跨地域拉取慢；' %}</li>
+            <li>{% trans '未配置 CDN 时使用 S3 默认 URL，需保证 endpoint 域名可公网解析。' %}</li>
         </ul>
-        <p><strong>3. Secret Access Key 明文存储。</strong>请确保数据库访问权限严格受控；建议在 S3 后端为该 AK/SK 配置最小权限策略（仅 bucket 读写）。</p>
-        <p><strong>4. 切换后端立即生效，无需重启服务。</strong>所有 FileField 自动走新后端，但已存文件链接（如 <code>/media/form_submissions/...</code>）不会自动重写为 S3 直链。</p>
-        <p><strong>5. 使用 S3 的核心收益：</strong>本站带宽仅 3 Mbps，大文件（合并 Word、PDF、图片）通过 S3 直链可以绕开本站带宽瓶颈，显著提升用户上传/下载/预览速度。</p>
+        <p><strong>{% trans '3. Secret Access Key 明文存储。' %}</strong>{% trans '请确保数据库访问权限严格受控；建议在 S3 后端为该 AK/SK 配置最小权限策略（仅 bucket 读写）。' %}</p>
+        <p><strong>{% trans '4. 切换后端立即生效，无需重启服务。' %}</strong>{% trans '所有 FileField 自动走新后端，但已存文件链接（如' %}<code>/media/form_submissions/...</code>{% trans '）不会自动重写为 S3 直链。' %}</p>
+        <p><strong>{% trans '5. 使用 S3 的核心收益：' %}</strong>{% trans '本站带宽仅 3 Mbps，大文件（合并 Word、PDF、图片）通过 S3 直链可以绕开本站带宽瓶颈，显著提升用户上传/下载/预览速度。' %}</p>
     </div>
 </div>
 

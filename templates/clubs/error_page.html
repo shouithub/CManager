@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load static %}
 <!DOCTYPE html>
 {% if request.COOKIES.md3_effective_theme == 'dark' %}
@@ -9,7 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="robots" content="noindex">
-    <title>{% if error_status_code == 404 %}页面不存在{% else %}服务器开小差了{% endif %} - {{ site_name|default:'社团管理系统' }}</title>
+    <title>{% if error_status_code == 404 %}{% trans '页面不存在' %}{% else %}{% trans '服务器开小差了' %}{% endif %} - {{ site_name|default:'社团管理系统' }}</title>
     <script>
         (function() {
             var stored;
@@ -229,47 +230,37 @@
         </div>
         <h1 class="error-code">{{ error_status_code|default:500 }}</h1>
         <p class="error-title">
-            {% if error_status_code == 404 %}页面走丢了{% else %}服务器开小差了{% endif %}
+            {% if error_status_code == 404 %}{% trans '页面走丢了' %}{% else %}{% trans '服务器开小差了' %}{% endif %}
         </p>
         <p class="error-desc">
-            {% if error_status_code == 404 %}
-            你访问的地址不存在、已被移动，或者你无权查看该页面。
-            {% else %}
-            系统在处理请求时遇到了意外问题，技术团队已收到通知。请稍后重试，或提交求助让管理员尽快处理。
-            {% endif %}
+            {% if error_status_code == 404 %}{% trans '你访问的地址不存在、已被移动，或者你无权查看该页面。' %}{% else %}{% trans '系统在处理请求时遇到了意外问题，技术团队已收到通知。请稍后重试，或提交求助让管理员尽快处理。' %}{% endif %}
         </p>
         <p class="error-path" title="{{ error_path }}">{{ error_path }}</p>
         {% if error_log_id %}
-        <p class="error-log-id">错误编号：#{{ error_log_id }}</p>
+        <p class="error-log-id">{% blocktrans with __i18n1=error_log_id %}错误编号：#{{ __i18n1 }}{% endblocktrans %}</p>
         {% endif %}
 
         <div class="error-actions">
             <a href="/" class="btn-error btn-error-primary">
-                <span class="material-icons">home</span>
-                返回首页
-            </a>
+                <span class="material-icons">home</span>{% trans '返回首页' %}</a>
             {% if error_status_code != 404 %}
             <button type="button" class="btn-error btn-error-secondary" onclick="location.reload();">
-                <span class="material-icons">refresh</span>
-                重新加载
-            </button>
+                <span class="material-icons">refresh</span>{% trans '重新加载' %}</button>
             {% endif %}
         </div>
 
         {% if error_help_enabled %}
         <div class="error-help">
             <button type="button" class="btn-help" id="errorHelpBtn">
-                <span class="material-icons">support_agent</span>
-                请求帮助
-            </button>
+                <span class="material-icons">support_agent</span>{% trans '请求帮助' %}</button>
             <form class="help-form" id="errorHelpForm">
                 {% csrf_token %}
                 <input type="hidden" name="error_log_id" value="{{ error_log_id|default_if_none:'' }}">
                 <input type="hidden" name="error_type" value="{{ error_status_code|default:500 }}">
                 <input type="hidden" name="error_path" value="{{ error_path }}">
-                <input type="email" name="contact_email" autocomplete="email" placeholder="你的联系邮箱（选填）">
-                <textarea name="note" rows="2" placeholder="简单描述你遇到的问题（选填）"></textarea>
-                <button type="submit" class="btn-submit-help">提交求助</button>
+                <input type="email" name="contact_email" autocomplete="email" placeholder="{% trans '你的联系邮箱（选填）' %}">
+                <textarea name="note" rows="2" placeholder="{% trans '简单描述你遇到的问题（选填）' %}"></textarea>
+                <button type="submit" class="btn-submit-help">{% trans '提交求助' %}</button>
             </form>
             <p class="help-result" id="errorHelpResult"></p>
         </div>
@@ -303,7 +294,7 @@
                             headers: { 'X-Requested-With': 'XMLHttpRequest' }
                         });
                         var data = await response.json();
-                        helpResult.textContent = data.message || (data.success ? '已提交求助' : '提交失败，请稍后重试');
+                        helpResult.textContent = data.message || (data.success ? gettext('已提交求助') : gettext('提交失败，请稍后重试'));
                         if (!data.success) {
                             helpResult.classList.add('error');
                         } else {

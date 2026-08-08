@@ -1,7 +1,9 @@
 {% extends base_template %}
+{% load i18n %}
+{% load common_tags %}
 {% load static %}
 
-{% block title %}{{ page_title|default:"用户管理" }}{% endblock %}
+{% block title %}{{ page_title|tdefault:"用户管理" }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -907,31 +909,25 @@
     <div class="page-header">
         <span class="material-icons">group</span>
         <div class="page-header-content">
-            <h1>{{ page_title|default:"系统用户管理" }}</h1>
-            <p class="subtitle">{{ page_subtitle|default:"管理所有用户账户和权限" }}</p>
+            <h1>{{ page_title|tdefault:"系统用户管理" }}</h1>
+            <p class="subtitle">{{ page_subtitle|tdefault:"管理所有用户账户和权限" }}</p>
         </div>
         <div class="page-header-actions">
             {% if can_manage_users %}
-            <button type="button" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;" data-csv-import-open="bulkImportModal">
-                批量导入
-            </button>
+            <button type="button" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;" data-csv-import-open="bulkImportModal">{% trans '批量导入' %}</button>
             <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;">
-                <span class="material-icons">file_download</span>
-                导出数据
-            </a>
+                <span class="material-icons">file_download</span>{% trans '导出数据' %}</a>
             <a href="{% url 'clubs:create_user' %}" class="btn-action detail" style="padding: var(--md3-spacing-md) var(--md3-spacing-xl); font-size: 0.875rem;">
-                <span class="material-icons">person_add</span>
-                创建用户
-            </a>
+                <span class="material-icons">person_add</span>{% trans '创建用户' %}</a>
             {% endif %}
             <div class="stats-badge">
                 <span class="material-icons">person</span>
-                <span>{{ total_users }} 个用户</span>
+                <span>{{ total_users }}{% trans '个用户' %}</span>
             </div>
             {% if can_manage_users %}
             <a class="stats-badge pending-users-badge" href="{% url 'clubs:manage_users' %}?role=staff&amp;status=pending">
                 <span class="material-icons">pending_actions</span>
-                <span>{{ pending_review_users }} 个待审核</span>
+                <span>{{ pending_review_users }} {% trans '个待审核' %}</span>
             </a>
             {% endif %}
         </div>
@@ -951,47 +947,43 @@
                 >
             </div>
             <select name="role" class="form-select">
-                <option value="">所有角色</option>
+                <option value="">{% trans '所有角色' %}</option>
                 {% for value, label in role_choices %}
                     <option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
             <select name="status" class="form-select">
-                <option value="">审核状态</option>
+                <option value="">{% trans '审核状态' %}</option>
                 {% for value, label in profile_status_choices %}
                     <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
             <select name="account_status" class="form-select">
-                <option value="">生命周期</option>
+                <option value="">{% trans '生命周期' %}</option>
                 {% for value, label in account_status_choices %}
                     <option value="{{ value }}" {% if account_status == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
             <select name="active" class="form-select">
-                <option value="">启用状态</option>
-                <option value="enabled" {% if active_state == 'enabled' %}selected{% endif %}>已启用</option>
-                <option value="disabled" {% if active_state == 'disabled' %}selected{% endif %}>已禁用</option>
+                <option value="">{% trans '启用状态' %}</option>
+                <option value="enabled" {% if active_state == 'enabled' %}selected{% endif %}>{% trans '已启用' %}</option>
+                <option value="disabled" {% if active_state == 'disabled' %}selected{% endif %}>{% trans '已禁用' %}</option>
             </select>
             {% if can_manage_users and users %}
             <div class="batch-controls">
                 <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.875rem;color:var(--md3-on-surface);white-space:nowrap;line-height:1;">
-                    <input type="checkbox" id="select-all-users"> <span>全选本页</span>
+                    <input type="checkbox" id="select-all-users"> <span>{% trans '全选本页' %}</span>
                 </label>
-                <span id="batchCount" style="font-size:0.8125rem;color:var(--md3-on-surface-variant);white-space:nowrap;">已选 0 人</span>
-                <button type="button" id="batchEnableBtn" class="btn-action detail">批量启用</button>
-                <button type="button" id="batchDisableBtn" class="btn-action review">批量禁用</button>
-                <button type="button" id="batchDeleteBtn" class="btn-action danger">批量删除</button>
+                <span id="batchCount" style="font-size:0.8125rem;color:var(--md3-on-surface-variant);white-space:nowrap;">{% trans '已选 0 人' %}</span>
+                <button type="button" id="batchEnableBtn" class="btn-action detail">{% trans '批量启用' %}</button>
+                <button type="button" id="batchDisableBtn" class="btn-action review">{% trans '批量禁用' %}</button>
+                <button type="button" id="batchDeleteBtn" class="btn-action danger">{% trans '批量删除' %}</button>
             </div>
             {% endif %}
             <button type="submit" class="btn-search">
-                <span class="material-icons">search</span>
-                搜索
-            </button>
+                <span class="material-icons">search</span>{% trans '搜索' %}</button>
             <a href="?" class="btn-search btn-reset" style="background: var(--md3-surface-container-high); color: var(--md3-on-surface); text-decoration: none;">
-                <span class="material-icons">refresh</span>
-                重置
-            </a>
+                <span class="material-icons">refresh</span>{% trans '重置' %}</a>
         </form>
         {% if can_manage_users and users %}
         <form id="batchUserForm" method="post" style="display:none;">
@@ -1026,42 +1018,34 @@
                 <div class="user-card-status">
                     <div>
                         {% if user.profile.role == 'president' %}
-                            <span class="role-badge president">社长</span>
+                            <span class="role-badge president">{% trans '社长' %}</span>
                         {% elif user.profile.role == 'staff' %}
-                            <span class="role-badge staff">干事</span>
+                            <span class="role-badge staff">{% trans '干事' %}</span>
                         {% elif user.profile.role == 'admin' %}
-                            <span class="role-badge admin">管理员</span>
+                            <span class="role-badge admin">{% trans '管理员' %}</span>
                         {% elif user.profile.role == 'member' %}
-                            <span class="role-badge" style="background:var(--md3-secondary-container);color:var(--md3-on-secondary-container);">社员</span>
+                            <span class="role-badge" style="background:var(--md3-secondary-container);color:var(--md3-on-secondary-container);">{% trans '社员' %}</span>
                         {% else %}
-                            <span class="role-badge unknown">未设定</span>
+                            <span class="role-badge unknown">{% trans '未设定' %}</span>
                         {% endif %}
                     </div>
                     <div>
                         {% if user.profile.role == 'staff' %}
                             {% if user.profile.status == 'pending' %}
                                 <span class="status-badge pending">
-                                    <span class="material-icons">schedule</span>
-                                    待审核
-                                </span>
+                                    <span class="material-icons">schedule</span>{% trans '待审核' %}</span>
                             {% elif user.profile.status == 'approved' %}
                                 <span class="status-badge approved">
-                                    <span class="material-icons">check_circle</span>
-                                    已批准
-                                </span>
+                                    <span class="material-icons">check_circle</span>{% trans '已批准' %}</span>
                             {% elif user.profile.status == 'rejected' %}
                                 <span class="status-badge rejected">
-                                    <span class="material-icons">cancel</span>
-                                    已拒绝
-                                </span>
+                                    <span class="material-icons">cancel</span>{% trans '已拒绝' %}</span>
                             {% else %}
-                                <span class="status-badge unknown">未知</span>
+                                <span class="status-badge unknown">{% trans '未知' %}</span>
                             {% endif %}
                         {% else %}
                             <span class="status-badge approved">
-                                <span class="material-icons">check_circle</span>
-                                已激活
-                            </span>
+                                <span class="material-icons">check_circle</span>{% trans '已激活' %}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -1069,15 +1053,15 @@
 
             <div class="user-meta-grid">
                 <div class="user-meta-item">
-                    <span class="user-meta-label">联系电话</span>
-                    <span class="user-meta-value">{{ user.profile.phone|default:"--" }}</span>
+                    <span class="user-meta-label">{% trans '联系电话' %}</span>
+                    <span class="user-meta-value">{{ user.profile.phone|tdefault:"--" }}</span>
                 </div>
                 <div class="user-meta-item">
-                    <span class="user-meta-label">微信</span>
-                    <span class="user-meta-value">{{ user.profile.wechat|default:"--" }}</span>
+                    <span class="user-meta-label">{% trans '微信' %}</span>
+                    <span class="user-meta-value">{{ user.profile.wechat|tdefault:"--" }}</span>
                 </div>
                 <div class="user-meta-item">
-                    <span class="user-meta-label">部门</span>
+                    <span class="user-meta-label">{% trans '部门' %}</span>
                     <span class="user-meta-value">
                         {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
                             {{ user.profile.department|default:"--" }}
@@ -1087,7 +1071,7 @@
                     </span>
                 </div>
                 <div class="user-meta-item">
-                    <span class="user-meta-label">政治面貌</span>
+                    <span class="user-meta-label">{% trans '政治面貌' %}</span>
                     <span class="user-meta-value">
                         {% if user.profile.role == 'president' or user.profile.role == 'staff' %}
                             {{ user.profile.get_political_status_display|default:"未填写" }}
@@ -1097,23 +1081,19 @@
                     </span>
                 </div>
                 <div class="user-meta-item">
-                    <span class="user-meta-label">账户状态</span>
+                    <span class="user-meta-label">{% trans '账户状态' %}</span>
                     <span class="user-meta-value">
                         {% if user.is_active %}
                             <span class="status-badge approved">
-                                <span class="material-icons">check_circle</span>
-                                活跃
-                            </span>
+                                <span class="material-icons">check_circle</span>{% trans '活跃' %}</span>
                         {% else %}
                             <span class="status-badge rejected">
-                                <span class="material-icons">block</span>
-                                已禁用
-                            </span>
+                                <span class="material-icons">block</span>{% trans '已禁用' %}</span>
                         {% endif %}
                     </span>
                 </div>
                 <div class="user-meta-item">
-                    <span class="user-meta-label">加入时间</span>
+                    <span class="user-meta-label">{% trans '加入时间' %}</span>
                     <span class="user-meta-value">{{ user.date_joined|date:"Y-m-d" }}</span>
                 </div>
             </div>
@@ -1122,9 +1102,7 @@
             <div class="user-card-actions">
                 {% if user.profile.role == 'staff' and user.profile.status == 'pending' %}
                     <a href="{% url 'clubs:review_staff_registration' user.id %}" class="btn-action review">
-                        <span class="material-icons">assignment</span>
-                        审核
-                    </a>
+                        <span class="material-icons">assignment</span>{% trans '审核' %}</a>
                 {% endif %}
 
                 {% if user.profile.role == 'staff' or user.profile.role == 'admin' %}
@@ -1135,24 +1113,18 @@
                             data-username="{{ user.username }}"
                             data-department="{{ user.profile.department_link_id|default_if_none:'' }}"
                             data-level="{{ user.profile.staff_level|default:'member' }}">
-                        <span class="material-icons">badge</span>
-                        属性
-                    </button>
+                        <span class="material-icons">badge</span>{% trans '属性' %}</button>
                 {% endif %}
 
                 {% if user.username in locked_usernames %}
                     <form method="post" action="{% url 'clubs:unlock_account' user.username %}" style="display:inline">{% csrf_token %}
-                        <button class="btn-action review" title="解锁">
-                            <span class="material-icons">lock_open</span>
-                            解锁
-                        </button>
+                        <button class="btn-action review" title="{% trans '解锁' %}">
+                            <span class="material-icons">lock_open</span>{% trans '解锁' %}</button>
                     </form>
                 {% endif %}
 
                 <a href="{% url 'clubs:admin_edit_user_account' user.id %}" class="btn-action detail">
-                    <span class="material-icons">visibility</span>
-                    详情
-                </a>
+                    <span class="material-icons">visibility</span>{% trans '详情' %}</a>
 
                 {% if user != request.user and not user.is_superuser %}
                     <form method="post">
@@ -1161,7 +1133,7 @@
                         <input type="hidden" name="user_id" value="{{ user.id }}">
                         <button type="submit" class="btn-action {% if user.is_active %}review{% else %}detail{% endif %}" title="{% if user.is_active %}禁用账号{% else %}启用账号{% endif %}">
                             <span class="material-icons">{% if user.is_active %}block{% else %}check_circle{% endif %}</span>
-                            {% if user.is_active %}禁用{% else %}启用{% endif %}
+                            {% if user.is_active %}{% trans '禁用' %}{% else %}{% trans '启用' %}{% endif %}
                         </button>
                     </form>
                     <form method="post" style="display:inline;"
@@ -1169,10 +1141,8 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="delete_user">
                         <input type="hidden" name="user_id" value="{{ user.id }}">
-                        <button type="submit" class="btn-action danger" title="删除账号">
-                            <span class="material-icons">delete</span>
-                            删除
-                        </button>
+                        <button type="submit" class="btn-action danger" title="{% trans '删除账号' %}">
+                            <span class="material-icons">delete</span>{% trans '删除' %}</button>
                     </form>
                 {% endif %}
             </div>
@@ -1183,20 +1153,20 @@
     {% else %}
     <div class="empty-state">
         <span class="material-icons">search_off</span>
-        <p>未找到匹配的用户</p>
+        <p>{% trans '未找到匹配的用户' %}</p>
     </div>
     {% endif %}
     {% if page_obj.paginator.num_pages > 1 %}
-    <nav aria-label="用户列表分页" style="display:flex;justify-content:center;align-items:center;gap:12px;margin:24px 0;">
-        {% if page_obj.has_previous %}<a class="btn-search btn-reset" href="{% querystring page=page_obj.previous_page_number %}">上一页</a>{% endif %}
-        <span style="color:var(--md3-on-surface-variant);">第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页，共 {{ page_obj.paginator.count }} 人</span>
-        {% if page_obj.has_next %}<a class="btn-search btn-reset" href="{% querystring page=page_obj.next_page_number %}">下一页</a>{% endif %}
+    <nav aria-label="{% trans '用户列表分页' %}" style="display:flex;justify-content:center;align-items:center;gap:12px;margin:24px 0;">
+        {% if page_obj.has_previous %}<a class="btn-search btn-reset" href="{% querystring page=page_obj.previous_page_number %}">{% trans '上一页' %}</a>{% endif %}
+        <span style="color:var(--md3-on-surface-variant);">{% blocktrans with __i18n1=page_obj.number __i18n2=page_obj.paginator.num_pages __i18n3=page_obj.paginator.count %}第 {{ __i18n1 }} / {{ __i18n2 }} 页，共 {{ __i18n3 }} 人{% endblocktrans %}</span>
+        {% if page_obj.has_next %}<a class="btn-search btn-reset" href="{% querystring page=page_obj.next_page_number %}">{% trans '下一页' %}</a>{% endif %}
     </nav>
     {% endif %}
     {% if not can_manage_users %}
     <div class="empty-state" style="margin-top: var(--md3-spacing-xl); padding: var(--md3-spacing-lg); text-align: left; display: flex; align-items: center; gap: var(--md3-spacing-md);">
         <span class="material-icons" style="font-size: 1.5rem; margin: 0;">info</span>
-        <p>该页面为查看专用，不支持编辑。如需修改用户信息，请联系管理员。</p>
+        <p>{% trans '该页面为查看专用，不支持编辑。如需修改用户信息，请联系管理员。' %}</p>
     </div>
     {% endif %}
 </div>
@@ -1211,29 +1181,27 @@
                 <div class="staff-attr-modal-title">
                     <span class="material-icons">badge</span>
                     <div>
-                        <h3 id="staffAttrTitle">修改部门与职级</h3>
+                        <h3 id="staffAttrTitle">{% trans '修改部门与职级' %}</h3>
                         <div id="staffAttrUser" class="staff-attr-modal-user">--</div>
                     </div>
                 </div>
-                <button type="button" class="btn-action detail" onclick="closeStaffAttrModal()" aria-label="关闭属性弹窗">
-                    <span class="material-icons">close</span>
-                    关闭
-                </button>
+                <button type="button" class="btn-action detail" onclick="closeStaffAttrModal()" aria-label="{% trans '关闭属性弹窗' %}">
+                    <span class="material-icons">close</span>{% trans '关闭' %}</button>
             </div>
             <div class="staff-attr-modal-body">
-                <p class="staff-attr-help">这里只调整干事/管理员的部门归属和职级；账号、角色、实名资料请进入详情页处理。</p>
+                <p class="staff-attr-help">{% trans '这里只调整干事/管理员的部门归属和职级；账号、角色、实名资料请进入详情页处理。' %}</p>
                 <div class="staff-attr-fields">
                     <div class="staff-attr-field">
-                        <label for="staffAttrDepartment">所属部门</label>
+                        <label for="staffAttrDepartment">{% trans '所属部门' %}</label>
                         <select id="staffAttrDepartment" name="department" class="form-select">
-                            <option value="">不设定部门</option>
+                            <option value="">{% trans '不设定部门' %}</option>
                             {% for dept in departments %}
                                 <option value="{{ dept.id }}">{{ dept.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="staff-attr-field">
-                        <label for="staffAttrLevel">职级</label>
+                        <label for="staffAttrLevel">{% trans '职级' %}</label>
                         <select id="staffAttrLevel" name="staff_level" class="form-select" required>
                             {% for value, label in staff_level_choices %}
                                 <option value="{{ value }}">{{ label }}</option>
@@ -1242,11 +1210,9 @@
                     </div>
                 </div>
                 <div class="staff-attr-modal-actions">
-                    <button type="button" class="btn-action detail" onclick="closeStaffAttrModal()">取消</button>
+                    <button type="button" class="btn-action detail" onclick="closeStaffAttrModal()">{% trans '取消' %}</button>
                     <button type="submit" class="btn-action detail">
-                        <span class="material-icons">save</span>
-                        保存属性
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存属性' %}</button>
                 </div>
             </div>
         </form>
@@ -1288,17 +1254,17 @@ document.querySelectorAll('.js-open-staff-attr').forEach(function(button) {
 });
 
 function confirmDeleteUser(username) {
-    if (!confirm(`确定删除账号 ${username} 吗？此操作不可恢复。`)) {
+    if (!confirm(gettext('确定删除账号 ') + (username) + gettext(' 吗？此操作不可恢复。'))) {
         return false;
     }
 
-    const typed = prompt(`二次确认：请输入用户名 ${username} 以继续删除`);
+    const typed = prompt(gettext('二次确认：请输入用户名 ') + (username) + gettext(' 以继续删除'));
     if (typed === null) {
         return false;
     }
 
     if (typed !== username) {
-        alert('用户名不匹配，已取消删除。');
+        alert(gettext('用户名不匹配，已取消删除。'));
         return false;
     }
 
@@ -1320,7 +1286,7 @@ function confirmDeleteUser(username) {
         cards.forEach(function (card) {
             card.classList.toggle('is-selected', selected.has(card.dataset.userId));
         });
-        if (countEl) countEl.textContent = '已选 ' + selected.size + ' 人';
+        if (countEl) countEl.textContent = '已选 ' + selected.size + gettext(' 人');
         selectAll.checked = selected.size === cards.length;
     }
 
@@ -1351,7 +1317,7 @@ function confirmDeleteUser(username) {
 
     function submitBatch(action, message) {
         if (!selected.size) {
-            alert('请先选择用户');
+            alert(gettext('请先选择用户'));
             return;
         }
         if (message && !confirm(message.replace('{n}', String(selected.size)))) {
@@ -1366,8 +1332,8 @@ function confirmDeleteUser(username) {
     const disableBtn = document.getElementById('batchDisableBtn');
     const deleteBtn = document.getElementById('batchDeleteBtn');
     if (enableBtn) enableBtn.addEventListener('click', function () { submitBatch('batch_enable', ''); });
-    if (disableBtn) disableBtn.addEventListener('click', function () { submitBatch('batch_disable', '确定要禁用选中的 {n} 个用户吗？'); });
-    if (deleteBtn) deleteBtn.addEventListener('click', function () { submitBatch('batch_delete', '确定要删除选中的 {n} 个用户吗？此操作不可恢复！'); });
+    if (disableBtn) disableBtn.addEventListener('click', function () { submitBatch('batch_disable', gettext('确定要禁用选中的 {n} 个用户吗？')); });
+    if (deleteBtn) deleteBtn.addEventListener('click', function () { submitBatch('batch_delete', gettext('确定要删除选中的 {n} 个用户吗？此操作不可恢复！')); });
 })();
 
 staffAttrModal.addEventListener('click', function(e) {

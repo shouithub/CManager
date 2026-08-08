@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}管理员仪表板{% endblock %}
+{% block title %}{% trans '管理员仪表板' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -838,8 +839,8 @@
     <div class="page-header">
         <span class="material-icons">dashboard</span>
         <div class="page-header-content">
-            <h1>管理员仪表板</h1>
-            <p class="subtitle">系统概览与管理中心</p>
+            <h1>{% trans '管理员仪表板' %}</h1>
+            <p class="subtitle">{% trans '系统概览与管理中心' %}</p>
         </div>
     </div>
     
@@ -849,19 +850,19 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value">{{ total_users }}</div>
-                    <div class="stat-label">系统用户总数</div>
+                    <div class="stat-label">{% trans '系统用户总数' %}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">{{ total_clubs }}</div>
-                    <div class="stat-label">已注册社团数</div>
+                    <div class="stat-label">{% trans '已注册社团数' %}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">{{ pending_all }}</div>
-                    <div class="stat-label">待处理申请</div>
+                    <div class="stat-label">{% trans '待处理申请' %}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">{{ total_visits_14d }}</div>
-                    <div class="stat-label">近14天访问量</div>
+                    <div class="stat-label">{% trans '近14天访问量' %}</div>
                 </div>
             </div>
 
@@ -869,32 +870,28 @@
             <div class="rate-grid">
                 <div class="stat-card" style="border-left:4px solid var(--md3-tertiary);">
                     <div class="stat-value" style="color:var(--md3-tertiary);">{{ overall_approval_rate }}%</div>
-                    <div class="stat-label">历史总体通过率</div>
+                    <div class="stat-label">{% trans '历史总体通过率' %}</div>
                 </div>
                 <div class="stat-card" style="border-left:4px solid var(--md3-error);">
                     <div class="stat-value" style="color:var(--md3-error);">{{ overall_rejection_rate }}%</div>
-                    <div class="stat-label">历史总体拒绝率</div>
+                    <div class="stat-label">{% trans '历史总体拒绝率' %}</div>
                 </div>
             </div>
 
             <!-- BUG 日志 -->
             <div class="card">
                 <h3>
-                    <span class="material-icons">bug_report</span>
-                    BUG日志
-                    {% if bug_log_counts.help %}
+                    <span class="material-icons">bug_report</span>{% trans 'BUG日志' %}{% if bug_log_counts.help %}
                     <span class="help-badge">
-                        <span class="material-icons">support_agent</span>
-                        {{ bug_log_counts.help }} 条求助
-                    </span>
+                        <span class="material-icons">support_agent</span>{% blocktrans with __i18n1=bug_log_counts.help %}
+                        {{ __i18n1 }} 条求助
+                    {% endblocktrans %}</span>
                     {% endif %}
                 </h3>
                 {% if help_request_logs %}
                 <div class="bug-help-alert">
                     <span class="material-icons">notifications_active</span>
-                    <div>
-                        有用户正在等待帮助：
-                        {% for log in help_request_logs %}
+                    <div>{% trans '有用户正在等待帮助：' %}{% for log in help_request_logs %}
                         <span class="bug-help-user">{{ log.user_identifier|default:'未登录用户' }}</span>{% if not forloop.last %}、{% endif %}
                         {% endfor %}
                     </div>
@@ -921,15 +918,12 @@
                     </div>
                     {% empty %}
                     <div class="bug-log-empty">
-                        <span class="material-icons">check_circle</span>
-                        暂无未处理的错误日志
-                    </div>
+                        <span class="material-icons">check_circle</span>{% trans '暂无未处理的错误日志' %}</div>
                     {% endfor %}
                 </div>
                 <div class="bug-log-footer">
                     <a href="{% url 'clubs:manage_bug_logs' %}" class="btn-action btn-edit">
-                        <span class="material-icons">list_alt</span>
-                        查看全部 BUG 日志{% if bug_log_counts.unresolved %}（{{ bug_log_counts.unresolved }} 条未处理）{% endif %}
+                        <span class="material-icons">list_alt</span>{% trans '查看全部 BUG 日志' %}{% if bug_log_counts.unresolved %}{% blocktrans with __i18n1=bug_log_counts.unresolved %}（{{ __i18n1 }} 条未处理）{% endblocktrans %}{% endif %}
                     </a>
                 </div>
             </div>
@@ -937,9 +931,7 @@
             <!-- 各类申请分布图 -->
             <div class="card">
                 <h3>
-                    <span class="material-icons">bar_chart</span>
-                    各类申请数量分布
-                </h3>
+                    <span class="material-icons">bar_chart</span>{% trans '各类申请数量分布' %}</h3>
                 <div class="chart-container" style="height:260px;">
                     <canvas id="typeChart"></canvas>
                 </div>
@@ -948,9 +940,7 @@
             <!-- 访问量折线图 -->
             <div class="card">
                 <h3>
-                    <span class="material-icons">show_chart</span>
-                    近14天访问量
-                </h3>
+                    <span class="material-icons">show_chart</span>{% trans '近14天访问量' %}</h3>
                 <div class="chart-container">
                     <canvas id="visitChart"></canvas>
                 </div>
@@ -960,22 +950,20 @@
             <!-- Redis 缓存信息 -->
             <div class="card">
                 <h3>
-                    <span class="material-icons">memory</span>
-                    Redis 缓存状态
-                    <span style="margin-left:auto;font-size:0.75rem;font-weight:400;color:var(--md3-on-surface-variant);">v{{ redis_info.version }} &nbsp;·&nbsp; 在线 {{ redis_info.uptime_days }} 天</span>
+                    <span class="material-icons">memory</span>{% trans 'Redis 缓存状态' %}<span style="margin-left:auto;font-size:0.75rem;font-weight:400;color:var(--md3-on-surface-variant);">{% blocktrans with __i18n1=redis_info.version __i18n2=redis_info.uptime_days %}v{{ __i18n1 }} &nbsp;·&nbsp; 在线 {{ __i18n2 }} 天{% endblocktrans %}</span>
                 </h3>
                 <div class="redis-grid">
                     <div class="redis-item">
-                        <span class="redis-item-label">已用内存</span>
+                        <span class="redis-item-label">{% trans '已用内存' %}</span>
                         <span class="redis-item-value">{{ redis_info.used_mb }} MB</span>
                     </div>
                     {% if redis_info.max_mb %}
                     <div class="redis-item">
-                        <span class="redis-item-label">最大内存</span>
+                        <span class="redis-item-label">{% trans '最大内存' %}</span>
                         <span class="redis-item-value">{{ redis_info.max_mb }} MB</span>
                     </div>
                     <div class="redis-item">
-                        <span class="redis-item-label">内存使用率</span>
+                        <span class="redis-item-label">{% trans '内存使用率' %}</span>
                         <span class="redis-item-value">{{ redis_info.usage_pct }}%</span>
                         <div class="redis-bar-wrap">
                             <div class="redis-bar-fill {% if redis_info.usage_pct > 85 %}danger{% elif redis_info.usage_pct > 65 %}warn{% endif %}"
@@ -984,11 +972,11 @@
                     </div>
                     {% endif %}
                     <div class="redis-item">
-                        <span class="redis-item-label">缓存键数</span>
+                        <span class="redis-item-label">{% trans '缓存键数' %}</span>
                         <span class="redis-item-value">{{ redis_info.keys }}</span>
                     </div>
                     <div class="redis-item">
-                        <span class="redis-item-label">连接数</span>
+                        <span class="redis-item-label">{% trans '连接数' %}</span>
                         <span class="redis-item-value">{{ redis_info.connected_clients }}</span>
                     </div>
                 </div>
@@ -998,9 +986,7 @@
             {% if announcements %}
             <div class="card">
                 <h3>
-                    <span class="material-icons">notifications</span>
-                    最近发布的公告
-                </h3>
+                    <span class="material-icons">notifications</span>{% trans '最近发布的公告' %}</h3>
                 <div class="announcement-list">
                     {% for announcement in announcements %}
                     <div class="announcement-item">
@@ -1008,30 +994,24 @@
                             <div class="announcement-info">
                                 <div class="announcement-title">{{ announcement.title }}</div>
                                 <div class="announcement-meta">
-                                    <span>发布于 {{ announcement.created_at|date:"Y-m-d H:i" }}</span>
+                                    <span>{% blocktrans with __i18n1=announcement.created_at|date:"Y-m-d H:i" %}发布于 {{ __i18n1 }}{% endblocktrans %}</span>
                                     <span class="status-badge {{ announcement.status }}">
                                         <span class="material-icons">
                                             {% if announcement.status == 'published' %}check_circle
                                             {% elif announcement.status == 'draft' %}edit_note
                                             {% else %}archive{% endif %}
                                         </span>
-                                        {% if announcement.status == 'published' %}已发布
-                                        {% elif announcement.status == 'draft' %}草稿
-                                        {% else %}已归档{% endif %}
+                                        {% if announcement.status == 'published' %}{% trans '已发布' %}{% elif announcement.status == 'draft' %}{% trans '草稿' %}{% else %}{% trans '已归档' %}{% endif %}
                                     </span>
                                 </div>
                             </div>
                             <div class="announcement-actions">
                                 <a href="{% url 'clubs:edit_announcement' announcement.id %}" class="btn-action btn-edit">
-                                    <span class="material-icons">edit</span>
-                                    编辑
-                                </a>
+                                    <span class="material-icons">edit</span>{% trans '编辑' %}</a>
                                 <form method="post" action="{% url 'clubs:delete_announcement' announcement.id %}" style="display: inline;">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn-action btn-delete" onclick="return confirm('确定要删除此公告吗？');">
-                                        <span class="material-icons">delete</span>
-                                        删除
-                                    </button>
+                                    <button type="submit" class="btn-action btn-delete" onclick="return confirm(gettext('确定要删除此公告吗？'));">
+                                        <span class="material-icons">delete</span>{% trans '删除' %}</button>
                                 </form>
                             </div>
                         </div>
@@ -1041,9 +1021,7 @@
                         <div class="announcement-footer">
                             {% if announcement.link_url %}
                             <a href="{{ announcement.link_url }}" class="announcement-link" target="_blank" rel="noopener">
-                                <span class="material-icons">open_in_new</span>
-                                查看链接
-                            </a>
+                                <span class="material-icons">open_in_new</span>{% trans '查看链接' %}</a>
                             {% endif %}
                             {% if announcement.attachment %}
                             <a href="{{ announcement.attachment.url }}" class="attachment-link" target="_blank" rel="noopener">
@@ -1061,69 +1039,65 @@
         <div class="dashboard-side">
             <div class="card">
                 <h3>
-                    <span class="material-icons">bolt</span>
-                    快速操作
-                </h3>
+                    <span class="material-icons">bolt</span>{% trans '快速操作' %}</h3>
                 <div class="actions-grid compact">
                     <a href="{% url 'clubs:manage_departments' %}" class="action-btn">
                         <span class="material-icons">category</span>
-                        <span>管理部门介绍</span>
+                        <span>{% trans '管理部门介绍' %}</span>
                     </a>
                     <a href="{% url 'clubs:manage_carousel' %}" class="action-btn">
                         <span class="material-icons">view_carousel</span>
-                        <span>管理轮播图</span>
+                        <span>{% trans '管理轮播图' %}</span>
                     </a>
                     <a href="{% url 'clubs:manage_form_channels' %}" class="action-btn">
                         <span class="material-icons">description</span>
-                        <span>修改材料</span>
+                        <span>{% trans '修改材料' %}</span>
                     </a>
                     <a href="{% url 'clubs:manage_announcements' %}" class="action-btn">
                         <span class="material-icons">campaign</span>
-                        <span>管理公告</span>
+                        <span>{% trans '管理公告' %}</span>
                     </a>
                     <a href="{% url 'clubs:manage_smtp_config' %}" class="action-btn">
                         <span class="material-icons">mail</span>
-                        <span>邮箱设置</span>
+                        <span>{% trans '邮箱设置' %}</span>
                     </a>
                     <a href="{% url 'clubs:manage_storage_config' %}" class="action-btn">
                         <span class="material-icons">cloud_sync</span>
-                        <span>S3存储设置</span>
+                        <span>{% trans 'S3存储设置' %}</span>
                     </a>
                     <a href="{% url 'clubs:site_settings' %}" class="action-btn">
                         <span class="material-icons">tune</span>
-                        <span>站点设置</span>
+                        <span>{% trans '站点设置' %}</span>
                     </a>
                     <a href="{% url 'clubs:admin_assign_presidents' %}" class="action-btn">
                         <span class="material-icons">manage_accounts</span>
-                        <span>指定社团社长</span>
+                        <span>{% trans '指定社团社长' %}</span>
                     </a>
                     <a href="{% url 'clubs:locked_accounts' %}" class="action-btn" style="border-color:var(--md3-error-container);">
                         <span class="material-icons" style="color:var(--md3-error);">lock</span>
-                        <span>被锁定账号</span>
+                        <span>{% trans '被锁定账号' %}</span>
                     </a>
                 </div>
             </div>
             
             <div class="card">
                 <h3>
-                    <span class="material-icons">pie_chart</span>
-                    用户角色分布
-                </h3>
+                    <span class="material-icons">pie_chart</span>{% trans '用户角色分布' %}</h3>
                 <div class="role-grid">
                     <div class="role-item president">
-                        <span class="role-label">社长</span>
+                        <span class="role-label">{% trans '社长' %}</span>
                         <span class="role-value">{{ presidents_count }}</span>
                     </div>
                     <div class="role-item staff">
-                        <span class="role-label">干事</span>
+                        <span class="role-label">{% trans '干事' %}</span>
                         <span class="role-value">{{ staff_count }}</span>
                     </div>
                     <div class="role-item admin">
-                        <span class="role-label">管理员</span>
+                        <span class="role-label">{% trans '管理员' %}</span>
                         <span class="role-value">{{ admins_count }}</span>
                     </div>
                     <div class="role-item member">
-                        <span class="role-label">社员</span>
+                        <span class="role-label">{% trans '社员' %}</span>
                         <span class="role-value">{{ members_count }}</span>
                     </div>
                 </div>
@@ -1162,7 +1136,7 @@
         data: {
             labels: dateLabels,
             datasets: [{
-                label: '每日访问量',
+                label: gettext('每日访问量'),
                 data: counts,
                 borderColor: primaryColor,
                 backgroundColor: primaryColor + '22',
@@ -1180,8 +1154,8 @@
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        title: ctx => '日期：' + dates[ctx[0].dataIndex],
-                        label: ctx => '访问量：' + ctx.parsed.y,
+                        title: ctx => gettext('日期：') + dates[ctx[0].dataIndex],
+                        label: ctx => gettext('访问量：') + ctx.parsed.y,
                     }
                 }
             },
@@ -1204,7 +1178,7 @@
             labels: typeLabels,
             datasets: [
                 {
-                    label: '历史已通过',
+                    label: gettext('历史已通过'),
                     data: typeApproved,
                     backgroundColor: colorApproved,
                     borderColor: borderApproved,
@@ -1213,7 +1187,7 @@
                     stack: 'decided',
                 },
                 {
-                    label: '历史已拒绝',
+                    label: gettext('历史已拒绝'),
                     data: typeRejected,
                     backgroundColor: colorRejected,
                     borderColor: borderRejected,
@@ -1222,7 +1196,7 @@
                     stack: 'decided',
                 },
                 {
-                    label: '待处理',
+                    label: gettext('待处理'),
                     data: typePending,
                     backgroundColor: colorPending,
                     borderColor: borderPending,
@@ -1246,14 +1220,14 @@
                             const i = ctx[0].dataIndex;
                             const decided = typeApproved[i] + typeRejected[i];
                             const pending = typePending[i];
-                            if (decided === 0) return ['历史决策：暂无', '待处理：' + pending];
+                            if (decided === 0) return [gettext('历史决策：暂无'), gettext('待处理：') + pending];
                             const apr = (typeApproved[i] / decided * 100).toFixed(1);
                             const rej = (typeRejected[i] / decided * 100).toFixed(1);
                             return [
-                                '历史决策：' + decided + ' 次',
-                                '  通过 ' + typeApproved[i] + ' (' + apr + '%)',
-                                '  拒绝 ' + typeRejected[i] + ' (' + rej + '%)',
-                                '当前待处理：' + pending,
+                                gettext('历史决策：') + decided + gettext(' 次'),
+                                gettext('  通过 ') + typeApproved[i] + ' (' + apr + '%)',
+                                gettext('  拒绝 ') + typeRejected[i] + ' (' + rej + '%)',
+                                gettext('当前待处理：') + pending,
                             ];
                         }
                     }

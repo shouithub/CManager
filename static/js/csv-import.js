@@ -52,7 +52,7 @@
 
         if (fileInput && fileName) {
             fileInput.addEventListener('change', function () {
-                fileName.textContent = (fileInput.files && fileInput.files[0] && fileInput.files[0].name) || '未选择文件';
+                fileName.textContent = (fileInput.files && fileInput.files[0] && fileInput.files[0].name) || gettext('未选择文件');
             });
         }
 
@@ -98,12 +98,12 @@
                     if (progressText) progressText.textContent = '导入完成';
                     if (progressBar) progressBar.style.width = '100%';
                     result.className = 'csv-import-result success';
-                    result.textContent = resp.message || '导入成功';
+                    result.textContent = resp.message || gettext('导入成功');
                     setTimeout(function () { window.location.reload(); }, 1500);
                 } else {
                     if (progress) progress.hidden = true;
                     result.className = 'csv-import-result error';
-                    result.textContent = (resp && resp.message) || '导入失败，请稍后重试。';
+                    result.textContent = (resp && resp.message) || gettext('导入失败，请稍后重试。');
                     if (submitBtn) submitBtn.disabled = false;
                 }
             });

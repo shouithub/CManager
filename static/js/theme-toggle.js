@@ -126,7 +126,7 @@
         let icon, title;
         if (theme === THEME_AUTO) {
             icon = 'brightness_auto';
-            title = '跟随系统（当前：' + (effective === THEME_DARK ? '深色' : '浅色') + '），点击切换';
+            title = '跟随系统（当前：' + (effective === THEME_DARK ? gettext('深色') : gettext('浅色')) + gettext('），点击切换');
         } else if (theme === THEME_DARK) {
             icon = 'brightness_4';
             title = '深色模式，点击切换';
@@ -148,7 +148,7 @@
 
         const themeText = document.querySelector('.sidebar-theme-toggle .theme-text');
         if (themeText) {
-            themeText.textContent = theme === THEME_AUTO ? '跟随系统' : (theme === THEME_DARK ? '深色模式' : '浅色模式');
+            themeText.textContent = theme === THEME_AUTO ? gettext('跟随系统') : (theme === THEME_DARK ? gettext('深色模式') : gettext('浅色模式'));
         }
 
     }

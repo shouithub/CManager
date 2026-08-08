@@ -1,46 +1,46 @@
+{% load i18n %}
 <div class="settings-group span-2">
     <div class="settings-group-title">
-        <span class="material-icons">tune</span> 通道开关
-        <p>控制通道的启用状态与各处展示行为。</p>
+        <span class="material-icons">tune</span>{% trans '通道开关' %}<p>{% trans '控制通道的启用状态与各处展示行为。' %}</p>
     </div>
     <div class="settings-grid">
         <label class="setting-card">
             <span class="setting-card-icon"><span class="material-icons">power_settings_new</span></span>
             <span class="setting-card-text">
-                <strong>运行启用</strong>
-                <small>停用后通道不会出现在任何提交入口</small>
+                <strong>{% trans '运行启用' %}</strong>
+                <small>{% trans '停用后通道不会出现在任何提交入口' %}</small>
             </span>
             <input type="checkbox" name="is_active" {% if not current or current.is_active %}checked{% endif %}>
         </label>
         <label class="setting-card">
             <span class="setting-card-icon"><span class="material-icons">verified_user</span></span>
             <span class="setting-card-text">
-                <strong>标记为内置默认</strong>
-                <small>表示该通道由系统业务动作生成</small>
+                <strong>{% trans '标记为内置默认' %}</strong>
+                <small>{% trans '表示该通道由系统业务动作生成' %}</small>
             </span>
             <input type="checkbox" name="is_builtin" {% if current.is_builtin %}checked{% endif %}>
         </label>
         <label class="setting-card">
             <span class="setting-card-icon"><span class="material-icons">folder_zip</span></span>
             <span class="setting-card-text">
-                <strong>显示打包 ZIP 下载</strong>
-                <small>审核页提供将本通道文件打包下载</small>
+                <strong>{% trans '显示打包 ZIP 下载' %}</strong>
+                <small>{% trans '审核页提供将本通道文件打包下载' %}</small>
             </span>
             <input type="checkbox" name="show_zip_download" {% if not current or current.show_zip_download %}checked{% endif %}>
         </label>
         <label class="setting-card">
             <span class="setting-card-icon"><span class="material-icons">home</span></span>
             <span class="setting-card-text">
-                <strong>我的社团显示未提交</strong>
-                <small>社长侧“我的社团”展示未提交状态</small>
+                <strong>{% trans '我的社团显示未提交' %}</strong>
+                <small>{% trans '社长侧“我的社团”展示未提交状态' %}</small>
             </span>
             <input type="checkbox" name="show_unsubmitted_status" {% if current.show_unsubmitted_status %}checked{% endif %}>
         </label>
         <label class="setting-card">
             <span class="setting-card-icon"><span class="material-icons">admin_panel_settings</span></span>
             <span class="setting-card-text">
-                <strong>社团管理页开关</strong>
-                <small>允许干事在社团管理页启停本通道</small>
+                <strong>{% trans '社团管理页开关' %}</strong>
+                <small>{% trans '允许干事在社团管理页启停本通道' %}</small>
             </span>
             <input type="checkbox" name="allow_staff_toggle" {% if current.allow_staff_toggle %}checked{% endif %}>
         </label>

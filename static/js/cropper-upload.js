@@ -25,7 +25,7 @@
 
     function open(options) {
         if (!modal || !image || !zoom || !window.Cropper) {
-            if (options && options.onError) options.onError('裁剪组件不可用');
+            if (options && options.onError) options.onError(gettext('裁剪组件不可用'));
             return;
         }
         config = options || {};
@@ -74,7 +74,7 @@
             imageSmoothingQuality: 'high'
         });
         if (!canvas) {
-            if (config.onError) config.onError('无法生成裁剪图片');
+            if (config.onError) config.onError(gettext('无法生成裁剪图片'));
             return;
         }
         var onDone = config.onDone;

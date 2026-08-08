@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}审批记录{% endblock %}
+{% block title %}{% trans '审批记录' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -406,8 +407,8 @@
     <section class="page-header">
         <span class="material-icons page-title-icon">fact_check</span>
         <div class="page-header-content">
-            <h1>审批记录</h1>
-            <p class="subtitle">查看社团提交请求的审核进度和处理结果</p>
+            <h1>{% trans '审批记录' %}</h1>
+            <p class="subtitle">{% trans '查看社团提交请求的审核进度和处理结果' %}</p>
         </div>
     </section>
 
@@ -423,7 +424,7 @@
             <div class="channel-record-groups">
                 <div class="channel-record-group">
                     <div class="group-label">
-                        <span>进行中</span>
+                        <span>{% trans '进行中' %}</span>
                         <span>{{ group.active_items|length }}</span>
                     </div>
                     <div class="record-list">
@@ -436,7 +437,7 @@
                                 </div>
                                 <div class="record-meta">
                                     <span>{{ item.club.name }}</span>
-                                    <span>编号 {{ item.public_id }}</span>
+                                    <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                                     <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                                 </div>
                             </div>
@@ -444,13 +445,11 @@
                         </a>
                         {% empty %}
                         <div class="empty-state">
-                            <span class="material-icons">task_alt</span>
-                            暂无进行中的请求
-                        </div>
+                            <span class="material-icons">task_alt</span>{% trans '暂无进行中的请求' %}</div>
                         {% endfor %}
                         {% if group.active_items|length > 3 %}
                         <details class="more-records">
-                            <summary>还有 {{ group.active_items|length|add:"-3" }} 条进行中</summary>
+                            <summary>{% blocktrans with __i18n1=group.active_items|length|add:"-3" %}还有 {{ __i18n1 }} 条进行中{% endblocktrans %}</summary>
                             {% for item in group.active_items|slice:"3:" %}
                             <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
                                 <div>
@@ -460,7 +459,7 @@
                                     </div>
                                     <div class="record-meta">
                                         <span>{{ item.club.name }}</span>
-                                        <span>编号 {{ item.public_id }}</span>
+                                        <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                                         <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                                     </div>
                                 </div>
@@ -473,7 +472,7 @@
                 </div>
                 <div class="channel-record-group">
                     <div class="group-label">
-                        <span>已处理</span>
+                        <span>{% trans '已处理' %}</span>
                         <span>{{ group.completed_items|length }}</span>
                     </div>
                     <div class="record-list">
@@ -486,7 +485,7 @@
                                 </div>
                                 <div class="record-meta">
                                     <span>{{ item.club.name }}</span>
-                                    <span>编号 {{ item.public_id }}</span>
+                                    <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                                     <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                                 </div>
                             </div>
@@ -494,13 +493,11 @@
                         </a>
                         {% empty %}
                         <div class="empty-state">
-                            <span class="material-icons">inbox</span>
-                            暂无已处理请求
-                        </div>
+                            <span class="material-icons">inbox</span>{% trans '暂无已处理请求' %}</div>
                         {% endfor %}
                         {% if group.completed_items|length > 3 %}
                         <details class="more-records">
-                            <summary>还有 {{ group.completed_items|length|add:"-3" }} 条已处理</summary>
+                            <summary>{% blocktrans with __i18n1=group.completed_items|length|add:"-3" %}还有 {{ __i18n1 }} 条已处理{% endblocktrans %}</summary>
                             {% for item in group.completed_items|slice:"3:" %}
                             <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
                                 <div>
@@ -510,7 +507,7 @@
                                     </div>
                                     <div class="record-meta">
                                         <span>{{ item.club.name }}</span>
-                                        <span>编号 {{ item.public_id }}</span>
+                                        <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                                         <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                                     </div>
                                 </div>
@@ -526,9 +523,7 @@
         {% empty %}
         <section class="content-card">
             <div class="empty-state">
-                <span class="material-icons">inbox</span>
-                暂无审批记录
-            </div>
+                <span class="material-icons">inbox</span>{% trans '暂无审批记录' %}</div>
         </section>
         {% endfor %}
     </div>
@@ -536,7 +531,7 @@
     <div class="mobile-approval-view">
         <section class="content-card">
             <div class="section-header">
-                <h2><span class="material-icons">notifications_active</span>进行中</h2>
+                <h2><span class="material-icons">notifications_active</span>{% trans '进行中' %}</h2>
                 <span class="count-badge">{{ active_items|length }}</span>
             </div>
             <div class="record-list">
@@ -550,7 +545,7 @@
                         <div class="record-meta">
                             <span>{{ item.channel.name }}</span>
                             <span>{{ item.club.name }}</span>
-                            <span>编号 {{ item.public_id }}</span>
+                            <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                             <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                     </div>
@@ -558,13 +553,11 @@
                 </a>
                 {% empty %}
                 <div class="empty-state">
-                    <span class="material-icons">task_alt</span>
-                    暂无进行中的请求
-                </div>
+                    <span class="material-icons">task_alt</span>{% trans '暂无进行中的请求' %}</div>
                 {% endfor %}
                 {% if active_items|length > 3 %}
                 <details class="more-records">
-                    <summary>还有 {{ active_items|length|add:"-3" }} 条进行中</summary>
+                    <summary>{% blocktrans with __i18n1=active_items|length|add:"-3" %}还有 {{ __i18n1 }} 条进行中{% endblocktrans %}</summary>
                     {% for item in active_items|slice:"3:" %}
                     <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
                         <div>
@@ -575,7 +568,7 @@
                             <div class="record-meta">
                                 <span>{{ item.channel.name }}</span>
                                 <span>{{ item.club.name }}</span>
-                                <span>编号 {{ item.public_id }}</span>
+                                <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                                 <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                             </div>
                         </div>
@@ -589,7 +582,7 @@
 
         <section class="content-card">
             <div class="section-header">
-                <h2><span class="material-icons">history</span>已处理</h2>
+                <h2><span class="material-icons">history</span>{% trans '已处理' %}</h2>
                 <span class="count-badge">{{ completed_items|length }}</span>
             </div>
             <div class="record-list">
@@ -603,7 +596,7 @@
                         <div class="record-meta">
                             <span>{{ item.channel.name }}</span>
                             <span>{{ item.club.name }}</span>
-                            <span>编号 {{ item.public_id }}</span>
+                            <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                             <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                         </div>
                     </div>
@@ -611,13 +604,11 @@
                 </a>
                 {% empty %}
                 <div class="empty-state">
-                    <span class="material-icons">inbox</span>
-                    暂无已处理请求
-                </div>
+                    <span class="material-icons">inbox</span>{% trans '暂无已处理请求' %}</div>
                 {% endfor %}
                 {% if completed_items|length > 3 %}
                 <details class="more-records">
-                    <summary>还有 {{ completed_items|length|add:"-3" }} 条已处理</summary>
+                    <summary>{% blocktrans with __i18n1=completed_items|length|add:"-3" %}还有 {{ __i18n1 }} 条已处理{% endblocktrans %}</summary>
                     {% for item in completed_items|slice:"3:" %}
                     <a class="record-card" href="{% url 'clubs:approval_detail' item.channel.slug item.public_id %}">
                         <div>
@@ -628,7 +619,7 @@
                             <div class="record-meta">
                                 <span>{{ item.channel.name }}</span>
                                 <span>{{ item.club.name }}</span>
-                                <span>编号 {{ item.public_id }}</span>
+                                <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                                 <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                             </div>
                         </div>
@@ -641,10 +632,10 @@
         </section>
         {% if active_items.paginator.num_pages > 1 or completed_items.paginator.num_pages > 1 %}
         <nav style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px;">
-            {% if active_items.has_previous %}<a class="btn btn-outlined" href="{% querystring active_page=active_items.previous_page_number %}">进行中上一页</a>{% endif %}
-            {% if active_items.has_next %}<a class="btn btn-outlined" href="{% querystring active_page=active_items.next_page_number %}">进行中下一页</a>{% endif %}
-            {% if completed_items.has_previous %}<a class="btn btn-outlined" href="{% querystring completed_page=completed_items.previous_page_number %}">已处理上一页</a>{% endif %}
-            {% if completed_items.has_next %}<a class="btn btn-outlined" href="{% querystring completed_page=completed_items.next_page_number %}">已处理下一页</a>{% endif %}
+            {% if active_items.has_previous %}<a class="btn btn-outlined" href="{% querystring active_page=active_items.previous_page_number %}">{% trans '进行中上一页' %}</a>{% endif %}
+            {% if active_items.has_next %}<a class="btn btn-outlined" href="{% querystring active_page=active_items.next_page_number %}">{% trans '进行中下一页' %}</a>{% endif %}
+            {% if completed_items.has_previous %}<a class="btn btn-outlined" href="{% querystring completed_page=completed_items.previous_page_number %}">{% trans '已处理上一页' %}</a>{% endif %}
+            {% if completed_items.has_next %}<a class="btn btn-outlined" href="{% querystring completed_page=completed_items.next_page_number %}">{% trans '已处理下一页' %}</a>{% endif %}
         </nav>
         {% endif %}
     </div>

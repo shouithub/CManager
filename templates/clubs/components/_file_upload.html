@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load common_tags %}
 {% comment %}
 标准文件上传组件（Material Design 风格，全站统一）。
@@ -5,12 +6,12 @@
 {% include 'clubs/components/_file_upload.html' with
     field_id='field_12'            # 输入框/容器 id（默认取 field_name）
     field_name='field_12'          # 表单提交字段名（必填）
-    label='上传附件'                # 显示名称
+    label=gettext('上传附件')                # 显示名称
     is_required=True/False
     allowed_extensions='.doc,.docx,.pdf'   # 字符串，用于 accept 与提示
     max_size_mb=10
     multiple=True/False
-    description='帮助文本'
+    description=gettext('帮助文本')
     existing_file=file_obj         # 编辑时显示当前文件
     icon='attach_file'
     input_id='id_image'            # 覆盖输入框 id（页面需要挂钩时）
@@ -38,7 +39,7 @@
         {% if is_required %}
         <span class="required-mark">*</span>
         {% else %}
-        <span class="optional-mark">(可选)</span>
+        <span class="optional-mark">{% trans '(可选)' %}</span>
         {% endif %}
     </label>
 
@@ -47,12 +48,12 @@
             <span class="material-icons placeholder-icon">add_circle_outline</span>
             <div class="placeholder-content">
                 <div class="placeholder-text">
-                    <span class="desktop-text">点击或拖拽{% if multiple %}多个文件{% endif %}至此</span>
-                    <span class="mobile-text">点击选择文件</span>
+                    <span class="desktop-text">{% trans '点击或拖拽' %}{% if multiple %}{% trans '多个文件' %}{% endif %}{% trans '至此' %}</span>
+                    <span class="mobile-text">{% trans '点击选择文件' %}</span>
                 </div>
                 <div class="upload-hint">
-                    {% if allowed_extensions %}支持格式：{{ allowed_extensions }}{% endif %}
-                    {% if max_size_mb %}（最大 {{ max_size_mb }}MB）{% endif %}
+                    {% if allowed_extensions %}{% blocktrans with __i18n1=allowed_extensions %}支持格式：{{ __i18n1 }}{% endblocktrans %}{% endif %}
+                    {% if max_size_mb %}{% blocktrans with __i18n1=max_size_mb %}（最大 {{ __i18n1 }}MB）{% endblocktrans %}{% endif %}
                 </div>
             </div>
         </div>
@@ -77,8 +78,7 @@
     {% if template_url %}
     <div class="template-download-info">
         <span class="material-icons">download</span>
-        <a href="{{ template_url }}" download class="template-link">
-            下载模板{% if template_name %}：{{ template_name }}{% endif %}
+        <a href="{{ template_url }}" download class="template-link">{% trans '下载模板' %}{% if template_name %}：{{ template_name }}{% endif %}
         </a>
     </div>
     {% endif %}
@@ -86,14 +86,14 @@
     {% if existing_file %}
     <div class="existing-file-info">
         <span class="material-icons">check_circle</span>
-        <span>当前文件：</span>
+        <span>{% trans '当前文件：' %}</span>
         <a href="{{ existing_file.url }}" target="_blank" class="existing-file-link">
             {{ existing_file.name }}
         </a>
-        <a href="{{ existing_file.url }}" target="_blank" rel="noopener" class="btn btn-outlined btn-sm">下载</a>
+        <a href="{{ existing_file.url }}" target="_blank" rel="noopener" class="btn btn-outlined btn-sm">{% trans '下载' %}</a>
         <button type="button" class="btn btn-outlined btn-sm js-office-preview"
                 data-office-preview-url="{{ existing_file|office_preview_url:request }}"
-                data-office-file-name="{{ existing_file.name }}">预览</button>
+                data-office-file-name="{{ existing_file.name }}">{% trans '预览' %}</button>
     </div>
     {% endif %}
 </div>

@@ -1,6 +1,7 @@
 {% extends 'clubs/admin/base.html' %}
+{% load i18n %}
 
-{% block title %}BUG日志 - 管理员{% endblock %}
+{% block title %}{% trans 'BUG日志 - 管理员' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -405,41 +406,39 @@
             <span class="material-icons">bug_report</span>
         </div>
         <div>
-            <h1>BUG日志</h1>
-            <p class="subtitle">记录系统 500 等错误与用户求助，便于排查与跟进</p>
+            <h1>{% trans 'BUG日志' %}</h1>
+            <p class="subtitle">{% trans '记录系统 500 等错误与用户求助，便于排查与跟进' %}</p>
         </div>
     </div>
     <a href="{% url 'clubs:admin_dashboard' %}" class="bl-back-btn">
-        <span class="material-icons">arrow_back</span>
-        返回仪表板
-    </a>
+        <span class="material-icons">arrow_back</span>{% trans '返回仪表板' %}</a>
 </div>
 
 <div class="bl-toolbar">
     <div class="bl-filters">
         <a href="{% url 'clubs:manage_bug_logs' %}?status=unresolved{% if q %}&q={{ q|urlencode }}{% endif %}"
-           class="bl-filter {% if filter_key == 'unresolved' %}active{% endif %}">
-            未处理（{{ counts.unresolved }}）
-        </a>
+           class="bl-filter {% if filter_key == 'unresolved' %}active{% endif %}">{% blocktrans with __i18n1=counts.unresolved %}
+            未处理（{{ __i18n1 }}）
+        {% endblocktrans %}</a>
         <a href="{% url 'clubs:manage_bug_logs' %}?status=help{% if q %}&q={{ q|urlencode }}{% endif %}"
            class="bl-filter help {% if filter_key == 'help' %}active{% endif %}">
-            <span class="material-icons">support_agent</span>
-            求助（{{ counts.help }}）
-        </a>
+            <span class="material-icons">support_agent</span>{% blocktrans with __i18n1=counts.help %}
+            求助（{{ __i18n1 }}）
+        {% endblocktrans %}</a>
         <a href="{% url 'clubs:manage_bug_logs' %}?status=resolved{% if q %}&q={{ q|urlencode }}{% endif %}"
-           class="bl-filter {% if filter_key == 'resolved' %}active{% endif %}">
-            已处理（{{ counts.resolved }}）
-        </a>
+           class="bl-filter {% if filter_key == 'resolved' %}active{% endif %}">{% blocktrans with __i18n1=counts.resolved %}
+            已处理（{{ __i18n1 }}）
+        {% endblocktrans %}</a>
         <a href="{% url 'clubs:manage_bug_logs' %}?status=all{% if q %}&q={{ q|urlencode }}{% endif %}"
-           class="bl-filter {% if filter_key == 'all' %}active{% endif %}">
-            全部（{{ counts.all }}）
-        </a>
+           class="bl-filter {% if filter_key == 'all' %}active{% endif %}">{% blocktrans with __i18n1=counts.all %}
+            全部（{{ __i18n1 }}）
+        {% endblocktrans %}</a>
     </div>
     <form class="bl-search" method="get">
         <span class="material-icons">search</span>
         <input type="hidden" name="status" value="{{ filter_key }}">
         <input type="text" name="q" value="{{ q }}" placeholder="搜索路径、用户、IP、异常信息">
-        <button type="submit">搜索</button>
+        <button type="submit">{% trans '搜索' %}</button>
     </form>
 </div>
 
@@ -455,8 +454,8 @@
             <div class="bl-item-top">
                 <span class="bl-path" title="{{ log.path }}">{{ log.path|default:'（空路径）' }}</span>
                 <span class="bl-badge {% if log.status_code == 500 %}error{% endif %}">HTTP {{ log.status_code }}</span>
-                {% if log.help_requested %}<span class="bl-badge help">等待帮助</span>{% endif %}
-                {% if log.resolved %}<span class="bl-badge ok">已处理</span>{% endif %}
+                {% if log.help_requested %}<span class="bl-badge help">{% trans '等待帮助' %}</span>{% endif %}
+                {% if log.resolved %}<span class="bl-badge ok">{% trans '已处理' %}</span>{% endif %}
             </div>
             <div class="bl-meta">
                 <span>{{ log.created_at|date:"Y-m-d H:i:s" }}</span>
@@ -488,9 +487,9 @@
             {% if log.help_requested %}
             <div class="bl-meta" style="margin-top:6px;">
                 {% if log.help_email %}<span><span class="material-icons">mail</span>{{ log.help_email }}</span>{% endif %}
-                {% if log.help_requested_at %}<span><span class="material-icons">schedule</span>求助于 {{ log.help_requested_at|date:"Y-m-d H:i" }}</span>{% endif %}
+                {% if log.help_requested_at %}<span><span class="material-icons">schedule</span>{% blocktrans with __i18n1=log.help_requested_at|date:"Y-m-d H:i" %}求助于 {{ __i18n1 }}{% endblocktrans %}</span>{% endif %}
                 {% if log.resolved_by %}
-                <span><span class="material-icons">check_circle</span>由 {{ log.resolved_by.username }} 处理</span>
+                <span><span class="material-icons">check_circle</span>{% blocktrans with __i18n1=log.resolved_by.username %}由 {{ __i18n1 }} 处理{% endblocktrans %}</span>
                 {% endif %}
             </div>
             {% if log.help_note %}
@@ -504,7 +503,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="unresolve">
                 <input type="hidden" name="log_id" value="{{ log.id }}">
-                <button type="submit" class="bl-action">恢复未处理</button>
+                <button type="submit" class="bl-action">{% trans '恢复未处理' %}</button>
             </form>
             {% else %}
             <form method="post" action="{% url 'clubs:manage_bug_logs' %}?status={{ filter_key }}">
@@ -512,9 +511,7 @@
                 <input type="hidden" name="action" value="resolve">
                 <input type="hidden" name="log_id" value="{{ log.id }}">
                 <button type="submit" class="bl-action ok">
-                    <span class="material-icons">check</span>
-                    标记已处理
-                </button>
+                    <span class="material-icons">check</span>{% trans '标记已处理' %}</button>
             </form>
             {% endif %}
             <form method="post" action="{% url 'clubs:manage_bug_logs' %}?status={{ filter_key }}"
@@ -523,16 +520,14 @@
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="log_id" value="{{ log.id }}">
                 <button type="submit" class="bl-action danger">
-                    <span class="material-icons">delete</span>
-                    删除
-                </button>
+                    <span class="material-icons">delete</span>{% trans '删除' %}</button>
             </form>
         </div>
     </div>
     {% empty %}
     <div class="bl-empty">
         <span class="material-icons">check_circle</span>
-        <p>{% if q %}没有匹配的日志{% elif filter_key == 'help' %}暂无待处理的求助{% elif filter_key == 'resolved' %}暂无已处理日志{% elif filter_key == 'all' %}暂无日志{% else %}暂无未处理的错误日志{% endif %}</p>
+        <p>{% if q %}{% trans '没有匹配的日志' %}{% elif filter_key == 'help' %}{% trans '暂无待处理的求助' %}{% elif filter_key == 'resolved' %}{% trans '暂无已处理日志' %}{% elif filter_key == 'all' %}{% trans '暂无日志' %}{% else %}{% trans '暂无未处理的错误日志' %}{% endif %}</p>
     </div>
     {% endfor %}
 </div>

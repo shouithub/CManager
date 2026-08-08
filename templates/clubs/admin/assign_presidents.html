@@ -1,7 +1,8 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}批量指定社长{% endblock %}
+{% block title %}{% trans '批量指定社长' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -212,24 +213,24 @@
     <div class="page-header">
         <span class="material-icons">manage_accounts</span>
         <div class="page-header-content">
-            <h1>批量指定社长</h1>
-            <p class="subtitle">为每个社团指定当前社长（Officer 记录），未选择表示该社团暂无社长</p>
+            <h1>{% trans '批量指定社长' %}</h1>
+            <p class="subtitle">{% trans '为每个社团指定当前社长（Officer 记录），未选择表示该社团暂无社长' %}</p>
         </div>
         <div class="stats-badges">
             <span class="stats-badge primary">
-                <span class="material-icons" style="font-size:1rem;">groups</span>
-                共 {{ total_clubs }} 个社团
-            </span>
+                <span class="material-icons" style="font-size:1rem;">groups</span>{% blocktrans with __i18n1=total_clubs %}
+                共 {{ __i18n1 }} 个社团
+            {% endblocktrans %}</span>
             {% if unassigned_count %}
             <span class="stats-badge warning">
-                <span class="material-icons" style="font-size:1rem;">warning</span>
-                {{ unassigned_count }} 个未绑定
-            </span>
+                <span class="material-icons" style="font-size:1rem;">warning</span>{% blocktrans with __i18n1=unassigned_count %}
+                {{ __i18n1 }} 个未绑定
+            {% endblocktrans %}</span>
             {% endif %}
             <span class="stats-badge primary">
-                <span class="material-icons" style="font-size:1rem;">check_circle</span>
-                已绑定 {{ assigned_count }} / {{ total_clubs }}
-            </span>
+                <span class="material-icons" style="font-size:1rem;">check_circle</span>{% blocktrans with __i18n1=assigned_count __i18n2=total_clubs %}
+                已绑定 {{ __i18n1 }} / {{ __i18n2 }}
+            {% endblocktrans %}</span>
         </div>
         <a href="{% url 'clubs:admin_dashboard' %}" class="page-back-btn" title="返回仪表板" aria-label="返回仪表板">
             <span class="material-icons">arrow_back</span>
@@ -248,7 +249,7 @@
 
     <div class="filter-bar">
         <span class="material-icons" style="color: var(--md3-on-surface-variant);">search</span>
-        <input type="text" id="club-search" placeholder="搜索社团名称..." oninput="filterTable()">
+        <input type="text" id="club-search" placeholder="{% trans '搜索社团名称...' %}" oninput="filterTable()">
     </div>
 
     <form method="post" id="assign-form">
@@ -260,9 +261,9 @@
                 <thead>
                     <tr>
                         <th style="width:3rem;">#</th>
-                        <th>社团名称</th>
-                        <th>当前社长</th>
-                        <th>指定新社长</th>
+                        <th>{% trans '社团名称' %}</th>
+                        <th>{% trans '当前社长' %}</th>
+                        <th>{% trans '指定新社长' %}</th>
                     </tr>
                 </thead>
                 <tbody id="clubs-tbody">
@@ -278,14 +279,12 @@
                             </span>
                             {% else %}
                             <span class="current-president unassigned">
-                                <span class="material-icons" style="font-size:0.9rem; vertical-align:middle;">person_off</span>
-                                未绑定
-                            </span>
+                                <span class="material-icons" style="font-size:0.9rem; vertical-align:middle;">person_off</span>{% trans '未绑定' %}</span>
                             {% endif %}
                         </td>
                         <td>
                             <select name="president_{{ item.club.id }}" class="president-select">
-                                <option value="">— 无社长 —</option>
+                                <option value="">{% trans '— 无社长 —' %}</option>
                                 {% for pu in president_users %}
                                 <option value="{{ pu.id }}"
                                     {% if item.current_president and item.current_president.id == pu.id %}selected{% endif %}>
@@ -300,17 +299,13 @@
             </table>
             {% else %}
             <div class="no-data">
-                <span class="material-icons" style="font-size:3rem; display:block; margin-bottom:1rem;">inbox</span>
-                暂无社团数据
-            </div>
+                <span class="material-icons" style="font-size:3rem; display:block; margin-bottom:1rem;">inbox</span>{% trans '暂无社团数据' %}</div>
             {% endif %}
         </div>
 
         <div class="actions-bar">
             <button type="submit" class="btn-save">
-                <span class="material-icons">save</span>
-                保存所有指定
-            </button>
+                <span class="material-icons">save</span>{% trans '保存所有指定' %}</button>
         </div>
     </form>
 

@@ -481,7 +481,7 @@
         disableFormControls(form, true);
 
         var entries = collectEntries(states);
-        var topBar = showGlobalProgress('正在上传文件');
+        var topBar = showGlobalProgress(gettext('正在上传文件'));
 
         var xhr = new XMLHttpRequest();
         xhr.open(
@@ -523,13 +523,13 @@
             window.location.assign(finalUrl);
         });
         xhr.addEventListener('error', function () {
-            finishUpload(form, states, topBar, '网络错误，上传失败，请重试。');
+            finishUpload(form, states, topBar, gettext('网络错误，上传失败，请重试。'));
         });
         xhr.addEventListener('abort', function () {
-            finishUpload(form, states, topBar, '上传已取消，请重试。');
+            finishUpload(form, states, topBar, gettext('上传已取消，请重试。'));
         });
         xhr.addEventListener('timeout', function () {
-            finishUpload(form, states, topBar, '上传超时，请重试。');
+            finishUpload(form, states, topBar, gettext('上传超时，请重试。'));
         });
         xhr.send(fd);
     }
@@ -545,7 +545,7 @@
         if (pendingHidden.length) {
             event.preventDefault();
             event.stopImmediatePropagation();
-            alert('正在计算文件校验值，请稍候再提交。');
+            alert(gettext('正在计算文件校验值，请稍候再提交。'));
         }
     }, true);
 

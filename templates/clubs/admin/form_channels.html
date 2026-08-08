@@ -1,8 +1,9 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 {% load common_tags %}
 
-{% block title %}提交通道管理{% endblock %}
+{% block title %}{% trans '提交通道管理' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -1124,45 +1125,44 @@
     <header class="builder-header">
         <div class="builder-heading">
             <div>
-                <h1>提交通道管理</h1>
-                <p>统一配置提交入口、表单字段、审核策略与业务动作。</p>
+                <h1>{% trans '提交通道管理' %}</h1>
+                <p>{% trans '统一配置提交入口、表单字段、审核策略与业务动作。' %}</p>
             </div>
         </div>
         <a class="btn btn-primary" href="{% url 'clubs:manage_form_channels' %}?new=1">
-            <span class="material-icons">add</span>新增通道
-        </a>
+            <span class="material-icons">add</span>{% trans '新增通道' %}</a>
     </header>
 
-    <section class="channel-overview" aria-label="通道状态概览">
+    <section class="channel-overview" aria-label="{% trans '通道状态概览' %}">
         <div class="overview-card">
             <span class="overview-icon"><span class="material-icons">dynamic_form</span></span>
-            <span><strong class="overview-value">{{ channel_summary.total }}</strong><span class="overview-label">全部通道</span></span>
+            <span><strong class="overview-value">{{ channel_summary.total }}</strong><span class="overview-label">{% trans '全部通道' %}</span></span>
         </div>
         <div class="overview-card">
             <span class="overview-icon"><span class="material-icons">public</span></span>
-            <span><strong class="overview-value">{{ channel_summary.published }}</strong><span class="overview-label">对外开放</span></span>
+            <span><strong class="overview-value">{{ channel_summary.published }}</strong><span class="overview-label">{% trans '对外开放' %}</span></span>
         </div>
         <div class="overview-card">
             <span class="overview-icon"><span class="material-icons">edit_note</span></span>
-            <span><strong class="overview-value">{{ channel_summary.draft }}</strong><span class="overview-label">草稿</span></span>
+            <span><strong class="overview-value">{{ channel_summary.draft }}</strong><span class="overview-label">{% trans '草稿' %}</span></span>
         </div>
         <div class="overview-card">
             <span class="overview-icon"><span class="material-icons">warning_amber</span></span>
-            <span><strong class="overview-value">{{ channel_summary.attention }}</strong><span class="overview-label">需要处理</span></span>
+            <span><strong class="overview-value">{{ channel_summary.attention }}</strong><span class="overview-label">{% trans '需要处理' %}</span></span>
         </div>
     </section>
 
     <div class="builder-grid">
         <aside class="channel-rail">
             <div class="rail-header">
-                <h2 class="rail-title"><span class="material-icons">view_sidebar</span>通道</h2>
+                <h2 class="rail-title"><span class="material-icons">view_sidebar</span>{% trans '通道' %}</h2>
                 <span class="count-pill">{{ channels|length }}</span>
             </div>
             {% if channels %}
             <label class="rail-search">
                 <span class="rail-search-control">
                     <span class="material-icons" aria-hidden="true">search</span>
-                    <input class="rail-search-input js-channel-search" type="search" placeholder="搜索名称或标识" aria-label="搜索通道名称或标识" autocomplete="off">
+                    <input class="rail-search-input js-channel-search" type="search" placeholder="{% trans '搜索名称或标识' %}" aria-label="{% trans '搜索通道名称或标识' %}" autocomplete="off">
                 </span>
             </label>
             {% endif %}
@@ -1172,28 +1172,25 @@
                     <span class="channel-icon"><span class="material-icons">{{ channel.icon }}</span></span>
                     <span class="channel-main">
                         <span class="channel-name">{{ channel.name }}</span>
-                        <span class="channel-meta">
-                            {{ channel.field_count }} 个字段
-                            {% if channel.publish_status == 'draft' %} · 草稿{% endif %}
-                            {% if channel.missing_required_fields %} · 未就绪{% endif %}
+                        <span class="channel-meta">{% blocktrans with __i18n1=channel.field_count %}
+                            {{ __i18n1 }} 个字段
+                            {% endblocktrans %}{% if channel.publish_status == 'draft' %}{% trans '· 草稿' %}{% endif %}
+                            {% if channel.missing_required_fields %}{% trans '· 未就绪' %}{% endif %}
                         </span>
                     </span>
                     <span class="state-pill {% if not channel.is_active %}disabled{% elif channel.publish_status == 'draft' %}draft{% elif channel.missing_required_fields %}blocked{% else %}published{% endif %}">
-                        {% if not channel.is_active %}停用{% elif channel.publish_status == 'draft' %}草稿{% elif channel.missing_required_fields %}未就绪{% else %}发布{% endif %}
+                        {% if not channel.is_active %}{% trans '停用' %}{% elif channel.publish_status == 'draft' %}{% trans '草稿' %}{% elif channel.missing_required_fields %}{% trans '未就绪' %}{% else %}{% trans '发布' %}{% endif %}
                     </span>
                 </a>
                 {% empty %}
                 <div class="empty-state">
-                    <span class="material-icons">dynamic_form</span>
-                    还没有通道
-                </div>
+                    <span class="material-icons">dynamic_form</span>{% trans '还没有通道' %}</div>
                 {% endfor %}
-                <div class="rail-filter-empty" hidden>没有匹配的通道</div>
+                <div class="rail-filter-empty" hidden>{% trans '没有匹配的通道' %}</div>
             </div>
             <div class="rail-actions">
                 <a class="btn btn-outlined" href="{% url 'clubs:manage_form_channels' %}?new=1">
-                    <span class="material-icons">add_circle</span>新建一个通道
-                </a>
+                    <span class="material-icons">add_circle</span>{% trans '新建一个通道' %}</a>
             </div>
         </aside>
 
@@ -1203,20 +1200,20 @@
                 <div class="form-cover-top">
                     <div>
                         <h2>{{ current.name }}</h2>
-                        <p class="form-cover-subtitle">编辑通道名称、入口标识、排序和通过审核后的业务动作。只有启用、已发布且业务字段完整的通道才会出现在社长侧提交入口。</p>
+                        <p class="form-cover-subtitle">{% trans '编辑通道名称、入口标识、排序和通过审核后的业务动作。只有启用、已发布且业务字段完整的通道才会出现在社长侧提交入口。' %}</p>
                     </div>
                     <span class="state-pill {% if not current.is_active %}disabled{% elif current.publish_status == 'draft' %}draft{% elif missing_required_fields %}blocked{% else %}published{% endif %}">
-                        {% if not current.is_active %}已停用{% elif current.publish_status == 'draft' %}草稿{% elif missing_required_fields %}未就绪{% else %}已发布{% endif %}
+                        {% if not current.is_active %}{% trans '已停用' %}{% elif current.publish_status == 'draft' %}{% trans '草稿' %}{% elif missing_required_fields %}{% trans '未就绪' %}{% else %}{% trans '已发布' %}{% endif %}
                     </span>
                 </div>
                 <form id="channel-settings-form" method="post" enctype="multipart/form-data" action="{% url 'clubs:edit_form_channel' current.id %}" class="form-grid">
                     {% csrf_token %}
                     <div class="field-group">
-                        <label>通道名称</label>
+                        <label>{% trans '通道名称' %}</label>
                         <input class="field-control" name="name" value="{{ current.name }}" required placeholder="例如：报销申请">
                     </div>
                     <div class="field-group">
-                        <label>URL 标识 slug</label>
+                        <label>{% trans 'URL 标识 slug' %}</label>
                         <input class="field-control" name="slug" value="{{ current.slug }}" required placeholder="reimbursement">
                     </div>
                     <div class="field-group span-2">
@@ -1230,41 +1227,41 @@
                                     <span class="material-icons" style="font-size:1rem;">attach_file</span>
                                 </label>
                                 <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ example.display_name }}</span>
-                                <a href="{{ example.file.url }}" target="_blank" rel="noopener" class="btn btn-outlined btn-sm">下载</a>
+                                <a href="{{ example.file.url }}" target="_blank" rel="noopener" class="btn btn-outlined btn-sm">{% trans '下载' %}</a>
                                 <button type="button" class="btn btn-outlined btn-sm js-office-preview"
                                         data-office-preview-url="{{ example.file|office_preview_url:request }}"
-                                        data-office-file-name="{{ example.display_name }}">预览</button>
+                                        data-office-file-name="{{ example.display_name }}">{% trans '预览' %}</button>
                             </div>
                             {% endfor %}
-                            <label class="switch-label"><input type="checkbox" name="clear_channel_examples">清除全部示例文件</label>
+                            <label class="switch-label"><input type="checkbox" name="clear_channel_examples">{% trans '清除全部示例文件' %}</label>
                         </div>
                         {% endif %}
                     </div>
                     {% include 'clubs/admin/_material_icon_field.html' with input_id='channel-icon-edit' icon_value=current.icon %}
                     <div class="field-group">
-                        <label>排序</label>
+                        <label>{% trans '排序' %}</label>
                         <input class="field-control" name="order" type="number" value="{{ current.order }}" placeholder="0">
                     </div>
                     <div class="field-group">
-                        <label>所需通过次数</label>
+                        <label>{% trans '所需通过次数' %}</label>
                         <input class="field-control" name="required_approval_count" type="number" min="1" max="9" value="{{ current.required_approval_count|default:1 }}">
-                        <p class="field-help">设置为 2 或以上时，需要不同审核人累计通过达到该次数，请求才会最终通过。</p>
+                        <p class="field-help">{% trans '设置为 2 或以上时，需要不同审核人累计通过达到该次数，请求才会最终通过。' %}</p>
                     </div>
                     <div class="field-group span-2">
-                        <label>通道说明</label>
-                        <textarea class="field-control" name="description" rows="3" placeholder="给管理员看的说明，也会作为社长侧提交提示">{{ current.description }}</textarea>
+                        <label>{% trans '通道说明' %}</label>
+                        <textarea class="field-control" name="description" rows="3" placeholder="{% trans '给管理员看的说明，也会作为社长侧提交提示' %}">{{ current.description }}</textarea>
                     </div>
                     <div class="field-group span-2">
-                        <label>发布状态</label>
+                        <label>{% trans '发布状态' %}</label>
                         <select class="field-control" name="publish_status">
                             {% for value,label in publish_statuses %}
                             <option value="{{ value }}" {% if current.publish_status == value %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
-                        <p class="field-help">草稿不会出现在社长侧；已发布但字段未补齐时，也会自动隐藏。</p>
+                        <p class="field-help">{% trans '草稿不会出现在社长侧；已发布但字段未补齐时，也会自动隐藏。' %}</p>
                     </div>
                     <div class="field-group span-2">
-                        <label>内置业务动作</label>
+                        <label>{% trans '内置业务动作' %}</label>
                         <select class="field-control" name="builtin_action">
                             {% for value,label in builtin_actions %}
                             <option value="{{ value }}" {% if current.builtin_action == value %}selected{% endif %}>{{ label }}</option>
@@ -1272,7 +1269,7 @@
                         </select>
                     </div>
                     <div class="field-group span-2">
-                        <label>提交策略</label>
+                        <label>{% trans '提交策略' %}</label>
                         <select class="field-control" name="submission_policy">
                             {% for value,label in submission_policies %}
                             <option value="{{ value }}" {% if current.submission_policy == value %}selected{% endif %}>{{ label }}</option>
@@ -1280,28 +1277,26 @@
                         </select>
                     </div>
                     <div class="field-group span-2">
-                        <label>周期判断方式</label>
+                        <label>{% trans '周期判断方式' %}</label>
                         <select class="field-control" name="cycle_type">
                             {% for value,label in cycle_types %}
                             <option value="{{ value }}" {% if current.cycle_type == value %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
-                        <p class="field-help">选择年份、月份、日期或轮次后，该通道会自动按每周期提交一次处理。</p>
+                        <p class="field-help">{% trans '选择年份、月份、日期或轮次后，该通道会自动按每周期提交一次处理。' %}</p>
                     </div>
                     {% include 'clubs/admin/_channel_settings_grid.html' %}
                     {% include 'clubs/admin/_channel_alert_settings.html' with channel_label=current.name %}
                 </form>
                 <div class="channel-action-bar">
-                    <div class="channel-action-copy">保存后，只有“运行启用 + 已发布 + 业务字段完整”的通道会对社长开放；删除会移除通道、字段和相关提交记录。</div>
+                    <div class="channel-action-copy">{% trans '保存后，只有“运行启用 + 已发布 + 业务字段完整”的通道会对社长开放；删除会移除通道、字段和相关提交记录。' %}</div>
                     <div class="channel-action-buttons">
                         <button class="btn btn-primary" type="submit" form="channel-settings-form">
-                            <span class="material-icons">save</span>保存通道
-                        </button>
+                            <span class="material-icons">save</span>{% trans '保存通道' %}</button>
                         <form method="post" action="{% url 'clubs:delete_form_channel' current.id %}">
                             {% csrf_token %}
-                            <button class="btn btn-soft-danger" type="submit" onclick="return confirm('确定删除这个通道、字段和所有提交记录吗？')">
-                                <span class="material-icons">delete</span>删除通道
-                            </button>
+                            <button class="btn btn-soft-danger" type="submit" onclick="return confirm(gettext('确定删除这个通道、字段和所有提交记录吗？'))">
+                                <span class="material-icons">delete</span>{% trans '删除通道' %}</button>
                         </form>
                     </div>
                 </div>
@@ -1309,17 +1304,9 @@
                 <div class="publish-guard-alert">
                     <span class="material-icons">visibility_off</span>
                     <div>
-                        <strong>当前通道不会出现在社长侧</strong>
+                        <strong>{% trans '当前通道不会出现在社长侧' %}</strong>
                         <p>
-                            {% if not current.is_active %}
-                            通道已停用。
-                            {% elif current.publish_status == 'draft' %}
-                            通道仍是草稿。
-                            {% elif missing_required_fields %}
-                            通道已发布，但内置业务动作缺少必要字段。
-                            {% else %}
-                            通道尚未满足外露条件。
-                            {% endif %}
+                            {% if not current.is_active %}{% trans '通道已停用。' %}{% elif current.publish_status == 'draft' %}{% trans '通道仍是草稿。' %}{% elif missing_required_fields %}{% trans '通道已发布，但内置业务动作缺少必要字段。' %}{% else %}{% trans '通道尚未满足外露条件。' %}{% endif %}
                         </p>
                     </div>
                 </div>
@@ -1328,8 +1315,8 @@
                 <div class="missing-required-alert">
                     <span class="material-icons">priority_high</span>
                     <div>
-                        <strong>业务动作缺少必要字段</strong>
-                        <p>补齐以下字段前，通道不会出现在社长侧提交入口，直达提交 URL 也会被阻止。</p>
+                        <strong>{% trans '业务动作缺少必要字段' %}</strong>
+                        <p>{% trans '补齐以下字段前，通道不会出现在社长侧提交入口，直达提交 URL 也会被阻止。' %}</p>
                         <div class="missing-field-list">
                             {% for field in missing_required_field_infos %}
                             <span class="missing-field-chip">
@@ -1341,32 +1328,32 @@
                 </div>
                 {% endif %}
                 <div class="cycle-panel">
-                    <label>周期管理</label>
+                    <label>{% trans '周期管理' %}</label>
                     <form method="post" action="{% url 'clubs:create_form_channel_cycle' current.id %}" class="button-row">
                         {% csrf_token %}
-                        <input class="field-control" name="name" placeholder="新周期名称，例如：2026年年审">
-                        <button class="btn btn-outlined" type="submit"><span class="material-icons">add</span>新建周期</button>
+                        <input class="field-control" name="name" placeholder="{% trans '新周期名称，例如：2026年年审' %}">
+                        <button class="btn btn-outlined" type="submit"><span class="material-icons">add</span>{% trans '新建周期' %}</button>
                     </form>
                     {% for cycle in current.cycles.all %}
                     <div class="cycle-row">
-                        <span>{{ cycle.name }} · 第{{ cycle.sequence }}期 · {% if cycle.is_active %}开启{% else %}已关闭{% endif %}</span>
+                        <span>{{ cycle.name }}{% blocktrans with __i18n1=cycle.sequence %} · 第{{ __i18n1 }}期 · {% endblocktrans %}{% if cycle.is_active %}{% trans '开启' %}{% else %}{% trans '已关闭' %}{% endif %}</span>
                         {% if cycle.is_active %}
                         <form method="post" action="{% url 'clubs:close_form_channel_cycle' current.id cycle.id %}">
                             {% csrf_token %}
-                            <button class="btn btn-soft-danger" type="submit">关闭</button>
+                            <button class="btn btn-soft-danger" type="submit">{% trans '关闭' %}</button>
                         </form>
                         {% endif %}
                     </div>
                     {% empty %}
-                    <div class="channel-meta">暂无周期。仅“每周期提交一次”的通道需要开启周期。</div>
+                    <div class="channel-meta">{% trans '暂无周期。仅“每周期提交一次”的通道需要开启周期。' %}</div>
                     {% endfor %}
                 </div>
 
             </section>
 
             <div class="section-title">
-                <h2><span class="material-icons">quiz</span>字段配置</h2>
-                <a class="btn btn-outlined" href="#new-field"><span class="material-icons">add</span>新增字段</a>
+                <h2><span class="material-icons">quiz</span>{% trans '字段配置' %}</h2>
+                <a class="btn btn-outlined" href="#new-field"><span class="material-icons">add</span>{% trans '新增字段' %}</a>
             </div>
 
             {% for field in current.fields.all %}
@@ -1380,16 +1367,15 @@
                     </select>
                     <div class="question-head-actions">
                         <button class="btn btn-outlined question-toggle js-question-toggle" type="button" aria-expanded="false">
-                            <span class="material-icons">expand_more</span><span class="js-toggle-label">展开</span>
+                            <span class="material-icons">expand_more</span><span class="js-toggle-label">{% trans '展开' %}</span>
                         </button>
                         {% if field.field_key in locked_field_keys %}
-                        <span class="state-pill">业务锁定</span>
+                        <span class="state-pill">{% trans '业务锁定' %}</span>
                         {% else %}
                         <form method="post" action="{% url 'clubs:delete_form_field' current.id field.id %}">
                             {% csrf_token %}
-                            <button class="btn btn-soft-danger" type="submit" onclick="return confirm('确定删除这个字段吗？')">
-                                <span class="material-icons">delete</span>删除
-                            </button>
+                            <button class="btn btn-soft-danger" type="submit" onclick="return confirm(gettext('确定删除这个字段吗？'))">
+                                <span class="material-icons">delete</span>{% trans '删除' %}</button>
                         </form>
                         {% endif %}
                     </div>
@@ -1399,107 +1385,103 @@
                     {% csrf_token %}
                     {% if field.field_key in locked_field_keys %}
                     <div class="locked-field-note">
-                        <span class="material-icons">lock</span>
-                        这个字段已连接内置业务逻辑，不能修改或删除。
-                    </div>
+                        <span class="material-icons">lock</span>{% trans '这个字段已连接内置业务逻辑，不能修改或删除。' %}</div>
                     {% endif %}
                     <div class="field-key-row">
                         <div class="field-group">
-                            <label>字段标识 field_key</label>
+                            <label>{% trans '字段标识 field_key' %}</label>
                             <input class="field-control js-key-input" name="field_key" value="{{ field.field_key }}" required placeholder="club_name">
                         </div>
                         <div class="field-group">
-                            <label>排序</label>
+                            <label>{% trans '排序' %}</label>
                             <input class="field-control" name="order" type="number" value="{{ field.order }}" placeholder="0">
                         </div>
                     </div>
                     <div class="type-section">
                         <div class="field-group">
-                            <label>占位提示</label>
+                            <label>{% trans '占位提示' %}</label>
                             <input class="field-control" name="placeholder" value="{{ field.placeholder }}" placeholder="填写时显示在输入框内">
                         </div>
                         <div class="field-group">
-                            <label>补充说明</label>
+                            <label>{% trans '补充说明' %}</label>
                             <input class="field-control" name="help_text" value="{{ field.help_text }}" placeholder="显示在字段下方">
                         </div>
                     </div>
                     <div class="type-section js-type-section" data-types="text textarea">
                         <div class="field-group span-2">
-                            <label>最大字数</label>
+                            <label>{% trans '最大字数' %}</label>
                             <input class="field-control" name="max_length" type="number" value="{{ field.validation.max_length }}" placeholder="不限制可留空">
                         </div>
                     </div>
                     <div class="type-section js-type-section" data-types="number">
                         <div class="field-group">
-                            <label>最小值</label>
+                            <label>{% trans '最小值' %}</label>
                             <input class="field-control" name="min" type="number" step="any" value="{{ field.validation.min }}" placeholder="可留空">
                         </div>
                         <div class="field-group">
-                            <label>最大值</label>
+                            <label>{% trans '最大值' %}</label>
                             <input class="field-control" name="max" type="number" step="any" value="{{ field.validation.max }}" placeholder="可留空">
                         </div>
                         <div class="field-group span-2">
-                            <label>步进</label>
+                            <label>{% trans '步进' %}</label>
                             <input class="field-control" name="step" type="number" step="any" value="{{ field.validation.step }}" placeholder="例如：1 或 0.01">
                         </div>
                     </div>
                     <div class="type-section js-type-section" data-types="select radio checkbox">
                         <div class="field-group span-2">
-                            <label>选项</label>
+                            <label>{% trans '选项' %}</label>
                             <textarea class="js-options-raw" name="options">{{ field.option_lines }}</textarea>
                             <div class="option-editor js-option-editor">
                                 <div class="option-chip-list js-option-list" aria-live="polite"></div>
                                 <div class="option-input-row">
-                                    <input class="field-control js-option-input" type="text" placeholder="输入一个选项，例如：讲座">
+                                    <input class="field-control js-option-input" type="text" placeholder="{% trans '输入一个选项，例如：讲座' %}">
                                     <button class="btn btn-outlined js-add-option" type="button">
-                                        <span class="material-icons">add</span>添加
-                                    </button>
+                                        <span class="material-icons">add</span>{% trans '添加' %}</button>
                                 </div>
                             </div>
-                            <span class="helper-text">选项会以标签形式展示，保存时仍按当前顺序写入字段配置。</span>
+                            <span class="helper-text">{% trans '选项会以标签形式展示，保存时仍按当前顺序写入字段配置。' %}</span>
                         </div>
                     </div>
                     <div class="type-section js-type-section" data-types="file">
                         <div class="field-group">
-                            <label>允许后缀</label>
+                            <label>{% trans '允许后缀' %}</label>
                             <input class="field-control js-allowed-ext" name="allowed_extensions" placeholder=".docx,.pdf,.png" value="{{ field.validation.allowed_extensions|join:',' }}">
                             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;">
-                                <span style="font-size:0.75rem;color:var(--md3-on-surface-variant);">常用类型：</span>
-                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".jpg,.jpeg,.png,.gif,.webp">图片</button>
-                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt">文档</button>
-                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp4,.mov,.avi,.mkv,.webm">视频</button>
-                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp3,.wav,.ogg,.m4a">音频</button>
-                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".zip,.rar,.7z">压缩包</button>
+                                <span style="font-size:0.75rem;color:var(--md3-on-surface-variant);">{% trans '常用类型：' %}</span>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".jpg,.jpeg,.png,.gif,.webp">{% trans '图片' %}</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt">{% trans '文档' %}</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp4,.mov,.avi,.mkv,.webm">{% trans '视频' %}</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp3,.wav,.ogg,.m4a">{% trans '音频' %}</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".zip,.rar,.7z">{% trans '压缩包' %}</button>
                             </div>
                         </div>
                         <div class="field-group">
-                            <label>最大文件大小 MB</label>
+                            <label>{% trans '最大文件大小 MB' %}</label>
                             <input class="field-control" name="max_size_mb" type="number" min="1" value="{{ field.max_size_mb }}">
                         </div>
                         <div class="field-group span-2">
-                            <label class="switch-label"><input class="js-allow-multiple" type="checkbox" name="allow_multiple" {% if field.allow_multiple_files %}checked{% endif %}>允许一次上传多个文件</label>
-                            <span class="helper-text">开启后，社长可以在同一个上传组件里选择或拖拽多个文件。</span>
+                            <label class="switch-label"><input class="js-allow-multiple" type="checkbox" name="allow_multiple" {% if field.allow_multiple_files %}checked{% endif %}>{% trans '允许一次上传多个文件' %}</label>
+                            <span class="helper-text">{% trans '开启后，社长可以在同一个上传组件里选择或拖拽多个文件。' %}</span>
                         </div>
                         <div class="field-group span-2">
-                            <label class="switch-label"><input class="js-merge-to-word" type="checkbox" name="merge_to_word" {% if field.merge_files_to_word %}checked{% endif %} {% if not field.supports_word_merge %}disabled{% endif %}>将本字段上传的多个文件合并成一个 Word 文档</label>
-                            <span class="helper-text js-merge-hint">仅当允许后缀全部为图片、PDF 或 Word（.docx）且已开启多文件上传时可用；系统会把图片直接插入，把 PDF 转成图片后插入。</span>
+                            <label class="switch-label"><input class="js-merge-to-word" type="checkbox" name="merge_to_word" {% if field.merge_files_to_word %}checked{% endif %} {% if not field.supports_word_merge %}disabled{% endif %}>{% trans '将本字段上传的多个文件合并成一个 Word 文档' %}</label>
+                            <span class="helper-text js-merge-hint">{% trans '仅当允许后缀全部为图片、PDF 或 Word（.docx）且已开启多文件上传时可用；系统会把图片直接插入，把 PDF 转成图片后插入。' %}</span>
                         </div>
                         <div class="field-group span-2">
                             {% include 'clubs/components/_file_upload.html' with field_id='example_file' field_name='example_file' label='示例文件' is_required=False allowed_extensions='.doc,.docx,.pdf,.jpg,.jpeg,.png,.webp' max_size_mb=10 existing_file=field.example_file %}
                             {% if field.example_file %}
-                            <label class="switch-label"><input type="checkbox" name="clear_example">清除当前示例文件</label>
+                            <label class="switch-label"><input type="checkbox" name="clear_example">{% trans '清除当前示例文件' %}</label>
                             {% endif %}
                         </div>
                     </div>
                     <div class="question-footer">
                         <div class="toggle-row">
-                            <label><input type="checkbox" name="required" {% if field.required %}checked{% endif %}>必填</label>
-                            <label><input type="checkbox" name="is_active" {% if field.is_active %}checked{% endif %}>启用</label>
+                            <label><input type="checkbox" name="required" {% if field.required %}checked{% endif %}>{% trans '必填' %}</label>
+                            <label><input type="checkbox" name="is_active" {% if field.is_active %}checked{% endif %}>{% trans '启用' %}</label>
                         </div>
                         {% if field.field_key not in locked_field_keys %}
                         <button class="btn btn-primary" type="submit">
-                            <span class="material-icons">save</span>保存字段
-                        </button>
+                            <span class="material-icons">save</span>{% trans '保存字段' %}</button>
                         {% endif %}
                     </div>
                 </form>
@@ -1507,102 +1489,99 @@
             </section>
             {% empty %}
             <div class="empty-state">
-                <span class="material-icons">add_notes</span>
-                这个通道还没有字段，先新增一个问题。
-            </div>
+                <span class="material-icons">add_notes</span>{% trans '这个通道还没有字段，先新增一个问题。' %}</div>
             {% endfor %}
 
             <section class="question-card is-new js-question-card" id="new-field">
                 <div class="question-head">
-                    <input form="new-field-form" class="field-control question-title-input js-label-input" name="label" required placeholder="新增问题标题">
+                    <input form="new-field-form" class="field-control question-title-input js-label-input" name="label" required= placeholder="{% trans '新增问题标题' %}">
                     <select form="new-field-form" class="field-control js-field-type" name="field_type">
                         {% for value,label in field_types %}
                         <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
                     </select>
-                    <span class="state-pill">新字段</span>
+                    <span class="state-pill">{% trans '新字段' %}</span>
                 </div>
                 <form id="new-field-form" method="post" enctype="multipart/form-data" action="{% url 'clubs:add_form_field' current.id %}">
                     {% csrf_token %}
                     <div class="field-key-row">
                         <div class="field-group">
-                            <label>字段标识 field_key</label>
+                            <label>{% trans '字段标识 field_key' %}</label>
                             <input class="field-control js-key-input" name="field_key" required placeholder="field_key">
                         </div>
                         <div class="field-group">
-                            <label>排序</label>
+                            <label>{% trans '排序' %}</label>
                             <input class="field-control" name="order" type="number" value="0" placeholder="0">
                         </div>
                     </div>
                     <div class="type-section">
                         <div class="field-group">
-                            <label>占位提示</label>
-                            <input class="field-control" name="placeholder" placeholder="填写时显示在输入框内">
+                            <label>{% trans '占位提示' %}</label>
+                            <input class="field-control" name="placeholder" placeholder="{% trans '填写时显示在输入框内' %}">
                         </div>
                         <div class="field-group">
-                            <label>补充说明</label>
-                            <input class="field-control" name="help_text" placeholder="显示在字段下方">
+                            <label>{% trans '补充说明' %}</label>
+                            <input class="field-control" name="help_text" placeholder="{% trans '显示在字段下方' %}">
                         </div>
                     </div>
                     <div class="type-section js-type-section" data-types="text textarea">
                         <div class="field-group span-2">
-                            <label>最大字数</label>
-                            <input class="field-control" name="max_length" type="number" placeholder="不限制可留空">
+                            <label>{% trans '最大字数' %}</label>
+                            <input class="field-control" name="max_length" type="number" placeholder="{% trans '不限制可留空' %}">
                         </div>
                     </div>
                     <div class="type-section js-type-section" data-types="number">
                         <div class="field-group">
-                            <label>最小值</label>
-                            <input class="field-control" name="min" type="number" step="any" placeholder="可留空">
+                            <label>{% trans '最小值' %}</label>
+                            <input class="field-control" name="min" type="number" step="any" placeholder="{% trans '可留空' %}">
                         </div>
                         <div class="field-group">
-                            <label>最大值</label>
-                            <input class="field-control" name="max" type="number" step="any" placeholder="可留空">
+                            <label>{% trans '最大值' %}</label>
+                            <input class="field-control" name="max" type="number" step="any" placeholder="{% trans '可留空' %}">
                         </div>
                         <div class="field-group span-2">
-                            <label>步进</label>
-                            <input class="field-control" name="step" type="number" step="any" placeholder="例如：1 或 0.01">
+                            <label>{% trans '步进' %}</label>
+                            <input class="field-control" name="step" type="number" step="any" placeholder="{% trans '例如：1 或 0.01' %}">
                         </div>
                     </div>
                     <div class="type-section js-type-section" data-types="select radio checkbox">
                         <div class="field-group span-2">
-                            <label>选项</label>
+                            <label>{% trans '选项' %}</label>
                             <textarea class="js-options-raw" name="options"></textarea>
                             <div class="option-editor js-option-editor">
                                 <div class="option-chip-list js-option-list" aria-live="polite"></div>
                                 <div class="option-input-row">
-                                    <input class="field-control js-option-input" type="text" placeholder="输入一个选项，例如：讲座">
+                                    <input class="field-control js-option-input" type="text" placeholder="{% trans '输入一个选项，例如：讲座' %}">
                                     <button class="btn btn-outlined js-add-option" type="button">
-                                        <span class="material-icons">add</span>添加
-                                    </button>
+                                        <span class="material-icons">add</span>{% trans '添加' %}</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="type-section js-type-section" data-types="file">
                         <div class="field-group">
-                            <label>允许后缀</label>
+                            <label>{% trans '允许后缀' %}</label>
                             <input class="field-control js-allowed-ext" name="allowed_extensions" placeholder=".jpg,.jpeg,.png,.pdf,.docx">
                             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;">
-                                <span style="font-size:0.75rem;color:var(--md3-on-surface-variant);">常用类型：</span>
-                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".jpg,.jpeg,.png,.gif,.webp">图片</button>
-                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt">文档</button>
-                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp4,.mov,.avi,.mkv,.webm">视频</button>
-                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp3,.wav,.ogg,.m4a">音频</button>
-                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".zip,.rar,.7z">压缩包</button>
+                                <span style="font-size:0.75rem;color:var(--md3-on-surface-variant);">{% trans '常用类型：' %}</span>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".jpg,.jpeg,.png,.gif,.webp">{% trans '图片' %}</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt">{% trans '文档' %}</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp4,.mov,.avi,.mkv,.webm">{% trans '视频' %}</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".mp3,.wav,.ogg,.m4a">{% trans '音频' %}</button>
+                                <button type="button" class="btn btn-outlined btn-sm" data-ext-preset=".zip,.rar,.7z">{% trans '压缩包' %}</button>
                             </div>
                         </div>
                         <div class="field-group">
-                            <label>最大文件大小 MB</label>
+                            <label>{% trans '最大文件大小 MB' %}</label>
                             <input class="field-control" name="max_size_mb" type="number" min="1" value="10">
                         </div>
                         <div class="field-group span-2">
-                            <label class="switch-label"><input class="js-allow-multiple" type="checkbox" name="allow_multiple">允许一次上传多个文件</label>
-                            <span class="helper-text">开启后，社长可以在同一个上传组件里选择或拖拽多个文件。</span>
+                            <label class="switch-label"><input class="js-allow-multiple" type="checkbox" name="allow_multiple">{% trans '允许一次上传多个文件' %}</label>
+                            <span class="helper-text">{% trans '开启后，社长可以在同一个上传组件里选择或拖拽多个文件。' %}</span>
                         </div>
                         <div class="field-group span-2">
-                            <label class="switch-label"><input class="js-merge-to-word" type="checkbox" name="merge_to_word" disabled>将本字段上传的多个文件合并成一个 Word 文档</label>
-                            <span class="helper-text js-merge-hint">仅当允许后缀全部为图片、PDF 或 Word（.docx）且已开启多文件上传时可用；系统会把图片直接插入，把 PDF 转成图片后插入。</span>
+                            <label class="switch-label"><input class="js-merge-to-word" type="checkbox" name="merge_to_word" disabled>{% trans '将本字段上传的多个文件合并成一个 Word 文档' %}</label>
+                            <span class="helper-text js-merge-hint">{% trans '仅当允许后缀全部为图片、PDF 或 Word（.docx）且已开启多文件上传时可用；系统会把图片直接插入，把 PDF 转成图片后插入。' %}</span>
                         </div>
                         <div class="field-group span-2">
                             {% include 'clubs/components/_file_upload.html' with field_id='example_file' field_name='example_file' label='示例文件' is_required=False allowed_extensions='.doc,.docx,.pdf,.jpg,.jpeg,.png,.webp' max_size_mb=10 %}
@@ -1610,27 +1589,26 @@
                     </div>
                     <div class="question-footer">
                         <div class="toggle-row">
-                            <label><input type="checkbox" name="required" checked>必填</label>
-                            <label><input type="checkbox" name="is_active" checked>启用</label>
+                            <label><input type="checkbox" name="required" checked>{% trans '必填' %}</label>
+                            <label><input type="checkbox" name="is_active" checked>{% trans '启用' %}</label>
                         </div>
                         <button class="btn btn-primary" type="submit">
-                            <span class="material-icons">add</span>新增字段
-                        </button>
+                            <span class="material-icons">add</span>{% trans '新增字段' %}</button>
                     </div>
                 </form>
             </section>
             {% else %}
             <section class="form-cover">
-                <h2>新增通道</h2>
-                <p class="form-cover-subtitle">新通道默认保存为草稿，配置字段并发布后才会出现在社长侧提交入口。</p>
+                <h2>{% trans '新增通道' %}</h2>
+                <p class="form-cover-subtitle">{% trans '新通道默认保存为草稿，配置字段并发布后才会出现在社长侧提交入口。' %}</p>
                 <form method="post" enctype="multipart/form-data" action="{% url 'clubs:add_form_channel' %}" class="form-grid">
                     {% csrf_token %}
                     <div class="field-group">
-                        <label>通道名称</label>
-                        <input class="field-control js-channel-name" name="name" placeholder="例如：场地申请" required>
+                        <label>{% trans '通道名称' %}</label>
+                        <input class="field-control js-channel-name" name="name" placeholder="{% trans '例如：场地申请' %}" required=>
                     </div>
                     <div class="field-group">
-                        <label>URL 标识 slug</label>
+                        <label>{% trans 'URL 标识 slug' %}</label>
                         <input class="field-control js-channel-slug" name="slug" placeholder="room-application" required>
                     </div>
                     <div class="field-group span-2">
@@ -1638,29 +1616,29 @@
                     </div>
                     {% include 'clubs/admin/_material_icon_field.html' with input_id='channel-icon-new' icon_value='description' %}
                     <div class="field-group">
-                        <label>排序</label>
+                        <label>{% trans '排序' %}</label>
                         <input class="field-control" name="order" type="number" value="0">
                     </div>
                     <div class="field-group">
-                        <label>所需通过次数</label>
+                        <label>{% trans '所需通过次数' %}</label>
                         <input class="field-control" name="required_approval_count" type="number" min="1" max="9" value="1">
-                        <p class="field-help">需要不同审核人累计通过达到该次数后才最终通过。</p>
+                        <p class="field-help">{% trans '需要不同审核人累计通过达到该次数后才最终通过。' %}</p>
                     </div>
                     <div class="field-group span-2">
-                        <label>通道说明</label>
-                        <textarea class="field-control" name="description" rows="3" placeholder="这个通道用于收集什么内容"></textarea>
+                        <label>{% trans '通道说明' %}</label>
+                        <textarea class="field-control" name="description" rows="3" placeholder="{% trans '这个通道用于收集什么内容' %}"></textarea>
                     </div>
                     <div class="field-group span-2">
-                        <label>发布状态</label>
+                        <label>{% trans '发布状态' %}</label>
                         <select class="field-control" name="publish_status">
                             {% for value,label in publish_statuses %}
                             <option value="{{ value }}" {% if value == 'draft' %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
-                        <p class="field-help">建议先保持草稿，字段配置完整后再发布。</p>
+                        <p class="field-help">{% trans '建议先保持草稿，字段配置完整后再发布。' %}</p>
                     </div>
                     <div class="field-group span-2">
-                        <label>内置业务动作</label>
+                        <label>{% trans '内置业务动作' %}</label>
                         <select class="field-control" name="builtin_action">
                             {% for value,label in builtin_actions %}
                             <option value="{{ value }}">{{ label }}</option>
@@ -1668,7 +1646,7 @@
                         </select>
                     </div>
                     <div class="field-group span-2">
-                        <label>提交策略</label>
+                        <label>{% trans '提交策略' %}</label>
                         <select class="field-control" name="submission_policy">
                             {% for value,label in submission_policies %}
                             <option value="{{ value }}">{{ label }}</option>
@@ -1676,7 +1654,7 @@
                         </select>
                     </div>
                     <div class="field-group span-2">
-                        <label>周期判断方式</label>
+                        <label>{% trans '周期判断方式' %}</label>
                         <select class="field-control" name="cycle_type">
                             {% for value,label in cycle_types %}
                             <option value="{{ value }}">{{ label }}</option>
@@ -1687,8 +1665,7 @@
                     {% include 'clubs/admin/_channel_alert_settings.html' %}
                     <div class="button-row span-2">
                         <button class="btn btn-primary" type="submit">
-                            <span class="material-icons">add</span>创建通道
-                        </button>
+                            <span class="material-icons">add</span>{% trans '创建通道' %}</button>
                     </div>
                 </form>
             </section>
@@ -1792,7 +1769,7 @@
             function sync() {
                 const expanded = !card.classList.contains('is-collapsed');
                 toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-                if (label) label.textContent = expanded ? '收起' : '展开';
+                if (label) label.textContent = expanded ? gettext('收起') : gettext('展开');
             }
             toggle.addEventListener('click', function () {
                 card.classList.toggle('is-collapsed');
@@ -1829,7 +1806,7 @@
 
                     const button = document.createElement('button');
                     button.type = 'button';
-                    button.setAttribute('aria-label', '删除选项');
+                    button.setAttribute('aria-label', gettext('删除选项'));
                     button.innerHTML = '<span class="material-icons">close</span>';
                     button.addEventListener('click', function () {
                         const next = values();

@@ -79,3 +79,10 @@ def file_exists(value):
         return bool(storage.exists(name))
     except Exception:
         return False
+
+
+
+@register.filter
+def tdefault(value, arg):
+    """与 default 相同，但兜底文案会被 makemessages 提取（用于模板中文字符串）。"""
+    return value if value else arg

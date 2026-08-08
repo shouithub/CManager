@@ -1,8 +1,9 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 {% load common_tags %}
 
-{% block title %}编辑公告 - CManager{% endblock %}
+{% block title %}{% trans '编辑公告 - CManager' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -359,7 +360,7 @@
         <div class="page-title">
             <span class="page-title-icon"><span class="material-icons">edit_note</span></span>
             <div>
-                <h1>编辑公告</h1>
+                <h1>{% trans '编辑公告' %}</h1>
                 <p>{{ announcement.title }}</p>
             </div>
         </div>
@@ -394,12 +395,10 @@
         {% csrf_token %}
         <div class="form-panel">
             <h2 class="section-title">
-                <span class="material-icons">article</span>
-                公告内容
-            </h2>
+                <span class="material-icons">article</span>{% trans '公告内容' %}</h2>
 
             <div class="md3-field">
-                <label for="title">公告标题<span class="required">*</span></label>
+                <label for="title">{% trans '公告标题' %}<span class="required">*</span></label>
                 <input
                     type="text"
                     id="title"
@@ -413,19 +412,12 @@
             </div>
 
             <div class="md3-field">
-                <label for="content">公告正文<span class="required">*</span></label>
-                <textarea
-                    id="content"
-                    name="content"
-                    required
-                    rows="10"
-                    placeholder="输入公告内容"
-                    class="md3-textarea"
-                >{% if submitted %}{{ content }}{% else %}{{ announcement.content }}{% endif %}</textarea>
+                <label for="content">{% trans '公告正文' %}<span class="required">*</span></label>
+                <textarea id="content" name="content" required= rows="10" placeholder="{% trans '输入公告内容' %}" class="md3-textarea">{% if submitted %}{{ content }}{% else %}{{ announcement.content }}{% endif %}</textarea>
             </div>
 
             <div class="md3-field">
-                <label for="link_url">跳转链接</label>
+                <label for="link_url">{% trans '跳转链接' %}</label>
                 <input
                     type="text"
                     id="link_url"
@@ -435,44 +427,42 @@
                     value="{% if submitted %}{{ link_url }}{% else %}{{ announcement.link_url }}{% endif %}"
                     class="md3-input"
                 >
-                <small class="md3-hint">支持站内路径或 http(s) 完整地址。</small>
+                <small class="md3-hint">{% trans '支持站内路径或 http(s) 完整地址。' %}</small>
             </div>
         </div>
 
         <aside class="side-panel">
             <h2 class="section-title">
-                <span class="material-icons">tune</span>
-                发布设置
-            </h2>
+                <span class="material-icons">tune</span>{% trans '发布设置' %}</h2>
 
             <div class="meta-list">
                 <div class="meta-item">
-                    <span class="meta-label">创建时间</span>
+                    <span class="meta-label">{% trans '创建时间' %}</span>
                     <span class="meta-value">{{ announcement.created_at|date:"Y-m-d H:i" }}</span>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">发布时间</span>
-                    <span class="meta-value">{{ announcement.published_at|date:"Y-m-d H:i"|default:"未发布" }}</span>
+                    <span class="meta-label">{% trans '发布时间' %}</span>
+                    <span class="meta-value">{{ announcement.published_at|date:"Y-m-d H:i"|tdefault:"未发布" }}</span>
                 </div>
             </div>
 
             <div class="md3-field">
-                <label for="status">发布状态<span class="required">*</span></label>
+                <label for="status">{% trans '发布状态' %}<span class="required">*</span></label>
                 <select id="status" name="status" required class="md3-select">
                     {% if submitted %}
-                    <option value="draft" {% if status == 'draft' %}selected{% endif %}>草稿</option>
-                    <option value="published" {% if status == 'published' %}selected{% endif %}>发布</option>
-                    <option value="archived" {% if status == 'archived' %}selected{% endif %}>归档</option>
+                    <option value="draft" {% if status == 'draft' %}selected{% endif %}>{% trans '草稿' %}</option>
+                    <option value="published" {% if status == 'published' %}selected{% endif %}>{% trans '发布' %}</option>
+                    <option value="archived" {% if status == 'archived' %}selected{% endif %}>{% trans '归档' %}</option>
                     {% else %}
-                    <option value="draft" {% if announcement.status == 'draft' %}selected{% endif %}>草稿</option>
-                    <option value="published" {% if announcement.status == 'published' %}selected{% endif %}>发布</option>
-                    <option value="archived" {% if announcement.status == 'archived' %}selected{% endif %}>归档</option>
+                    <option value="draft" {% if announcement.status == 'draft' %}selected{% endif %}>{% trans '草稿' %}</option>
+                    <option value="published" {% if announcement.status == 'published' %}selected{% endif %}>{% trans '发布' %}</option>
+                    <option value="archived" {% if announcement.status == 'archived' %}selected{% endif %}>{% trans '归档' %}</option>
                     {% endif %}
                 </select>
             </div>
 
             <div class="md3-field">
-                <label for="expires_at">失效时间</label>
+                <label for="expires_at">{% trans '失效时间' %}</label>
                 <div class="expires-control">
                     <input
                         type="datetime-local"
@@ -486,12 +476,10 @@
                         {% endif %}
                     >
                     <button type="button" class="clear-date-btn" id="clearExpiresBtn">
-                        <span class="material-icons">event_busy</span>
-                        清空日期
-                    </button>
+                        <span class="material-icons">event_busy</span>{% trans '清空日期' %}</button>
                 </div>
                 <input type="hidden" id="clear_expires_at" name="clear_expires_at" value="0">
-                <small class="md3-hint">留空后公告不会自动失效。</small>
+                <small class="md3-hint">{% trans '留空后公告不会自动失效。' %}</small>
             </div>
 
             <div class="md3-field">
@@ -500,13 +488,9 @@
 
             <div class="md3-actions">
                 <button type="submit" name="action" value="update" class="md3-btn md3-btn-primary">
-                    <span class="material-icons">save</span>
-                    保存修改
-                </button>
+                    <span class="material-icons">save</span>{% trans '保存修改' %}</button>
                 <a href="{% url 'clubs:manage_announcements' %}" class="md3-btn md3-btn-tonal">
-                    <span class="material-icons">close</span>
-                    取消
-                </a>
+                    <span class="material-icons">close</span>{% trans '取消' %}</a>
             </div>
         </aside>
     </form>

@@ -135,6 +135,8 @@ class InitialSetupMiddleware:
             '/media/',
             '/admin/',
             '/favicon',
+            '/i18n/',
+            '/jsi18n/',
         )
 
         if path.startswith(exempt_prefixes):

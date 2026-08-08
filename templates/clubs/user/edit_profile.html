@@ -1,8 +1,9 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 {% load common_tags %}
 
-{% block title %}个人中心{% endblock %}
+{% block title %}{% trans '个人中心' %}{% endblock %}
 
 {% block extra_css %}
 {% include 'clubs/components/_cropper_assets.html' %}
@@ -359,8 +360,8 @@
     <div class="page-header">
         <span class="material-icons">account_circle</span>
         <div class="page-header-content">
-            <h1>个人中心</h1>
-            <p class="subtitle">管理个人资料、头像来源与账号安全</p>
+            <h1>{% trans '个人中心' %}</h1>
+            <p class="subtitle">{% trans '管理个人资料、头像来源与账号安全' %}</p>
         </div>
         <a href="{% url 'clubs:user_dashboard' %}" class="page-back-btn" title="返回工作台" aria-label="返回工作台">
             <span class="material-icons">arrow_back</span>
@@ -368,16 +369,16 @@
     </div>
     
     <div class="tabs">
-        <button class="tab-btn active" data-tab="info" onclick="switchTab('info', this)">基本信息</button>
-        <button class="tab-btn" data-tab="avatar" onclick="switchTab('avatar', this)">头像设置</button>
-        <button class="tab-btn" data-tab="security" onclick="switchTab('security', this)">账号安全</button>
+        <button class="tab-btn active" data-tab="info" onclick="switchTab('info', this)">{% trans '基本信息' %}</button>
+        <button class="tab-btn" data-tab="avatar" onclick="switchTab('avatar', this)">{% trans '头像设置' %}</button>
+        <button class="tab-btn" data-tab="security" onclick="switchTab('security', this)">{% trans '账号安全' %}</button>
     </div>
 
     <!-- 基本信息卡片 -->
     <div id="tab-info" class="card active">
         <div class="card-header">
             <span class="material-icons">badge</span>
-            <h2>修改个人资料</h2>
+            <h2>{% trans '修改个人资料' %}</h2>
         </div>
         
         <form method="post">
@@ -386,34 +387,34 @@
             
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">真实姓名</label>
+                    <label class="form-label">{% trans '真实姓名' %}</label>
                     <input type="text" name="real_name" class="form-control" value="{{ profile.real_name }}" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">邮箱</label>
+                    <label class="form-label">{% trans '邮箱' %}</label>
                     <input type="email" name="email" class="form-control" value="{{ user.email }}" placeholder="用于找回密码和接收通知">
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">手机号码</label>
+                    <label class="form-label">{% trans '手机号码' %}</label>
                     <input type="tel" name="phone" class="form-control" value="{{ profile.phone }}" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">微信号</label>
+                    <label class="form-label">{% trans '微信号' %}</label>
                     <input type="text" name="wechat" class="form-control" value="{{ profile.wechat }}" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">学号</label>
+                    <label class="form-label">{% trans '学号' %}</label>
                     <input type="text" name="student_id" class="form-control" value="{{ profile.student_id }}" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">政治面貌</label>
+                    <label class="form-label">{% trans '政治面貌' %}</label>
                     <select name="political_status" class="form-control" required>
-                        <option value="">请选择</option>
+                        <option value="">{% trans '请选择' %}</option>
                         {% for value, label in political_status_choices %}
                             <option value="{{ value }}" {% if profile.political_status == value %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
@@ -424,15 +425,13 @@
             <div class="form-group" style="margin-top: 20px;">
                 <label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                     <input type="checkbox" name="is_info_public" {% if profile.is_info_public %}checked{% endif %} style="width: 20px; height: 20px;">
-                    <span style="color: var(--md3-on-surface);">向其他用户公开我的联系方式</span>
+                    <span style="color: var(--md3-on-surface);">{% trans '向其他用户公开我的联系方式' %}</span>
                 </label>
             </div>
             
             <div style="margin-top: 32px; text-align: right;">
                 <button type="submit" class="btn-primary">
-                    <span class="material-icons">save</span>
-                    保存更改
-                </button>
+                    <span class="material-icons">save</span>{% trans '保存更改' %}</button>
             </div>
         </form>
     </div>
@@ -441,7 +440,7 @@
     <div id="tab-avatar" class="card">
         <div class="card-header">
             <span class="material-icons">face</span>
-            <h2>修改头像</h2>
+            <h2>{% trans '修改头像' %}</h2>
         </div>
 
         <div class="avatar-service-panel">
@@ -453,33 +452,31 @@
             <div>
                 <div class="avatar-service-badge">
                     <span class="material-icons">{% if cravatar_enabled and profile.avatar_source == 'cravatar' %}cloud{% else %}storage{% endif %}</span>
-                    {% if cravatar_enabled and profile.avatar_source == 'cravatar' %}当前使用 Cravatar{% else %}当前使用本站上传头像{% endif %}
+                    {% if cravatar_enabled and profile.avatar_source == 'cravatar' %}{% trans '当前使用 Cravatar' %}{% else %}{% trans '当前使用本站上传头像' %}{% endif %}
                 </div>
                 {% if cravatar_enabled %}
                 <form method="post" style="margin-top:12px;">
                     {% csrf_token %}
                     <div class="form-group" style="margin-bottom:12px;">
-                        <label class="form-label" for="avatar-email">使用 Cravatar 头像</label>
+                        <label class="form-label" for="avatar-email">{% trans '使用 Cravatar 头像' %}</label>
                         <input type="email" id="avatar-email" name="avatar_email" class="form-control" value="{{ profile.avatar_email }}" placeholder="Cravatar 邮箱或 QQ号@qq.com" autocomplete="email" required>
-                        <small style="display:block;color:var(--md3-on-surface-variant);line-height:1.6;">
-                            已有 QQ 头像？输入 <strong style="color:var(--md3-primary);">QQ号@qq.com</strong>（例如 123456@qq.com）即可尝试自动获取。提交后会先检测头像，成功后才会切换；请求地址不包含邮箱明文。
-                        </small>
+                        <small style="display:block;color:var(--md3-on-surface-variant);line-height:1.6;">{% trans '已有 QQ 头像？输入' %}<strong style="color:var(--md3-primary);">{% trans 'QQ号@qq.com' %}</strong>{% trans '（例如 123456@qq.com）即可尝试自动获取。提交后会先检测头像，成功后才会切换；请求地址不包含邮箱明文。' %}</small>
                     </div>
                     <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;">
                         {% if profile.avatar_source == 'cravatar' %}
-                        <button type="submit" name="action" value="use_local_avatar" formnovalidate class="btn-secondary"><span class="material-icons">storage</span>改用本站头像</button>
+                        <button type="submit" name="action" value="use_local_avatar" formnovalidate class="btn-secondary"><span class="material-icons">storage</span>{% trans '改用本站头像' %}</button>
                         {% endif %}
-                        <button type="submit" name="action" value="use_cravatar" class="btn-primary"><span class="material-icons">search</span>检测并使用</button>
+                        <button type="submit" name="action" value="use_cravatar" class="btn-primary"><span class="material-icons">search</span>{% trans '检测并使用' %}</button>
                     </div>
                 </form>
                 {% else %}
-                <p style="margin:10px 0 0;color:var(--md3-on-surface-variant);">管理员暂未开放 Cravatar，仍可在下方上传本站头像。</p>
+                <p style="margin:10px 0 0;color:var(--md3-on-surface-variant);">{% trans '管理员暂未开放 Cravatar，仍可在下方上传本站头像。' %}</p>
                 {% endif %}
             </div>
         </div>
 
-        <h3 style="margin:28px 0 6px;color:var(--md3-on-surface);">上传本站头像</h3>
-        <p style="margin:0 0 16px;color:var(--md3-on-surface-variant);">上传成功后会自动切换到本站头像。</p>
+        <h3 style="margin:28px 0 6px;color:var(--md3-on-surface);">{% trans '上传本站头像' %}</h3>
+        <p style="margin:0 0 16px;color:var(--md3-on-surface-variant);">{% trans '上传成功后会自动切换到本站头像。' %}</p>
         <form method="post" enctype="multipart/form-data" id="avatar-form"
               action="{% url 'clubs:edit_profile' %}">
             {% csrf_token %}
@@ -489,7 +486,7 @@
                 <!-- 当前头像展示 -->
                 <div id="current-avatar-view" {% if not resolved_avatar_url %}style="display: none;"{% endif %}>
                     <img src="{{ resolved_avatar_url }}" alt="当前头像" class="current-avatar">
-                    <p style="text-align: center; margin-top: 10px; color: var(--md3-on-surface-variant);">当前头像</p>
+                    <p style="text-align: center; margin-top: 10px; color: var(--md3-on-surface-variant);">{% trans '当前头像' %}</p>
                 </div>
 
                 <!-- 默认占位符 -->
@@ -497,13 +494,11 @@
                     {{ profile.real_name|first }}
                 </div>
                 
-                <p style="color: var(--md3-on-surface-variant); margin: 0; text-align: center;">支持 JPG、PNG、WebP，上传前会自动裁剪并压缩</p>
+                <p style="color: var(--md3-on-surface-variant); margin: 0; text-align: center;">{% trans '支持 JPG、PNG、WebP，上传前会自动裁剪并压缩' %}</p>
                 
                 <div class="file-input-wrapper">
                     <div class="upload-btn">
-                        <span class="material-icons">upload_file</span>
-                        选择图片
-                    </div>
+                        <span class="material-icons">upload_file</span>{% trans '选择图片' %}</div>
                     <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" id="avatar-input">
                 </div>
             </div>
@@ -516,32 +511,30 @@
     <div id="tab-security" class="card">
         <div class="card-header">
             <span class="material-icons">security</span>
-            <h2>账号安全设置</h2>
+            <h2>{% trans '账号安全设置' %}</h2>
         </div>
         
         <!-- 修改用户名 -->
         <div style="margin-bottom: var(--md3-spacing-2xl);">
-            <h3 style="font-size: 1.1rem; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-lg);">修改用户名</h3>
+            <h3 style="font-size: 1.1rem; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-lg);">{% trans '修改用户名' %}</h3>
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_username">
                 
                 <div class="form-group">
-                    <label class="form-label">新用户名</label>
+                    <label class="form-label">{% trans '新用户名' %}</label>
                     <input type="text" name="new_username" class="form-control" value="{{ user.username }}" minlength="3" required>
-                    <small style="color: var(--md3-on-surface-variant);">当前用户名: {{ user.username }}</small>
+                    <small style="color: var(--md3-on-surface-variant);">{% blocktrans with __i18n1=user.username %}当前用户名: {{ __i18n1 }}{% endblocktrans %}</small>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">当前密码</label>
-                    <input type="password" name="password" class="form-control" placeholder="验证身份以修改用户名" required>
+                    <label class="form-label">{% trans '当前密码' %}</label>
+                    <input type="password" name="password" class="form-control" placeholder="{% trans '验证身份以修改用户名' %}" required=>
                 </div>
                 
                 <div style="text-align: right;">
                     <button type="submit" class="btn-primary">
-                        <span class="material-icons">badge</span>
-                        修改用户名
-                    </button>
+                        <span class="material-icons">badge</span>{% trans '修改用户名' %}</button>
                 </div>
             </form>
         </div>
@@ -550,32 +543,30 @@
         
         <!-- 修改密码 -->
         <div>
-            <h3 style="font-size: 1.1rem; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-lg);">修改密码</h3>
+            <h3 style="font-size: 1.1rem; color: var(--md3-on-surface); margin-bottom: var(--md3-spacing-lg);">{% trans '修改密码' %}</h3>
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_password">
                 
                 <div class="form-group">
-                    <label class="form-label">当前密码</label>
+                    <label class="form-label">{% trans '当前密码' %}</label>
                     <input type="password" name="old_password" class="form-control" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">新密码</label>
+                    <label class="form-label">{% trans '新密码' %}</label>
                     <input type="password" name="new_password" class="form-control" minlength="6" required>
-                    <small style="color: var(--md3-on-surface-variant);">密码长度至少需6位</small>
+                    <small style="color: var(--md3-on-surface-variant);">{% trans '密码长度至少需6位' %}</small>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">确认新密码</label>
+                    <label class="form-label">{% trans '确认新密码' %}</label>
                     <input type="password" name="confirm_password" class="form-control" minlength="6" required>
                 </div>
                 
                 <div style="text-align: right;">
                     <button type="submit" class="btn-primary">
-                        <span class="material-icons">lock_reset</span>
-                        修改密码
-                    </button>
+                        <span class="material-icons">lock_reset</span>{% trans '修改密码' %}</button>
                 </div>
             </form>
         </div>
@@ -584,13 +575,11 @@
         
         <!-- 删除账户 -->
         <div>
-            <h3 style="font-size: 1.1rem; color: var(--md3-error); margin-bottom: var(--md3-spacing-lg);">危险区域</h3>
-            <p style="color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-md);">删除账户是不可逆的操作。所有相关数据将被永久删除。</p>
+            <h3 style="font-size: 1.1rem; color: var(--md3-error); margin-bottom: var(--md3-spacing-lg);">{% trans '危险区域' %}</h3>
+            <p style="color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-md);">{% trans '删除账户是不可逆的操作。所有相关数据将被永久删除。' %}</p>
             <div style="text-align: right;">
                 <button type="button" class="btn-primary" style="background: var(--md3-error); color: var(--md3-on-error);" onclick="document.getElementById('delete-account-modal').showModal()">
-                    <span class="material-icons">delete_forever</span>
-                    删除账户
-                </button>
+                    <span class="material-icons">delete_forever</span>{% trans '删除账户' %}</button>
             </div>
         </div>
     </div>
@@ -601,19 +590,17 @@
     <div style="padding: 24px;">
         <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px; color: var(--md3-error);">
             <span class="material-icons" style="font-size: 24px;">warning</span>
-            <h3 style="margin: 0; font-size: 24px;">确认删除账户？</h3>
+            <h3 style="margin: 0; font-size: 24px;">{% trans '确认删除账户？' %}</h3>
         </div>
-        <p style="margin-bottom: 24px; color: var(--md3-on-surface-variant);">
-            此操作无法撤销。请输入您的用户名 <strong>{{ user.username }}</strong> 以确认删除。
-        </p>
+        <p style="margin-bottom: 24px; color: var(--md3-on-surface-variant);">{% trans '此操作无法撤销。请输入您的用户名' %}<strong>{{ user.username }}</strong>{% trans '以确认删除。' %}</p>
         <form action="{% url 'clubs:delete_account' %}" method="post">
             {% csrf_token %}
             <div class="form-group">
                 <input type="text" name="confirm_username" class="form-control" placeholder="{{ user.username }}" required>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;">
-                <button type="button" class="btn-primary" style="background: transparent; color: var(--md3-primary); box-shadow: none;" onclick="document.getElementById('delete-account-modal').close()">取消</button>
-                <button type="submit" class="btn-primary" style="background: var(--md3-error); color: var(--md3-on-error);">确认删除</button>
+                <button type="button" class="btn-primary" style="background: transparent; color: var(--md3-primary); box-shadow: none;" onclick="document.getElementById('delete-account-modal').close()">{% trans '取消' %}</button>
+                <button type="submit" class="btn-primary" style="background: var(--md3-error); color: var(--md3-on-error);">{% trans '确认删除' %}</button>
             </div>
         </form>
     </div>
@@ -665,11 +652,11 @@
             if (!file) return;
             if (file.size > 20 * 1024 * 1024) {
                 input.value = '';
-                setUploadStatus('图片不能超过 20 MB，请选择较小的文件。', true);
+                setUploadStatus(gettext('图片不能超过 20 MB，请选择较小的文件。'), true);
                 return;
             }
             if (!window.CManagerCropper) {
-                setUploadStatus('裁剪组件未加载，请刷新页面重试。', true);
+                setUploadStatus(gettext('裁剪组件未加载，请刷新页面重试。'), true);
                 return;
             }
             CManagerCropper.open({
@@ -681,7 +668,7 @@
                 quality: 0.82,
                 onDone: uploadAvatar,
                 onError: function (message) {
-                    setUploadStatus(message || '图片处理失败，请重新选择。', true);
+                    setUploadStatus(message || gettext('图片处理失败，请重新选择。'), true);
                 }
             });
         });
@@ -689,7 +676,7 @@
         function uploadAvatar(blob, dataUrl) {
             if (isSubmitting) return;
             isSubmitting = true;
-            setUploadStatus('正在上传头像…', false);
+            setUploadStatus(gettext('正在上传头像…'), false);
             var form = document.getElementById('avatar-form');
             var csrf = form ? form.querySelector('input[name="csrfmiddlewaretoken"]') : null;
             var data = new FormData();
@@ -706,12 +693,12 @@
                 var contentType = response.headers.get('content-type') || '';
                 if (!contentType.includes('application/json')) {
                     if (response.redirected || response.status === 401 || response.status === 403) {
-                        throw new Error('登录状态已失效或请求被拒绝，请刷新页面后重新登录。');
+                        throw new Error(gettext('登录状态已失效或请求被拒绝，请刷新页面后重新登录。'));
                     }
-                    throw new Error('服务器未返回头像上传结果，请刷新页面后重试。');
+                    throw new Error(gettext('服务器未返回头像上传结果，请刷新页面后重试。'));
                 }
                 return response.json().then(function (payload) {
-                    if (!response.ok || !payload.ok) throw new Error(payload.message || '头像上传失败');
+                    if (!response.ok || !payload.ok) throw new Error(payload.message || gettext('头像上传失败'));
                     return payload;
                 });
             }).then(function (payload) {
@@ -730,10 +717,10 @@
                 }
                 if (currentView) currentView.style.display = 'block';
                 if (placeholder) placeholder.style.display = 'none';
-                setUploadStatus(payload.message || '头像上传完成，页面即将刷新…', false);
+                setUploadStatus(payload.message || gettext('头像上传完成，页面即将刷新…'), false);
                 window.setTimeout(function () { window.location.reload(); }, 500);
             }).catch(function (error) {
-                setUploadStatus(error.message || '头像上传失败，请重试。', true);
+                setUploadStatus(error.message || gettext('头像上传失败，请重试。'), true);
             }).finally(function () {
                 isSubmitting = false;
             });
@@ -743,7 +730,7 @@
         if (form) {
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
-                setUploadStatus('请先选择图片并完成裁剪。', true);
+                setUploadStatus(gettext('请先选择图片并完成裁剪。'), true);
             });
         }
     })();

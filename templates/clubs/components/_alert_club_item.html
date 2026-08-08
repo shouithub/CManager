@@ -1,8 +1,9 @@
+{% load i18n %}
 <div class="alert-item">
     <strong>{{ club.name }}</strong>
-    {% if show_members %}<span style="color: var(--md3-on-surface-variant);"> ({{ club.members_count }}人)</span>{% endif %}
+    {% if show_members %}<span style="color: var(--md3-on-surface-variant);">{% blocktrans with __i18n1=club.members_count %} ({{ __i18n1 }}人){% endblocktrans %}</span>{% endif %}
     <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-        <span style="color:var(--md3-on-surface-variant);">社长:</span>
+        <span style="color:var(--md3-on-surface-variant);">{% trans '社长:' %}</span>
         {% if club.president %}
         <a href="{% url 'clubs:user_detail' club.president.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
             <div style="width:20px;height:20px;border-radius:50%;overflow:hidden;margin-right:6px;flex-shrink:0;">
@@ -14,10 +15,10 @@
             </div>
             <span style="border-bottom:1px dotted var(--md3-outline);">{{ club.president.profile.get_full_name|default:'未设置' }}</span>
         </a>
-        {% else %}<span style="color:var(--md3-on-surface-variant);">未设置</span>{% endif %}
+        {% else %}<span style="color:var(--md3-on-surface-variant);">{% trans '未设置' %}</span>{% endif %}
     </div>
     <div style="display:flex;align-items:flex-start;gap:8px;margin-top:4px;">
-        <span style="color:var(--md3-on-surface-variant);white-space:nowrap;">负责干事:</span>
+        <span style="color:var(--md3-on-surface-variant);white-space:nowrap;">{% trans '负责干事:' %}</span>
         <div style="display:flex;flex-wrap:wrap;gap:8px;">
             {% if club.responsible_staff.all %}{% for relation in club.responsible_staff.all %}
             <a href="{% url 'clubs:user_detail' relation.staff.user.id %}" style="display:flex;align-items:center;text-decoration:none;color:inherit;">
@@ -26,7 +27,7 @@
                 </div>
                 <span style="border-bottom:1px dotted var(--md3-outline);">{{ relation.staff.get_full_name }}</span>
             </a>
-            {% endfor %}{% else %}<span style="color:var(--md3-on-surface-variant);">暂未分配</span>{% endif %}
+            {% endfor %}{% else %}<span style="color:var(--md3-on-surface-variant);">{% trans '暂未分配' %}</span>{% endif %}
         </div>
     </div>
 </div>

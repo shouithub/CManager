@@ -2778,6 +2778,66 @@ body.sidebar-resizing {
     color: var(--md3-error);
 }
 
+/* 语言切换下拉：条目是 button，复用用户下拉的视觉模式 */
+.sidebar-lang-dropdown {
+    bottom: calc(100% + 44px) !important;
+}
+
+.sidebar-lang-dropdown button {
+    display: flex;
+    align-items: center;
+    gap: var(--md3-spacing-md);
+    padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+    color: var(--md3-on-surface);
+    background: transparent;
+    border: 0;
+    width: 100%;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.875rem;
+    line-height: 20px;
+    letter-spacing: 0.1px;
+    text-align: left;
+    position: relative;
+    transition: background-color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+}
+
+.sidebar-lang-dropdown button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--md3-on-surface);
+    opacity: 0;
+    transition: opacity var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+}
+
+.sidebar-lang-dropdown button:hover::before {
+    opacity: 0.08;
+}
+
+.sidebar-lang-dropdown button:active::before {
+    opacity: 0.12;
+}
+
+.sidebar-lang-dropdown button span {
+    position: relative;
+    z-index: 1;
+}
+
+.sidebar-lang-dropdown button.current {
+    color: var(--md3-primary);
+    font-weight: 600;
+}
+
+.sidebar-lang-dropdown .lang-check {
+    width: 24px;
+    font-size: 20px;
+    text-align: center;
+}
+
 .sidebar-theme-toggle {
     display: flex;
     align-items: center;
@@ -4234,4 +4294,58 @@ fieldset legend {
 .btn:not(.btn-icon) .material-icons {
     color: inherit;
     font-size: 1.25rem;
+}
+
+
+/* 语言切换器 */
+.sidebar-lang-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    color: var(--md3-on-surface-variant);
+    margin-bottom: 8px;
+}
+
+.sidebar-lang-toggle:hover {
+    background: var(--md3-surface-container-high);
+}
+
+.sidebar-lang-toggle .material-icons {
+    font-size: 1.25rem;
+}
+
+.sidebar-lang-dropdown {
+    bottom: calc(100% + 44px);
+    left: 16px;
+    right: 16px;
+}
+
+.sidebar-lang-dropdown button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    color: var(--md3-on-surface);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    border-radius: 8px;
+}
+
+.sidebar-lang-dropdown button:hover,
+.sidebar-lang-dropdown button.current {
+    background: var(--md3-surface-container-high);
+}
+
+.sidebar-lang-dropdown button .material-icons {
+    font-size: 1.1rem;
+    color: var(--md3-primary);
 }

@@ -14,6 +14,7 @@ import logging
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import redirect
+from django.utils.translation import gettext as _
 
 
 logger = logging.getLogger(__name__)
@@ -113,5 +114,5 @@ def build_import_feedback(request, *, is_ajax, success, message, errors=None,
     else:
         messages.error(request, message)
     if errors:
-        messages.warning(request, '部分数据有问题：' + '；'.join(errors[:10]))
+        messages.warning(request, _('部分数据有问题：') + '；'.join(errors[:10]))
     return redirect(redirect_url or 'clubs:admin_dashboard')

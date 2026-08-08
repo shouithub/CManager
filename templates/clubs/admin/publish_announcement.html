@@ -1,7 +1,8 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}发布公告{% endblock %}
+{% block title %}{% trans '发布公告' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -377,8 +378,8 @@
     <div class="page-header">
         <span class="material-icons">campaign</span>
         <div class="page-header-content">
-            <h1>发布系统公告</h1>
-            <p class="subtitle">面向全校发布重要通知或活动信息，支持草稿与附件上传</p>
+            <h1>{% trans '发布系统公告' %}</h1>
+            <p class="subtitle">{% trans '面向全校发布重要通知或活动信息，支持草稿与附件上传' %}</p>
         </div>
         <a href="{% url 'clubs:admin_dashboard' %}" class="page-back-btn" title="返回管理面板" aria-label="返回管理面板">
             <span class="material-icons">arrow_back</span>
@@ -401,7 +402,7 @@
             {% csrf_token %}
             
             <div class="form-group">
-                <label for="title" class="form-label">公告标题 <span class="required">*</span></label>
+                <label for="title" class="form-label">{% trans '公告标题' %}<span class="required">*</span></label>
                 <input 
                     type="text" 
                     id="title" 
@@ -415,18 +416,12 @@
             </div>
             
             <div class="form-group">
-                <label for="content" class="form-label">公告内容 <span class="required">*</span></label>
-                <textarea 
-                    id="content" 
-                    name="content" 
-                    class="form-textarea"
-                    required 
-                    placeholder="输入公告内容"
-                >{{ content }}</textarea>
+                <label for="content" class="form-label">{% trans '公告内容' %}<span class="required">*</span></label>
+                <textarea id="content" name="content" class="form-textarea" required= placeholder="{% trans '输入公告内容' %}">{{ content }}</textarea>
             </div>
 
             <div class="form-group">
-                <label for="link_url" class="form-label">跳转链接（可选）</label>
+                <label for="link_url" class="form-label">{% trans '跳转链接（可选）' %}</label>
                 <input
                     type="text"
                     id="link_url"
@@ -436,18 +431,18 @@
                     placeholder="/clubs/ 或 https://example.com"
                     value="{{ link_url }}"
                 >
-                <small class="form-hint">填写后，首页公告会显示跳转入口。支持站内路径或 http(s) 完整地址。</small>
+                <small class="form-hint">{% trans '填写后，首页公告会显示跳转入口。支持站内路径或 http(s) 完整地址。' %}</small>
             </div>
             
             <div class="form-group">
-                <label for="expires_at" class="form-label">失效时间（可选）</label>
+                <label for="expires_at" class="form-label">{% trans '失效时间（可选）' %}</label>
                 <input 
                     type="datetime-local" 
                     id="expires_at" 
                     name="expires_at"
                     class="form-input"
                 >
-                <small class="form-hint">公告将在指定时间后自动归档。如不填写，公告将一直有效。</small>
+                <small class="form-hint">{% trans '公告将在指定时间后自动归档。如不填写，公告将一直有效。' %}</small>
             </div>
             
             <div class="form-group">
@@ -455,23 +450,19 @@
             </div>
             
             <div class="form-group">
-                <label for="status" class="form-label">发布状态 <span class="required">*</span></label>
+                <label for="status" class="form-label">{% trans '发布状态' %}<span class="required">*</span></label>
                 <select id="status" name="status" class="form-select" required>
-                    <option value="">-- 请选择 --</option>
-                    <option value="draft">草稿（保存但不显示）</option>
-                    <option value="published">发布（立即显示在首页）</option>
+                    <option value="">{% trans '-- 请选择 --' %}</option>
+                    <option value="draft">{% trans '草稿（保存但不显示）' %}</option>
+                    <option value="published">{% trans '发布（立即显示在首页）' %}</option>
                 </select>
             </div>
             
             <div class="form-actions">
                 <button type="submit" name="action" value="publish" class="btn btn-primary">
-                    <span class="material-icons">send</span>
-                    发布公告
-                </button>
+                    <span class="material-icons">send</span>{% trans '发布公告' %}</button>
                 <a href="{% url 'clubs:manage_announcements' %}" class="btn btn-secondary">
-                    <span class="material-icons">close</span>
-                    取消
-                </a>
+                    <span class="material-icons">close</span>{% trans '取消' %}</a>
             </div>
         </form>
     </div>
@@ -480,20 +471,18 @@
     {% if announcements %}
     <div class="announcements-card">
         <h3>
-            <span class="material-icons">list</span>
-            最近发布的公告
-        </h3>
+            <span class="material-icons">list</span>{% trans '最近发布的公告' %}</h3>
         <div class="announcement-list">
             {% for announcement in announcements %}
             <div class="announcement-item">
                 <div class="announcement-info">
                     <div class="announcement-title">{{ announcement.title }}</div>
                     <div class="announcement-meta">
-                        <span>发布于 {{ announcement.created_at|date:"Y-m-d H:i" }}</span>
+                        <span>{% blocktrans with __i18n1=announcement.created_at|date:"Y-m-d H:i" %}发布于 {{ __i18n1 }}{% endblocktrans %}</span>
                         {% if announcement.expires_at %}
-                            <span>失效于 {{ announcement.expires_at|date:"Y-m-d H:i" }}</span>
+                            <span>{% blocktrans with __i18n1=announcement.expires_at|date:"Y-m-d H:i" %}失效于 {{ __i18n1 }}{% endblocktrans %}</span>
                         {% else %}
-                            <span>永久有效</span>
+                            <span>{% trans '永久有效' %}</span>
                         {% endif %}
                         <span class="status-badge {{ announcement.status }}">
                             <span class="material-icons">
@@ -501,9 +490,7 @@
                                 {% elif announcement.status == 'draft' %}edit_note
                                 {% else %}archive{% endif %}
                             </span>
-                            {% if announcement.status == 'published' %}已发布
-                            {% elif announcement.status == 'draft' %}草稿
-                            {% else %}已归档{% endif %}
+                            {% if announcement.status == 'published' %}{% trans '已发布' %}{% elif announcement.status == 'draft' %}{% trans '草稿' %}{% else %}{% trans '已归档' %}{% endif %}
                         </span>
                     </div>
                     <div class="announcement-preview">{{ announcement.content|truncatewords:30 }}</div>
@@ -522,13 +509,9 @@
                 </div>
                 <div class="announcement-actions">
                     <a href="{% url 'clubs:edit_announcement' announcement.id %}" class="btn-edit">
-                        <span class="material-icons">edit</span>
-                        编辑
-                    </a>
+                        <span class="material-icons">edit</span>{% trans '编辑' %}</a>
                     <a href="{% url 'clubs:delete_announcement' announcement.id %}" class="btn-delete" onclick="return confirm('确定要删除此公告吗？');">
-                        <span class="material-icons">delete</span>
-                        删除
-                    </a>
+                        <span class="material-icons">delete</span>{% trans '删除' %}</a>
                 </div>
             </div>
             {% endfor %}

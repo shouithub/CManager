@@ -1,3 +1,4 @@
+{% load i18n %}
 {% comment %}
 CSV 批量导入通用弹窗组件（Material Design 风格）。
 用法：
@@ -169,29 +170,25 @@ CSV 批量导入通用弹窗组件（Material Design 风格）。
     <div class="csv-import-card" role="dialog" aria-modal="true" aria-labelledby="{{ modal_id }}-title">
         <div class="csv-import-header">
             <h3 id="{{ modal_id }}-title">{{ modal_title|default:'批量导入' }}</h3>
-            <button type="button" class="csv-import-close" data-csv-import-close aria-label="关闭">
+            <button type="button" class="csv-import-close" data-csv-import-close= aria-label="{% trans '关闭' %}">
                 <span class="material-icons">close</span>
             </button>
         </div>
         <p class="csv-import-desc">{{ modal_description|default:'下载模板填写后上传，即可批量导入。' }}</p>
-        {% if column_hint %}<p class="csv-import-hint">必要列：{{ column_hint }}</p>{% endif %}
+        {% if column_hint %}<p class="csv-import-hint">{% blocktrans with __i18n1=column_hint %}必要列：{{ __i18n1 }}{% endblocktrans %}</p>{% endif %}
         <a href="{{ template_url }}" class="csv-import-download">
-            <span class="material-icons">download</span>
-            下载导入模板
-        </a>
+            <span class="material-icons">download</span>{% trans '下载导入模板' %}</a>
         <form class="csv-import-form" method="post" action="{{ import_url }}" enctype="multipart/form-data">
             {% csrf_token %}
             <label class="csv-import-file">
-                <span class="csv-import-file-label"><span class="material-icons">folder_open</span>浏览</span>
-                <span class="csv-import-file-name">未选择文件</span>
+                <span class="csv-import-file-label"><span class="material-icons">folder_open</span>{% trans '浏览' %}</span>
+                <span class="csv-import-file-name">{% trans '未选择文件' %}</span>
                 <input type="file" name="csv_file" accept=".csv,text/csv" required class="csv-import-input">
             </label>
             <button type="submit" class="csv-import-submit">
-                <span class="material-icons">upload_file</span>
-                开始导入
-            </button>
+                <span class="material-icons">upload_file</span>{% trans '开始导入' %}</button>
             <div class="csv-import-progress" hidden>
-                <div class="csv-import-progress-text">准备导入...</div>
+                <div class="csv-import-progress-text">{% trans '准备导入...' %}</div>
                 <div class="csv-import-progress-track"><div class="csv-import-progress-bar"></div></div>
             </div>
             <div class="csv-import-result" role="status" aria-live="polite"></div>

@@ -10,7 +10,7 @@
 
     function open(url, name) {
         if (!url) return;
-        title.textContent = name || '在线预览';
+        title.textContent = name || gettext('在线预览');
         frame.src = url;
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');

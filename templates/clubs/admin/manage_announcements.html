@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}公告管理 - {{ site_name|default:'社团管理系统' }}{% endblock %}
+{% block title %}{% blocktrans with __i18n1=site_name|default:'社团管理系统' %}公告管理 - {{ __i18n1 }}{% endblocktrans %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -283,35 +284,33 @@
     <div class="page-header">
         <span class="material-icons">campaign</span>
         <div class="page-header-content">
-            <h1>公告管理</h1>
-            <p class="subtitle">发布、编辑与上下架站点公告</p>
+            <h1>{% trans '公告管理' %}</h1>
+            <p class="subtitle">{% trans '发布、编辑与上下架站点公告' %}</p>
         </div>
     </div>
 
     <div class="announce-hero-stats">
         <div class="announce-stat">
             <strong>{{ total_count }}</strong>
-            <span>总公告</span>
+            <span>{% trans '总公告' %}</span>
         </div>
         <div class="announce-stat">
             <strong>{{ published_count }}</strong>
-            <span>已发布</span>
+            <span>{% trans '已发布' %}</span>
         </div>
         <div class="announce-stat">
             <strong>{{ draft_count }}</strong>
-            <span>草稿</span>
+            <span>{% trans '草稿' %}</span>
         </div>
     </div>
 
     <div class="announce-toolbar">
         <div class="announce-toolbar-title">
-            <h2>全部公告</h2>
-            <p>共 {{ total_count }} 条公告</p>
+            <h2>{% trans '全部公告' %}</h2>
+            <p>{% blocktrans with __i18n1=total_count %}共 {{ __i18n1 }} 条公告{% endblocktrans %}</p>
         </div>
         <a href="{% url 'clubs:publish_announcement' %}" class="announce-primary-action">
-            <span class="material-icons">add</span>
-            发布公告
-        </a>
+            <span class="material-icons">add</span>{% trans '发布公告' %}</a>
     </div>
 
     {% if announcements %}
@@ -340,27 +339,23 @@
                     </span>
                     {% if announcement.published_at %}
                     <span class="announce-meta-item">
-                        <span class="material-icons">schedule</span>
-                        发布于 {{ announcement.published_at|date:"Y-m-d H:i" }}
-                    </span>
+                        <span class="material-icons">schedule</span>{% blocktrans with __i18n1=announcement.published_at|date:"Y-m-d H:i" %}
+                        发布于 {{ __i18n1 }}
+                    {% endblocktrans %}</span>
                     {% endif %}
                     {% if announcement.expires_at %}
                     <span class="announce-meta-item">
-                        <span class="material-icons">event_busy</span>
-                        过期 {{ announcement.expires_at|date:"Y-m-d H:i" }}
-                    </span>
+                        <span class="material-icons">event_busy</span>{% blocktrans with __i18n1=announcement.expires_at|date:"Y-m-d H:i" %}
+                        过期 {{ __i18n1 }}
+                    {% endblocktrans %}</span>
                     {% endif %}
                     {% if announcement.link_url %}
                     <span class="announce-meta-item">
-                        <span class="material-icons">open_in_new</span>
-                        含跳转链接
-                    </span>
+                        <span class="material-icons">open_in_new</span>{% trans '含跳转链接' %}</span>
                     {% endif %}
                     {% if announcement.attachment %}
                     <span class="announce-meta-item">
-                        <span class="material-icons">attach_file</span>
-                        含附件
-                    </span>
+                        <span class="material-icons">attach_file</span>{% trans '含附件' %}</span>
                     {% endif %}
                 </div>
                 <div class="announce-card-actions">
@@ -368,20 +363,16 @@
                         {% csrf_token %}
                         <button type="submit" class="announce-card-action">
                             <span class="material-icons">{% if announcement.status == 'published' %}visibility_off{% else %}publish{% endif %}</span>
-                            {% if announcement.status == 'published' %}下线{% else %}发布{% endif %}
+                            {% if announcement.status == 'published' %}{% trans '下线' %}{% else %}{% trans '发布' %}{% endif %}
                         </button>
                     </form>
                     <a href="{% url 'clubs:edit_announcement' announcement.id %}" class="announce-card-action">
-                        <span class="material-icons">edit</span>
-                        编辑
-                    </a>
+                        <span class="material-icons">edit</span>{% trans '编辑' %}</a>
                     <form method="post" action="{% url 'clubs:delete_announcement' announcement.id %}"
                           onsubmit="return confirm('确定要删除公告“{{ announcement.title|escapejs }}”吗？此操作不可恢复。');">
                         {% csrf_token %}
                         <button type="submit" class="announce-card-action danger">
-                            <span class="material-icons">delete</span>
-                            删除
-                        </button>
+                            <span class="material-icons">delete</span>{% trans '删除' %}</button>
                     </form>
                 </div>
             </div>
@@ -393,12 +384,10 @@
         <div class="announce-empty-icon">
             <span class="material-icons">campaign</span>
         </div>
-        <h2>还没有公告</h2>
-        <p>发布第一条公告，向全校社团展示最新的通知与安排。</p>
+        <h2>{% trans '还没有公告' %}</h2>
+        <p>{% trans '发布第一条公告，向全校社团展示最新的通知与安排。' %}</p>
         <a href="{% url 'clubs:publish_announcement' %}" class="announce-primary-action">
-            <span class="material-icons">add</span>
-            发布公告
-        </a>
+            <span class="material-icons">add</span>{% trans '发布公告' %}</a>
     </div>
     {% endif %}
 </div>

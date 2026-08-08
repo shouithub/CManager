@@ -1,7 +1,8 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}社团管理{% endblock %}
+{% block title %}{% trans '社团管理' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -186,22 +187,18 @@
 
 {% block content %}
 <div class="management-shell">
-    <div id="copyToast" class="copy-toast">✓ 复制成功</div>
+    <div id="copyToast" class="copy-toast">{% trans '✓ 复制成功' %}</div>
 
     <div class="page-header">
         <span class="material-icons">business_center</span>
         <div class="page-header-content">
-            <h1>社团管理</h1>
-            <p class="subtitle">管理社团功能、模板和用户信息</p>
+            <h1>{% trans '社团管理' %}</h1>
+            <p class="subtitle">{% trans '管理社团功能、模板和用户信息' %}</p>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-            <button type="button" class="btn btn-primary" data-csv-import-open="clubImportModal">
-                批量导入
-            </button>
+            <button type="button" class="btn btn-primary" data-csv-import-open="clubImportModal">{% trans '批量导入' %}</button>
             <a href="{% url 'clubs:export_all_users_and_clubs_csv' %}" class="btn btn-outlined">
-                <span class="material-icons">file_download</span>
-                导出数据
-            </a>
+                <span class="material-icons">file_download</span>{% trans '导出数据' %}</a>
         </div>
     </div>
 
@@ -210,7 +207,7 @@
     <!-- 功能控制 -->
     <div class="control-panel">
         <div class="control-card">
-            <h3><span class="material-icons">settings</span> 功能控制</h3>
+            <h3><span class="material-icons">settings</span>{% trans '功能控制' %}</h3>
             
             {% for channel in toggle_channels %}
             <div class="control-group">
@@ -220,18 +217,18 @@
                         {% csrf_token %}
                         <button type="submit" class="btn {% if channel.global_enabled %}btn-secondary{% else %}btn-primary{% endif %}">
                             <span class="material-icons">{% if channel.global_enabled %}lock{% else %}lock_open{% endif %}</span>
-                            {% if channel.global_enabled %}关闭{% else %}开启{% endif %}
+                            {% if channel.global_enabled %}{% trans '关闭' %}{% else %}{% trans '开启' %}{% endif %}
                         </button>
                     </form>
                 </div>
                 {% if channel.active_cycle %}
-                <span style="font-size: 13px; color: var(--md3-on-surface-variant);">当前周期：{{ channel.active_cycle.name }}</span>
+                <span style="font-size: 13px; color: var(--md3-on-surface-variant);">{% blocktrans with __i18n1=channel.active_cycle.name %}当前周期：{{ __i18n1 }}{% endblocktrans %}</span>
                 {% elif channel.needs_cycle %}
-                <span style="font-size: 13px; color: var(--md3-on-surface-variant);">当前未开启收集周期</span>
+                <span style="font-size: 13px; color: var(--md3-on-surface-variant);">{% trans '当前未开启收集周期' %}</span>
                 {% endif %}
             </div>
             {% empty %}
-            <div style="color: var(--md3-on-surface-variant);">暂无允许在本页开关的提交通道。</div>
+            <div style="color: var(--md3-on-surface-variant);">{% trans '暂无允许在本页开关的提交通道。' %}</div>
             {% endfor %}
         </div>
     </div>
@@ -239,7 +236,7 @@
     <!-- 管理功能 -->
     <div class="section-card">
         <div class="section-header">
-            <h3 class="section-title"><span class="material-icons">dashboard</span> 管理功能</h3>
+            <h3 class="section-title"><span class="material-icons">dashboard</span>{% trans '管理功能' %}</h3>
         </div>
         <div class="section-body">
             <div class="action-grid">
@@ -248,22 +245,20 @@
                     <div class="action-card-icon">
                         <span class="material-icons" style="font-size: 28px;">group</span>
                     </div>
-                    <div class="action-card-title">查看用户名单</div>
-                    <div class="action-card-desc">查看所有用户的详细信息和联系方式</div>
+                    <div class="action-card-title">{% trans '查看用户名单' %}</div>
+                    <div class="action-card-desc">{% trans '查看所有用户的详细信息和联系方式' %}</div>
                     <a href="{% url 'clubs:staff_view_users' %}" class="btn btn-secondary action-card-btn">
-                        <span class="material-icons">list</span> 用户名单
-                    </a>
+                        <span class="material-icons">list</span>{% trans '用户名单' %}</a>
                 </div>
 
                 <div class="action-card">
                     <div class="action-card-icon">
                         <span class="material-icons" style="font-size: 28px;">assignment_ind</span>
                     </div>
-                    <div class="action-card-title">管理负责社团</div>
-                    <div class="action-card-desc">分配和管理干事负责的社团列表</div>
+                    <div class="action-card-title">{% trans '管理负责社团' %}</div>
+                    <div class="action-card-desc">{% trans '分配和管理干事负责的社团列表' %}</div>
                     <a href="{% url 'clubs:manage_staff_clubs' %}" class="btn btn-success action-card-btn">
-                        <span class="material-icons">edit</span> 负责社团
-                    </a>
+                        <span class="material-icons">edit</span>{% trans '负责社团' %}</a>
                 </div>
 
                 {% if user.profile.role == 'admin' %}
@@ -271,14 +266,13 @@
                     <div class="action-card-icon">
                         <span class="material-icons" style="font-size: 28px;">notifications</span>
                     </div>
-                    <div class="action-card-title">人数告警阈值</div>
-                    <div class="action-card-desc">成员数低于该值的社团会触发“社团成员数量预警”，当前：{{ low_member_threshold }} 人。</div>
+                    <div class="action-card-title">{% trans '人数告警阈值' %}</div>
+                    <div class="action-card-desc">{% blocktrans with __i18n1=low_member_threshold %}成员数低于该值的社团会触发“社团成员数量预警”，当前：{{ __i18n1 }} 人。{% endblocktrans %}</div>
                     <form method="post" action="{% url 'clubs:update_alert_threshold' %}" class="threshold-form">
                         {% csrf_token %}
                         <input type="number" name="low_member_threshold" min="1" max="999" value="{{ low_member_threshold }}" required aria-label="人数告警阈值">
                         <button type="submit" class="btn btn-primary action-card-btn">
-                            <span class="material-icons">save</span> 保存
-                        </button>
+                            <span class="material-icons">save</span>{% trans '保存' %}</button>
                     </form>
                 </div>
                 {% endif %}
@@ -289,7 +283,7 @@
     <!-- 社团名单 -->
     <div class="section-card">
         <div class="section-header">
-            <h3 class="section-title"><span class="material-icons">format_list_bulleted</span> 社团名单</h3>
+            <h3 class="section-title"><span class="material-icons">format_list_bulleted</span>{% trans '社团名单' %}</h3>
         </div>
         <div class="section-body">
             <!-- 搜索和工具栏 -->
@@ -306,12 +300,12 @@
                     </div>
                     <button type="submit" class="btn btn-primary">
                         <span class="material-icons">search</span>
-                        <span>搜索</span>
+                        <span>{% trans '搜索' %}</span>
                     </button>
                 </form>
-                <div style="color: var(--md3-on-surface-variant); font-size: 0.9rem;">
-                    共 {{ clubs_page.paginator.count }} 个社团
-                </div>
+                <div style="color: var(--md3-on-surface-variant); font-size: 0.9rem;">{% blocktrans with __i18n1=clubs_page.paginator.count %}
+                    共 {{ __i18n1 }} 个社团
+                {% endblocktrans %}</div>
             </div>
 
             <!-- 表格容器 -->
@@ -319,22 +313,22 @@
                 <table class="club-table">
                     <thead>
                         <tr>
-                            <th class="club-col-name">社团名称</th>
-                            <th class="club-col-president">社长</th>
-                            <th class="club-col-status">状态</th>
+                            <th class="club-col-name">{% trans '社团名称' %}</th>
+                            <th class="club-col-president">{% trans '社长' %}</th>
+                            <th class="club-col-status">{% trans '状态' %}</th>
                             {% for channel in toggle_channels %}
                             <th class="club-col-channel">{{ channel.name }}</th>
                             {% endfor %}
-                            <th class="club-col-actions">操作</th>
+                            <th class="club-col-actions">{% trans '操作' %}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for club in clubs_page %}
                         <tr>
-                            <td class="club-col-name" data-label="社团">
+                            <td class="club-col-name" data-label="{% trans '社团' %}">
                                 <span class="club-name-text">{{ club.name }}</span>
                             </td>
-                            <td class="club-col-president" data-label="社长">
+                            <td class="club-col-president" data-label="{% trans '社长' %}">
                                 {% if club.president %}
                                     <a href="{% url 'clubs:user_detail' club.president.id %}" class="club-person-link">
                                         {% if club.president.profile.has_display_avatar %}
@@ -350,19 +344,16 @@
                                     <span style="color: var(--md3-on-surface-variant);">—</span>
                                 {% endif %}
                             </td>
-                            <td class="club-col-status" data-label="状态">
+                            <td class="club-col-status" data-label="{% trans '状态' %}">
                                 {% if club.status == 'active' %}
                                     <span class="status-pill active">
-                                        <span class="material-icons">check_circle</span> 活跃
-                                    </span>
+                                        <span class="material-icons">check_circle</span>{% trans '活跃' %}</span>
                                 {% elif club.status == 'inactive' %}
                                     <span class="status-pill inactive">
-                                        <span class="material-icons">pause_circle</span> 不活跃
-                                    </span>
+                                        <span class="material-icons">pause_circle</span>{% trans '不活跃' %}</span>
                                 {% elif club.status == 'suspended' %}
                                     <span class="status-pill suspended">
-                                        <span class="material-icons">cancel</span> 停止
-                                    </span>
+                                        <span class="material-icons">cancel</span>{% trans '停止' %}</span>
                                 {% endif %}
                             </td>
                             {% for state in club.dynamic_channel_states %}
@@ -377,12 +368,12 @@
                                         onclick="this.closest('form').submit(); return false;"
                                         onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.closest('form').submit(); }"
                                     >
-                                        <span>{% if state.is_enabled %}开启{% else %}关闭{% endif %}</span>
+                                        <span>{% if state.is_enabled %}{% trans '开启' %}{% else %}{% trans '关闭' %}{% endif %}</span>
                                     </a>
                                 </form>
                             </td>
                             {% endfor %}
-                            <td class="club-col-actions" data-label="操作">
+                            <td class="club-col-actions" data-label="{% trans '操作' %}">
                                 <div class="club-row-actions">
                                     <a href="{% url 'clubs:club_detail' club_id=club.id %}" class="btn btn-secondary club-action-btn" title="查看 {{ club.name }}">
                                         <span class="material-icons">visibility</span>
@@ -397,7 +388,7 @@
                         <tr>
                             <td colspan="{{ toggle_colspan }}" class="club-empty-cell">
                                 <span class="material-icons" style="font-size: 3rem; opacity: 0.5; display: block; margin-bottom: var(--md3-spacing-md);">folder_off</span>
-                                <div>暂无社团记录</div>
+                                <div>{% trans '暂无社团记录' %}</div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -408,26 +399,26 @@
             <!-- 分页控制 -->
             {% if clubs_page.has_previous or clubs_page.has_next %}
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--md3-spacing-xl); padding-top: var(--md3-spacing-lg); border-top: 1px solid var(--md3-outline-variant);">
-                <div style="color: var(--md3-on-surface-variant); font-size: 0.95rem;">
-                    第 {{ clubs_page.number }} / {{ clubs_page.paginator.num_pages }} 页
-                </div>
+                <div style="color: var(--md3-on-surface-variant); font-size: 0.95rem;">{% blocktrans with __i18n1=clubs_page.number __i18n2=clubs_page.paginator.num_pages %}
+                    第 {{ __i18n1 }} / {{ __i18n2 }} 页
+                {% endblocktrans %}</div>
                 <div style="display: flex; gap: var(--md3-spacing-md);">
                     {% if clubs_page.has_previous %}
                         <a href="?q={{ q }}&page={{ clubs_page.previous_page_number }}" class="btn btn-secondary">
-                            <span class="material-icons">chevron_left</span> <span>上一页</span>
+                            <span class="material-icons">chevron_left</span> <span>{% trans '上一页' %}</span>
                         </a>
                     {% else %}
                         <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
-                            <span class="material-icons">chevron_left</span> <span>上一页</span>
+                            <span class="material-icons">chevron_left</span> <span>{% trans '上一页' %}</span>
                         </button>
                     {% endif %}
                     {% if clubs_page.has_next %}
                         <a href="?q={{ q }}&page={{ clubs_page.next_page_number }}" class="btn btn-secondary">
-                            <span>下一页</span> <span class="material-icons">chevron_right</span>
+                            <span>{% trans '下一页' %}</span> <span class="material-icons">chevron_right</span>
                         </a>
                     {% else %}
                         <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
-                            <span>下一页</span> <span class="material-icons">chevron_right</span>
+                            <span>{% trans '下一页' %}</span> <span class="material-icons">chevron_right</span>
                         </button>
                     {% endif %}
                 </div>
@@ -445,21 +436,16 @@
 <!-- 删除确认弹窗 -->
 <div id="deleteModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
     <div class="modal-card" style="background: var(--md3-surface); padding: 24px; border-radius: 28px; width: 90%; max-width: 400px; box-shadow: var(--md3-elevation-3);">
-        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 24px; color: var(--md3-on-surface);">删除社团确认</h3>
-        <p style="margin-bottom: 20px; color: var(--md3-on-surface-variant);">
-            您正在删除社团 <strong id="deleteClubNameDisplay" style="color: var(--md3-on-surface);"></strong>。<br>
-            此操作无法撤销！所有相关数据将被永久删除。
-        </p>
-        <p style="margin-bottom: 8px; font-size: 14px; color: var(--md3-on-surface);">请输入社团全名以确认：</p>
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 24px; color: var(--md3-on-surface);">{% trans '删除社团确认' %}</h3>
+        <p style="margin-bottom: 20px; color: var(--md3-on-surface-variant);">{% trans '您正在删除社团' %}<strong id="deleteClubNameDisplay" style="color: var(--md3-on-surface);"></strong>。<br>{% trans '此操作无法撤销！所有相关数据将被永久删除。' %}</p>
+        <p style="margin-bottom: 8px; font-size: 14px; color: var(--md3-on-surface);">{% trans '请输入社团全名以确认：' %}</p>
         <form id="deleteForm" method="post" action="">
             {% csrf_token %}
-            <input type="text" id="confirmNameInput" name="confirm_club_name" 
-                   style="width: 100%; padding: 12px; border: 1px solid var(--md3-outline); border-radius: 4px; margin-bottom: 24px; box-sizing: border-box; background: var(--md3-surface-container-highest); color: var(--md3-on-surface);"
-                   placeholder="输入社团全名" oninput="checkDeleteInput()" autocomplete="off">
+            <input type="text" id="confirmNameInput" name="confirm_club_name" style="width: 100%; padding: 12px; border: 1px solid var(--md3-outline); border-radius: 4px; margin-bottom: 24px; box-sizing: border-box; background: var(--md3-surface-container-highest); color: var(--md3-on-surface);" placeholder="{% trans '输入社团全名' %}" oninput="checkDeleteInput()" autocomplete="off">
             
             <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">取消</button>
-                <button type="submit" id="confirmDeleteBtn" class="btn btn-primary" style="background: var(--md3-error); color: var(--md3-on-error);" disabled>确认删除</button>
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">{% trans '取消' %}</button>
+                <button type="submit" id="confirmDeleteBtn" class="btn btn-primary" style="background: var(--md3-error); color: var(--md3-on-error);" disabled>{% trans '确认删除' %}</button>
             </div>
         </form>
     </div>
@@ -513,7 +499,7 @@ const ALERTS_DATA = {{ alerts_json|safe }};
 
 function alertTitle(alert, scope) {
     const base = alert.title + (alert.cycle || '');
-    return scope === 'my' ? base + ' - 我负责的' : base;
+    return scope === 'my' ? base + gettext(' - 我负责的') : base;
 }
 
 function copyAlert(key, scope) {
@@ -523,14 +509,14 @@ function copyAlert(key, scope) {
     const lines = [alertTitle(alert, scope), '=========================='];
     items.forEach(function (club) {
         let line = club.name;
-        if (alert.show_members) line += ' - 成员数: ' + club.members + ' 人';
+        if (alert.show_members) line += ' - 成员数: ' + club.members + gettext(' 人');
         line += ' (社长: ' + club.president + ')';
         line += ' - 负责干事: ' + club.staff.join(', ');
         lines.push(line);
     });
     lines.push('==========================');
-    lines.push('总计: ' + (scope === 'my' ? alert.my_count : alert.count) + ' 个社团');
-    navigator.clipboard.writeText(lines.join('\n')).then(showToast).catch(err => console.error('复制失败:', err));
+    lines.push(gettext('总计: ') + (scope === 'my' ? alert.my_count : alert.count) + gettext(' 个社团'));
+    navigator.clipboard.writeText(lines.join('\n')).then(showToast).catch(err => console.error(gettext('复制失败:'), err));
 }
 
 function openAlertListModal(key, scope) {

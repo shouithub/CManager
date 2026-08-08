@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.views import redirect_to_login
 from django.http import JsonResponse
 from django.shortcuts import redirect
+from django.utils.translation import gettext as _
 
 
 def user_role(user):
@@ -57,7 +58,7 @@ def roles_required(*roles, json_response=False):
             if not has_any_role(request.user, *roles):
                 if json_response:
                     return JsonResponse({'error': '权限不足'}, status=403)
-                messages.error(request, '权限不足')
+                messages.error(request, _('权限不足'))
                 return redirect('clubs:index')
             return view_func(request, *args, **kwargs)
         return wrapper

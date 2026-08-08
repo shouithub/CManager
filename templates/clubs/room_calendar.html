@@ -1,7 +1,8 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}房间预约日历{% endblock %}
+{% block title %}{% trans '房间预约日历' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -802,9 +803,9 @@
                 </div>
             </div>
 
-            <a href="?room_id={{ selected_room.id }}" class="pill-btn today-btn{% if is_today %} disabled{% endif %}" {% if is_today %}aria-disabled="true"{% endif %}>今天</a>
+            <a href="?room_id={{ selected_room.id }}" class="pill-btn today-btn{% if is_today %} disabled{% endif %}" {% if is_today %}aria-disabled="true"{% endif %}>{% trans '今天' %}</a>
             
-            <div class="date-group" role="group" aria-label="日期切换">
+            <div class="date-group" role="group" aria-label="{% trans '日期切换' %}">
                 <a href="?room_id={{ selected_room.id }}&date={{ prev_date|date:'Y-m-d' }}" class="pill-btn nav-btn" title="前一天">
                     <span class="material-icons">chevron_left</span>
                 </a>
@@ -816,14 +817,10 @@
         </div>
         <div class="toolbar-right">
             <a href="{% url 'clubs:my_room_bookings' %}" class="pill-btn action-btn secondary">
-                <span class="material-icons">event_note</span>
-                我的预约
-            </a>
+                <span class="material-icons">event_note</span>{% trans '我的预约' %}</a>
             {% if user.profile.role == 'staff' or user.profile.role == 'admin' or user.is_superuser %}
             <button onclick="openExportModal()" class="pill-btn action-btn secondary">
-                <span class="material-icons">file_download</span>
-                导出周表
-            </button>
+                <span class="material-icons">file_download</span>{% trans '导出周表' %}</button>
             {% endif %}
         </div>
     </div>
@@ -852,9 +849,7 @@
                          {% if not slot.has_booking %}onclick="bookTimeSlot('{{ slot.start|time:"H:i" }}', '{{ slot.end|time:"H:i" }}')"{% endif %}
                          title="{% if slot.has_booking %}该时段已有预约{% else %}点击预约 {{ slot.label }}{% endif %}">
                         <span class="slot-hint">
-                            <span class="material-icons" style="font-size: 18px;">add</span>
-                            预约此时段
-                        </span>
+                            <span class="material-icons" style="font-size: 18px;">add</span>{% trans '预约此时段' %}</span>
                     </div>
                     {% endfor %}
 
@@ -875,7 +870,7 @@
                     {% empty %}
                     <div class="empty-state">
                         <span class="material-icons">event_available</span>
-                        <p>今日暂无预约，点击右上角立刻创建吧。</p>
+                        <p>{% trans '今日暂无预约，点击右上角立刻创建吧。' %}</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -888,7 +883,7 @@
 <div class="event-modal" id="eventModal" onclick="if(event.target === this) closeEventModal()">
     <div class="modal-content">
         <div class="modal-header">
-            <div class="modal-title" id="modalTitle">预约详情</div>
+            <div class="modal-title" id="modalTitle">{% trans '预约详情' %}</div>
             <button class="close-btn" type="button" onclick="closeEventModal()">
                 <span class="material-icons">close</span>
             </button>
@@ -902,7 +897,7 @@
 <div class="event-modal" id="exportModal" onclick="if(event.target === this) closeExportModal()">
     <div class="modal-content">
         <div class="modal-header">
-            <div class="modal-title">导出预约周表</div>
+            <div class="modal-title">{% trans '导出预约周表' %}</div>
             <button class="close-btn" type="button" onclick="closeExportModal()">
                 <span class="material-icons">close</span>
             </button>
@@ -910,7 +905,7 @@
         <div class="modal-body">
             <form id="exportForm" action="{% url 'clubs:export_room_bookings_weekly' %}" method="get">
                 <div class="export-form-group">
-                    <label class="export-form-label">选择房间</label>
+                    <label class="export-form-label">{% trans '选择房间' %}</label>
                     <select name="room_id" class="export-form-select">
                         {% for room in rooms %}
                         <option value="{{ room.id }}" {% if selected_room.id == room.id %}selected{% endif %}>{{ room.name }}</option>
@@ -918,17 +913,15 @@
                     </select>
                 </div>
                 <div class="export-form-group">
-                    <label class="export-form-label">选择日期（自动归一到该周周一）</label>
+                    <label class="export-form-label">{% trans '选择日期（自动归一到该周周一）' %}</label>
                     <input type="date" name="week_start" class="export-form-select" value="{{ week_start|date:'Y-m-d' }}" required>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn" onclick="closeExportModal()">取消</button>
+            <button class="modal-btn" onclick="closeExportModal()">{% trans '取消' %}</button>
             <button class="modal-btn primary" onclick="document.getElementById('exportForm').submit(); closeExportModal();">
-                <span class="material-icons" style="font-size: 18px;">download</span>
-                确认导出
-            </button>
+                <span class="material-icons" style="font-size: 18px;">download</span>{% trans '确认导出' %}</button>
         </div>
     </div>
 </div>
@@ -1101,14 +1094,14 @@
 
         let footerHtml = '';
         if (booking.canEdit) {
-            footerHtml += `<a href="{% url 'clubs:edit_room_booking' 0 %}`.replace('0', booking.id) + `" class="modal-btn primary">
+            footerHtml += `<a href="{% url 'clubs:edit_room_booking' 0 %}`.replace('0', booking.id) + gettext('" class="modal-btn primary">
                 <span class="material-icons" style="font-size: 18px;">edit</span> 编辑
-            </a>`;
+            </a>');
         }
         if (booking.canDelete) {
-            footerHtml += `<a href="{% url 'clubs:delete_room_booking' 0 %}`.replace('0', booking.id) + `" class="modal-btn error">
+            footerHtml += `<a href="{% url 'clubs:delete_room_booking' 0 %}`.replace('0', booking.id) + gettext('" class="modal-btn error">
                 <span class="material-icons" style="font-size: 18px;">delete</span> 删除
-            </a>`;
+            </a>');
         }
         if (!footerHtml) {
             footerHtml = `<button class="modal-btn" onclick="closeEventModal()">关闭</button>`;

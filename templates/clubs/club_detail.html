@@ -1,6 +1,8 @@
 {% extends base_template %}
+{% load i18n %}
+{% load common_tags %}
 
-{% block title %}社团详情{% endblock %}
+{% block title %}{% trans '社团详情' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -317,7 +319,7 @@
         <span class="material-icons">groups</span>
         <div class="page-header-content">
             <h1>{{ club.name }}</h1>
-            <div class="subtitle">社团详情</div>
+            <div class="subtitle">{% trans '社团详情' %}</div>
         </div>
         
         {% if user.profile.role == 'staff' or user.is_superuser %}
@@ -335,25 +337,19 @@
     <div class="info-grid">
         <div class="info-card">
             <div class="info-card-header">
-                <span class="material-icons">calendar_today</span>
-                成立日期
-            </div>
-            <div class="info-card-value">{{ club.founded_date|default:"--" }}</div>
+                <span class="material-icons">calendar_today</span>{% trans '成立日期' %}</div>
+            <div class="info-card-value">{{ club.founded_date|tdefault:"--" }}</div>
         </div>
         
         <div class="info-card">
             <div class="info-card-header">
-                <span class="material-icons">person</span>
-                成员人数
-            </div>
-            <div class="info-card-value">{{ club.members_count }} 人</div>
+                <span class="material-icons">person</span>{% trans '成员人数' %}</div>
+            <div class="info-card-value">{{ club.members_count }}{% trans '人' %}</div>
         </div>
         
         <div class="info-card">
             <div class="info-card-header">
-                <span class="material-icons">info</span>
-                当前状态
-            </div>
+                <span class="material-icons">info</span>{% trans '当前状态' %}</div>
             <div class="info-card-value" style="margin-left: 0; margin-top: 4px; display: flex;">
                 <span class="status-badge {% if club.status == 'active' %}status-active{% elif club.status == 'inactive' %}status-inactive{% else %}status-suspended{% endif %}">
                     <span class="material-icons" style="font-size: 1rem;">
@@ -372,7 +368,7 @@
     <div class="detail-card">
         <div class="detail-card-header">
             <span class="material-icons">description</span>
-            <h2>社团简介</h2>
+            <h2>{% trans '社团简介' %}</h2>
         </div>
         <div class="description-content">{{ club.description }}</div>
     </div>
@@ -384,56 +380,50 @@
         <div class="detail-card-header" style="justify-content: space-between;">
             <div style="display:flex; align-items:center; gap: 12px;">
             <span class="material-icons">badge</span>
-            <h2>成员列表</h2>
+            <h2>{% trans '成员列表' %}</h2>
             </div>
             {% if is_president %}
             <div style="display:flex; align-items:center; gap:8px;">
                 <button type="button" class="action-btn" style="padding: 6px 12px;" onclick="window.location.href='{% url 'clubs:president_member_management' %}?club_id={{ club.id }}'">
-                    <span class="material-icons">manage_accounts</span>
-                    社员管理
-                </button>
+                    <span class="material-icons">manage_accounts</span>{% trans '社员管理' %}</button>
             </div>
             {% endif %}
         </div>
 
         {% if is_president %}
         <div style="margin-bottom:12px; padding:12px; border:1px solid var(--md3-outline); border-radius:12px;">
-            <div style="font-weight:600; margin-bottom:8px;">二维码生成设置</div>
+            <div style="font-weight:600; margin-bottom:8px;">{% trans '二维码生成设置' %}</div>
             <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
                 <div style="flex:1; min-width:140px;">
-                    <label style="display:block; font-size:0.88rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">有效时长（分钟）</label>
+                    <label style="display:block; font-size:0.88rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">{% trans '有效时长（分钟）' %}</label>
                     <input type="number" id="qrMinutes" value="10" min="1" max="43200" style="width:100%; padding:8px; border:1px solid var(--md3-outline); border-radius:8px;" oninput="validateQrConfig()">
                 </div>
                 <div style="flex:1; min-width:140px;">
-                    <label style="display:block; font-size:0.88rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">使用次数</label>
+                    <label style="display:block; font-size:0.88rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">{% trans '使用次数' %}</label>
                     <select id="qrMaxUses" style="width:100%; padding:8px; border:1px solid var(--md3-outline); border-radius:8px;" onchange="validateQrConfig()">
-                        <option value="1">1次（一次性）</option>
-                        <option value="5">5次</option>
-                        <option value="10">10次</option>
-                        <option value="20">20次</option>
-                        <option value="50">50次</option>
-                        <option value="unlimited">不限次数</option>
+                        <option value="1">{% trans '1次（一次性）' %}</option>
+                        <option value="5">{% trans '5次' %}</option>
+                        <option value="10">{% trans '10次' %}</option>
+                        <option value="20">{% trans '20次' %}</option>
+                        <option value="50">{% trans '50次' %}</option>
+                        <option value="unlimited">{% trans '不限次数' %}</option>
                     </select>
                 </div>
                 <button type="button" class="action-btn btn-outline" style="padding:8px 14px; white-space:nowrap;" onclick="generateMemberJoinQRCode({{ club.id }})">
-                    <span class="material-icons">qr_code_2</span>
-                    生成二维码
-                </button>
+                    <span class="material-icons">qr_code_2</span>{% trans '生成二维码' %}</button>
             </div>
             <div id="qrConfigError" style="display:none; margin-top:8px; padding:8px; background:var(--md3-error-container); color:var(--md3-on-error-container); border-radius:8px; font-size:0.88rem;"></div>
         </div>
         <div id="memberQrPanel" style="display:none; margin-bottom:16px; padding:12px; border:1px dashed var(--md3-outline); border-radius:12px;">
-            <div style="font-weight:600; margin-bottom:8px;">招新二维码已生成</div>
+            <div style="font-weight:600; margin-bottom:8px;">{% trans '招新二维码已生成' %}</div>
             <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
-                <img id="memberQrImage" alt="招新二维码" style="width:180px; height:180px; border:1px solid var(--md3-outline-variant); border-radius:12px; background:#fff; object-fit:contain; display:none;">
+                <img id="memberQrImage" alt="{% trans '招新二维码' %}" style="width:180px; height:180px; border:1px solid var(--md3-outline-variant); border-radius:12px; background:#fff; object-fit:contain; display:none;">
                 <div style="flex:1; min-width:220px;">
             <div id="memberQrUrl" style="word-break:break-all; font-size:0.92rem; color: var(--md3-on-surface-variant);"></div>
             <div id="memberQrExpires" style="margin-top:6px; font-size:0.85rem; color: var(--md3-on-surface-variant);"></div>
             <div id="memberQrUses" style="margin-top:4px; font-size:0.85rem; color: var(--md3-on-surface-variant);"></div>
                     <button type="button" class="action-btn btn-outline" style="margin-top:10px; padding:6px 10px;" onclick="copyMemberQrLink()">
-                        <span class="material-icons">content_copy</span>
-                        复制链接
-                    </button>
+                        <span class="material-icons">content_copy</span>{% trans '复制链接' %}</button>
                 </div>
             </div>
         </div>
@@ -443,11 +433,11 @@
             <table class="officers-table">
                 <thead>
                     <tr>
-                        <th>姓名</th>
-                        <th>学号</th>
-                        <th>身份</th>
-                        <th>加入/任命日期</th>
-                        <th>联系方式</th>
+                        <th>{% trans '姓名' %}</th>
+                        <th>{% trans '学号' %}</th>
+                        <th>{% trans '身份' %}</th>
+                        <th>{% trans '加入/任命日期' %}</th>
+                        <th>{% trans '联系方式' %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -488,16 +478,16 @@
                             {% endif %}
                         </td>
                         <td>
-                            <span style="font-weight: 500; color: var(--md3-primary);">
-                                干部（{{ officer.get_position_display }}）
-                            </span>
+                            <span style="font-weight: 500; color: var(--md3-primary);">{% blocktrans with __i18n1=officer.get_position_display %}
+                                干部（{{ __i18n1 }}）
+                            {% endblocktrans %}</span>
                         </td>
                         <td>{{ officer.appointed_date|date:"Y-m-d" }}</td>
                         <td>
                             {% if is_president or is_staff or user.is_superuser or officer.user_profile.is_info_public %}
                                 {{ officer.user_profile.phone|default:"--" }}
                             {% else %}
-                                <span style="color: var(--md3-on-surface-variant); font-size: 0.8em;">未公开</span>
+                                <span style="color: var(--md3-on-surface-variant); font-size: 0.8em;">{% trans '未公开' %}</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -520,16 +510,16 @@
                                 {{ m.user_profile.get_full_name }}
                             </a>
                         </td>
-                        <td>{{ m.user_profile.student_id|default:"--" }}</td>
+                        <td>{{ m.user_profile.student_id|tdefault:"--" }}</td>
                         <td>
-                            <span style="font-weight: 500; color: var(--md3-secondary);">社员</span>
+                            <span style="font-weight: 500; color: var(--md3-secondary);">{% trans '社员' %}</span>
                         </td>
                         <td>{{ m.joined_at|date:"Y-m-d" }}</td>
                         <td>
                             {% if is_president or is_staff or user.is_superuser or m.user_profile.is_info_public %}
                                 {{ m.user_profile.phone|default:"--" }}
                             {% else %}
-                                <span style="color: var(--md3-on-surface-variant); font-size: 0.8em;">未公开</span>
+                                <span style="color: var(--md3-on-surface-variant); font-size: 0.8em;">{% trans '未公开' %}</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -554,13 +544,13 @@
             }
         }
         if (res.redirected) {
-            throw new Error('登录状态已失效，请刷新页面后重试');
+            throw new Error(gettext('登录状态已失效，请刷新页面后重试'));
         }
         if (!res.ok) {
-            throw new Error((data && data.message) ? data.message : `请求失败（HTTP ${res.status}），请稍后重试或联系管理员`);
+            throw new Error((data && data.message) ? data.message : gettext('请求失败（HTTP ') + (res.status) + gettext('），请稍后重试或联系管理员'));
         }
         if (!data) {
-            throw new Error('服务器返回了无法解析的数据，请稍后重试或联系管理员');
+            throw new Error(gettext('服务器返回了无法解析的数据，请稍后重试或联系管理员'));
         }
         return data;
     }
@@ -588,7 +578,7 @@
             });
             const data = await parseMemberTokenResponse(res);
             if (!data.success) {
-                throw new Error(data.message || '生成失败');
+                throw new Error(data.message || gettext('生成失败'));
             }
 
             // 用当前页面域名重建链接，避免服务端反代环境返回错误域名
@@ -607,11 +597,11 @@
                 errorEl.style.display = 'none';
             } else {
                 imgEl.style.display = 'none';
-                errorEl.textContent = data.qr_error || '二维码图片生成失败，请复制链接使用';
+                errorEl.textContent = data.qr_error || gettext('二维码图片生成失败，请复制链接使用');
                 errorEl.style.display = 'block';
             }
         } catch (err) {
-            alert(err.message || '二维码生成失败');
+            alert(err.message || gettext('二维码生成失败'));
         }
     }
 
@@ -636,9 +626,9 @@
             return;
         }
         navigator.clipboard.writeText(url).then(function() {
-            alert('链接已复制');
+            alert(gettext('链接已复制'));
         }).catch(function() {
-            alert('复制失败，请手动复制');
+            alert(gettext('复制失败，请手动复制'));
         });
     }
 
@@ -656,7 +646,7 @@
     <div class="detail-card">
         <div class="detail-card-header">
             <span class="material-icons">bolt</span>
-            <h2>管理操作</h2>
+            <h2>{% trans '管理操作' %}</h2>
         </div>
         <div class="action-grid">
             {% if is_president %}
@@ -668,14 +658,11 @@
             {% endif %}
             {% if can_manage_club %}
                 <a href="{% url 'clubs:direct_edit_club_info' club.id %}" class="action-btn btn-primary">
-                    <span class="material-icons">edit</span>修改资料
-                </a>
+                    <span class="material-icons">edit</span>{% trans '修改资料' %}</a>
                 <a href="{% url 'clubs:change_club_status' club.id %}" class="action-btn btn-outline">
-                    <span class="material-icons">toggle_on</span>更改状态
-                </a>
+                    <span class="material-icons">toggle_on</span>{% trans '更改状态' %}</a>
                 <a href="{% url 'clubs:delete_club' club.id %}" class="action-btn btn-outline">
-                    <span class="material-icons">delete</span>删除社团
-                </a>
+                    <span class="material-icons">delete</span>{% trans '删除社团' %}</a>
             {% endif %}
         </div>
     </div>
@@ -686,16 +673,16 @@
 <!-- 修改简介模态框 -->
 <div id="descriptionModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center;">
     <div class="modal-content" style="background-color: var(--md3-surface); padding: 24px; border-radius: 28px; width: 90%; max-width: 500px; box-shadow: var(--md3-elevation-3); position: relative;">
-        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 24px; color: var(--md3-on-surface);">修改社团简介</h3>
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 24px; color: var(--md3-on-surface);">{% trans '修改社团简介' %}</h3>
         <form method="post" action="{% url 'clubs:update_club_description' club.id %}">
             {% csrf_token %}
             <div style="margin-bottom: 24px;">
-                <label for="descriptionInput" style="display: block; margin-bottom: 8px; color: var(--md3-on-surface-variant); font-size: 14px;">社团简介</label>
+                <label for="descriptionInput" style="display: block; margin-bottom: 8px; color: var(--md3-on-surface-variant); font-size: 14px;">{% trans '社团简介' %}</label>
                 <textarea id="descriptionInput" name="description" rows="6" style="width: 100%; padding: 12px; border: 1px solid var(--md3-outline); border-radius: 8px; background: var(--md3-surface-container-highest); color: var(--md3-on-surface-container); font-family: 'Roboto', sans-serif; font-size: 16px; resize: vertical;">{{ club.description }}</textarea>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                <button type="button" onclick="closeDescriptionModal()" class="action-btn btn-outline" style="border: none; padding: 10px 24px;">取消</button>
-                <button type="submit" class="action-btn btn-primary" style="padding: 10px 24px;">保存</button>
+                <button type="button" onclick="closeDescriptionModal()" class="action-btn btn-outline" style="border: none; padding: 10px 24px;">{% trans '取消' %}</button>
+                <button type="submit" class="action-btn btn-primary" style="padding: 10px 24px;">{% trans '保存' %}</button>
             </div>
         </form>
     </div>

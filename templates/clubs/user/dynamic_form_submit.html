@@ -1,4 +1,5 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 {% load common_tags %}
 
@@ -652,9 +653,9 @@
     <div class="revision-banner">
         <span class="revision-banner-icon"><span class="material-icons">assignment_late</span></span>
         <div>
-            <h2>补交请求 {{ submission.public_id }}</h2>
-            <p>本次提交已被打回，以下仅显示需要修改的内容，共 {{ field_items|length }} 项。请补充或修改后重新提交。</p>
-            <span class="revision-reason">待修改</span>
+            <h2>{% blocktrans with __i18n1=submission.public_id %}补交请求 {{ __i18n1 }}{% endblocktrans %}</h2>
+            <p>{% blocktrans with __i18n1=field_items|length %}本次提交已被打回，以下仅显示需要修改的内容，共 {{ __i18n1 }} 项。请补充或修改后重新提交。{% endblocktrans %}</p>
+            <span class="revision-reason">{% trans '待修改' %}</span>
         </div>
     </div>
     {% endif %}
@@ -664,10 +665,10 @@
         <div class="example-files-header">
             <span class="material-icons">folder_shared</span>
             <div class="example-files-title">
-                <strong>通道示例文件</strong>
-                <small>可下载或在线预览，参考其中的格式填写</small>
+                <strong>{% trans '通道示例文件' %}</strong>
+                <small>{% trans '可下载或在线预览，参考其中的格式填写' %}</small>
             </div>
-            <span class="example-files-count">{{ channel.example_files.count }} 个文件</span>
+            <span class="example-files-count">{{ channel.example_files.count }}{% trans '个文件' %}</span>
         </div>
         <div class="example-files-list">
             {% for example in channel.example_files.all %}
@@ -683,19 +684,17 @@
                 <div class="example-file-main">
                     <span class="example-file-name" title="{{ example.display_name }}">{{ example.display_name }}</span>
                     {% if example.file|is_image_file and example.file|file_exists %}
-                    <span class="example-file-caption">图片示例，点击缩略图查看原图</span>
+                    <span class="example-file-caption">{% trans '图片示例，点击缩略图查看原图' %}</span>
                     {% endif %}
                 </div>
                 <div class="example-file-actions">
                     <a class="example-action-btn" href="{{ example.file.url }}" target="_blank" rel="noopener">
-                        <span class="material-icons">download</span>下载
-                    </a>
+                        <span class="material-icons">download</span>{% trans '下载' %}</a>
                     {% if preview_url and not example.file|is_image_file %}
                     <button type="button" class="example-action-btn js-office-preview"
                             data-office-preview-url="{{ preview_url }}"
                             data-office-file-name="{{ example.display_name }}">
-                        <span class="material-icons">visibility</span>预览
-                    </button>
+                        <span class="material-icons">visibility</span>{% trans '预览' %}</button>
                     {% endif %}
                 </div>
             </div>
@@ -727,12 +726,11 @@
                                 <img src="{{ uploaded.file.url }}" alt="{{ uploaded.original_name|default:uploaded.file.name }}" loading="lazy">
                             </a>
                             {% else %}
-                            <span class="revision-file-missing">文件已丢失</span>
+                            <span class="revision-file-missing">{% trans '文件已丢失' %}</span>
                             {% endif %}
                             {% else %}
                             <a class="revision-view-btn" href="{% url 'clubs:download_submission_file' uploaded.id %}?inline=1" target="_blank" rel="noopener">
-                                <span class="material-icons">open_in_new</span>查看
-                            </a>
+                                <span class="material-icons">open_in_new</span>{% trans '查看' %}</a>
                             {% endif %}
                             <a class="revision-file-link" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
                                 <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
@@ -741,24 +739,22 @@
                             <button type="button" class="revision-preview-btn js-office-preview"
                                     data-office-preview-url="{{ uploaded|office_preview_url:request }}"
                                     data-office-file-name="{{ uploaded.original_name|default:uploaded.file.name }}">
-                                <span class="material-icons">visibility</span>预览
-                            </button>
+                                <span class="material-icons">visibility</span>{% trans '预览' %}</button>
                             {% endif %}
                             <span class="revision-status">{{ uploaded.get_review_status_display }}</span>
-                            {% if uploaded.review_comment %}<span class="revision-comment">打回原因：{{ uploaded.review_comment }}</span>{% endif %}
+                            {% if uploaded.review_comment %}<span class="revision-comment">{% blocktrans with __i18n1=uploaded.review_comment %}打回原因：{{ __i18n1 }}{% endblocktrans %}</span>{% endif %}
                         </div>
                         {% endif %}
                     {% endfor %}
                 </div>
                 {% elif item.value %}
                 <div class="revision-old-value">{{ item.value }}</div>
-                {% if item.review_comment %}<span class="revision-comment">打回原因：{{ item.review_comment }}</span>{% endif %}
+                {% if item.review_comment %}<span class="revision-comment">{% blocktrans with __i18n1=item.review_comment %}打回原因：{{ __i18n1 }}{% endblocktrans %}</span>{% endif %}
                 {% endif %}
             {% endif %}
             {% if field.example_file %}
             <a class="example-link" href="{{ field.example_file.url }}" target="_blank" rel="noopener">
-                <span class="material-icons">download</span>示例文件
-            </a>
+                <span class="material-icons">download</span>{% trans '示例文件' %}</a>
             {% endif %}
 
             {% if field.field_type == 'textarea' %}
@@ -771,7 +767,7 @@
             <input type="time" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" {% if field.required or revision_mode %}required{% endif %}>
             {% elif field.field_type == 'select' %}
             <select name="field_{{ field.id }}" class="field-control" {% if field.required or revision_mode %}required{% endif %}>
-                <option value="">请选择</option>
+                <option value="">{% trans '请选择' %}</option>
                 {% for option in field.options %}<option value="{{ option }}" {% if option == item.value %}selected{% endif %}>{{ option }}</option>{% endfor %}
             </select>
             {% elif field.field_type == 'radio' %}
@@ -789,9 +785,7 @@
             {% elif field.field_type == 'file' %}
             {% if revision_mode %}
             <div class="revision-replace-hint">
-                <span class="material-icons">swap_horiz</span>
-                选择新文件后将替换上方被打回的文件
-            </div>
+                <span class="material-icons">swap_horiz</span>{% trans '选择新文件后将替换上方被打回的文件' %}</div>
             {% endif %}
             {% with file_accept=field.allowed_extensions|join:"," %}
             {% include 'clubs/components/_file_upload.html' with field_number=field.id label=field.label is_required=field.required allowed_extensions=file_accept max_size_mb=field.max_size_mb multiple=field.allow_multiple_files %}
@@ -802,12 +796,12 @@
         </section>
         {% endwith %}
         {% empty %}
-        <div class="empty-state">该通道还没有启用字段，请联系管理员配置。</div>
+        <div class="empty-state">{% trans '该通道还没有启用字段，请联系管理员配置。' %}</div>
         {% endfor %}
 
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">
-                <span class="material-icons">send</span>{% if revision_mode %}提交修改{% else %}提交{% endif %}
+                <span class="material-icons">send</span>{% if revision_mode %}{% trans '提交修改' %}{% else %}{% trans '提交' %}{% endif %}
             </button>
         </div>
     </form>

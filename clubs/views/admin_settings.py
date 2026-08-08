@@ -12,6 +12,7 @@ from ..email_utils import send_test_email_with_config
 from ..models import ConfigChangeLog, SMTPConfig, SiteSettings, StorageConfig
 from ..permissions import roles_required
 from ..storage_backends import ClubStorage
+from django.utils.translation import gettext as _
 
 
 def _error_help_enabled_value():
@@ -36,10 +37,10 @@ def manage_smtp_config(request):
             except Exception:
                 messages.error(
                     request,
-                    '保存失败：站点缺少 error_help_enabled 字段，请先执行 python manage.py migrate',
+                    _('保存失败：站点缺少 error_help_enabled 字段，请先执行 python manage.py migrate'),
                 )
                 return redirect('clubs:manage_smtp_config')
-            messages.success(request, '错误页求助按钮已保存')
+            messages.success(request, _('错误页求助按钮已保存'))
             return redirect('clubs:manage_smtp_config')
         if action in {'create', 'edit'}:
             config = get_object_or_404(SMTPConfig, pk=config_id) if action == 'edit' else SMTPConfig()
@@ -49,15 +50,15 @@ def manage_smtp_config(request):
             sender_email = request.POST.get('sender_email', '').strip()
             sender_password = request.POST.get('sender_password', '').strip()
             if not provider or not smtp_host or not smtp_port or not sender_email:
-                messages.error(request, '请完整填写 SMTP 配置')
+                messages.error(request, _('请完整填写 SMTP 配置'))
                 return redirect('clubs:manage_smtp_config')
             if action == 'create' and not sender_password:
-                messages.error(request, '新建 SMTP 配置时必须填写密码或授权码')
+                messages.error(request, _('新建 SMTP 配置时必须填写密码或授权码'))
                 return redirect('clubs:manage_smtp_config')
             try:
                 config.smtp_port = int(smtp_port)
             except ValueError:
-                messages.error(request, 'SMTP 端口必须是数字')
+                messages.error(request, _('SMTP 端口必须是数字'))
                 return redirect('clubs:manage_smtp_config')
             if request.POST.get('is_active') == 'on':
                 SMTPConfig.objects.all().update(is_active=False)
@@ -71,12 +72,12 @@ def manage_smtp_config(request):
             config.help_recipient_email = (request.POST.get('help_recipient_email') or '').strip()
             config.save()
             ConfigChangeLog.objects.create(actor=request.user, category='smtp', action=action)
-            messages.success(request, 'SMTP 配置已保存')
+            messages.success(request, _('SMTP 配置已保存'))
             return redirect('clubs:manage_smtp_config')
         if action == 'delete':
             get_object_or_404(SMTPConfig, pk=config_id).delete()
             ConfigChangeLog.objects.create(actor=request.user, category='smtp', action='delete')
-            messages.success(request, 'SMTP 配置已删除')
+            messages.success(request, _('SMTP 配置已删除'))
             return redirect('clubs:manage_smtp_config')
         if action == 'activate':
             SMTPConfig.objects.all().update(is_active=False)
@@ -84,13 +85,13 @@ def manage_smtp_config(request):
             config.is_active = True
             config.save(update_fields=['is_active'])
             ConfigChangeLog.objects.create(actor=request.user, category='smtp', action='activate')
-            messages.success(request, 'SMTP 配置已启用')
+            messages.success(request, _('SMTP 配置已启用'))
             return redirect('clubs:manage_smtp_config')
         if action == 'test_email':
             config = get_object_or_404(SMTPConfig, pk=config_id)
             test_email = request.POST.get('test_email', '').strip()
             if not test_email:
-                messages.error(request, '请填写测试收件邮箱')
+                messages.error(request, _('请填写测试收件邮箱'))
                 return redirect('clubs:manage_smtp_config')
             success, msg = send_test_email_with_config(config, test_email)
             messages.success(request, msg) if success else messages.error(request, msg)
@@ -116,7 +117,7 @@ def manage_storage_config(request):
             config.is_active = True
             config.save()
             ConfigChangeLog.objects.create(actor=request.user, category='storage', action='reset_local')
-            messages.success(request, '已紧急回退到本地存储')
+            messages.success(request, _('已紧急回退到本地存储'))
             return redirect('clubs:manage_storage_config')
 
         if action == 'test':
@@ -179,12 +180,12 @@ def manage_storage_config(request):
                     if not ok:
                         errors.append(f'S3 连接测试失败：{msg}')
                     else:
-                        messages.success(request, 'S3 连接测试通过')
+                        messages.success(request, _('S3 连接测试通过'))
 
                 if not errors:
                     config.save()
                     ConfigChangeLog.objects.create(actor=request.user, category='storage', action='save')
-                    messages.success(request, '存储配置已保存')
+                    messages.success(request, _('存储配置已保存'))
                     return redirect('clubs:manage_storage_config')
 
     return render(request, 'clubs/admin/storage_config.html', {

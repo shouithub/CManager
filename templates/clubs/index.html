@@ -1,7 +1,9 @@
 {% extends base_template %}
+{% load i18n %}
+{% load common_tags %}
 {% load static %}
 
-{% block title %}首页 - 社团管理系统{% endblock %}
+{% block title %}{% trans '首页 - 社团管理系统' %}{% endblock %}
 
 {% block extra_css %}
 {% if carousel_images and carousel_images|length > 1 %}
@@ -1013,7 +1015,7 @@
             {% if is_staff_or_admin %}
             <div class="hero-stat">
                 <span class="hero-stat-value">{{ total_clubs }}</span>
-                <span class="hero-stat-label">社团总数</span>
+                <span class="hero-stat-label">{% trans '社团总数' %}</span>
             </div>
             {% endif %}
         </div>
@@ -1062,7 +1064,7 @@
         <div class="announcements-card">
             <div class="announcements-header">
                 <span class="material-icons">campaign</span>
-                <h3>最新公告</h3>
+                <h3>{% trans '最新公告' %}</h3>
             </div>
             <div class="announcements-list-wrap">
                 <div class="announcements-scroll-hint announcements-scroll-hint-top">
@@ -1075,9 +1077,7 @@
                     <div class="announcement-top">
                         <h4 class="announcement-title">{{ announcement.title }}</h4>
                         <span class="announcement-chip">
-                            <span class="material-icons">notifications</span>
-                            公告
-                        </span>
+                            <span class="material-icons">notifications</span>{% trans '公告' %}</span>
                     </div>
                     <div class="announcement-meta">
                         <span class="material-icons">schedule</span>
@@ -1089,9 +1089,7 @@
                     <div class="announcement-footer">
                         {% if announcement.link_url %}
                         <a href="{{ announcement.link_url }}" class="announcement-link" target="_blank" rel="noopener">
-                            <span class="material-icons">open_in_new</span>
-                            查看详情
-                        </a>
+                            <span class="material-icons">open_in_new</span>{% trans '查看详情' %}</a>
                         {% endif %}
                         {% if announcement.attachment %}
                         <a href="{{ announcement.attachment.url }}" class="announcement-attachment" target="_blank" rel="noopener">
@@ -1122,23 +1120,19 @@
             <div class="welcome-card-icon">
                 <span class="material-icons">login</span>
             </div>
-            <h3>已有账号</h3>
-            <p>登录后查看完整的部门信息、社团详情，管理您的社团事务</p>
+            <h3>{% trans '已有账号' %}</h3>
+            <p>{% trans '登录后查看完整的部门信息、社团详情，管理您的社团事务' %}</p>
             <a href="{% url 'clubs:login' %}" class="welcome-btn welcome-btn-primary">
-                <span class="material-icons">arrow_forward</span>
-                立即登录
-            </a>
+                <span class="material-icons">arrow_forward</span>{% trans '立即登录' %}</a>
         </div>
         <div class="welcome-card register">
             <div class="welcome-card-icon">
                 <span class="material-icons">person_add</span>
             </div>
-            <h3>新用户？</h3>
-            <p>注册账号后即可使用社团管理系统的全部功能</p>
+            <h3>{% trans '新用户？' %}</h3>
+            <p>{% trans '注册账号后即可使用社团管理系统的全部功能' %}</p>
             <a href="{% url 'clubs:register' %}" class="welcome-btn welcome-btn-secondary">
-                <span class="material-icons">arrow_forward</span>
-                注册账号
-            </a>
+                <span class="material-icons">arrow_forward</span>{% trans '注册账号' %}</a>
         </div>
     </div>
     
@@ -1148,7 +1142,7 @@
         <div class="section-header">
             <h2 class="section-title">
                 <span class="material-icons">info</span>
-                <span>部门介绍</span>
+                <span>{% trans '部门介绍' %}</span>
             </h2>
         </div>
         <div class="departments-grid">
@@ -1184,7 +1178,7 @@
         <div class="section-header">
             <h2 class="section-title">
                 <span class="material-icons">info</span>
-                <span>部门介绍</span>
+                <span>{% trans '部门介绍' %}</span>
             </h2>
         </div>
         <div class="departments-grid">
@@ -1217,7 +1211,7 @@
         <div class="section-header">
             <h2 class="section-title">
                 <span class="material-icons">groups</span>
-                <span>社团列表</span>
+                <span>{% trans '社团列表' %}</span>
             </h2>
         </div>
         <div class="club-list">
@@ -1228,23 +1222,21 @@
                 </div>
                 <div class="club-list-content">
                     <h3 class="club-list-name">{{ item.club.name }}</h3>
-                    <p class="club-list-desc">{{ item.club.description|default:"暂无描述"|truncatechars:50 }}</p>
+                    <p class="club-list-desc">{{ item.club.description|tdefault:"暂无描述"|truncatechars:50 }}</p>
                 </div>
                 {% if item.is_president %}
                 <div class="club-list-badge">
-                    <span class="material-icons" style="font-size: 14px;">badge</span>
-                    我是社长
-                </div>
+                    <span class="material-icons" style="font-size: 14px;">badge</span>{% trans '我是社长' %}</div>
                 {% endif %}
                 <span class="material-icons" style="color: var(--md3-on-surface-variant);">chevron_right</span>
             </a>
             {% endfor %}
         </div>
         {% if clubs_page.paginator.num_pages > 1 %}
-        <nav aria-label="社团列表分页" style="display:flex;justify-content:center;align-items:center;gap:12px;margin-top:20px;">
-            {% if clubs_page.has_previous %}<a class="welcome-btn welcome-btn-secondary" href="{% querystring club_page=clubs_page.previous_page_number %}">上一页</a>{% endif %}
-            <span>第 {{ clubs_page.number }} / {{ clubs_page.paginator.num_pages }} 页</span>
-            {% if clubs_page.has_next %}<a class="welcome-btn welcome-btn-secondary" href="{% querystring club_page=clubs_page.next_page_number %}">下一页</a>{% endif %}
+        <nav aria-label="{% trans '社团列表分页' %}" style="display:flex;justify-content:center;align-items:center;gap:12px;margin-top:20px;">
+            {% if clubs_page.has_previous %}<a class="welcome-btn welcome-btn-secondary" href="{% querystring club_page=clubs_page.previous_page_number %}">{% trans '上一页' %}</a>{% endif %}
+            <span>{% blocktrans with __i18n1=clubs_page.number __i18n2=clubs_page.paginator.num_pages %}第 {{ __i18n1 }} / {{ __i18n2 }} 页{% endblocktrans %}</span>
+            {% if clubs_page.has_next %}<a class="welcome-btn welcome-btn-secondary" href="{% querystring club_page=clubs_page.next_page_number %}">{% trans '下一页' %}</a>{% endif %}
         </nav>
         {% endif %}
     </div>
@@ -1257,7 +1249,7 @@
 <div id="deptMembersModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
     <div class="modal-card" style="background: var(--md3-surface); padding: 24px; border-radius: 28px; width: 90%; max-width: 500px; box-shadow: var(--md3-elevation-3); max-height: 80vh; overflow-y: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 id="modalDeptName" style="margin: 0; font-size: 24px; color: var(--md3-on-surface);">部门成员</h3>
+            <h3 id="modalDeptName" style="margin: 0; font-size: 24px; color: var(--md3-on-surface);">{% trans '部门成员' %}</h3>
             <button onclick="closeDeptModal()" style="background: none; border: none; cursor: pointer; color: var(--md3-on-surface-variant);">
                 <span class="material-icons">close</span>
             </button>
@@ -1345,10 +1337,10 @@ function showDepartmentMembers(deptId) {
             
             // Directors
             if (data.directors.length > 0) {
-                html += '<h4 style="margin: 16px 0 8px; color: var(--md3-primary);">部长</h4>';
+                html += '<h4 style="margin: 16px 0 8px; color: var(--md3-primary);gettext('>部长</h4>\';
                 data.directors.forEach(d => {
                     html += `
-                        <div class="member-item">
+                        <div class=')member-item">
                             <a href="/user/${d.id}/" class="member-link">
                                 <div class="member-avatar">
                                     ${d.avatar ? `<img src="${escHtml(d.avatar)}" alt="${escHtml(d.name)}">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); font-weight: bold;">${escHtml(d.initial || (d.name && d.name.length > 0 ? d.name.charAt(0) : '?'))}</div>`}
@@ -1357,7 +1349,7 @@ function showDepartmentMembers(deptId) {
                                     <div class="member-name">${escHtml(d.name)}</div>
                                 </div>
                             </a>
-                            <span class="role-badge role-director">部长</span>
+                            <span class="role-badge role-directorgettext('>部长</span>
                         </div>
                     `;
                 });
@@ -1365,10 +1357,10 @@ function showDepartmentMembers(deptId) {
             
             // Members
             if (data.members.length > 0) {
-                html += '<h4 style="margin: 16px 0 8px; color: var(--md3-secondary);">部员</h4>';
+                html += \'<h4 style=')margin: 16px 0 8px; color: var(--md3-secondary);gettext('>部员</h4>\';
                 data.members.forEach(m => {
                     html += `
-                        <div class="member-item">
+                        <div class=')member-item">
                             <a href="/user/${m.id}/" class="member-link">
                                 <div class="member-avatar">
                                     ${m.avatar ? `<img src="${escHtml(m.avatar)}" alt="${escHtml(m.name)}">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); font-weight: bold;">${escHtml(m.initial || (m.name && m.name.length > 0 ? m.name.charAt(0) : '?'))}</div>`}
@@ -1377,34 +1369,34 @@ function showDepartmentMembers(deptId) {
                                     <div class="member-name">${escHtml(m.name)}</div>
                                 </div>
                             </a>
-                            <span class="role-badge role-member">部员</span>
+                            <span class="role-badge role-membergettext('>部员</span>
                         </div>
                     `;
                 });
             } else if (data.directors.length === 0) {
-                html += '<p style="text-align: center; color: var(--md3-on-surface-variant);">暂无成员</p>';
+                html += \'<p style=')text-align: center; color: var(--md3-on-surface-variant);gettext('>暂无成员</p>\';
             }
             
-            html += '</div>';
+            html += \'</div>\';
             content.innerHTML = html;
         })
         .catch(err => {
             console.error(err);
-            content.innerHTML = '<p style="color: var(--md3-error); text-align: center;">加载失败，请稍后重试</p>';
+            content.innerHTML = \'<p style=')color: var(--md3-error); text-align: center;gettext('>加载失败，请稍后重试</p>\';
         });
 }
 
 function closeDeptModal() {
-    document.getElementById('deptMembersModal').style.display = 'none';
+    document.getElementById(\'deptMembersModal\').style.display = \'none\';
 }
 
 // Close modal when clicking outside
-document.getElementById('deptMembersModal').addEventListener('click', function(e) {
+document.getElementById(\'deptMembersModal\').addEventListener(\'click\', function(e) {
     if (e.target === this) {
         closeDeptModal();
     }
 });
-</script>
+')</script>
 
 {% if carousel_images and carousel_images|length > 1 %}
 {% include 'clubs/components/_swiper_script.html' %}

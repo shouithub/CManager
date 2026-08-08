@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}加入社团{% endblock %}
+{% block title %}{% trans '加入社团' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -95,8 +96,8 @@
     <div class="page-header">
         <span class="material-icons">qr_code_scanner</span>
         <div class="page-header-content">
-            <h1>加入社团：{{ club.name }}</h1>
-            <div class="subtitle">请填写入会信息（学号为必填）</div>
+            <h1>{% blocktrans with __i18n1=club.name %}加入社团：{{ __i18n1 }}{% endblocktrans %}</h1>
+            <div class="subtitle">{% trans '请填写入会信息（学号为必填）' %}</div>
         </div>
         <a href="{% url 'clubs:index' %}" class="page-back-btn" title="返回首页" aria-label="返回首页">
             <span class="material-icons">arrow_back</span>
@@ -115,27 +116,25 @@
         <form method="post">
             {% csrf_token %}
 
-            <div class="join-tip">扫码链接为一次性并有时效限制，请确认填写信息真实有效。</div>
+            <div class="join-tip">{% trans '扫码链接为一次性并有时效限制，请确认填写信息真实有效。' %}</div>
 
             <div class="join-section">
                 <div class="toggle-row">
                     <input class="checkbox-md3" type="checkbox" id="existingAccountSwitch" name="existing_account" value="yes" {% if form_data.existing_account == 'yes' %}checked{% endif %}>
-                    <label for="existingAccountSwitch" style="font-weight:600;">我已有系统账号，直接绑定到本社团</label>
+                    <label for="existingAccountSwitch" style="font-weight:600;">{% trans '我已有系统账号，直接绑定到本社团' %}</label>
                 </div>
             </div>
 
             <div id="accountBlock" class="join-section">
                 <div class="join-section-title">
-                    <span class="material-icons" style="font-size:1.1rem;">verified_user</span>
-                    账号验证
-                </div>
+                    <span class="material-icons" style="font-size:1.1rem;">verified_user</span>{% trans '账号验证' %}</div>
                 <div class="grid-2">
                     <div>
-                        <label class="field-label">用户名*</label>
+                        <label class="field-label">{% trans '用户名*' %}</label>
                         <input class="form-input" type="text" name="username" value="{{ form_data.username|default:'' }}" required>
                     </div>
                     <div>
-                        <label class="field-label">密码*</label>
+                        <label class="field-label">{% trans '密码*' %}</label>
                         <input class="form-input" type="password" name="password" required>
                     </div>
                 </div>
@@ -143,70 +142,66 @@
 
             <div id="profileBlock" class="join-section">
                 <div class="join-section-title">
-                    <span class="material-icons" style="font-size:1.1rem;">badge</span>
-                    新成员信息
-                </div>
+                    <span class="material-icons" style="font-size:1.1rem;">badge</span>{% trans '新成员信息' %}</div>
 
                 <div class="grid-2">
                     <div>
-                        <label class="field-label">姓名*</label>
+                        <label class="field-label">{% trans '姓名*' %}</label>
                         <input class="form-input profile-field" type="text" name="real_name" value="{{ form_data.real_name|default:'' }}" required>
                     </div>
                     <div>
-                        <label class="field-label">性别*</label>
+                        <label class="field-label">{% trans '性别*' %}</label>
                         <select class="form-select profile-field" name="gender" required>
-                            <option value="">请选择</option>
-                            <option value="male" {% if form_data.gender == 'male' %}selected{% endif %}>男</option>
-                            <option value="female" {% if form_data.gender == 'female' %}selected{% endif %}>女</option>
-                            <option value="other" {% if form_data.gender == 'other' %}selected{% endif %}>其他</option>
+                            <option value="">{% trans '请选择' %}</option>
+                            <option value="male" {% if form_data.gender == 'male' %}selected{% endif %}>{% trans '男' %}</option>
+                            <option value="female" {% if form_data.gender == 'female' %}selected{% endif %}>{% trans '女' %}</option>
+                            <option value="other" {% if form_data.gender == 'other' %}selected{% endif %}>{% trans '其他' %}</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="grid-2">
                     <div>
-                        <label class="field-label">学院*</label>
+                        <label class="field-label">{% trans '学院*' %}</label>
                         <input class="form-input profile-field" type="text" name="college" placeholder="例如：爱恩学院" value="{{ form_data.college|default:'' }}" required>
                     </div>
                     <div>
-                        <label class="field-label">班级*</label>
+                        <label class="field-label">{% trans '班级*' %}</label>
                         <input class="form-input profile-field" type="text" name="class_name" placeholder="例如：2025级水产1班" value="{{ form_data.class_name|default:'' }}" required>
                     </div>
                 </div>
 
                 <div class="grid-2">
                     <div>
-                        <label class="field-label">学号*</label>
+                        <label class="field-label">{% trans '学号*' %}</label>
                         <input class="form-input profile-field" type="text" name="student_id" value="{{ form_data.student_id|default:'' }}" required>
                     </div>
                     <div>
-                        <label class="field-label">手机号*</label>
+                        <label class="field-label">{% trans '手机号*' %}</label>
                         <input class="form-input profile-field" type="text" name="phone" value="{{ form_data.phone|default:'' }}" required>
                     </div>
                 </div>
 
                 <div class="grid-2">
                     <div>
-                        <label class="field-label">微信号*</label>
+                        <label class="field-label">{% trans '微信号*' %}</label>
                         <input class="form-input profile-field" type="text" name="wechat" value="{{ form_data.wechat|default:'' }}" required>
                     </div>
                     <div>
-                        <label class="field-label">QQ（可选）</label>
+                        <label class="field-label">{% trans 'QQ（可选）' %}</label>
                         <input class="form-input" type="text" name="qq" value="{{ form_data.qq|default:'' }}">
                     </div>
                 </div>
 
                 <div>
-                    <label class="field-label">邮箱*</label>
+                    <label class="field-label">{% trans '邮箱*' %}</label>
                     <input class="form-input profile-field" type="email" name="email" value="{{ form_data.email|default:'' }}" required>
                 </div>
             </div>
 
             <div class="join-actions">
                 <button class="btn btn-filled" type="submit">
-                    <span class="material-icons">how_to_reg</span>
-                    提交
-                </button>
+                    <span class="material-icons">how_to_reg</span>{% trans '提交' %}</button>
             </div>
         </form>
     </div>

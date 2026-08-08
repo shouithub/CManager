@@ -1,7 +1,8 @@
 {% extends base_template %}
+{% load i18n %}
 {% load common_tags %}
 
-{% block title %}SMTP邮箱配置{% endblock %}
+{% block title %}{% trans 'SMTP邮箱配置' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -762,8 +763,8 @@
     <div class="page-header">
         <span class="material-icons">mail</span>
         <div class="page-header-content">
-            <h1>SMTP邮箱配置</h1>
-            <p class="subtitle">管理发信服务、授权凭据与当前启用配置</p>
+            <h1>{% trans 'SMTP邮箱配置' %}</h1>
+            <p class="subtitle">{% trans '管理发信服务、授权凭据与当前启用配置' %}</p>
         </div>
         <a href="{% url 'clubs:admin_dashboard' %}" class="page-back-btn" title="返回管理面板" aria-label="返回管理面板">
             <span class="material-icons">arrow_back</span>
@@ -774,7 +775,7 @@
     <div class="error-alert">
         <span class="material-icons">error</span>
         <div>
-            <strong style="display: block; margin-bottom: 8px;">配置错误</strong>
+            <strong style="display: block; margin-bottom: 8px;">{% trans '配置错误' %}</strong>
             <ul>
                 {% for error in errors %}
                 <li>{{ error }}</li>
@@ -788,7 +789,7 @@
     <div class="md3-card">
         <div class="md3-card-header">
             <span class="material-icons">support_agent</span>
-            <h2>错误页求助</h2>
+            <h2>{% trans '错误页求助' %}</h2>
         </div>
         <div class="md3-card-body">
             <form method="post" class="error-help-form">
@@ -798,18 +799,13 @@
                     <div class="checkbox-group">
                         <input type="checkbox" id="error_help_enabled" name="error_help_enabled"
                                {% if error_help_enabled %}checked{% endif %}>
-                        <label for="error_help_enabled">开启错误页求助按钮</label>
+                        <label for="error_help_enabled">{% trans '开启错误页求助按钮' %}</label>
                     </div>
                     <button type="submit" class="btn btn-primary btn-sm">
-                        <span class="material-icons">save</span>
-                        保存
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存' %}</button>
                 </div>
                 <div class="form-helper">
-                    <span class="material-icons">info</span>
-                    开启后，404/500 错误页将显示“请求帮助”按钮；求助请求始终会记录到 BUG 日志，
-                    配置了 SMTP 时还会向管理员发送通知邮件。
-                </div>
+                    <span class="material-icons">info</span>{% trans '开启后，404/500 错误页将显示“请求帮助”按钮；求助请求始终会记录到 BUG 日志， 配置了 SMTP 时还会向管理员发送通知邮件。' %}</div>
             </form>
         </div>
     </div>
@@ -819,7 +815,7 @@
     <div class="md3-card">
         <div class="md3-card-header">
             <span class="material-icons">dns</span>
-            <h2>已有配置</h2>
+            <h2>{% trans '已有配置' %}</h2>
         </div>
         <div class="md3-card-body">
             <div class="config-list">
@@ -833,26 +829,26 @@
                             </span>
                             <span class="config-status {% if config.is_active %}active{% else %}inactive{% endif %}">
                                 <span class="status-dot"></span>
-                                {% if config.is_active %}激活中{% else %}未激活{% endif %}
+                                {% if config.is_active %}{% trans '激活中' %}{% else %}{% trans '未激活' %}{% endif %}
                             </span>
                         </div>
                         <div class="config-details">
                             <div class="config-details-row">
-                                <span class="config-details-label">服务地址</span>
+                                <span class="config-details-label">{% trans '服务地址' %}</span>
                                 <span class="config-details-value">{{ config.smtp_host }}:{{ config.smtp_port }}</span>
                             </div>
                             <div class="config-details-row">
-                                <span class="config-details-label">邮箱</span>
+                                <span class="config-details-label">{% trans '邮箱' %}</span>
                                 <span class="config-details-value">{{ config.sender_email }}</span>
                             </div>
                             <div class="config-details-row">
-                                <span class="config-details-label">加密</span>
-                                <span class="config-details-value">{% if config.use_tls %}TLS{% else %}无{% endif %}</span>
+                                <span class="config-details-label">{% trans '加密' %}</span>
+                                <span class="config-details-value">{% if config.use_tls %}TLS{% else %}{% trans '无' %}{% endif %}</span>
                             </div>
                         </div>
                         <div class="config-expand-hint">
                             <span class="material-icons">expand_more</span>
-                            <span>点击展开操作</span>
+                            <span>{% trans '点击展开操作' %}</span>
                         </div>
                     </div>
                     <div class="config-actions-panel">
@@ -860,7 +856,7 @@
                             <button type="button" class="config-action-btn" 
                                     onclick="openEditModal({{ config.id }}, '{{ config.provider }}', '{{ config.smtp_host }}', {{ config.smtp_port }}, '{{ config.sender_email }}', {{ config.use_tls|yesno:'true,false' }}, '{{ config.help_recipient_email|default:'' }}')">
                                 <span class="material-icons">edit</span>
-                                <span>编辑配置</span>
+                                <span>{% trans '编辑配置' %}</span>
                             </button>
                             {% if not config.is_active %}
                             <form method="post" style="display: contents;">
@@ -869,42 +865,39 @@
                                 <input type="hidden" name="config_id" value="{{ config.id }}">
                                 <button type="submit" class="config-action-btn success">
                                     <span class="material-icons">check_circle</span>
-                                    <span>激活此配置</span>
+                                    <span>{% trans '激活此配置' %}</span>
                                 </button>
                             </form>
                             {% else %}
                             <div class="config-action-btn" style="opacity: 0.5; cursor: default;">
                                 <span class="material-icons" style="color: var(--md3-success);">verified</span>
-                                <span>当前已激活</span>
+                                <span>{% trans '当前已激活' %}</span>
                             </div>
                             {% endif %}
-                            <form method="post" style="display: contents;" onsubmit="return confirm('确定要删除此配置吗？此操作不可撤销');">
+                            <form method="post" style="display: contents;" onsubmit="return confirm(gettext('确定要删除此配置吗？此操作不可撤销'));">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="config_id" value="{{ config.id }}">
                                 <button type="submit" class="config-action-btn danger">
                                     <span class="material-icons">delete</span>
-                                    <span>删除配置</span>
+                                    <span>{% trans '删除配置' %}</span>
                                 </button>
                             </form>
                             <div class="config-action-btn" onclick="toggleTestEmail(this)">
                                 <span class="material-icons">send</span>
-                                <span>发送测试邮件</span>
+                                <span>{% trans '发送测试邮件' %}</span>
                             </div>
                         </div>
                         <div class="test-email-section" style="display: none;">
-                            <label class="test-email-label">发送测试邮件</label>
+                            <label class="test-email-label">{% trans '发送测试邮件' %}</label>
                             <form method="post" class="test-email-form">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="test_email">
                                 <input type="hidden" name="config_id" value="{{ config.id }}">
                                 <div class="test-email-input-group">
-                                    <input type="email" name="test_email" class="form-input form-input-sm" 
-                                           placeholder="输入接收测试邮件的邮箱地址" required>
+                                    <input type="email" name="test_email" class="form-input form-input-sm" placeholder="{% trans '输入接收测试邮件的邮箱地址' %}" required=>
                                     <button type="submit" class="btn btn-primary btn-sm">
-                                        <span class="material-icons">send</span>
-                                        发送
-                                    </button>
+                                        <span class="material-icons">send</span>{% trans '发送' %}</button>
                                 </div>
                             </form>
                         </div>
@@ -919,8 +912,8 @@
         <div class="md3-card-body">
             <div class="empty-state">
                 <span class="material-icons">mail_outline</span>
-                <div class="empty-state-title">暂无SMTP配置</div>
-                <p class="empty-state-text">请创建一个新的SMTP配置以启用邮件发送功能。</p>
+                <div class="empty-state-title">{% trans '暂无SMTP配置' %}</div>
+                <p class="empty-state-text">{% trans '请创建一个新的SMTP配置以启用邮件发送功能。' %}</p>
             </div>
         </div>
     </div>
@@ -930,7 +923,7 @@
     <div class="md3-card">
         <div class="md3-card-header">
             <span class="material-icons">add_circle</span>
-            <h2>创建新的SMTP配置</h2>
+            <h2>{% trans '创建新的SMTP配置' %}</h2>
         </div>
         <div class="md3-card-body">
             <form method="post">
@@ -939,26 +932,22 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="provider">
-                            邮箱服务 <span class="required">*</span>
+                        <label class="form-label" for="provider">{% trans '邮箱服务' %}<span class="required">*</span>
                         </label>
                         <select class="form-select" id="provider" name="provider" required 
                                 onchange="fillSmtpDefaults(this.value)">
-                            <option value="">-- 请选择 --</option>
-                            <option value="qq">QQ邮箱</option>
-                            <option value="163">163邮箱</option>
+                            <option value="">{% trans '-- 请选择 --' %}</option>
+                            <option value="qq">{% trans 'QQ邮箱' %}</option>
+                            <option value="163">{% trans '163邮箱' %}</option>
                             <option value="outlook">Outlook</option>
                             <option value="gmail">Gmail</option>
-                            <option value="custom">自定义</option>
+                            <option value="custom">{% trans '自定义' %}</option>
                         </select>
                         <div class="form-helper">
-                            <span class="material-icons">info</span>
-                            选择邮箱服务商后将自动填充相应配置
-                        </div>
+                            <span class="material-icons">info</span>{% trans '选择邮箱服务商后将自动填充相应配置' %}</div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="sender_email">
-                            发送邮箱地址<span class="required">*</span>
+                        <label class="form-label" for="sender_email">{% trans '发送邮箱地址' %}<span class="required">*</span>
                         </label>
                         <input type="email" class="form-input" id="sender_email" name="sender_email" 
                                value="{{ form_data.sender_email }}" required
@@ -968,16 +957,14 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="smtp_host">
-                            SMTP服务器地址<span class="required">*</span>
+                        <label class="form-label" for="smtp_host">{% trans 'SMTP服务器地址' %}<span class="required">*</span>
                         </label>
                         <input type="text" class="form-input" id="smtp_host" name="smtp_host" 
                                value="{{ form_data.smtp_host }}" required
                                placeholder="smtp.qq.com">
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="smtp_port">
-                            SMTP端口<span class="required">*</span>
+                        <label class="form-label" for="smtp_port">{% trans 'SMTP端口' %}<span class="required">*</span>
                         </label>
                         <input type="number" class="form-input" id="smtp_port" name="smtp_port" 
                                value="{{ form_data.smtp_port }}" required
@@ -987,15 +974,11 @@
 
                 <div class="form-row full">
                     <div class="form-group">
-                        <label class="form-label" for="sender_password">
-                            邮箱密码/授权码 <span class="required">*</span>
+                        <label class="form-label" for="sender_password">{% trans '邮箱密码/授权码' %}<span class="required">*</span>
                         </label>
-                        <input type="password" class="form-input" id="sender_password" name="sender_password" required
-                               placeholder="请输入邮箱密码或授权码">
+                        <input type="password" class="form-input" id="sender_password" name="sender_password" required= placeholder="{% trans '请输入邮箱密码或授权码' %}">
                         <div class="form-helper">
-                            <span class="material-icons">info</span>
-                            某些邮箱需要使用授权码而非密码（如QQ邮箱需16位授权码）
-                        </div>
+                            <span class="material-icons">info</span>{% trans '某些邮箱需要使用授权码而非密码（如QQ邮箱需16位授权码）' %}</div>
                     </div>
                 </div>
 
@@ -1003,33 +986,27 @@
                     <div class="checkbox-group">
                         <input type="checkbox" id="use_tls" name="use_tls" 
                                {% if form_data.use_tls or not form_data %}checked{% endif %}>
-                        <label for="use_tls">使用TLS加密</label>
+                        <label for="use_tls">{% trans '使用TLS加密' %}</label>
                     </div>
                     <div class="checkbox-group">
                         <input type="checkbox" id="is_active" name="is_active">
-                        <label for="is_active">创建后立即激活</label>
+                        <label for="is_active">{% trans '创建后立即激活' %}</label>
                     </div>
                 </div>
 
                 <div class="form-row full">
                     <div class="form-group">
-                        <label class="form-label" for="help_recipient_email">
-                            求助通知收件邮箱
-                        </label>
+                        <label class="form-label" for="help_recipient_email">{% trans '求助通知收件邮箱' %}</label>
                         <input type="email" class="form-input" id="help_recipient_email" name="help_recipient_email"
                                value="{{ form_data.help_recipient_email }}" placeholder="留空则通知所有管理员账号邮箱">
                         <div class="form-helper">
-                            <span class="material-icons">info</span>
-                            配置 SMTP 后，用户点击“请求帮助”时系统将向该邮箱发送通知；留空则通知所有管理员账号邮箱
-                        </div>
+                            <span class="material-icons">info</span>{% trans '配置 SMTP 后，用户点击“请求帮助”时系统将向该邮箱发送通知；留空则通知所有管理员账号邮箱' %}</div>
                     </div>
                 </div>
 
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">check</span>
-                        创建配置
-                    </button>
+                        <span class="material-icons">check</span>{% trans '创建配置' %}</button>
                 </div>
             </form>
         </div>
@@ -1153,7 +1130,7 @@ function fillEditSmtpDefaults(provider) {
         <div class="modal-header">
             <div class="modal-header-left">
                 <span class="material-icons">edit</span>
-                <h3>编辑SMTP配置</h3>
+                <h3>{% trans '编辑SMTP配置' %}</h3>
             </div>
             <button type="button" class="modal-close" onclick="closeEditModal()">
                 <span class="material-icons">close</span>
@@ -1166,22 +1143,20 @@ function fillEditSmtpDefaults(provider) {
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="edit_provider">
-                            邮箱服务 <span class="required">*</span>
+                        <label class="form-label" for="edit_provider">{% trans '邮箱服务' %}<span class="required">*</span>
                         </label>
                         <select class="form-select" id="edit_provider" name="provider" required
                                 onchange="fillEditSmtpDefaults(this.value)">
-                            <option value="">-- 请选择 --</option>
-                            <option value="qq">QQ邮箱</option>
-                            <option value="163">163邮箱</option>
+                            <option value="">{% trans '-- 请选择 --' %}</option>
+                            <option value="qq">{% trans 'QQ邮箱' %}</option>
+                            <option value="163">{% trans '163邮箱' %}</option>
                             <option value="outlook">Outlook</option>
                             <option value="gmail">Gmail</option>
-                            <option value="custom">自定义</option>
+                            <option value="custom">{% trans '自定义' %}</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="edit_sender_email">
-                            发送邮箱地址<span class="required">*</span>
+                        <label class="form-label" for="edit_sender_email">{% trans '发送邮箱地址' %}<span class="required">*</span>
                         </label>
                         <input type="email" class="form-input" id="edit_sender_email" name="sender_email" required
                                placeholder="example@qq.com">
@@ -1190,15 +1165,13 @@ function fillEditSmtpDefaults(provider) {
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="edit_smtp_host">
-                            SMTP服务器地址<span class="required">*</span>
+                        <label class="form-label" for="edit_smtp_host">{% trans 'SMTP服务器地址' %}<span class="required">*</span>
                         </label>
                         <input type="text" class="form-input" id="edit_smtp_host" name="smtp_host" required
                                placeholder="smtp.qq.com">
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="edit_smtp_port">
-                            SMTP端口<span class="required">*</span>
+                        <label class="form-label" for="edit_smtp_port">{% trans 'SMTP端口' %}<span class="required">*</span>
                         </label>
                         <input type="number" class="form-input" id="edit_smtp_port" name="smtp_port" required
                                placeholder="587" min="1" max="65535">
@@ -1207,44 +1180,32 @@ function fillEditSmtpDefaults(provider) {
 
                 <div class="form-row full">
                     <div class="form-group">
-                        <label class="form-label" for="edit_sender_password">
-                            邮箱密码/授权码
-                        </label>
-                        <input type="password" class="form-input" id="edit_sender_password" name="sender_password"
-                               placeholder="留空则保持原密码不变">
+                        <label class="form-label" for="edit_sender_password">{% trans '邮箱密码/授权码' %}</label>
+                        <input type="password" class="form-input" id="edit_sender_password" name="sender_password" placeholder="{% trans '留空则保持原密码不变' %}">
                         <div class="form-helper">
-                            <span class="material-icons">info</span>
-                            如不需要修改密码，请留空此
-                        </div>
+                            <span class="material-icons">info</span>{% trans '如不需要修改密码，请留空此' %}</div>
                     </div>
                 </div>
 
                 <div class="checkbox-row" style="margin-bottom: 0;">
                     <div class="checkbox-group">
                         <input type="checkbox" id="edit_use_tls" name="use_tls">
-                        <label for="edit_use_tls">使用TLS加密</label>
+                        <label for="edit_use_tls">{% trans '使用TLS加密' %}</label>
                     </div>
                 </div>
 
                 <div class="form-row full">
                     <div class="form-group">
-                        <label class="form-label" for="edit_help_recipient_email">
-                            求助通知收件邮箱
-                        </label>
-                        <input type="email" class="form-input" id="edit_help_recipient_email" name="help_recipient_email"
-                               placeholder="留空则通知所有管理员账号邮箱">
+                        <label class="form-label" for="edit_help_recipient_email">{% trans '求助通知收件邮箱' %}</label>
+                        <input type="email" class="form-input" id="edit_help_recipient_email" name="help_recipient_email" placeholder="{% trans '留空则通知所有管理员账号邮箱' %}">
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
-                    <span class="material-icons">close</span>
-                    取消
-                </button>
+                    <span class="material-icons">close</span>{% trans '取消' %}</button>
                 <button type="submit" class="btn btn-primary">
-                    <span class="material-icons">save</span>
-                    保存修改
-                </button>
+                    <span class="material-icons">save</span>{% trans '保存修改' %}</button>
             </div>
         </form>
     </div>

@@ -13,6 +13,7 @@ from django.views.decorators.http import require_POST
 from ..identity import is_president_mode
 from ..models import ActivityRegistration, Club, ClubMember, PublishedActivity
 from ..permissions import president_club_ids, roles_required, user_role
+from django.utils.translation import gettext as _
 
 
 @roles_required('staff', 'admin', 'president', 'member')
@@ -43,7 +44,7 @@ def public_activities(request):
         try:
             queryset = queryset.filter(activity_date=date.fromisoformat(date_filter))
         except ValueError:
-            messages.warning(request, '日期筛选格式无效，已忽略')
+            messages.warning(request, _('日期筛选格式无效，已忽略'))
             date_filter = ''
 
     page = Paginator(queryset, 36).get_page(request.GET.get('page'))

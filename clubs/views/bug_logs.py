@@ -10,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 
 from ..models import ErrorLog
 from ..permissions import roles_required
+from django.utils.translation import gettext as _
 
 
 @roles_required('admin')
@@ -23,7 +24,7 @@ def manage_bug_logs(request):
         except Exception:
             log = None
         if log is None:
-            messages.error(request, '日志不存在或日志表尚未初始化')
+            messages.error(request, _('日志不存在或日志表尚未初始化'))
             return redirect('clubs:manage_bug_logs')
         try:
             if action == 'resolve':
@@ -31,20 +32,20 @@ def manage_bug_logs(request):
                 log.resolved_at = timezone.now()
                 log.resolved_by = request.user
                 log.save(update_fields=['resolved', 'resolved_at', 'resolved_by'])
-                messages.success(request, '已标记为已处理')
+                messages.success(request, _('已标记为已处理'))
             elif action == 'unresolve':
                 log.resolved = False
                 log.resolved_at = None
                 log.resolved_by = None
                 log.save(update_fields=['resolved', 'resolved_at', 'resolved_by'])
-                messages.success(request, '已恢复为未处理')
+                messages.success(request, _('已恢复为未处理'))
             elif action == 'delete':
                 log.delete()
-                messages.success(request, '日志已删除')
+                messages.success(request, _('日志已删除'))
             else:
-                messages.error(request, '未知操作')
+                messages.error(request, _('未知操作'))
         except Exception:
-            messages.error(request, '操作失败，请稍后重试')
+            messages.error(request, _('操作失败，请稍后重试'))
         next_url = request.GET.get('next', '')
         if next_url and url_has_allowed_host_and_scheme(
             next_url,

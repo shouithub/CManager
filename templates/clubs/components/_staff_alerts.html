@@ -1,3 +1,4 @@
+{% load i18n %}
 {% if alerts %}
 <div class="alerts-grid">
     {% for alert in alerts %}
@@ -19,23 +20,21 @@
         <div class="alert-buttons">
             {% if alert.my_count > 3 %}
             <button type="button" class="btn-copy-my" onclick="openAlertListModal('{{ alert.key }}', 'my')">
-                <span class="material-icons" style="font-size:18px;">format_list_bulleted</span> 我的全部 ({{ alert.my_count }})
-            </button>
+                <span class="material-icons" style="font-size:18px;">format_list_bulleted</span>{% blocktrans with __i18n1=alert.my_count %} 我的全部 ({{ __i18n1 }})
+            {% endblocktrans %}</button>
             {% endif %}
             {% if alert.other_count > 0 %}
             <button type="button" class="btn-copy-all" onclick="openAlertListModal('{{ alert.key }}', 'other')">
-                <span class="material-icons" style="font-size:18px;">groups</span> 其他干事负责 ({{ alert.other_count }})
-            </button>
+                <span class="material-icons" style="font-size:18px;">groups</span>{% blocktrans with __i18n1=alert.other_count %} 其他干事负责 ({{ __i18n1 }})
+            {% endblocktrans %}</button>
             {% endif %}
             {% if alert.my_count > 0 %}
             <button type="button" class="btn-copy-my" onclick="copyAlert('{{ alert.key }}', 'my')">
-                <span class="material-icons" style="font-size:18px;">content_copy</span> 复制我负责的
-            </button>
+                <span class="material-icons" style="font-size:18px;">content_copy</span>{% trans '复制我负责的' %}</button>
             {% endif %}
             {% if alert.count > 0 %}
             <button type="button" class="btn-copy-all" onclick="copyAlert('{{ alert.key }}', 'all')">
-                <span class="material-icons" style="font-size:18px;">content_copy</span> 复制所有
-            </button>
+                <span class="material-icons" style="font-size:18px;">content_copy</span>{% trans '复制所有' %}</button>
             {% endif %}
         </div>
     </div>
@@ -47,7 +46,7 @@
     <div class="alert-modal-card" role="dialog" aria-modal="true" aria-labelledby="alertModalTitle">
         <div class="alert-modal-header">
             <h3 id="alertModalTitle"></h3>
-            <button type="button" class="alert-modal-close" onclick="closeAlertListModal()" aria-label="关闭">
+            <button type="button" class="alert-modal-close" onclick="closeAlertListModal()" aria-label="{% trans '关闭' %}">
                 <span class="material-icons">close</span>
             </button>
         </div>

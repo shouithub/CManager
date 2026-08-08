@@ -1,10 +1,11 @@
+{% load i18n %}
 {% load static %}
 {% load common_tags %}
 <!DOCTYPE html>
 {% if request.COOKIES.md3_effective_theme == 'dark' %}
-<html lang="zh-hans" data-theme="dark" style="color-scheme: dark; background-color: #141218;">
+<html lang="{{ LANGUAGE_CODE|default:'zh-hans' }}"{% if LANGUAGE_BIDI %} dir="rtl"{% endif %} data-theme="dark" style="color-scheme: dark; background-color: #141218;">
 {% else %}
-<html lang="zh-hans" data-theme="light" style="color-scheme: light; background-color: #fffbfe;">
+<html lang="{{ LANGUAGE_CODE|default:'zh-hans' }}"{% if LANGUAGE_BIDI %} dir="rtl"{% endif %} data-theme="light" style="color-scheme: light; background-color: #fffbfe;">
 {% endif %}
 <head>
     <meta charset="UTF-8">
@@ -325,6 +326,7 @@
             });
         }
     </script>
+    <script src="{% url 'javascript-catalog' %}"></script>
 </head>
 <body>
     <div id="top-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-hidden="true">
@@ -357,47 +359,47 @@
                 <!-- 通用导航 -->
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
-                        <span>主要功能</span>
+                        <span>{% trans '主要功能' %}</span>
                         <span class="material-icons expand-icon">expand_more</span>
                     </div>
                     <div class="sidebar-menu-items">
                         <a href="{% url 'clubs:index' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">home</span></span>
-                            <span>首页</span>
+                            <span>{% trans '首页' %}</span>
                         </a>
                         <a href="{% url 'clubs:public_activities' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">event</span></span>
-                            <span>活动</span>
+                            <span>{% trans '活动' %}</span>
                         </a>
                         
                         {% if not is_president_identity and user.profile.role == 'admin' %}
                             <a href="{% url 'clubs:admin_dashboard' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">settings</span></span>
-                                <span>管理后台</span>
+                                <span>{% trans '管理后台' %}</span>
                             </a>
                             <a href="{% url 'clubs:manage_users' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">group</span></span>
-                                <span>用户管理</span>
+                                <span>{% trans '用户管理' %}</span>
                             </a>
                             <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">business_center</span></span>
-                                <span>社团管理</span>
+                                <span>{% trans '社团管理' %}</span>
                             </a>
                             {% if user.profile.staff_level == 'director' and user.profile.department %}
                             <a href="{% url 'clubs:manage_department_staff' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">supervisor_account</span></span>
-                                <span>部门管理</span>
+                                <span>{% trans '部门管理' %}</span>
                             </a>
                             {% endif %}
                         {% elif not is_president_identity and user.profile.role == 'staff' %}
                             <a href="{% url 'clubs:staff_management' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">business_center</span></span>
-                                <span>社团管理</span>
+                                <span>{% trans '社团管理' %}</span>
                             </a>
                             {% if user.profile.staff_level == 'director' and user.profile.department %}
                             <a href="{% url 'clubs:manage_department_staff' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">supervisor_account</span></span>
-                                <span>部门管理</span>
+                                <span>{% trans '部门管理' %}</span>
                             </a>
                             {% endif %}
                         {% endif %}
@@ -405,18 +407,18 @@
                         {% if not is_president_identity and user.profile.role == 'staff' or not is_president_identity and user.profile.role == 'admin' %}
                             <a href="{% url 'clubs:admin_booking_management' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">calendar_month</span></span>
-                                <span>预约管理</span>
+                                <span>{% trans '预约管理' %}</span>
                             </a>
                         {% endif %}
 
                         {% if is_president_identity %}
                             <a href="{% url 'clubs:user_dashboard' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">folder</span></span>
-                                <span>我的社团</span>
+                                <span>{% trans '我的社团' %}</span>
                             </a>
                             <a href="{% url 'clubs:president_member_management' %}" class="sidebar-menu-item">
                                 <span class="icon"><span class="material-icons">groups</span></span>
-                                <span>社员管理</span>
+                                <span>{% trans '社员管理' %}</span>
                             </a>
                         {% endif %}
                     </div>
@@ -425,7 +427,7 @@
                 {% if not is_president_identity and user.profile.role == 'staff' or not is_president_identity and user.profile.role == 'admin' %}
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
-                        <span>审核中心</span>
+                        <span>{% trans '审核中心' %}</span>
                         <span class="material-icons expand-icon">expand_more</span>
                     </div>
                     <div class="sidebar-menu-items">
@@ -445,13 +447,13 @@
                 {% if is_president_identity %}
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
-                        <span>审批记录</span>
+                        <span>{% trans '审批记录' %}</span>
                         <span class="material-icons expand-icon">expand_more</span>
                     </div>
                     <div class="sidebar-menu-items">
                         <a href="{% url 'clubs:approval_center' 'all' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">fact_check</span></span>
-                            <span>全部记录</span>
+                            <span>{% trans '全部记录' %}</span>
                             {% if unread_approval_counts.total > 0 %}<span class="badge-count">{{ unread_approval_counts.total }}</span>{% endif %}
                         </a>
                     </div>
@@ -461,17 +463,17 @@
                 {% if user.profile.role == 'president' or user.profile.role == 'staff' or user.profile.role == 'admin' %}
                 <div class="sidebar-menu-section">
                     <div class="sidebar-menu-title collapsible" onclick="toggleMenuSection(this)">
-                        <span>房间管理</span>
+                        <span>{% trans '房间管理' %}</span>
                         <span class="material-icons expand-icon">expand_more</span>
                     </div>
                     <div class="sidebar-menu-items">
                         <a href="{% url 'clubs:room_calendar' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">event</span></span>
-                            <span>房间日历</span>
+                            <span>{% trans '房间日历' %}</span>
                         </a>
                         <a href="{% url 'clubs:my_room_bookings' %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">list</span></span>
-                            <span>我的预约</span>
+                            <span>{% trans '我的预约' %}</span>
                         </a>
                     </div>
                 </div>
@@ -494,9 +496,9 @@
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name">{{ user.username }}</div>
-                    <div class="sidebar-user-role">
-                        当前身份：{{ active_identity_label }}
-                    </div>
+                    <div class="sidebar-user-role">{% blocktrans with __i18n1=active_identity_label %}
+                        当前身份：{{ __i18n1 }}
+                    {% endblocktrans %}</div>
                 </div>
                 <span class="dropdown-arrow"></span>
             </div>
@@ -510,7 +512,7 @@
                         <input type="hidden" name="identity" value="{{ identity.key }}">
                         <button type="submit" style="width: 100%; border: 0; background: transparent; color: inherit; display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; text-align: left; font: inherit;">
                             <span><span class="material-icons" style="vertical-align: middle;">switch_account</span></span>
-                            <span>切换到{{ identity.label }}身份</span>
+                            <span>{% blocktrans with __i18n1=identity.label %}切换到{{ __i18n1 }}身份{% endblocktrans %}</span>
                         </button>
                     </form>
                     {% endif %}
@@ -518,28 +520,68 @@
                 {% endif %}
                 <a href="{% url 'clubs:user_detail' user.id %}">
                     <span><span class="material-icons" style="vertical-align: middle;">account_circle</span></span>
-                    <span>查看个人主页</span>
+                    <span>{% trans '查看个人主页' %}</span>
                 </a>
                 <a href="{% url 'clubs:edit_profile' %}">
                     <span><span class="material-icons" style="vertical-align: middle;">manage_accounts</span></span>
-                    <span>管理个人信息</span>
+                    <span>{% trans '管理个人信息' %}</span>
                 </a>
                 <a href="{% url 'clubs:logout' %}" class="logout">
                     <span><span class="material-icons" style="vertical-align: middle;">lock_open</span></span>
-                    <span>登出</span>
+                    <span>{% trans '登出' %}</span>
                 </a>
             </div>
             
-            <div class="sidebar-theme-toggle" onclick="toggleTheme(event)" title="切换主题">
+            <div class="sidebar-theme-toggle" onclick="toggleTheme(event)" title="{% trans '切换主题' %}">
                 <span id="theme-icon" class="material-icons">brightness_4</span>
-                <span class="theme-text">切换主题</span>
+                <span class="theme-text">{% trans '切换主题' %}</span>
             </div>
         </div>
         {% endif %}
-        <div class="sidebar-resizer" id="sidebarResizer" title="拖拽调整侧边栏宽度" aria-hidden="true"></div>
+        <div class="sidebar-resizer" id="sidebarResizer" title="{% trans '拖拽调整侧边栏宽度' %}" aria-hidden="true"></div>
     </nav>
     <script>
         (function() {
+            function toggleLangDropdown(event) {
+                event.stopPropagation();
+                const dropdown = document.getElementById('langDropdown');
+                const userDropdown = document.getElementById('userDropdown');
+                if (userDropdown) userDropdown.classList.remove('active');
+                if (dropdown) dropdown.classList.toggle('active');
+            }
+
+            async function switchLanguage(code) {
+                const formData = new FormData();
+                formData.append('language', code);
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value
+                    || document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+                try {
+                    await fetch("{% url 'set_language' %}", {
+                        method: "POST",
+                        headers: { "X-CSRFToken": csrfToken || "" },
+                        body: formData,
+                        credentials: "same-origin",
+                    });
+                } catch (error) {
+                    // ignore
+                }
+                location.reload();
+            }
+
+            document.addEventListener('click', function(event) {
+                const dropdown = document.getElementById('langDropdown');
+                const toggle = document.querySelector('.sidebar-lang-toggle');
+                if (dropdown && dropdown.classList.contains('active')) {
+                    if (!toggle.contains(event.target) && !dropdown.contains(event.target)) {
+                        dropdown.classList.remove('active');
+                    }
+                }
+            });
+
+            window.toggleLangDropdown = toggleLangDropdown;
+            window.switchLanguage = switchLanguage;
+
+
             // 立即恢复侧边栏折叠状态，防止页面闪烁
             // Restore collapsed state immediately to prevent flicker
             function initMenuSections() {
@@ -597,15 +639,13 @@
             <div id="inactivePromptCard" class="message warning" style="display:none; margin-bottom: 12px;">
                 <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap;">
                     <span class="material-icons" style="font-size:18px;">warning</span>
-                    <div style="flex:1; min-width: 220px;">
-                        账号当前为不活跃状态。可选择“延期注销”恢复活跃1年（支持多次延期）。
-                    </div>
+                    <div style="flex:1; min-width: 220px;">{% trans '账号当前为不活跃状态。可选择“延期注销”恢复活跃1年（支持多次延期）。' %}</div>
                     <div style="display:flex; gap:8px;">
                         <form method="post" action="{% url 'clubs:extend_inactive_period' %}">
                             {% csrf_token %}
-                            <button type="submit" class="btn" style="padding:6px 10px;">延期注销</button>
+                            <button type="submit" class="btn" style="padding:6px 10px;">{% trans '延期注销' %}</button>
                         </form>
-                        <button type="button" class="btn btn-outline" style="padding:6px 10px;" onclick="dismissInactivePrompt()">稍后处理</button>
+                        <button type="button" class="btn btn-outline" style="padding:6px 10px;" onclick="dismissInactivePrompt()">{% trans '稍后处理' %}</button>
                     </div>
                 </div>
             </div>
@@ -634,7 +674,7 @@
         </div>
         
         <footer>
-            <p>上海海洋大学社团管理服务中心 技术支持</p>
+            <p>{% trans '上海海洋大学社团管理服务中心 技术支持' %}</p>
         </footer>
     </div>
     
@@ -644,13 +684,13 @@
         <div class="bottom-nav-items">
             <a href="{% url 'clubs:index' %}" class="bottom-nav-item">
                 <span class="icon"><span class="material-icons">home</span></span>
-                <span>首页</span>
+                <span>{% trans '首页' %}</span>
             </a>
             
             {% if not is_president_identity and user.profile.role == 'admin' %}
                 <a href="{% url 'clubs:admin_dashboard' %}" class="bottom-nav-item">
                     <span class="icon"><span class="material-icons">settings</span></span>
-                    <span>管理</span>
+                    <span>{% trans '管理' %}</span>
                 </a>
                 <a href="{% url 'clubs:staff_audit_center' 'all' %}" class="bottom-nav-item">
                     <span class="icon">
@@ -661,11 +701,11 @@
                         {% endif %}
                         {% endwith %}
                     </span>
-                    <span>审核</span>
+                    <span>{% trans '审核' %}</span>
                 </a>
                 <a href="{% url 'clubs:staff_management' %}" class="bottom-nav-item">
                     <span class="icon"><span class="material-icons">business_center</span></span>
-                    <span>社团</span>
+                    <span>{% trans '社团' %}</span>
                 </a>
             {% elif not is_president_identity and user.profile.role == 'staff' %}
                 <a href="{% url 'clubs:staff_audit_center' 'all' %}" class="bottom-nav-item">
@@ -677,16 +717,16 @@
                         {% endif %}
                         {% endwith %}
                     </span>
-                    <span>审核</span>
+                    <span>{% trans '审核' %}</span>
                 </a>
                 <a href="{% url 'clubs:staff_management' %}" class="bottom-nav-item">
                     <span class="icon"><span class="material-icons">business_center</span></span>
-                    <span>社团</span>
+                    <span>{% trans '社团' %}</span>
                 </a>
             {% elif is_president_identity %}
                 <a href="{% url 'clubs:user_dashboard' %}" class="bottom-nav-item">
                     <span class="icon"><span class="material-icons">folder</span></span>
-                    <span>我的</span>
+                    <span>{% trans '我的' %}</span>
                 </a>
                 <a href="{% url 'clubs:approval_center' 'all' %}" class="bottom-nav-item">
                     <span class="icon">
@@ -695,13 +735,13 @@
                         <span class="nav-badge">{{ unread_approval_counts.total }}</span>
                         {% endif %}
                     </span>
-                    <span>审批</span>
+                    <span>{% trans '审批' %}</span>
                 </a>
             {% endif %}
             
             <a href="javascript:void(0)" class="bottom-nav-item" onclick="toggleSidebar()">
                 <span class="icon"><span class="material-icons">more_horiz</span></span>
-                <span>更多</span>
+                <span>{% trans '更多' %}</span>
             </a>
         </div>
     </nav>

@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}管理负责社团 - 干事后台{% endblock %}
+{% block title %}{% trans '管理负责社团 - 干事后台' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -317,18 +318,15 @@
     <!-- 页面标题 -->
     <div class="page-title">
         <span class="material-icons">assignment</span>
-        <h1>管理负责社团</h1>
+        <h1>{% trans '管理负责社团' %}</h1>
     </div>
 
     <!-- 主要内容卡片 -->
     <div class="main-card">
         <h2 class="card-title">
-            <span class="material-icons">check</span>
-            选择负责的社团
-        </h2>
+            <span class="material-icons">check</span>{% trans '选择负责的社团' %}</h2>
 
-        <p style="color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xl);">
-            请选择您负责管理的社团（可多选）。选择后，相关审核任务将自动分配给您。{% if not is_admin %}当前仅管理员可以修改此设置，您只能查看现有分配。{% endif %}
+        <p style="color: var(--md3-on-surface-variant); margin-bottom: var(--md3-spacing-xl);">{% trans '请选择您负责管理的社团（可多选）。选择后，相关审核任务将自动分配给您。' %}{% if not is_admin %}{% trans '当前仅管理员可以修改此设置，您只能查看现有分配。' %}{% endif %}
         </p>
 
         {% if is_admin %}
@@ -355,23 +353,19 @@
                         <div class="club-info">
                             <div class="club-info-item">
                                 <span class="material-icons">event</span>
-                                <span>成立日期: {{ club.founded_date|date:"Y年m月d日" }}</span>
+                                <span>{% blocktrans with __i18n1=club.founded_date|date:"Y年m月d日" %}成立日期: {{ __i18n1 }}{% endblocktrans %}</span>
                             </div>
                             <div class="club-info-item">
                                 <span class="material-icons">group</span>
-                                <span>成员数: {{ club.members_count }}</span>
+                                <span>{% blocktrans with __i18n1=club.members_count %}成员数: {{ __i18n1 }}{% endblocktrans %}</span>
                             </div>
                             <div class="club-info-item">
                                 <span class="material-icons">info</span>
-                                <span>状态:
-                                    <span class="status-badge {{ club.status }}">
+                                <span>{% trans '状态:' %}<span class="status-badge {{ club.status }}">
                                         {% if club.status == 'active' %}
-                                            <span class="material-icons" style="font-size: 12px;">check_circle</span> 活跃
-                                        {% elif club.status == 'inactive' %}
-                                            <span class="material-icons" style="font-size: 12px;">pause_circle</span> 不活跃
-                                        {% else %}
-                                            <span class="material-icons" style="font-size: 12px;">cancel</span> 停止
-                                        {% endif %}
+                                            <span class="material-icons" style="font-size: 12px;">check_circle</span>{% trans '活跃' %}{% elif club.status == 'inactive' %}
+                                            <span class="material-icons" style="font-size: 12px;">pause_circle</span>{% trans '不活跃' %}{% else %}
+                                            <span class="material-icons" style="font-size: 12px;">cancel</span>{% trans '停止' %}{% endif %}
                                     </span>
                                 </span>
                             </div>
@@ -384,9 +378,7 @@
             <!-- 按钮区域 -->
             <div class="action-buttons">
                 <button type="submit" class="btn-primary">
-                    <span class="material-icons">save</span>
-                    保存设置
-                </button>
+                    <span class="material-icons">save</span>{% trans '保存设置' %}</button>
             </div>
         </form>
         {% else %}
@@ -403,11 +395,11 @@
                         <div class="club-info">
                             <div class="club-info-item">
                                 <span class="material-icons">event</span>
-                                <span>成立日期: {{ club.founded_date|date:"Y年m月d日" }}</span>
+                                <span>{% blocktrans with __i18n1=club.founded_date|date:"Y年m月d日" %}成立日期: {{ __i18n1 }}{% endblocktrans %}</span>
                             </div>
                             <div class="club-info-item">
                                 <span class="material-icons">group</span>
-                                <span>成员数: {{ club.members_count }}</span>
+                                <span>{% blocktrans with __i18n1=club.members_count %}成员数: {{ __i18n1 }}{% endblocktrans %}</span>
                             </div>
                         </div>
                     </div>
@@ -415,7 +407,7 @@
                 {% endif %}
             {% endfor %}
             {% if not selected_club_ids %}
-            <p style="color: var(--md3-on-surface-variant);">您当前没有被分配负责的社团，如需调整请联系管理员。</p>
+            <p style="color: var(--md3-on-surface-variant);">{% trans '您当前没有被分配负责的社团，如需调整请联系管理员。' %}</p>
             {% endif %}
         </div>
         {% endif %}
@@ -424,25 +416,23 @@
     <!-- 说明卡片 -->
     <div class="info-card">
         <h3 class="info-card-title">
-            <span class="material-icons">help_outline</span>
-            使用说明
-        </h3>
+            <span class="material-icons">help_outline</span>{% trans '使用说明' %}</h3>
         <ul class="info-list">
             <li>
                 <span class="material-icons">list</span>
-                <span>选择您负责管理的社团后，相关审核任务将自动分配给您</span>
+                <span>{% trans '选择您负责管理的社团后，相关审核任务将自动分配给您' %}</span>
             </li>
             <li>
                 <span class="material-icons">edit</span>
-                <span>您可以随时修改负责的社团列表</span>
+                <span>{% trans '您可以随时修改负责的社团列表' %}</span>
             </li>
             <li>
                 <span class="material-icons">visibility</span>
-                <span>社长在查看社团信息时，可以看到负责他们社团的干事信息</span>
+                <span>{% trans '社长在查看社团信息时，可以看到负责他们社团的干事信息' %}</span>
             </li>
             <li>
                 <span class="material-icons">balance</span>
-                <span>建议根据您的工作能力合理选择负责的社团数量</span>
+                <span>{% trans '建议根据您的工作能力合理选择负责的社团数量' %}</span>
             </li>
         </ul>
     </div>

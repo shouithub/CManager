@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}审核中心{% endblock %}
+{% block title %}{% trans '审核中心' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -496,13 +497,12 @@
     <section class="page-header">
         <span class="material-icons page-title-icon">fact_check</span>
         <div class="page-header-content">
-            <h1>审核中心</h1>
-            <p class="subtitle">当前分类：{% if current_channel %}{{ current_channel.name }}{% else %}全部通道{% endif %}</p>
+            <h1>{% trans '审核中心' %}</h1>
+            <p class="subtitle">{% trans '当前分类：' %}{% if current_channel %}{{ current_channel.name }}{% else %}{% trans '全部通道' %}{% endif %}</p>
         </div>
-        <nav class="channel-tabs" aria-label="审核通道">
+        <nav class="channel-tabs" aria-label="{% trans '审核通道' %}">
             <a class="tab-chip {% if current_tab == 'all' %}active{% endif %}" href="{% url 'clubs:staff_audit_center' 'all' %}">
-                <span class="material-icons">dashboard</span>全部
-            </a>
+                <span class="material-icons">dashboard</span>{% trans '全部' %}</a>
             {% for channel in channels %}
             <a class="tab-chip {% if current_tab == channel.slug %}active{% endif %}" href="{% url 'clubs:staff_audit_center' channel.slug %}">
                 <span class="material-icons">{{ channel.icon }}</span>{{ channel.name }}
@@ -513,7 +513,7 @@
 
     <section class="content-card">
         <div class="section-header">
-            <h2><span class="material-icons">pending_actions</span>待审核</h2>
+            <h2><span class="material-icons">pending_actions</span>{% trans '待审核' %}</h2>
             <span class="count-badge">{{ pending_items|length }}</span>
         </div>
         <div class="record-list">
@@ -528,37 +528,33 @@
                         <span>{{ item.channel.name }}</span>
                         <span>{{ item.club.name }}</span>
                         <span>{{ item.submitter.username }}</span>
-                        <span>编号 {{ item.public_id }}</span>
+                        <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                         <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
-                        <span>第 {{ item.resubmission_count }} 次提交</span>
-                        <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
-                        <span>已审核 {{ item.reviewer_count }} 人</span>
+                        <span>{% blocktrans with __i18n1=item.resubmission_count %}第 {{ __i18n1 }} 次提交{% endblocktrans %}</span>
+                        <span class="status-pill progress">{% blocktrans with __i18n1=item.approval_progress_label %}通过 {{ __i18n1 }}{% endblocktrans %}</span>
+                        <span>{% blocktrans with __i18n1=item.reviewer_count %}已审核 {{ __i18n1 }} 人{% endblocktrans %}</span>
                         <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
                     </div>
                 </div>
                 <div class="record-actions">
                     <a class="btn btn-primary" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
-                        <span class="material-icons">rate_review</span>审核
-                    </a>
+                        <span class="material-icons">rate_review</span>{% trans '审核' %}</a>
                     {% if is_admin %}
                     <form method="post" action="{% url 'clubs:delete_audit_request' item.channel.slug item.public_id %}">
                         {% csrf_token %}
-                        <button class="btn btn-danger" type="submit" onclick="return confirm('确定删除这条请求吗？')">
-                            <span class="material-icons">delete</span>删除
-                        </button>
+                        <button class="btn btn-danger" type="submit" onclick="return confirm(gettext('确定删除这条请求吗？'))">
+                            <span class="material-icons">delete</span>{% trans '删除' %}</button>
                     </form>
                     {% endif %}
                 </div>
             </article>
             {% empty %}
             <div class="empty-state">
-                <span class="material-icons">task_alt</span>
-                暂无待审核提交
-            </div>
+                <span class="material-icons">task_alt</span>{% trans '暂无待审核提交' %}</div>
             {% endfor %}
             {% if pending_items|length > 3 %}
             <details class="more-records">
-                <summary>还有 {{ pending_items|length|add:"-3" }} 条待审核</summary>
+                <summary>{% blocktrans with __i18n1=pending_items|length|add:"-3" %}还有 {{ __i18n1 }} 条待审核{% endblocktrans %}</summary>
                 {% for item in pending_items|slice:"3:" %}
                 <article class="record-card">
                     <div class="record-main">
@@ -569,17 +565,16 @@
                         <div class="record-meta">
                             <span>{{ item.channel.name }}</span>
                             <span>{{ item.club.name }}</span>
-                            <span>编号 {{ item.public_id }}</span>
+                            <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                             <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
-                            <span>第 {{ item.resubmission_count }} 次提交</span>
-                            <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
-                            <span>已审核 {{ item.reviewer_count }} 人</span>
+                            <span>{% blocktrans with __i18n1=item.resubmission_count %}第 {{ __i18n1 }} 次提交{% endblocktrans %}</span>
+                            <span class="status-pill progress">{% blocktrans with __i18n1=item.approval_progress_label %}通过 {{ __i18n1 }}{% endblocktrans %}</span>
+                            <span>{% blocktrans with __i18n1=item.reviewer_count %}已审核 {{ __i18n1 }} 人{% endblocktrans %}</span>
                         </div>
                     </div>
                     <div class="record-actions">
                         <a class="btn btn-primary" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
-                            <span class="material-icons">rate_review</span>审核
-                        </a>
+                            <span class="material-icons">rate_review</span>{% trans '审核' %}</a>
                     </div>
                 </article>
                 {% endfor %}
@@ -590,7 +585,7 @@
 
     <section class="content-card">
         <div class="section-header">
-            <h2><span class="material-icons">history</span>已处理</h2>
+            <h2><span class="material-icons">history</span>{% trans '已处理' %}</h2>
             <span class="count-badge">{{ completed_items|length }}</span>
         </div>
         <div class="record-list">
@@ -604,13 +599,13 @@
                     <div class="record-meta">
                         <span>{{ item.channel.name }}</span>
                         <span>{{ item.club.name }}</span>
-                        <span>编号 {{ item.public_id }}</span>
-                        <span>第 {{ item.resubmission_count }} 次提交</span>
+                        <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
+                        <span>{% blocktrans with __i18n1=item.resubmission_count %}第 {{ __i18n1 }} 次提交{% endblocktrans %}</span>
                         <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
-                        <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
-                        <span>已审核 {{ item.reviewer_count }} 人</span>
+                        <span class="status-pill progress">{% blocktrans with __i18n1=item.approval_progress_label %}通过 {{ __i18n1 }}{% endblocktrans %}</span>
+                        <span>{% blocktrans with __i18n1=item.reviewer_count %}已审核 {{ __i18n1 }} 人{% endblocktrans %}</span>
                         {% if item.reviewer %}
-                        <span>最后审核：{{ item.reviewer.username }}</span>
+                        <span>{% blocktrans with __i18n1=item.reviewer.username %}最后审核：{{ __i18n1 }}{% endblocktrans %}</span>
                         {% endif %}
                         {% if item.reviewed_at %}
                         <span>{{ item.reviewed_at|date:"Y-m-d H:i" }}</span>
@@ -619,27 +614,23 @@
                 </div>
                     <div class="record-actions">
                         <a class="btn btn-outlined" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
-                            <span class="material-icons">visibility</span>查看
-                        </a>
+                            <span class="material-icons">visibility</span>{% trans '查看' %}</a>
                         {% if is_admin %}
                         <form method="post" action="{% url 'clubs:delete_audit_request' item.channel.slug item.public_id %}">
                             {% csrf_token %}
-                            <button class="btn btn-danger" type="submit" onclick="return confirm('确定删除这条已处理的请求吗？相关附件也会一并删除。')">
-                                <span class="material-icons">delete</span>删除
-                            </button>
+                            <button class="btn btn-danger" type="submit" onclick="return confirm(gettext('确定删除这条已处理的请求吗？相关附件也会一并删除。'))">
+                                <span class="material-icons">delete</span>{% trans '删除' %}</button>
                         </form>
                         {% endif %}
                     </div>
                 </article>
                 {% empty %}
             <div class="empty-state">
-                <span class="material-icons">inbox</span>
-                暂无已处理提交
-            </div>
+                <span class="material-icons">inbox</span>{% trans '暂无已处理提交' %}</div>
             {% endfor %}
             {% if completed_items|length > 3 %}
             <details class="more-records">
-                <summary>还有 {{ completed_items|length|add:"-3" }} 条已处理</summary>
+                <summary>{% blocktrans with __i18n1=completed_items|length|add:"-3" %}还有 {{ __i18n1 }} 条已处理{% endblocktrans %}</summary>
                 {% for item in completed_items|slice:"3:" %}
                 <article class="record-card">
                     <div class="record-main">
@@ -650,24 +641,22 @@
                         <div class="record-meta">
                             <span>{{ item.channel.name }}</span>
                             <span>{{ item.club.name }}</span>
-                            <span>编号 {{ item.public_id }}</span>
-                            <span>第 {{ item.resubmission_count }} 次提交</span>
+                            <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
+                            <span>{% blocktrans with __i18n1=item.resubmission_count %}第 {{ __i18n1 }} 次提交{% endblocktrans %}</span>
                             <span class="status-pill {{ item.status }}">{{ item.get_status_display }}</span>
-                            <span class="status-pill progress">通过 {{ item.approval_progress_label }}</span>
-                            <span>已审核 {{ item.reviewer_count }} 人</span>
-                            {% if item.reviewer %}<span>最后审核：{{ item.reviewer.username }}</span>{% endif %}
+                            <span class="status-pill progress">{% blocktrans with __i18n1=item.approval_progress_label %}通过 {{ __i18n1 }}{% endblocktrans %}</span>
+                            <span>{% blocktrans with __i18n1=item.reviewer_count %}已审核 {{ __i18n1 }} 人{% endblocktrans %}</span>
+                            {% if item.reviewer %}<span>{% blocktrans with __i18n1=item.reviewer.username %}最后审核：{{ __i18n1 }}{% endblocktrans %}</span>{% endif %}
                         </div>
                     </div>
                     <div class="record-actions">
                         <a class="btn btn-outlined" href="{% url 'clubs:staff_review_form_submission' item.public_id %}">
-                            <span class="material-icons">visibility</span>查看
-                        </a>
+                            <span class="material-icons">visibility</span>{% trans '查看' %}</a>
                         {% if is_admin %}
                         <form method="post" action="{% url 'clubs:delete_audit_request' item.channel.slug item.public_id %}">
                             {% csrf_token %}
-                            <button class="btn btn-danger" type="submit" onclick="return confirm('确定删除这条已处理的请求吗？相关附件也会一并删除。')">
-                                <span class="material-icons">delete</span>删除
-                            </button>
+                            <button class="btn btn-danger" type="submit" onclick="return confirm(gettext('确定删除这条已处理的请求吗？相关附件也会一并删除。'))">
+                                <span class="material-icons">delete</span>{% trans '删除' %}</button>
                         </form>
                         {% endif %}
                     </div>
@@ -679,10 +668,10 @@
     </section>
     {% if pending_items.paginator.num_pages > 1 or completed_items.paginator.num_pages > 1 %}
     <nav style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px;">
-        {% if pending_items.has_previous %}<a class="btn btn-outlined" href="{% querystring pending_page=pending_items.previous_page_number %}">待审核上一页</a>{% endif %}
-        {% if pending_items.has_next %}<a class="btn btn-outlined" href="{% querystring pending_page=pending_items.next_page_number %}">待审核下一页</a>{% endif %}
-        {% if completed_items.has_previous %}<a class="btn btn-outlined" href="{% querystring completed_page=completed_items.previous_page_number %}">已处理上一页</a>{% endif %}
-        {% if completed_items.has_next %}<a class="btn btn-outlined" href="{% querystring completed_page=completed_items.next_page_number %}">已处理下一页</a>{% endif %}
+        {% if pending_items.has_previous %}<a class="btn btn-outlined" href="{% querystring pending_page=pending_items.previous_page_number %}">{% trans '待审核上一页' %}</a>{% endif %}
+        {% if pending_items.has_next %}<a class="btn btn-outlined" href="{% querystring pending_page=pending_items.next_page_number %}">{% trans '待审核下一页' %}</a>{% endif %}
+        {% if completed_items.has_previous %}<a class="btn btn-outlined" href="{% querystring completed_page=completed_items.previous_page_number %}">{% trans '已处理上一页' %}</a>{% endif %}
+        {% if completed_items.has_next %}<a class="btn btn-outlined" href="{% querystring completed_page=completed_items.next_page_number %}">{% trans '已处理下一页' %}</a>{% endif %}
     </nav>
     {% endif %}
 </div>

@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}用户仪表板{% endblock %}
+{% block title %}{% trans '用户仪表板' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -352,15 +353,15 @@
     <div class="page-header">
         <span class="material-icons">dashboard</span>
         <div class="page-header-content">
-            <h1>我的社团</h1>
-            <p class="subtitle">欢迎 {{ user.profile.get_full_name }}，以下是您的社团管理信息</p>
+            <h1>{% trans '我的社团' %}</h1>
+            <p class="subtitle">{% blocktrans with __i18n1=user.profile.get_full_name %}欢迎 {{ __i18n1 }}，以下是您的社团管理信息{% endblocktrans %}</p>
         </div>
     </div>
 
     <!-- 我的社团 -->
     <div class="section-header">
         <span class="material-icons">school</span>
-        <h2>我的社团 ({{ club_count }})</h2>
+        <h2>{% blocktrans with __i18n1=club_count %}我的社团 ({{ __i18n1 }}){% endblocktrans %}</h2>
     </div>
     
     {% if clubs_with_submission_status %}
@@ -396,7 +397,7 @@
             <div class="club-info-item">
                 <span class="material-icons">person</span>
                 <div class="club-info-content">
-                    <div class="club-info-label">负责干事</div>
+                    <div class="club-info-label">{% trans '负责干事' %}</div>
                     <div class="club-info-value">
                         {% if club_data.assigned_staff %}
                         <div class="staff-list">
@@ -420,22 +421,21 @@
                                         <span><i class="material-icons" style="font-size: 14px; vertical-align: middle; margin-right: 4px;">chat</i>{{ staff.wechat }}</span>
                                     </div>
                                     <div style="margin-top: 2px;">
-                                        <small>分配时间: {{ staff.assigned_at|date:"Y-m-d" }}</small>
+                                        <small>{% blocktrans with __i18n1=staff.assigned_at|date:"Y-m-d" %}分配时间: {{ __i18n1 }}{% endblocktrans %}</small>
                                     </div>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
                         {% else %}
-                        <span style="color: var(--md3-on-surface-variant);">暂未分配</span>
+                        <span style="color: var(--md3-on-surface-variant);">{% trans '暂未分配' %}</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
             <div class="quick-actions">
                 <a href="{% url 'clubs:club_detail' club_data.club.id %}" class="btn btn-outlined">
-                    <span class="material-icons">info</span> 详情
-                </a>
+                    <span class="material-icons">info</span>{% trans '详情' %}</a>
                 {% for card in club_data.action_cards %}
                 <a href="{% url 'clubs:submit_dynamic_form' card.channel.slug club_data.club.id %}" class="btn {% if card.can_submit %}btn-primary{% else %}btn-secondary disabled{% endif %}" {% if not card.can_submit %}aria-disabled="true" onclick="return false;"{% endif %}>
                     <span class="material-icons">{{ card.channel.icon }}</span> {{ card.channel.name }}
@@ -448,7 +448,7 @@
     {% else %}
     <div class="empty-state">
         <span class="material-icons">school</span>
-        <p>您目前没有管理任何社团</p>
+        <p>{% trans '您目前没有管理任何社团' %}</p>
     </div>
     {% endif %}
 </div>

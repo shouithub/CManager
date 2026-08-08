@@ -1,11 +1,12 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 
 
 
 
 
-{% block title %}站点设置 - {{ site_name|default:'社团管理系统' }}{% endblock %}
+{% block title %}{% blocktrans with __i18n1=site_name|default:'社团管理系统' %}站点设置 - {{ __i18n1 }}{% endblocktrans %}{% endblock %}
 
 
 
@@ -861,10 +862,10 @@
   <div>
 
 
-    <h1>站点设置</h1>
+    <h1>{% trans '站点设置' %}</h1>
 
 
-    <p class="ia-subtitle">管理网站图标、头像服务、第三方 CDN 与字体资源配置</p>
+    <p class="ia-subtitle">{% trans '管理网站图标、头像服务、第三方 CDN 与字体资源配置' %}</p>
 
 
   </div>
@@ -890,10 +891,7 @@
   <div class="ia-section-title">
 
 
-    <span class="material-icons">image</span>网站图标 Favicon
-
-
-  </div>
+    <span class="material-icons">image</span>{% trans '网站图标 Favicon' %}</div>
 
 
   <div class="ia-card">
@@ -905,7 +903,7 @@
       <span class="material-icons">bookmark</span>
 
 
-      <h2>当前图标与上传</h2>
+      <h2>{% trans '当前图标与上传' %}</h2>
 
 
     </div>
@@ -929,7 +927,7 @@
             <img src="{{ site_favicon_preview_url }}" alt="当前 Favicon">
 
 
-            <p>当前网站图标<br><span style="opacity:.6;font-size:.75rem;">浏览器标签页显示</span></p>
+            <p>{% trans '当前网站图标' %}<br><span style="opacity:.6;font-size:.75rem;">{% trans '浏览器标签页显示' %}</span></p>
 
 
           {% else %}
@@ -944,7 +942,7 @@
             </div>
 
 
-            <p>未设置自定义图标</p>
+            <p>{% trans '未设置自定义图标' %}</p>
 
 
           {% endif %}
@@ -968,7 +966,7 @@
             <div class="ia-field">
 
 
-              <label for="favicon-input">选择新图标文件</label>
+              <label for="favicon-input">{% trans '选择新图标文件' %}</label>
 
 
               <input type="file" name="favicon" accept=".ico,.png,.jpg,.jpeg"
@@ -980,13 +978,7 @@
               <div class="ia-helper">
 
 
-                <span class="material-icons">info</span>
-
-
-                支持 .ico / .png / .jpg，建议尺寸 64×64 或 128×128
-
-
-              </div>
+                <span class="material-icons">info</span>{% trans '支持 .ico / .png / .jpg，建议尺寸 64×64 或 128×128' %}</div>
 
 
             </div>
@@ -1014,29 +1006,28 @@
 <!-- ② 用户头像服务 -->
 <div class="ia-section">
   <div class="ia-section-title">
-    <span class="material-icons">account_circle</span>用户头像服务
-  </div>
+    <span class="material-icons">account_circle</span>{% trans '用户头像服务' %}</div>
   <form method="post" id="avatar-settings-form">
     {% csrf_token %}
     <input type="hidden" name="form_type" value="avatar_settings">
     <div class="ia-card">
       <div class="ia-card-header">
         <span class="material-icons">switch_account</span>
-        <h2>Cravatar 支持</h2>
+        <h2>{% trans 'Cravatar 支持' %}</h2>
       </div>
       <div class="ia-card-body">
         <label class="ia-avatar-provider">
           <input type="checkbox" name="cravatar_enabled" {% if cfg.cravatar_enabled %}checked{% endif %}>
           <span>
-            <strong>允许用户使用 Cravatar</strong>
-            <span>开启后，用户可以自行选择本站上传头像或已绑定邮箱的 Cravatar 头像；本站上传功能始终保留。</span>
+            <strong>{% trans '允许用户使用 Cravatar' %}</strong>
+            <span>{% trans '开启后，用户可以自行选择本站上传头像或已绑定邮箱的 Cravatar 头像；本站上传功能始终保留。' %}</span>
           </span>
         </label>
-        <p style="margin:16px 0 0;color:var(--md3-on-surface-variant);line-height:1.6;">系统不会生成默认邮箱。用户输入邮箱时会先检测对应头像是否存在，检测成功后才会切换。</p>
+        <p style="margin:16px 0 0;color:var(--md3-on-surface-variant);line-height:1.6;">{% trans '系统不会生成默认邮箱。用户输入邮箱时会先检测对应头像是否存在，检测成功后才会切换。' %}</p>
 
         <div class="ia-actions">
-          <a href="https://cravatar.com/developer/introduction" target="_blank" rel="noopener noreferrer" class="btn btn-text">查看官方文档</a>
-          <button type="submit" class="btn btn-filled"><span class="material-icons">save</span>保存头像设置</button>
+          <a href="https://cravatar.com/developer/introduction" target="_blank" rel="noopener noreferrer" class="btn btn-text">{% trans '查看官方文档' %}</a>
+          <button type="submit" class="btn btn-filled"><span class="material-icons">save</span>{% trans '保存头像设置' %}</button>
         </div>
       </div>
     </div>
@@ -1047,39 +1038,37 @@
 <!-- ③ 站点信息 -->
 <div class="ia-section">
   <div class="ia-section-title">
-    <span class="material-icons">badge</span>站点信息
-  </div>
+    <span class="material-icons">badge</span>{% trans '站点信息' %}</div>
   <form method="post" id="site-info-form">
     {% csrf_token %}
     <input type="hidden" name="form_type" value="site_info_settings">
     <div class="ia-card">
       <div class="ia-card-header">
         <span class="material-icons">title</span>
-        <h2>站点名称与首页标题</h2>
+        <h2>{% trans '站点名称与首页标题' %}</h2>
       </div>
       <div class="ia-card-body">
         <div class="ia-field">
-          <label for="site_name">站点名称（浏览器标题）</label>
+          <label for="site_name">{% trans '站点名称（浏览器标题）' %}</label>
           <input type="text" name="site_name" id="site_name"
                  value="{{ cfg.site_name|default:'社团管理系统' }}" class="form-control"
                  maxlength="120" placeholder="社团管理系统">
         </div>
         <div class="ia-field">
-          <label for="homepage_title">首页主标题</label>
+          <label for="homepage_title">{% trans '首页主标题' %}</label>
           <input type="text" name="homepage_title" id="homepage_title"
                  value="{{ cfg.homepage_title|default:'社团管理服务中心' }}" class="form-control"
                  maxlength="120" placeholder="社团管理服务中心">
         </div>
         <div class="ia-field">
-          <label for="homepage_subtitle">首页副标题</label>
+          <label for="homepage_subtitle">{% trans '首页副标题' %}</label>
           <input type="text" name="homepage_subtitle" id="homepage_subtitle"
                  value="{{ cfg.homepage_subtitle|default:'致力于为社团提供全方位的管理与服务支持，促进社团健康发展' }}" class="form-control"
                  maxlength="300" placeholder="致力于为社团提供全方位的管理与服务支持，促进社团健康发展">
         </div>
         <div class="ia-actions">
           <button type="submit" class="btn btn-filled">
-            <span class="material-icons">save</span>保存站点信息
-          </button>
+            <span class="material-icons">save</span>{% trans '保存站点信息' %}</button>
         </div>
       </div>
     </div>
@@ -1090,8 +1079,7 @@
 <!-- ④ 第三方资源 CDN -->
 <div class="ia-section">
   <div class="ia-section-title">
-    <span class="material-icons">cloud</span>第三方资源 CDN
-  </div>
+    <span class="material-icons">cloud</span>{% trans '第三方资源 CDN' %}</div>
 
   <form method="post" id="cdn-settings-form">
     {% csrf_token %}
@@ -1100,19 +1088,17 @@
     <div class="ia-card">
       <div class="ia-card-header">
         <span class="material-icons">public</span>
-        <h2>cdnjs 资源镜像</h2>
+        <h2>{% trans 'cdnjs 资源镜像' %}</h2>
       </div>
       <div class="ia-card-body">
         <div class="ia-field">
-          <label for="third_party_cdn_base_url">CDN 基础地址</label>
+          <label for="third_party_cdn_base_url">{% trans 'CDN 基础地址' %}</label>
           <input type="url" name="third_party_cdn_base_url" id="third_party_cdn_base_url"
                  value="{{ cfg.third_party_cdn_base_url }}" class="form-control"
                  placeholder="https://cdn.example.com">
         </div>
         <div class="ia-helper" style="margin-bottom:var(--md3-spacing-sm);">
-          <span class="material-icons">info</span>
-          该地址统一用于 Chart.js、Swiper 与 Cropper.js。保存时会自动重新计算并保存 5 个资源的 SHA-384 SRI 校验值；地址末尾的 / 会自动忽略。
-        </div>
+          <span class="material-icons">info</span>{% trans '该地址统一用于 Chart.js、Swiper 与 Cropper.js。保存时会自动重新计算并保存 5 个资源的 SHA-384 SRI 校验值；地址末尾的 / 会自动忽略。' %}</div>
         <p id="cdn-sri-status" class="ia-helper" aria-live="polite" style="display:none;margin:0 0 var(--md3-spacing-sm);"></p>
         <div class="ia-preset-chips">
           {% for p in cdn_presets %}
@@ -1124,8 +1110,7 @@
         </div>
         <div class="ia-actions">
           <button type="submit" class="btn btn-filled">
-            <span class="material-icons">save</span>保存 CDN 设置
-          </button>
+            <span class="material-icons">save</span>{% trans '保存 CDN 设置' %}</button>
         </div>
       </div>
     </div>
@@ -1142,10 +1127,7 @@
   <div class="ia-section-title">
 
 
-    <span class="material-icons">font_download</span>字体配置
-
-
-  </div>
+    <span class="material-icons">font_download</span>{% trans '字体配置' %}</div>
 
 
   <form method="post" id="font-settings-form">
@@ -1172,7 +1154,7 @@
         <span class="material-icons">language</span>
 
 
-        <h2>图标字体 Material Icons</h2>
+        <h2>{% trans '图标字体 Material Icons' %}</h2>
 
 
       </div>
@@ -1184,7 +1166,7 @@
         <div class="ia-field">
 
 
-          <label for="font_icon_url">CSS 加载地址</label>
+          <label for="font_icon_url">{% trans 'CSS 加载地址' %}</label>
 
 
           <input type="url" name="font_icon_url" id="font_icon_url"
@@ -1202,13 +1184,7 @@
         <div class="ia-helper" style="margin-bottom:var(--md3-spacing-sm);">
 
 
-          <span class="material-icons">tips_and_updates</span>
-
-
-          选择一个可用镜像以保证图标正常加载
-
-
-        </div>
+          <span class="material-icons">tips_and_updates</span>{% trans '选择一个可用镜像以保证图标正常加载' %}</div>
 
 
         <div class="ia-preset-chips">
@@ -1283,7 +1259,7 @@
         <span class="material-icons">text_fields</span>
 
 
-        <h2>正文字体（可选）</h2>
+        <h2>{% trans '正文字体（可选）' %}</h2>
 
 
       </div>
@@ -1319,7 +1295,7 @@
             <div class="ia-field">
 
 
-              <label for="body_font_family">font-family 值</label>
+              <label for="body_font_family">{% trans 'font-family 值' %}</label>
 
 
               <input type="text" name="body_font_family" id="body_font_family"
@@ -1343,13 +1319,7 @@
             <div class="ia-helper" style="margin-bottom:var(--md3-spacing-md);">
 
 
-              <span class="material-icons">tips_and_updates</span>
-
-
-              选择预设后自动填入地址和字体族名称
-
-
-            </div>
+              <span class="material-icons">tips_and_updates</span>{% trans '选择预设后自动填入地址和字体族名称' %}</div>
 
 
             <div class="ia-preset-chips">
@@ -1388,16 +1358,13 @@
         <div class="ia-actions">
 
 
-          <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-text">取消</a>
+          <a href="{% url 'clubs:admin_dashboard' %}" class="btn btn-text">{% trans '取消' %}</a>
 
 
           <button type="submit" class="btn btn-filled">
 
 
-            <span class="material-icons">save</span>保存字体设置
-
-
-          </button>
+            <span class="material-icons">save</span>{% trans '保存字体设置' %}</button>
 
 
         </div>
@@ -1509,7 +1476,7 @@
     if (form.dataset.sriReady === 'true') return;
     event.preventDefault();
     if (!window.crypto || !crypto.subtle) {
-      showStatus('当前浏览器不支持自动 SRI 校验，请使用支持 Web Crypto 的现代浏览器。');
+      showStatus(gettext('当前浏览器不支持自动 SRI 校验，请使用支持 Web Crypto 的现代浏览器。'));
       return;
     }
 
@@ -1517,7 +1484,7 @@
     if (!cdnBase) return;
     var submitButton = form.querySelector('button[type="submit"]');
     if (submitButton) submitButton.disabled = true;
-    showStatus('正在验证 CDN 资源并生成 SRI 校验值…');
+    showStatus(gettext('正在验证 CDN 资源并生成 SRI 校验值…'));
     try {
       var results = await Promise.all(Object.keys(assets).map(async function (name) {
         return [name, await calculateIntegrity(cdnBase + assets[name])];
@@ -1528,7 +1495,7 @@
       form.dataset.sriReady = 'true';
       form.submit();
     } catch (error) {
-      showStatus('无法读取或校验该 CDN 的资源；未保存设置。请检查地址、网络和镜像的 CORS 支持。');
+      showStatus(gettext('无法读取或校验该 CDN 的资源；未保存设置。请检查地址、网络和镜像的 CORS 支持。'));
       if (submitButton) submitButton.disabled = false;
     }
   });

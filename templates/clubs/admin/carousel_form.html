@@ -1,7 +1,8 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}{% if carousel %}编辑轮播{% else %}新增轮播{% endif %} - 管理后台{% endblock %}
+{% block title %}{% if carousel %}{% trans '编辑轮播' %}{% else %}{% trans '新增轮播' %}{% endif %}{% trans '- 管理后台' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -459,8 +460,8 @@
     <header class="page-header">
         <span class="material-icons" aria-hidden="true">{% if carousel %}edit_square{% else %}add_photo_alternate{% endif %}</span>
         <div class="page-header-content">
-            <h1>{% if carousel %}编辑轮播内容{% else %}新增轮播内容{% endif %}</h1>
-            <p class="subtitle">{% if carousel %}调整图片、文案与发布状态，保存后首页会自动更新{% else %}上传横向主视觉，并配置访客点击后前往的页面{% endif %}</p>
+            <h1>{% if carousel %}{% trans '编辑轮播内容' %}{% else %}{% trans '新增轮播内容' %}{% endif %}</h1>
+            <p class="subtitle">{% if carousel %}{% trans '调整图片、文案与发布状态，保存后首页会自动更新' %}{% else %}{% trans '上传横向主视觉，并配置访客点击后前往的页面' %}{% endif %}</p>
         </div>
         <a href="{% url 'clubs:manage_carousel' %}" class="page-back-btn" title="返回轮播图管理" aria-label="返回轮播图管理">
             <span class="material-icons" aria-hidden="true">arrow_back</span>
@@ -481,32 +482,32 @@
                 <section class="carousel-form-card" aria-labelledby="carousel-image-heading">
                     <div class="carousel-form-card-header">
                         <span class="carousel-section-icon"><span class="material-icons" aria-hidden="true">image</span></span>
-                        <div><h2 id="carousel-image-heading">主视觉图片</h2><p>首页会以居中裁切的方式展示图片</p></div>
+                        <div><h2 id="carousel-image-heading">{% trans '主视觉图片' %}</h2><p>{% trans '首页会以居中裁切的方式展示图片' %}</p></div>
                     </div>
                     <div class="carousel-form-card-body">
                         <div class="carousel-upload-zone" id="carousel-upload-zone">
                             {% include 'clubs/components/_file_upload.html' with simple=True input_id='id_image' input_class='carousel-file-input' field_name='image' is_required=False allowed_extensions='image/jpeg,image/png,image/webp' %}
                             <div class="carousel-upload-placeholder {% if carousel and carousel.image %}is-hidden{% endif %}" id="carousel-upload-placeholder">
                                 <span class="carousel-upload-icon"><span class="material-icons" aria-hidden="true">add_photo_alternate</span></span>
-                                <strong>拖放图片，或点击选择</strong>
-                                <span>建议 1600 × 480，支持 JPG、PNG、WebP</span>
+                                <strong>{% trans '拖放图片，或点击选择' %}</strong>
+                                <span>{% trans '建议 1600 × 480，支持 JPG、PNG、WebP' %}</span>
                             </div>
                             <img id="carousel-selected-image" class="carousel-selected-image {% if carousel and carousel.image %}is-visible{% endif %}" {% if carousel and carousel.image %}src="{{ carousel.image.url }}"{% endif %} alt="轮播图片预览">
-                            <span id="carousel-upload-overlay" class="carousel-upload-overlay {% if carousel and carousel.image %}is-visible{% endif %}"><span class="material-icons" aria-hidden="true">swap_horiz</span>点击替换图片</span>
+                            <span id="carousel-upload-overlay" class="carousel-upload-overlay {% if carousel and carousel.image %}is-visible{% endif %}"><span class="material-icons" aria-hidden="true">swap_horiz</span>{% trans '点击替换图片' %}</span>
                         </div>
-                        <div class="carousel-file-meta" id="carousel-file-meta" aria-live="polite">{% if carousel and carousel.image %}当前图片：{{ carousel.image.name }}{% else %}请选择一张横向图片{% endif %}</div>
+                        <div class="carousel-file-meta" id="carousel-file-meta" aria-live="polite">{% if carousel and carousel.image %}{% blocktrans with __i18n1=carousel.image.name %}当前图片：{{ __i18n1 }}{% endblocktrans %}{% else %}{% trans '请选择一张横向图片' %}{% endif %}</div>
                     </div>
                 </section>
 
                 <section class="carousel-form-card" aria-labelledby="carousel-content-heading">
                     <div class="carousel-form-card-header">
                         <span class="carousel-section-icon"><span class="material-icons" aria-hidden="true">text_fields</span></span>
-                        <div><h2 id="carousel-content-heading">文案与链接</h2><p>简洁的标题和描述更适合首屏阅读</p></div>
+                        <div><h2 id="carousel-content-heading">{% trans '文案与链接' %}</h2><p>{% trans '简洁的标题和描述更适合首屏阅读' %}</p></div>
                     </div>
                     <div class="carousel-form-card-body">
                         <div class="carousel-field">
                             <div class="carousel-label-row">
-                                <label for="id_title">标题</label>
+                                <label for="id_title">{% trans '标题' %}</label>
                                 <span class="carousel-character-count"><span id="title-count">0</span>/200</span>
                             </div>
                             <input class="carousel-input" type="text" id="id_title" name="title" value="{% if form_data %}{{ form_data.title }}{% else %}{{ carousel.title|default:'' }}{% endif %}" maxlength="200" placeholder="例如：发现校园里的无限可能">
@@ -514,19 +515,19 @@
 
                         <div class="carousel-field">
                             <div class="carousel-label-row">
-                                <label for="id_description">描述</label>
-                                <span class="carousel-optional">选填</span>
+                                <label for="id_description">{% trans '描述' %}</label>
+                                <span class="carousel-optional">{% trans '选填' %}</span>
                             </div>
-                            <textarea class="carousel-textarea" id="id_description" name="description" placeholder="用一两句话补充活动或内容信息">{% if form_data %}{{ form_data.description }}{% else %}{{ carousel.description|default:'' }}{% endif %}</textarea>
+                            <textarea class="carousel-textarea" id="id_description" name="description" placeholder="{% trans '用一两句话补充活动或内容信息' %}">{% if form_data %}{{ form_data.description }}{% else %}{{ carousel.description|default:'' }}{% endif %}</textarea>
                         </div>
 
                         <div class="carousel-field">
                             <div class="carousel-label-row">
-                                <label for="id_link">跳转链接</label>
-                                <span class="carousel-optional">选填</span>
+                                <label for="id_link">{% trans '跳转链接' %}</label>
+                                <span class="carousel-optional">{% trans '选填' %}</span>
                             </div>
                             <input class="carousel-input" type="url" id="id_link" name="link" value="{% if form_data %}{{ form_data.link }}{% else %}{{ carousel.link|default:'' }}{% endif %}" placeholder="https://example.com/activity">
-                            <p class="carousel-field-help"><span class="material-icons" aria-hidden="true">open_in_new</span>访客点击轮播图时会打开此地址；留空则仅展示图片。</p>
+                            <p class="carousel-field-help"><span class="material-icons" aria-hidden="true">open_in_new</span>{% trans '访客点击轮播图时会打开此地址；留空则仅展示图片。' %}</p>
                         </div>
                     </div>
                 </section>
@@ -536,14 +537,14 @@
                 <section class="carousel-form-card carousel-preview-card" aria-labelledby="carousel-preview-heading">
                     <div class="carousel-form-card-header">
                         <span class="carousel-section-icon"><span class="material-icons" aria-hidden="true">preview</span></span>
-                        <div><h2 id="carousel-preview-heading">首页效果预览</h2><p>实际尺寸会随屏幕宽度变化</p></div>
+                        <div><h2 id="carousel-preview-heading">{% trans '首页效果预览' %}</h2><p>{% trans '实际尺寸会随屏幕宽度变化' %}</p></div>
                     </div>
                     <div class="carousel-live-preview">
                         <div id="carousel-preview-empty" class="carousel-preview-empty {% if carousel and carousel.image %}is-hidden{% endif %}"><span class="material-icons" aria-hidden="true">panorama</span></div>
                         <img id="carousel-live-image" class="{% if carousel and carousel.image %}is-visible{% endif %}" {% if carousel and carousel.image %}src="{{ carousel.image.url }}"{% endif %} alt="首页轮播效果预览">
                         <div class="carousel-preview-copy">
-                            <strong id="carousel-preview-title">{% if form_data.title %}{{ form_data.title }}{% elif carousel.title %}{{ carousel.title }}{% else %}轮播标题预览{% endif %}</strong>
-                            <span id="carousel-preview-description">{% if form_data.description %}{{ form_data.description }}{% elif carousel.description %}{{ carousel.description }}{% else %}描述内容会显示在这里{% endif %}</span>
+                            <strong id="carousel-preview-title">{% if form_data.title %}{{ form_data.title }}{% elif carousel.title %}{{ carousel.title }}{% else %}{% trans '轮播标题预览' %}{% endif %}</strong>
+                            <span id="carousel-preview-description">{% if form_data.description %}{{ form_data.description }}{% elif carousel.description %}{{ carousel.description }}{% else %}{% trans '描述内容会显示在这里' %}{% endif %}</span>
                         </div>
                     </div>
                 </section>
@@ -551,21 +552,21 @@
                 <section class="carousel-form-card" aria-labelledby="carousel-publish-heading">
                     <div class="carousel-form-card-header">
                         <span class="carousel-section-icon"><span class="material-icons" aria-hidden="true">tune</span></span>
-                        <div><h2 id="carousel-publish-heading">发布设置</h2><p>控制展示状态与排列位置</p></div>
+                        <div><h2 id="carousel-publish-heading">{% trans '发布设置' %}</h2><p>{% trans '控制展示状态与排列位置' %}</p></div>
                     </div>
                     <div class="carousel-form-card-body carousel-settings-list">
                         <div class="carousel-field">
-                            <div class="carousel-label-row"><label for="id_order">排序值</label></div>
+                            <div class="carousel-label-row"><label for="id_order">{% trans '排序值' %}</label></div>
                             <input class="carousel-input" type="number" id="id_order" name="order" value="{% if form_data %}{{ form_data.order|default:0 }}{% else %}{{ carousel.order|default:0 }}{% endif %}" min="0" step="1" inputmode="numeric">
-                            <p class="carousel-field-help"><span class="material-icons" aria-hidden="true">low_priority</span>数字越小越靠前。</p>
+                            <p class="carousel-field-help"><span class="material-icons" aria-hidden="true">low_priority</span>{% trans '数字越小越靠前。' %}</p>
                         </div>
 
                         <div class="carousel-toggle-row">
                             <div class="carousel-toggle-copy">
-                                <strong>在首页展示</strong>
-                                <span>关闭后内容仍会保留，但访客不可见。</span>
+                                <strong>{% trans '在首页展示' %}</strong>
+                                <span>{% trans '关闭后内容仍会保留，但访客不可见。' %}</span>
                             </div>
-                            <label class="carousel-switch" aria-label="在首页展示">
+                            <label class="carousel-switch" aria-label="{% trans '在首页展示' %}">
                                 <input type="checkbox" id="id_is_active" name="is_active" {% if form_data %}{% if form_data.is_active %}checked{% endif %}{% elif carousel.is_active or not carousel %}checked{% endif %}>
                                 <span class="carousel-switch-track" aria-hidden="true"></span>
                             </label>
@@ -576,7 +577,7 @@
                 <div class="carousel-form-actions">
                     <button type="submit" class="carousel-submit">
                         <span class="material-icons" aria-hidden="true">{% if carousel %}save{% else %}publish{% endif %}</span>
-                        {% if carousel %}保存更改{% else %}创建轮播{% endif %}
+                        {% if carousel %}{% trans '保存更改' %}{% else %}{% trans '创建轮播' %}{% endif %}
                     </button>
                     <a href="{% url 'clubs:manage_carousel' %}" class="carousel-cancel" aria-label="取消"><span class="material-icons" aria-hidden="true">close</span></a>
                 </div>
@@ -603,8 +604,8 @@
     let objectUrl = null;
 
     function syncCopy() {
-        previewTitle.textContent = title.value.trim() || '轮播标题预览';
-        previewDescription.textContent = description.value.trim() || '描述内容会显示在这里';
+        previewTitle.textContent = title.value.trim() || gettext('轮播标题预览');
+        previewDescription.textContent = description.value.trim() || gettext('描述内容会显示在这里');
         titleCount.textContent = title.value.length;
     }
 

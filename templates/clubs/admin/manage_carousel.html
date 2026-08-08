@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}首页轮播 - 管理后台{% endblock %}
+{% block title %}{% trans '首页轮播 - 管理后台' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -329,29 +330,27 @@
     <header class="page-header">
         <span class="material-icons" aria-hidden="true">view_carousel</span>
         <div class="page-header-content">
-            <h1>首页轮播管理</h1>
-            <p class="subtitle">管理首页首屏展示内容、显示状态与轮播顺序</p>
+            <h1>{% trans '首页轮播管理' %}</h1>
+            <p class="subtitle">{% trans '管理首页首屏展示内容、显示状态与轮播顺序' %}</p>
         </div>
     </header>
 
-    <div class="carousel-hero-stats" aria-label="轮播统计">
-        <div class="carousel-stat"><strong>{{ carousel_images|length }}</strong><span>全部内容</span></div>
-        <div class="carousel-stat"><strong>{{ active_count }}</strong><span>正在展示</span></div>
-        <div class="carousel-stat"><strong>{{ inactive_count }}</strong><span>暂未展示</span></div>
+    <div class="carousel-hero-stats" aria-label="{% trans '轮播统计' %}">
+        <div class="carousel-stat"><strong>{{ carousel_images|length }}</strong><span>{% trans '全部内容' %}</span></div>
+        <div class="carousel-stat"><strong>{{ active_count }}</strong><span>{% trans '正在展示' %}</span></div>
+        <div class="carousel-stat"><strong>{{ inactive_count }}</strong><span>{% trans '暂未展示' %}</span></div>
     </div>
 
     <section aria-labelledby="carousel-queue-title">
         <div class="carousel-toolbar">
             <div class="carousel-toolbar-title">
                 <div>
-                    <h2 id="carousel-queue-title">展示队列</h2>
-                    <p>按排序值升序排列，相同排序值优先展示最近上传的内容</p>
+                    <h2 id="carousel-queue-title">{% trans '展示队列' %}</h2>
+                    <p>{% trans '按排序值升序排列，相同排序值优先展示最近上传的内容' %}</p>
                 </div>
             </div>
             <a href="{% url 'clubs:add_carousel' %}" class="carousel-primary-action">
-                <span class="material-icons" aria-hidden="true">add_photo_alternate</span>
-                新增轮播
-            </a>
+                <span class="material-icons" aria-hidden="true">add_photo_alternate</span>{% trans '新增轮播' %}</a>
         </div>
 
         {% if carousel_images %}
@@ -360,10 +359,10 @@
             <article class="carousel-admin-card" role="listitem">
                 <figure class="carousel-card-media">
                     <img src="{{ image.image.url }}" alt="{{ image.title|default:'轮播图片' }}" loading="lazy">
-                    <span class="carousel-position">展示位 #{{ forloop.counter }}</span>
+                    <span class="carousel-position">{% blocktrans with __i18n1=forloop.counter %}展示位 #{{ __i18n1 }}{% endblocktrans %}</span>
                     <span class="carousel-status {% if image.is_active %}active{% else %}inactive{% endif %}">
                         <span class="material-icons" aria-hidden="true">{% if image.is_active %}visibility{% else %}visibility_off{% endif %}</span>
-                        {% if image.is_active %}展示中{% else %}已停用{% endif %}
+                        {% if image.is_active %}{% trans '展示中' %}{% else %}{% trans '已停用' %}{% endif %}
                     </span>
                 </figure>
 
@@ -372,7 +371,7 @@
                     {% if image.description %}
                     <p class="carousel-card-description" title="{{ image.description }}">{{ image.description }}</p>
                     {% else %}
-                    <p class="carousel-card-description muted">尚未填写描述</p>
+                    <p class="carousel-card-description muted">{% trans '尚未填写描述' %}</p>
                     {% endif %}
 
                     {% if image.link %}
@@ -384,19 +383,17 @@
 
                     <div class="carousel-card-footer">
                         <div class="carousel-meta">
-                            <span class="carousel-meta-item"><span class="material-icons" aria-hidden="true">sort</span>排序 {{ image.order }}</span>
+                            <span class="carousel-meta-item"><span class="material-icons" aria-hidden="true">sort</span>{% blocktrans with __i18n1=image.order %}排序 {{ __i18n1 }}{% endblocktrans %}</span>
                             <span class="carousel-meta-item"><span class="material-icons" aria-hidden="true">person</span>{{ image.uploaded_by.get_full_name|default:image.uploaded_by.username }}</span>
                             <span class="carousel-meta-item"><span class="material-icons" aria-hidden="true">schedule</span>{{ image.uploaded_at|date:'Y-m-d H:i' }}</span>
                         </div>
                         <div class="carousel-card-actions">
                             <a href="{% url 'clubs:edit_carousel' image.id %}" class="carousel-card-action">
-                                <span class="material-icons" aria-hidden="true">edit</span>编辑
-                            </a>
+                                <span class="material-icons" aria-hidden="true">edit</span>{% trans '编辑' %}</a>
                             <form method="post" action="{% url 'clubs:delete_carousel' image.id %}" onsubmit="return confirm('确定删除这张轮播图吗？此操作无法撤销。');">
                                 {% csrf_token %}
                                 <button type="submit" class="carousel-card-action danger" aria-label="删除 {{ image.title|default:'此轮播图' }}">
-                                    <span class="material-icons" aria-hidden="true">delete</span>删除
-                                </button>
+                                    <span class="material-icons" aria-hidden="true">delete</span>{% trans '删除' %}</button>
                             </form>
                         </div>
                     </div>
@@ -407,11 +404,10 @@
         {% else %}
         <div class="carousel-empty">
             <div class="carousel-empty-icon"><span class="material-icons" aria-hidden="true">view_carousel</span></div>
-            <h2>创建第一张首页轮播</h2>
-            <p>上传一张横向图片，并补充标题、描述和跳转链接，即可让首页首屏更有内容。</p>
+            <h2>{% trans '创建第一张首页轮播' %}</h2>
+            <p>{% trans '上传一张横向图片，并补充标题、描述和跳转链接，即可让首页首屏更有内容。' %}</p>
             <a href="{% url 'clubs:add_carousel' %}" class="carousel-primary-action">
-                <span class="material-icons" aria-hidden="true">add_photo_alternate</span>新增轮播
-            </a>
+                <span class="material-icons" aria-hidden="true">add_photo_alternate</span>{% trans '新增轮播' %}</a>
         </div>
         {% endif %}
     </section>

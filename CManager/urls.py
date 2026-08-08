@@ -20,6 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
 from django.contrib.staticfiles import finders
+from django.views.i18n import JavaScriptCatalog
 
 
 handler404 = 'clubs.views.errors.handler404'
@@ -44,6 +45,8 @@ urlpatterns = [
     path('sw.js', service_worker_view, name='service_worker'),
     path('', include('clubs.urls', namespace='clubs')),
     path('admin/', admin.site.urls),
+    path('i18n/', include('django.conf.urls.i18n')),
+    path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
 ]
 
 # 在生产环境中，静态文件应该由Web服务器提供，但为了解决当前问题，我们添加这个配置

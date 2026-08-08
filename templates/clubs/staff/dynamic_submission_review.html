@@ -1,8 +1,9 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 {% load common_tags %}
 
-{% block title %}审核 {{ submission.channel.name }}{% endblock %}
+{% block title %}{% blocktrans with __i18n1=submission.channel.name %}审核 {{ __i18n1 }}{% endblocktrans %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -598,16 +599,16 @@
         <div>
             <h1>{{ submission.channel.name }} · {{ submission.display_title }}</h1>
             <div class="meta-row">
-                <span>请求编号：{{ submission.public_id }}</span>
+                <span>{% blocktrans with __i18n1=submission.public_id %}请求编号：{{ __i18n1 }}{% endblocktrans %}</span>
                 <span>{{ submission.club.name }}</span>
                 <span>{{ submission.submitter.username }}</span>
                 <span>{{ submission.submitted_at|date:"Y-m-d H:i" }}</span>
                 <span class="meta-chip {{ submission.status }}">{{ submission.get_status_display }}</span>
-                <span class="meta-chip">第 {{ submission.resubmission_count }} 次提交</span>
-                <span class="meta-chip progress">通过 {{ approval_progress }}</span>
-                <span class="meta-chip progress">已审核 {{ reviewer_count }} 人</span>
+                <span class="meta-chip">{% blocktrans with __i18n1=submission.resubmission_count %}第 {{ __i18n1 }} 次提交{% endblocktrans %}</span>
+                <span class="meta-chip progress">{% blocktrans with __i18n1=approval_progress %}通过 {{ __i18n1 }}{% endblocktrans %}</span>
+                <span class="meta-chip progress">{% blocktrans with __i18n1=reviewer_count %}已审核 {{ __i18n1 }} 人{% endblocktrans %}</span>
                 {% if remaining_approval_count > 0 and submission.status == 'pending' %}
-                <span class="meta-chip pending">还需 {{ remaining_approval_count }} 次通过</span>
+                <span class="meta-chip pending">{% blocktrans with __i18n1=remaining_approval_count %}还需 {{ __i18n1 }} 次通过{% endblocktrans %}</span>
                 {% endif %}
             </div>
             {% if show_word_downloads or show_zip_download %}
@@ -616,8 +617,8 @@
                 <a class="download-button download-button-primary" href="{% url 'clubs:download_submission_file' merged.id %}" target="_blank" rel="noopener">
                     <span class="material-icons">description</span>
                     <span class="download-action-text">
-                        <strong>下载合并 Word</strong>
-                        <small>已通过发票合并文档</small>
+                        <strong>{% trans '下载合并 Word' %}</strong>
+                        <small>{% trans '已通过发票合并文档' %}</small>
                     </span>
                 </a>
                 {% endfor %}
@@ -625,8 +626,8 @@
                 <a class="download-button download-button-tonal" href="{% url 'clubs:zip_download' %}?id={{ submission.public_id }}">
                     <span class="material-icons">folder_zip</span>
                     <span class="download-action-text">
-                        <strong>下载压缩包</strong>
-                        <small>全部原始附件</small>
+                        <strong>{% trans '下载压缩包' %}</strong>
+                        <small>{% trans '全部原始附件' %}</small>
                     </span>
                 </a>
                 {% endif %}
@@ -640,8 +641,7 @@
 
     <section class="content-card">
         <div class="card-header">
-            <span class="material-icons">fact_check</span>提交内容
-        </div>
+            <span class="material-icons">fact_check</span>{% trans '提交内容' %}</div>
         <div class="field-list">
             {% for row in rows %}
             <div class="field-item">
@@ -662,38 +662,36 @@
                                 <img src="{{ uploaded.file.url }}" alt="{{ uploaded.original_name|default:uploaded.file.name }}" loading="lazy">
                             </a>
                             {% else %}
-                            <span class="file-missing">文件已丢失</span>
+                            <span class="file-missing">{% trans '文件已丢失' %}</span>
                             {% endif %}
                             {% endif %}
                             {% if not uploaded|is_image_file %}
                             <a class="file-preview-button" href="{% url 'clubs:download_submission_file' uploaded.id %}?inline=1" target="_blank" rel="noopener">
-                                <span class="material-icons">open_in_new</span>查看
-                            </a>
+                                <span class="material-icons">open_in_new</span>{% trans '查看' %}</a>
                             {% endif %}
                             <a class="file-link" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
                                 <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
                             </a>
                             {% if uploaded.office_preview_url and not uploaded|is_image_file %}
                             <button class="file-preview-button js-office-preview" type="button" data-office-preview-url="{{ uploaded.office_preview_url }}" data-office-file-name="{{ uploaded.original_name|default:uploaded.file.name }}">
-                                <span class="material-icons">visibility</span>预览
-                            </button>
+                                <span class="material-icons">visibility</span>{% trans '预览' %}</button>
                             {% endif %}
                             <span class="item-status {{ uploaded.review_status }}">{{ uploaded.get_review_status_display }}</span>
                             {% if uploaded.review_comment %}<span class="item-comment">{{ uploaded.review_comment }}</span>{% endif %}
                             {% if submission.status == 'pending' and not uploaded.is_generated %}
                             <div class="reject-control">
-                                <label><input form="review-form" type="checkbox" name="reject_file_{{ uploaded.id }}">打回这个文件</label>
+                                <label><input form="review-form" type="checkbox" name="reject_file_{{ uploaded.id }}">{% trans '打回这个文件' %}</label>
                                 <input form="review-form" type="text" name="comment_file_{{ uploaded.id }}" placeholder="这个文件的问题，可留空使用总审核意见">
                             </div>
                             {% endif %}
                         </div>
-                        {% empty %}未上传{% endfor %}
+                        {% empty %}{% trans '未上传' %}{% endfor %}
                     {% else %}
                         {{ row.value|default:"-" }}
                         {% if row.review_comment %}<div class="item-comment">{{ row.review_comment }}</div>{% endif %}
                         {% if submission.status == 'pending' and row.value_obj %}
                         <div class="reject-control">
-                            <label><input form="review-form" type="checkbox" name="reject_value_{{ row.value_obj.id }}">打回这一项</label>
+                            <label><input form="review-form" type="checkbox" name="reject_value_{{ row.value_obj.id }}">{% trans '打回这一项' %}</label>
                             <input form="review-form" type="text" name="comment_value_{{ row.value_obj.id }}" placeholder="这一项的问题，可留空使用总审核意见">
                         </div>
                         {% endif %}
@@ -706,69 +704,61 @@
 
     <section class="content-card review-history-card">
         <div class="card-header">
-            <span class="material-icons">rate_review</span>审核处理
-        </div>
+            <span class="material-icons">rate_review</span>{% trans '审核处理' %}</div>
         <form method="post" class="review-form" id="review-form">
             {% csrf_token %}
-            <label for="review-comment">审核意见</label>
+            <label for="review-comment">{% trans '审核意见' %}</label>
             <textarea id="review-comment" name="comment">{{ submission.review_comment }}</textarea>
             <div class="action-row">
                 {% if submission.status == 'pending' and user_has_reviewed_current_attempt %}
-                <span class="meta-chip progress">你已审核本轮提交，再次提交将修改你的审核结果</span>
+                <span class="meta-chip progress">{% trans '你已审核本轮提交，再次提交将修改你的审核结果' %}</span>
                 <button class="btn btn-danger" name="action" value="reject" type="submit">
-                    <span class="material-icons">close</span>打回
-                </button>
+                    <span class="material-icons">close</span>{% trans '打回' %}</button>
                 <button class="btn btn-primary" name="action" value="approve" type="submit">
-                    <span class="material-icons">check</span>通过
-                </button>
+                    <span class="material-icons">check</span>{% trans '通过' %}</button>
                 {% elif submission.status == 'pending' %}
                 <button class="btn btn-danger" name="action" value="reject" type="submit">
-                    <span class="material-icons">close</span>拒绝
-                </button>
+                    <span class="material-icons">close</span>{% trans '拒绝' %}</button>
                 <button class="btn btn-primary" name="action" value="approve" type="submit">
-                    <span class="material-icons">check</span>通过
-                </button>
+                    <span class="material-icons">check</span>{% trans '通过' %}</button>
                 {% elif can_edit_own_review or can_reenter_review %}
                 <div class="override-actions">
                     {% if can_edit_own_review %}
                     <div class="override-action-card">
                         <div class="override-caption">
-                            <strong><span class="material-icons">swap_vert</span>修改我的审核结果</strong>
-                            <small>只修改你自己的审核记录，其他审核人的投票和审核人数保持不变。</small>
+                            <strong><span class="material-icons">swap_vert</span>{% trans '修改我的审核结果' %}</strong>
+                            <small>{% trans '只修改你自己的审核记录，其他审核人的投票和审核人数保持不变。' %}</small>
                             {% if not user_has_reviewed_current_attempt %}
-                            <span class="meta-chip progress">你尚未参与本轮审核，将作为审核人新增一条记录</span>
+                            <span class="meta-chip progress">{% trans '你尚未参与本轮审核，将作为审核人新增一条记录' %}</span>
                             {% endif %}
                         </div>
                         <div class="override-actions">
                             <button class="btn btn-danger" name="action" value="direct_reject" type="submit">
-                                <span class="material-icons">close</span>改为不通过
-                            </button>
+                                <span class="material-icons">close</span>{% trans '改为不通过' %}</button>
                             <button class="btn btn-primary" name="action" value="direct_approve" type="submit">
-                                <span class="material-icons">check</span>改为通过
-                            </button>
+                                <span class="material-icons">check</span>{% trans '改为通过' %}</button>
                         </div>
                     </div>
                     {% endif %}
                     {% if can_reenter_review %}
                     <div class="override-action-card">
                         <div class="override-caption">
-                            <strong><span class="material-icons">replay</span>管理员重新审核</strong>
-                            <small>保留当前审核历史，开启新一轮审核，所有审核人需要重新投票。</small>
+                            <strong><span class="material-icons">replay</span>{% trans '管理员重新审核' %}</strong>
+                            <small>{% trans '保留当前审核历史，开启新一轮审核，所有审核人需要重新投票。' %}</small>
                         </div>
                         <div class="override-actions">
                             <button class="btn btn-primary" name="action" value="reenter" type="submit">
-                                <span class="material-icons">replay</span>重新审核
-                            </button>
+                                <span class="material-icons">replay</span>{% trans '重新审核' %}</button>
                         </div>
                     </div>
                     {% endif %}
                 </div>
                 {% elif override_blocked_by_business_action %}
-                <span class="meta-chip progress">该通道绑定内置业务动作，审核结果不可覆盖修改</span>
+                <span class="meta-chip progress">{% trans '该通道绑定内置业务动作，审核结果不可覆盖修改' %}</span>
                 {% elif user_has_reviewed_current_attempt %}
-                <span class="meta-chip progress">你已审核本次提交</span>
+                <span class="meta-chip progress">{% trans '你已审核本次提交' %}</span>
                 {% elif submission.status != 'pending' %}
-                <span class="meta-chip progress">该请求已完成审核，仅参与本轮审核的审核人或管理员可修改结果</span>
+                <span class="meta-chip progress">{% trans '该请求已完成审核，仅参与本轮审核的审核人或管理员可修改结果' %}</span>
                 {% endif %}
             </div>
         </form>

@@ -1,6 +1,8 @@
 {% extends 'clubs/admin/base.html' %}
+{% load i18n %}
+{% load common_tags %}
 
-{% block title %}被锁定账号 - 管理中心{% endblock %}
+{% block title %}{% trans '被锁定账号 - 管理中心' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -95,8 +97,8 @@
 <div class="page-header">
     <span class="material-icons">lock</span>
     <div class="page-header-content">
-        <h1>被锁定账号</h1>
-        <p class="subtitle">查看并解锁因多次登录失败而被锁定的用户账号</p>
+        <h1>{% trans '被锁定账号' %}</h1>
+        <p class="subtitle">{% trans '查看并解锁因多次登录失败而被锁定的用户账号' %}</p>
     </div>
     <a href="{% url 'clubs:admin_dashboard' %}" class="page-back-btn" title="返回仪表板" aria-label="返回仪表板">
         <span class="material-icons">arrow_back</span>
@@ -106,8 +108,8 @@
 <div class="content-card">
     <div class="card-heading">
         <span class="material-icons">warning</span>
-        <span>锁定账号列表</span>
-        <span class="locked-count">{{ locked|length }} 个</span>
+        <span>{% trans '锁定账号列表' %}</span>
+        <span class="locked-count">{{ locked|length }}{% trans '个' %}</span>
     </div>
 
     {% if locked %}
@@ -122,21 +124,20 @@
             </a>
             <div class="user-info">
                 <a href="{% url 'clubs:user_detail' u.id %}" class="user-name">{{ u.username }}{% if u.profile.get_full_name %}（{{ u.profile.get_full_name }}）{% endif %}</a>
-                <span class="user-email">{{ u.email|default:"未设置邮箱" }}</span>
+                <span class="user-email">{{ u.email|tdefault:"未设置邮箱" }}</span>
             </div>
-            <span class="lock-badge"><span class="material-icons">lock</span>已锁定</span>
+            <span class="lock-badge"><span class="material-icons">lock</span>{% trans '已锁定' %}</span>
             <form method="post" action="{% url 'clubs:unlock_account' u.username %}">
                 {% csrf_token %}
                 <button type="submit" class="btn-unlock">
-                    <span class="material-icons">lock_open</span>解锁账号
-                </button>
+                    <span class="material-icons">lock_open</span>{% trans '解锁账号' %}</button>
             </form>
         </div>
         {% endfor %}
     {% else %}
         <div class="empty-state">
             <span class="material-icons">check_circle</span>
-            <p>当前没有被锁定的账号，一切正常。</p>
+            <p>{% trans '当前没有被锁定的账号，一切正常。' %}</p>
         </div>
     {% endif %}
 </div>

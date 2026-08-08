@@ -25,6 +25,7 @@ from django.core.files.base import ContentFile
 from django.core.exceptions import ObjectDoesNotExist
 from ..lifecycle_utils import extend_inactive_account
 from ..business_forms import externally_available_channels
+from django.utils.translation import gettext as _
 from ..identity import (
     IDENTITY_PRESIDENT,
     IDENTITY_PRIMARY,
@@ -185,14 +186,14 @@ def user_login(request):
         client_ip = _client_ip(request)
 
         if not username or not password:
-            messages.error(request, '用户名和密码不能为空')
+            messages.error(request, _('用户名和密码不能为空'))
             return render(request, 'clubs/auth/login.html')
 
         # 检查是否被锁定（按用户名或 IP）
         lock_key_user = f'login_lock:user:{username}'
         lock_key_ip = f'login_lock:ip:{client_ip}'
         if cache.get(lock_key_user) or cache.get(lock_key_ip):
-            messages.error(request, '登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！')
+            messages.error(request, _('登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！'))
             return render(request, 'clubs/auth/login.html', {
                 'username': username,
                 'show_admin_reset_prompt': True,
@@ -211,7 +212,7 @@ def user_login(request):
                 # 检查用户状态 - 干事需要审核通过才能登录
                 profile = user.profile
                 if profile.role == 'staff' and profile.status != 'approved':
-                    messages.error(request, '您的账号正在审核中，请等待管理员批准！')
+                    messages.error(request, _('您的账号正在审核中，请等待管理员批准！'))
                     return render(request, 'clubs/auth/login.html', {
                         'username': username,
                     })
@@ -223,12 +224,12 @@ def user_login(request):
                     request.session['show_inactive_prompt'] = True
                     messages.warning(
                         request,
-                        '您的账号当前为不活跃状态。您可以在“账户设置”中选择延期注销，延期后可继续保持1年活跃（支持多次延期）。'
+                        _('您的账号当前为不活跃状态。您可以在“账户设置”中选择延期注销，延期后可继续保持1年活跃（支持多次延期）。')
                     )
 
                 # 首次登录/重置后强制改密
                 if getattr(user.profile, 'must_change_password', False):
-                    messages.warning(request, '为了账户安全，请先修改密码后再继续使用系统。')
+                    messages.warning(request, _('为了账户安全，请先修改密码后再继续使用系统。'))
                     return redirect('clubs:edit_profile')
 
                 # 根据角色跳转
@@ -267,7 +268,7 @@ def user_login(request):
 
             # 如果已经被锁定，提示联系管理员重置密码
             if cache.get(lock_key_user) or cache.get(lock_key_ip):
-                messages.error(request, '登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！')
+                messages.error(request, _('登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！'))
                 from django.conf import settings
                 return render(request, 'clubs/auth/login.html', {
                     'username': username,
@@ -275,7 +276,7 @@ def user_login(request):
                     'admin_contact_email': getattr(settings, 'ADMIN_CONTACT_EMAIL', ''),
                 })
 
-            messages.error(request, '用户名或密码错误')
+            messages.error(request, _('用户名或密码错误'))
             return render(request, 'clubs/auth/login.html', {
                 'username': username,
             })
@@ -290,15 +291,15 @@ def extend_inactive_period(request):
     try:
         profile = request.user.profile
     except UserProfile.DoesNotExist:
-        messages.error(request, '用户档案不存在，无法延期')
+        messages.error(request, _('用户档案不存在，无法延期'))
         return redirect('clubs:index')
 
     if profile.role == 'admin':
-        messages.info(request, '管理员账号不受自动注销策略影响，无需延期')
+        messages.info(request, _('管理员账号不受自动注销策略影响，无需延期'))
         return redirect('clubs:edit_profile')
 
     if getattr(profile, 'account_status', 'active') != 'inactive':
-        messages.info(request, '当前账号不是不活跃状态，无需延期')
+        messages.info(request, _('当前账号不是不活跃状态，无需延期'))
         return redirect('clubs:edit_profile')
 
     new_until = extend_inactive_account(profile, days=365, reason='user_extend')
@@ -310,7 +311,7 @@ def extend_inactive_period(request):
 def user_logout(request):
     """用户登出"""
     logout(request)
-    messages.success(request, '已登出')
+    messages.success(request, _('已登出'))
     return redirect('clubs:index')
 
 
@@ -333,14 +334,14 @@ def switch_identity(request):
 
     if identity == IDENTITY_PRESIDENT:
         if not has_president_officer(request.user):
-            messages.error(request, '当前账号没有现任社长身份，无法切换')
+            messages.error(request, _('当前账号没有现任社长身份，无法切换'))
             return redirect(_identity_default_url(request.user, IDENTITY_PRIMARY))
         request.session[IDENTITY_SESSION_KEY] = IDENTITY_PRESIDENT
-        messages.success(request, '已切换到社长身份')
+        messages.success(request, _('已切换到社长身份'))
         return redirect(_identity_default_url(request.user, IDENTITY_PRESIDENT))
 
     request.session[IDENTITY_SESSION_KEY] = IDENTITY_PRIMARY
-    messages.success(request, '已切换回主身份')
+    messages.success(request, _('已切换回主身份'))
     return redirect(_identity_default_url(request.user, IDENTITY_PRIMARY))
 
 
@@ -363,7 +364,7 @@ def delete_account(request):
             try:
                 role = user.profile.role
             except UserProfile.DoesNotExist:
-                messages.error(request, '用户档案不存在，无法注销账号')
+                messages.error(request, _('用户档案不存在，无法注销账号'))
                 return redirect('clubs:index')
             
             # 根据用户角色执行不同的删除逻辑
@@ -407,7 +408,7 @@ def delete_account(request):
             return redirect('clubs:index')
         else:
             # 显示错误消息
-            messages.error(request, '用户名输入错误，账户删除失败。')
+            messages.error(request, _('用户名输入错误，账户删除失败。'))
             
             # 重定向回修改账户设置页面
             return redirect('clubs:edit_profile')
@@ -425,17 +426,17 @@ def manage_staff_clubs(request):
     try:
         profile = user.profile
         if profile.role != 'staff' and profile.role != 'admin':
-            messages.error(request, '您没有权限访问此页面')
+            messages.error(request, _('您没有权限访问此页面'))
             return redirect('clubs:user_dashboard')
     except UserProfile.DoesNotExist:
-        messages.error(request, '用户角色未配置')
+        messages.error(request, _('用户角色未配置'))
         return redirect('clubs:login')
     
     if request.method == 'POST':
         # 干事只能查看页面，分配负责社团仅允许管理员操作，
         # 否则普通干事可自行把任意社团设为负责并取得该社团管理权限。
         if profile.role != 'admin':
-            messages.error(request, '仅管理员可以分配干事负责的社团')
+            messages.error(request, _('仅管理员可以分配干事负责的社团'))
             return redirect('clubs:manage_staff_clubs')
 
         # 获取所有选中的社团ID
@@ -457,7 +458,7 @@ def manage_staff_clubs(request):
                 for club_id in valid_club_ids - existing_club_ids
             ])
         
-        messages.success(request, '负责社团设置成功')
+        messages.success(request, _('负责社团设置成功'))
         return redirect('clubs:manage_staff_clubs')
     
     # 获取所有社团
@@ -487,7 +488,7 @@ def edit_profile(request):
     try:
         profile = user.profile
     except UserProfile.DoesNotExist:
-        messages.error(request, '用户档案不存在，请先联系管理员完善资料')
+        messages.error(request, _('用户档案不存在，请先联系管理员完善资料'))
         return redirect('clubs:index')
     
     if request.method == 'POST':
@@ -544,26 +545,26 @@ def edit_profile(request):
                 if political_status:
                     profile.political_status = political_status
                 profile.save()
-                messages.success(request, '个人信息已成功更新')
+                messages.success(request, _('个人信息已成功更新'))
                 
         elif action == 'change_username':
             new_username = request.POST.get('new_username', '').strip()
             password = request.POST.get('password', '').strip()
             
             if not new_username:
-                messages.error(request, '新用户名不能为空')
+                messages.error(request, _('新用户名不能为空'))
             elif len(new_username) < 3:
-                messages.error(request, '用户名至少3个字符')
+                messages.error(request, _('用户名至少3个字符'))
             elif len(new_username) > 30:
-                messages.error(request, '用户名不能超过30个字符')
+                messages.error(request, _('用户名不能超过30个字符'))
             elif User.objects.exclude(id=user.id).filter(username=new_username).exists():
-                messages.error(request, '用户名已被使用')
+                messages.error(request, _('用户名已被使用'))
             elif not password:
-                messages.error(request, '密码不能为空')
+                messages.error(request, _('密码不能为空'))
             else:
                 # 验证密码
                 if not user.check_password(password):
-                    messages.error(request, '密码错误')
+                    messages.error(request, _('密码错误'))
                 else:
                     old_username = user.username
                     user.username = new_username
@@ -576,11 +577,11 @@ def edit_profile(request):
             confirm_password = request.POST.get('confirm_password', '').strip()
             
             if not user.check_password(old_password):
-                messages.error(request, '原密码错误')
+                messages.error(request, _('原密码错误'))
             elif new_password != confirm_password:
-                messages.error(request, '两次输入的新密码不一致')
+                messages.error(request, _('两次输入的新密码不一致'))
             elif len(new_password) < 6:
-                messages.error(request, '新密码长度至少为6位')
+                messages.error(request, _('新密码长度至少为6位'))
             else:
                 user.set_password(new_password)
                 user.save()
@@ -589,40 +590,40 @@ def edit_profile(request):
                     profile.save(update_fields=['must_change_password'])
                 # 保持登录状态
                 login(request, user)
-                messages.success(request, '密码已修改')
+                messages.success(request, _('密码已修改'))
 
         elif action == 'use_cravatar':
             from django.core.validators import validate_email
             from django.core.exceptions import ValidationError
             from ..avatar_utils import cravatar_exists, get_avatar_settings, normalize_avatar_email
             if not get_avatar_settings():
-                messages.error(request, '管理员暂未开放 Cravatar')
+                messages.error(request, _('管理员暂未开放 Cravatar'))
                 return redirect(f"{reverse('clubs:edit_profile')}?tab=avatar")
             avatar_email = normalize_avatar_email(request.POST.get('avatar_email'))
             if avatar_email:
                 try:
                     validate_email(avatar_email)
                 except ValidationError:
-                    messages.error(request, '请输入有效的 Cravatar 邮箱')
+                    messages.error(request, _('请输入有效的 Cravatar 邮箱'))
                 else:
                     exists = cravatar_exists(avatar_email)
                     if exists is True:
                         profile.avatar_email = avatar_email
                         profile.avatar_source = 'cravatar'
                         profile.save(update_fields=['avatar_email', 'avatar_source', 'updated_at'])
-                        messages.success(request, '已检测到 Cravatar 头像并启用')
+                        messages.success(request, _('已检测到 Cravatar 头像并启用'))
                     elif exists is False:
-                        messages.error(request, '该邮箱没有可用的 Cravatar 头像，请先在 Cravatar 绑定头像或继续使用本站上传')
+                        messages.error(request, _('该邮箱没有可用的 Cravatar 头像，请先在 Cravatar 绑定头像或继续使用本站上传'))
                     else:
-                        messages.error(request, '暂时无法连接 Cravatar，请稍后重试；当前头像未更改')
+                        messages.error(request, _('暂时无法连接 Cravatar，请稍后重试；当前头像未更改'))
             else:
-                messages.error(request, '请输入已绑定 Cravatar 头像的邮箱')
+                messages.error(request, _('请输入已绑定 Cravatar 头像的邮箱'))
             return redirect(f"{reverse('clubs:edit_profile')}?tab=avatar")
 
         elif action == 'use_local_avatar':
             profile.avatar_source = 'local'
             profile.save(update_fields=['avatar_source', 'updated_at'])
-            messages.success(request, '已切换为本站上传头像')
+            messages.success(request, _('已切换为本站上传头像'))
             return redirect(f"{reverse('clubs:edit_profile')}?tab=avatar")
                 
         elif action == 'upload_avatar':
@@ -749,10 +750,10 @@ def staff_management(request):
     try:
         profile = user.profile
         if profile.role != 'staff' and profile.role != 'admin':
-            messages.error(request, '您没有权限访问此页面')
+            messages.error(request, _('您没有权限访问此页面'))
             return redirect('clubs:user_dashboard')
     except UserProfile.DoesNotExist:
-        messages.error(request, '用户角色未配置')
+        messages.error(request, _('用户角色未配置'))
         return redirect('clubs:login')
     
     from ..models import Club, FormSubmission, StaffClubRelation, Officer
@@ -963,7 +964,7 @@ def update_alert_threshold(request):
     """修改成员数量告警阈值（仅管理员）。"""
     profile = getattr(request.user, 'profile', None)
     if not profile or profile.role != 'admin':
-        messages.error(request, '仅管理员可以修改人数告警阈值')
+        messages.error(request, _('仅管理员可以修改人数告警阈值'))
         return redirect('clubs:staff_management')
 
     from ..models import SiteSettings
@@ -973,7 +974,7 @@ def update_alert_threshold(request):
     except (TypeError, ValueError):
         value = 0
     if value < 1 or value > 999:
-        messages.error(request, '人数告警阈值需为 1-999 之间的整数')
+        messages.error(request, _('人数告警阈值需为 1-999 之间的整数'))
         return redirect('clubs:staff_management')
 
     site_settings = SiteSettings.get_settings()
@@ -991,18 +992,18 @@ def verify_email(request):
     try:
         verification = user.email_verification
     except ObjectDoesNotExist:
-        messages.error(request, '邮箱验证记录不存在')
+        messages.error(request, _('邮箱验证记录不存在'))
         return redirect('clubs:user_dashboard')
     
     if verification.is_verified:
-        messages.info(request, '邮箱已验证')
+        messages.info(request, _('邮箱已验证'))
         return redirect('clubs:user_dashboard')
     
     if request.method == 'POST':
         code = request.POST.get('code', '').strip()
         
         if not code:
-            messages.error(request, '验证码不能为空')
+            messages.error(request, _('验证码不能为空'))
             return render(request, 'clubs/auth/verify_email.html')
         
         success, message = verification.verify(code)
@@ -1015,7 +1016,7 @@ def verify_email(request):
             user.email = verification.email
             user.save()
             
-            messages.success(request, '邮箱验证成功！')
+            messages.success(request, _('邮箱验证成功！'))
             return redirect('clubs:user_dashboard')
         else:
             messages.error(request, message)
@@ -1041,16 +1042,16 @@ def resend_verification_code(request):
     try:
         verification = user.email_verification
     except ObjectDoesNotExist:
-        messages.error(request, '邮箱验证记录不存在')
+        messages.error(request, _('邮箱验证记录不存在'))
         return redirect('clubs:user_dashboard')
     
     if verification.is_verified:
-        messages.info(request, '邮箱已验证，无需重新发送')
+        messages.info(request, _('邮箱已验证，无需重新发送'))
         return redirect('clubs:user_dashboard')
 
     cooldown_key = f'email_code_resend:{user.id}'
     if cache.get(cooldown_key):
-        messages.error(request, '发送过于频繁，请稍后再试')
+        messages.error(request, _('发送过于频繁，请稍后再试'))
         return redirect('clubs:verify_email')
     
     # 生成新的验证码
@@ -1081,15 +1082,15 @@ def manage_department_staff(request):
     try:
         profile = user.profile
         if profile.staff_level != 'director':
-            messages.error(request, '您没有权限访问此页面，仅部长可以管理本部门人员')
+            messages.error(request, _('您没有权限访问此页面，仅部长可以管理本部门人员'))
             return redirect('clubs:index')
     except UserProfile.DoesNotExist:
-        messages.error(request, '用户角色未配置')
+        messages.error(request, _('用户角色未配置'))
         return redirect('clubs:login')
     
     department_link = profile.department_link
     if not department_link:
-        messages.error(request, '您的部门信息未配置，无法管理部门人员')
+        messages.error(request, _('您的部门信息未配置，无法管理部门人员'))
         return redirect('clubs:index')
     
     # 获取本部门的所有干事
@@ -1166,7 +1167,7 @@ def user_dashboard(request):
                     is_current=True,
                 ).values('club_id').distinct().count(),
             })
-        messages.error(request, '您当前没有可管理的社团')
+        messages.error(request, _('您当前没有可管理的社团'))
         return redirect('clubs:index')
 
     staff_relations_prefetch = Prefetch(

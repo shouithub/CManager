@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}社员管理{% endblock %}
+{% block title %}{% trans '社员管理' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -82,8 +83,8 @@
     <div class="page-header">
         <span class="material-icons">groups</span>
         <div class="page-header-content">
-            <h1>社员管理</h1>
-            <div class="subtitle">社长可管理本社社员资料、状态与移除操作</div>
+            <h1>{% trans '社员管理' %}</h1>
+            <div class="subtitle">{% trans '社长可管理本社社员资料、状态与移除操作' %}</div>
         </div>
         <a href="{% url 'clubs:user_dashboard' %}" class="page-back-btn" title="返回工作台" aria-label="返回工作台">
             <span class="material-icons">arrow_back</span>
@@ -91,7 +92,7 @@
     </div>
 
     <div class="mm-card">
-        <div style="font-weight:600;">选择社团</div>
+        <div style="font-weight:600;">{% trans '选择社团' %}</div>
         <div class="mm-tabs">
             {% for c in clubs %}
             <a class="mm-tab {% if c.id == club.id %}active{% endif %}" href="{% url 'clubs:president_member_management' %}?club_id={{ c.id }}">{{ c.name }}</a>
@@ -101,40 +102,39 @@
 
     <div class="mm-card">
         <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
-            <div style="font-weight:600;">招新二维码设置</div>
+            <div style="font-weight:600;">{% trans '招新二维码设置' %}</div>
             <button class="mini-btn" type="button" onclick="openTokenManagerModal({{ club.id }})">
-                <span class="material-icons" style="font-size:1rem;">manage_history</span> 管理二维码
-            </button>
+                <span class="material-icons" style="font-size:1rem;">manage_history</span>{% trans '管理二维码' %}</button>
         </div>
         <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap; align-items:end;">
             <div style="flex:1; min-width:150px;">
-                <label style="display:block; font-size:0.9rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">有效时长（分钟）</label>
+                <label style="display:block; font-size:0.9rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">{% trans '有效时长（分钟）' %}</label>
                 <input type="number" id="qrMinutes" value="10" min="1" max="43200" style="width:100%; padding:8px; border:1px solid var(--md3-outline); border-radius:8px;" oninput="validateQrConfig()">
             </div>
             <div style="flex:1; min-width:150px;">
-                <label style="display:block; font-size:0.9rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">使用次数</label>
+                <label style="display:block; font-size:0.9rem; margin-bottom:4px; color: var(--md3-on-surface-variant);">{% trans '使用次数' %}</label>
                 <select id="qrMaxUses" style="width:100%; padding:8px; border:1px solid var(--md3-outline); border-radius:8px;" onchange="validateQrConfig()">
-                    <option value="1">1次（一次性）</option>
-                    <option value="5">5次</option>
-                    <option value="10">10次</option>
-                    <option value="20">20次</option>
-                    <option value="50">50次</option>
-                    <option value="unlimited">不限次数</option>
+                    <option value="1">{% trans '1次（一次性）' %}</option>
+                    <option value="5">{% trans '5次' %}</option>
+                    <option value="10">{% trans '10次' %}</option>
+                    <option value="20">{% trans '20次' %}</option>
+                    <option value="50">{% trans '50次' %}</option>
+                    <option value="unlimited">{% trans '不限次数' %}</option>
                 </select>
             </div>
-            <button class="mini-btn primary" type="button" onclick="generateMemberJoinQRCode({{ club.id }})" style="white-space:nowrap;">生成二维码</button>
+            <button class="mini-btn primary" type="button" onclick="generateMemberJoinQRCode({{ club.id }})" style="white-space:nowrap;">{% trans '生成二维码' %}</button>
         </div>
         <div id="qrConfigError" style="display:none; margin-top:8px; padding:8px; background:var(--md3-error-container); color:var(--md3-on-error-container); border-radius:8px; font-size:0.9rem;"></div>
         <div id="memberQrPanel" style="display:none; margin-top: 12px; border:1px dashed var(--md3-outline); border-radius:12px; padding:12px;">
             <div class="qr-box">
-                <img id="memberQrImage" class="qr-img" alt="招新二维码">
+                <img id="memberQrImage" class="qr-img" alt="{% trans '招新二维码' %}">
                 <div style="flex:1; min-width:220px;">
                     <div id="memberQrUrl" style="word-break:break-all;"></div>
                     <div id="memberQrExpires" style="margin-top: 6px; color: var(--md3-on-surface-variant);"></div>
                     <div id="memberQrUses" style="margin-top: 4px; color: var(--md3-on-surface-variant);"></div>
                     <div class="mm-toolbar">
-                        <button class="mini-btn" type="button" onclick="copyMemberQrLink()">复制链接</button>
-                        <a id="memberJoinOpen" class="mini-btn" href="#" target="_blank" rel="noopener">打开链接</a>
+                        <button class="mini-btn" type="button" onclick="copyMemberQrLink()">{% trans '复制链接' %}</button>
+                        <a id="memberJoinOpen" class="mini-btn" href="#" target="_blank" rel="noopener">{% trans '打开链接' %}</a>
                     </div>
                 </div>
             </div>
@@ -142,16 +142,16 @@
     </div>
 
     <div class="mm-card">
-        <div style="font-weight:600; margin-bottom:10px;">成员列表（{{ memberships|length }}）</div>
+        <div style="font-weight:600; margin-bottom:10px;">{% blocktrans with __i18n1=memberships|length %}成员列表（{{ __i18n1 }}）{% endblocktrans %}</div>
         <div class="mm-table-wrap">
             <table class="mm-table">
                 <thead>
                     <tr>
-                        <th>成员</th>
-                        <th>状态</th>
-                        <th>手机</th>
-                        <th>状态操作</th>
-                        <th>操作</th>
+                        <th>{% trans '成员' %}</th>
+                        <th>{% trans '状态' %}</th>
+                        <th>{% trans '手机' %}</th>
+                        <th>{% trans '状态操作' %}</th>
+                        <th>{% trans '操作' %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -165,7 +165,7 @@
                                 <a href="{% url 'clubs:user_detail' m.user_profile.user.id %}">
                                     <div class="mem-name" style="font-weight:600;">{{ m.user_profile.get_full_name }}</div>
                                     <div style="font-size:0.82rem; color:var(--md3-on-surface-variant);">{{ m.user_profile.user.username }}</div>
-                                    <div style="font-size:0.78rem; color:var(--md3-on-surface-variant);">加入：{{ m.joined_at|date:'Y-m-d' }}</div>
+                                    <div style="font-size:0.78rem; color:var(--md3-on-surface-variant);">{% blocktrans with __i18n1=m.joined_at|date:'Y-m-d' %}加入：{{ __i18n1 }}{% endblocktrans %}</div>
                                 </a>
                             </div>
                         </td>
@@ -180,10 +180,10 @@
                                 <input type="hidden" name="membership_id" value="{{ m.id }}">
                                 <input type="hidden" name="action" value="set_status">
                                 <select name="status" class="mini-select" style="width:auto; min-width:80px;">
-                                    <option value="active" {% if m.status == 'active' %}selected{% endif %}>活跃</option>
-                                    <option value="inactive" {% if m.status == 'inactive' %}selected{% endif %}>不活跃</option>
+                                    <option value="active" {% if m.status == 'active' %}selected{% endif %}>{% trans '活跃' %}</option>
+                                    <option value="inactive" {% if m.status == 'inactive' %}selected{% endif %}>{% trans '不活跃' %}</option>
                                 </select>
-                                <button class="mini-btn" type="submit">保存</button>
+                                <button class="mini-btn" type="submit">{% trans '保存' %}</button>
                             </form>
                         </td>
                         <td>
@@ -200,13 +200,12 @@
                                 data-college="{{ m.user_profile.college|default:''|escapejs }}"
                                 data-classname="{{ m.user_profile.class_name|default:''|escapejs }}"
                                 data-username="{{ m.user_profile.get_full_name|escapejs }}">
-                                <span class="material-icons" style="font-size:1rem;">edit</span> 编辑
-                            </button>
+                                <span class="material-icons" style="font-size:1rem;">edit</span>{% trans '编辑' %}</button>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" style="text-align:center; color: var(--md3-on-surface-variant); padding: 18px;">暂无成员，先生成二维码邀请成员加入</td>
+                        <td colspan="5" style="text-align:center; color: var(--md3-on-surface-variant); padding: 18px;">{% trans '暂无成员，先生成二维码邀请成员加入' %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -219,7 +218,7 @@
 <div class="mm-modal-overlay" id="editModalOverlay" onclick="closeEditModalOnBg(event)">
     <div class="mm-modal">
         <div class="mm-modal-header">
-            <h3><span class="material-icons" style="color:var(--md3-primary);">edit</span><span id="editModalTitle">编辑成员资料</span></h3>
+            <h3><span class="material-icons" style="color:var(--md3-primary);">edit</span><span id="editModalTitle">{% trans '编辑成员资料' %}</span></h3>
             <button class="mm-modal-close" type="button" onclick="closeEditModal()">
                 <span class="material-icons">close</span>
             </button>
@@ -231,54 +230,54 @@
             <input type="hidden" name="membership_id" id="editMembershipId">
             <div class="edit-modal-body">
                 <div>
-                    <label for="editRealName">姓名</label>
-                    <input class="mini-input" id="editRealName" name="real_name" placeholder="姓名">
+                    <label for="editRealName">{% trans '姓名' %}</label>
+                    <input class="mini-input" id="editRealName" name="real_name" placeholder="{% trans '姓名' %}">
                 </div>
                 <div>
-                    <label for="editStudentId">学号</label>
-                    <input class="mini-input" id="editStudentId" name="student_id" placeholder="学号">
+                    <label for="editStudentId">{% trans '学号' %}</label>
+                    <input class="mini-input" id="editStudentId" name="student_id" placeholder="{% trans '学号' %}">
                 </div>
                 <div>
-                    <label for="editPhone">手机号</label>
-                    <input class="mini-input" id="editPhone" name="phone" placeholder="手机号">
+                    <label for="editPhone">{% trans '手机号' %}</label>
+                    <input class="mini-input" id="editPhone" name="phone" placeholder="{% trans '手机号' %}">
                 </div>
                 <div>
-                    <label for="editWechat">微信号</label>
-                    <input class="mini-input" id="editWechat" name="wechat" placeholder="微信号">
+                    <label for="editWechat">{% trans '微信号' %}</label>
+                    <input class="mini-input" id="editWechat" name="wechat" placeholder="{% trans '微信号' %}">
                 </div>
                 <div>
-                    <label for="editQq">QQ（可选）</label>
+                    <label for="editQq">{% trans 'QQ（可选）' %}</label>
                     <input class="mini-input" id="editQq" name="qq" placeholder="QQ">
                 </div>
                 <div>
-                    <label for="editEmail">邮箱</label>
-                    <input class="mini-input" id="editEmail" name="email" type="email" placeholder="邮箱">
+                    <label for="editEmail">{% trans '邮箱' %}</label>
+                    <input class="mini-input" id="editEmail" name="email" type="email" placeholder="{% trans '邮箱' %}">
                 </div>
                 <div>
-                    <label for="editGender">性别</label>
+                    <label for="editGender">{% trans '性别' %}</label>
                     <select class="mini-select" id="editGender" name="gender">
-                        <option value="">不填</option>
-                        <option value="male">男</option>
-                        <option value="female">女</option>
-                        <option value="other">其他</option>
+                        <option value="">{% trans '不填' %}</option>
+                        <option value="male">{% trans '男' %}</option>
+                        <option value="female">{% trans '女' %}</option>
+                        <option value="other">{% trans '其他' %}</option>
                     </select>
                 </div>
                 <div>
-                    <label for="editCollege">学院</label>
-                    <input class="mini-input" id="editCollege" name="college" placeholder="学院">
+                    <label for="editCollege">{% trans '学院' %}</label>
+                    <input class="mini-input" id="editCollege" name="college" placeholder="{% trans '学院' %}">
                 </div>
                 <div class="full-row">
-                    <label for="editClassName">班级</label>
-                    <input class="mini-input" id="editClassName" name="class_name" placeholder="班级">
+                    <label for="editClassName">{% trans '班级' %}</label>
+                    <input class="mini-input" id="editClassName" name="class_name" placeholder="{% trans '班级' %}">
                 </div>
             </div>
             <div class="edit-modal-footer">
                 <div>
-                    <button class="mini-btn danger" type="button" id="editModalRemoveBtn" onclick="confirmRemove()">移除成员</button>
+                    <button class="mini-btn danger" type="button" id="editModalRemoveBtn" onclick="confirmRemove()">{% trans '移除成员' %}</button>
                 </div>
                 <div class="right">
-                    <button class="mini-btn" type="button" onclick="closeEditModal()">取消</button>
-                    <button class="mini-btn primary" type="submit">保存资料</button>
+                    <button class="mini-btn" type="button" onclick="closeEditModal()">{% trans '取消' %}</button>
+                    <button class="mini-btn primary" type="submit">{% trans '保存资料' %}</button>
                 </div>
             </div>
         </form>
@@ -304,13 +303,13 @@ async function parseMemberTokenResponse(res) {
         }
     }
     if (res.redirected) {
-        throw new Error('登录状态已失效，请刷新页面后重试');
+        throw new Error(gettext('登录状态已失效，请刷新页面后重试'));
     }
     if (!res.ok) {
-        throw new Error((data && data.message) ? data.message : `请求失败（HTTP ${res.status}），请稍后重试或联系管理员`);
+        throw new Error((data && data.message) ? data.message : gettext('请求失败（HTTP ') + (res.status) + gettext('），请稍后重试或联系管理员'));
     }
     if (!data) {
-        throw new Error('服务器返回了无法解析的数据，请稍后重试或联系管理员');
+        throw new Error(gettext('服务器返回了无法解析的数据，请稍后重试或联系管理员'));
     }
     return data;
 }
@@ -339,7 +338,7 @@ async function generateMemberJoinQRCode(clubId) {
         });
         const data = await parseMemberTokenResponse(res);
         if (!data.success) {
-            throw new Error(data.message || '生成失败');
+            throw new Error(data.message || gettext('生成失败'));
         }
 
         // 统一使用当前页面域名拼接路径，避免反代和本地环境域名偏差
@@ -357,11 +356,11 @@ async function generateMemberJoinQRCode(clubId) {
             errorEl.style.display = 'none';
         } else {
             imgEl.style.display = 'none';
-            errorEl.textContent = data.qr_error || '二维码图片生成失败，请复制链接使用';
+            errorEl.textContent = data.qr_error || gettext('二维码图片生成失败，请复制链接使用');
             errorEl.style.display = 'block';
         }
     } catch (err) {
-        alert(err.message || '二维码生成失败');
+        alert(err.message || gettext('二维码生成失败'));
     }
 }
 
@@ -386,9 +385,9 @@ function copyMemberQrLink() {
         return;
     }
     navigator.clipboard.writeText(url).then(function() {
-        alert('链接已复制');
+        alert(gettext('链接已复制'));
     }).catch(function() {
-        alert('复制失败，请手动复制');
+        alert(gettext('复制失败，请手动复制'));
     });
 }
 
@@ -427,7 +426,7 @@ function closeEditModalOnBg(e) {
 }
 function confirmRemove() {
     const name = document.getElementById('editModalTitle').textContent.split('—').slice(1).join('—').trim();
-    if (confirm('确认移除成员 ' + (name || '该成员') + '？此操作不可恢复。')) {
+    if (confirm(gettext('确认移除成员 ') + (name || gettext('该成员')) + gettext('？此操作不可恢复。'))) {
         document.getElementById('removeForm').submit();
     }
 }
@@ -502,7 +501,7 @@ async function loadTokenList(clubId) {
     }
 }
 async function deleteToken(clubId, tokenId) {
-    if (!confirm('确认删除此二维码链接？删除后该链接立即失效。')) return;
+    if (!confirm(gettext('确认删除此二维码链接？删除后该链接立即失效。'))) return;
     try {
         const res = await fetch(`/club/${clubId}/member-token/${tokenId}/delete/`, {
             method: 'POST',
@@ -517,14 +516,14 @@ async function deleteToken(clubId, tokenId) {
                 list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">暂无有效的二维码链接</div>';
             }
         } else {
-            alert(data.message || '删除失败');
+            alert(data.message || gettext('删除失败'));
         }
     } catch (e) {
-        alert('网络错误，请重试');
+        alert(gettext('网络错误，请重试'));
     }
 }
 function copyText(text) {
-    navigator.clipboard.writeText(text).then(() => alert('链接已复制')).catch(() => alert('复制失败，请手动复制'));
+    navigator.clipboard.writeText(text).then(() => alert(gettext('链接已复制'))).catch(() => alert(gettext('复制失败，请手动复制')));
 }
 </script>
 
@@ -532,15 +531,15 @@ function copyText(text) {
 <div class="mm-modal-overlay" id="tokenManagerOverlay" onclick="if(event.target===this)closeTokenManagerModal()">
     <div class="mm-modal" style="max-width:580px;">
         <div class="mm-modal-header">
-            <h3><span class="material-icons" style="color:var(--md3-primary);">qr_code</span>招新二维码管理</h3>
+            <h3><span class="material-icons" style="color:var(--md3-primary);">qr_code</span>{% trans '招新二维码管理' %}</h3>
             <button class="mm-modal-close" type="button" onclick="closeTokenManagerModal()">
                 <span class="material-icons">close</span>
             </button>
         </div>
-        <div style="padding:12px 20px 6px; font-size:0.85rem; color:var(--md3-on-surface-variant);">当前社团有效的招新链接列表（已过期或已耗尽次数的不显示）</div>
+        <div style="padding:12px 20px 6px; font-size:0.85rem; color:var(--md3-on-surface-variant);">{% trans '当前社团有效的招新链接列表（已过期或已耗尽次数的不显示）' %}</div>
         <div id="tokenList" style="padding:0 12px 8px; max-height:400px; overflow-y:auto;"></div>
         <div style="padding:12px 20px 18px; display:flex; justify-content:flex-end;">
-            <button class="mini-btn" type="button" onclick="closeTokenManagerModal()">关闭</button>
+            <button class="mini-btn" type="button" onclick="closeTokenManagerModal()">{% trans '关闭' %}</button>
         </div>
     </div>
 </div>

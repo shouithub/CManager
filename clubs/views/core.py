@@ -33,6 +33,7 @@ import csv
 import io
 import json
 import logging
+from django.utils.translation import gettext as _
 from ..models import (
     Announcement,
     CarouselImage,
@@ -678,7 +679,7 @@ def member_join_by_token(request, token_code):
     token = get_object_or_404(RegistrationToken, code=token_code)
 
     if not token.can_use():
-        messages.error(request, '注册链接已失效（已使用或已过期），请联系社长重新生成二维码')
+        messages.error(request, _('注册链接已失效（已使用或已过期），请联系社长重新生成二维码'))
         return redirect('clubs:index')
 
     if request.method == 'POST':
@@ -824,7 +825,7 @@ def review_staff_registration(request, user_id):
     审核干事注册申请 - 仅管理员可用
     """
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以审核干事注册申请')
+        messages.error(request, _('仅管理员可以审核干事注册申请'))
         return redirect('clubs:index')
 
     # 获取用户和用户角色信息
@@ -833,10 +834,10 @@ def review_staff_registration(request, user_id):
         profile = user.profile
         # 确保只审核干事角色且状态为待审核的用户
         if profile.role != 'staff' or profile.status != 'pending':
-            messages.error(request, '只能审核待审核状态的干事账号')
+            messages.error(request, _('只能审核待审核状态的干事账号'))
             return redirect('clubs:admin_dashboard')
     except UserProfile.DoesNotExist:
-        messages.error(request, '用户角色信息不存在')
+        messages.error(request, _('用户角色信息不存在'))
         return redirect('clubs:admin_dashboard')
 
     if request.method == 'POST':
@@ -844,7 +845,7 @@ def review_staff_registration(request, user_id):
         review_comment = request.POST.get('review_comment', '').strip()
 
         if decision not in ['approved', 'rejected']:
-            messages.error(request, '审核结果不合法')
+            messages.error(request, _('审核结果不合法'))
             return redirect('clubs:review_staff_registration', user_id=user_id)
 
         # 更新用户状态
@@ -870,7 +871,7 @@ def review_staff_registration(request, user_id):
 def manage_carousel(request):
     """管理轮播图列表"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以访问此页面')
+        messages.error(request, _('仅管理员可以访问此页面'))
         return redirect('clubs:index')
 
     carousel_images = list(CarouselImage.objects.select_related('uploaded_by__profile').order_by('order', '-uploaded_at'))
@@ -886,7 +887,7 @@ def manage_carousel(request):
 def manage_announcements(request):
     """管理公告列表 - 仅管理员可用（与轮播管理同风格）"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以访问此页面')
+        messages.error(request, _('仅管理员可以访问此页面'))
         return redirect('clubs:index')
 
     announcements = Announcement.objects.select_related('created_by').order_by('-published_at', '-created_at')
@@ -903,7 +904,7 @@ def manage_announcements(request):
 def toggle_announcement_status(request, announcement_id):
     """发布 / 下线公告 - 仅管理员可用"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以操作公告')
+        messages.error(request, _('仅管理员可以操作公告'))
         return redirect('clubs:index')
 
     announcement = get_object_or_404(Announcement, pk=announcement_id)
@@ -925,7 +926,7 @@ def toggle_announcement_status(request, announcement_id):
 def add_carousel(request):
     """添加轮播图"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以访问此页面')
+        messages.error(request, _('仅管理员可以访问此页面'))
         return redirect('clubs:index')
 
     if request.method == 'POST':
@@ -968,7 +969,7 @@ def add_carousel(request):
             image=image,
             uploaded_by=request.user
         )
-        messages.success(request, '轮播图添加成功')
+        messages.success(request, _('轮播图添加成功'))
         return redirect('clubs:manage_carousel')
 
     return render(request, 'clubs/admin/carousel_form.html')
@@ -978,7 +979,7 @@ def add_carousel(request):
 def edit_carousel(request, carousel_id):
     """编辑轮播图"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以访问此页面')
+        messages.error(request, _('仅管理员可以访问此页面'))
         return redirect('clubs:index')
 
     carousel = get_object_or_404(CarouselImage, id=carousel_id)
@@ -1023,7 +1024,7 @@ def edit_carousel(request, carousel_id):
             carousel.image = new_image
 
         carousel.save()
-        messages.success(request, '轮播图更新成功')
+        messages.success(request, _('轮播图更新成功'))
         return redirect('clubs:manage_carousel')
 
     return render(request, 'clubs/admin/carousel_form.html', {
@@ -1036,7 +1037,7 @@ def edit_carousel(request, carousel_id):
 def delete_carousel(request, carousel_id):
     """删除轮播图"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以访问此页面')
+        messages.error(request, _('仅管理员可以访问此页面'))
         return redirect('clubs:index')
 
     carousel = get_object_or_404(CarouselImage, id=carousel_id)
@@ -1050,7 +1051,7 @@ def delete_carousel(request, carousel_id):
                 pass
 
         carousel.delete()
-        messages.success(request, '轮播图删除成功')
+        messages.success(request, _('轮播图删除成功'))
 
     return redirect('clubs:manage_carousel')
 
@@ -1059,7 +1060,7 @@ def delete_carousel(request, carousel_id):
 def locked_accounts(request):
     """列出被锁定的用户名，供管理员解锁或重置密码"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可访问此页面')
+        messages.error(request, _('仅管理员可访问此页面'))
         return redirect('clubs:index')
 
     from django.core.cache import cache
@@ -1075,7 +1076,7 @@ def locked_accounts(request):
 def unlock_account(request, username):
     """管理员解锁被锁账号（POST）"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可执行此操作')
+        messages.error(request, _('仅管理员可执行此操作'))
         return redirect('clubs:index')
 
     from django.core.cache import cache
@@ -1092,7 +1093,7 @@ def unlock_account(request, username):
 def publish_announcement(request):
     """发布公告 - 仅管理员可用"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以发布公告')
+        messages.error(request, _('仅管理员可以发布公告'))
         return redirect('clubs:index')
 
     if request.method == 'POST':
@@ -1142,7 +1143,7 @@ def publish_announcement(request):
         )
 
         _clear_announcement_cache()
-        messages.success(request, '公告发布成功！')
+        messages.success(request, _('公告发布成功！'))
         return redirect('clubs:manage_announcements')
 
     # GET 请求 - 获取最近的公告列表
@@ -1157,7 +1158,7 @@ def publish_announcement(request):
 def delete_announcement(request, announcement_id):
     """删除公告 - 仅管理员可用"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以删除公告')
+        messages.error(request, _('仅管理员可以删除公告'))
         return redirect('clubs:admin_dashboard')
 
     announcement = get_object_or_404(Announcement, pk=announcement_id)
@@ -1184,7 +1185,7 @@ def delete_announcement(request, announcement_id):
 def edit_announcement(request, announcement_id):
     """编辑公告 - 仅管理员可用"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以编辑公告')
+        messages.error(request, _('仅管理员可以编辑公告'))
         return redirect('clubs:admin_dashboard')
 
     announcement = get_object_or_404(Announcement, pk=announcement_id)
@@ -1246,7 +1247,7 @@ def edit_announcement(request, announcement_id):
         announcement.save()
         _clear_announcement_cache()
 
-        messages.success(request, '公告修改成功！')
+        messages.success(request, _('公告修改成功！'))
         return redirect('clubs:manage_announcements')
 
     # GET 请求 - 预填充表单
@@ -1261,7 +1262,7 @@ def edit_announcement(request, announcement_id):
 def download_user_import_template(request):
     """下载用户批量导入CSV模板（仅管理员/干事）。"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以下载导入模板')
+        messages.error(request, _('仅干事和管理员可以下载导入模板'))
         return redirect('clubs:index')
 
     response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
@@ -1280,7 +1281,7 @@ def download_user_import_template(request):
 def export_all_users_and_clubs_csv(request):
     """导出全部用户与全部社团数据（ZIP内含两个CSV）。"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以导出数据')
+        messages.error(request, _('仅干事和管理员可以导出数据'))
         return redirect('clubs:index')
 
     users_buffer = io.StringIO()
@@ -1367,7 +1368,7 @@ def import_users_csv(request):
     if not _is_admin(request.user):
         if is_ajax:
             return _json_error('仅管理员可以批量导入用户', 403)
-        messages.error(request, '仅管理员可以批量导入用户')
+        messages.error(request, _('仅管理员可以批量导入用户'))
         return redirect('clubs:index')
 
     next_url = reverse('clubs:manage_users')
@@ -1375,7 +1376,7 @@ def import_users_csv(request):
     if not uploaded:
         if is_ajax:
             return _json_error('请选择CSV文件后再导入')
-        messages.error(request, '请选择CSV文件后再导入')
+        messages.error(request, _('请选择CSV文件后再导入'))
         return redirect(next_url)
 
     upload_error = validate_upload(uploaded, field_name='CSV 文件', allowed_extensions={'.csv'}, max_bytes=10 * 1024 * 1024)
@@ -1593,7 +1594,7 @@ def import_users_csv(request):
 def download_club_import_template(request):
     """下载社团批量导入CSV模板（仅干事/管理员）。"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以下载社团导入模板')
+        messages.error(request, _('仅干事和管理员可以下载社团导入模板'))
         return redirect('clubs:index')
 
     response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
@@ -1611,7 +1612,7 @@ def download_club_import_template(request):
 def download_time_slot_import_template(request):
     """下载时间段批量导入 CSV 模板（仅干事/管理员）。"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以下载时间段导入模板')
+        messages.error(request, _('仅干事和管理员可以下载时间段导入模板'))
         return redirect('clubs:admin_booking_management')
 
     response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
@@ -1631,7 +1632,7 @@ def import_time_slots_csv(request):
     from ..services.csv_import import build_import_feedback, run_simple_csv_import
 
     if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以批量导入时间段')
+        messages.error(request, _('仅干事和管理员可以批量导入时间段'))
         return redirect('clubs:admin_booking_management')
 
     is_ajax = (
@@ -1701,13 +1702,13 @@ def import_time_slots_csv(request):
 def import_clubs_csv(request):
     """批量导入社团（仅CSV，干事/管理员可用）。"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以批量导入社团')
+        messages.error(request, _('仅干事和管理员可以批量导入社团'))
         return redirect('clubs:index')
 
     next_url = reverse('clubs:staff_management')
     uploaded = request.FILES.get('csv_file')
     if not uploaded:
-        messages.error(request, '请选择CSV文件后再导入')
+        messages.error(request, _('请选择CSV文件后再导入'))
         return redirect(next_url)
 
     upload_error = validate_upload(uploaded, field_name='CSV 文件', allowed_extensions={'.csv'}, max_bytes=10 * 1024 * 1024)
@@ -1834,7 +1835,7 @@ def import_clubs_csv(request):
 def manage_users(request):
     """用户管理 - 仅管理员可用"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以管理用户')
+        messages.error(request, _('仅管理员可以管理用户'))
         return redirect('clubs:index')
 
     if request.method == 'POST':
@@ -1877,7 +1878,7 @@ def manage_users(request):
             if skipped:
                 messages.warning(request, f'跳过 {skipped} 个账号（当前登录账号或超级管理员）')
             if not processed and not skipped:
-                messages.error(request, '未选择可操作的用户')
+                messages.error(request, _('未选择可操作的用户'))
             return redirect('clubs:manage_users')
         elif action in ('delete_user', 'toggle_active'):
             user_id = request.POST.get('user_id', '').strip()
@@ -1885,18 +1886,18 @@ def manage_users(request):
 
             if action == 'delete_user':
                 if target_user == request.user:
-                    messages.error(request, '不能删除当前登录管理员账号')
+                    messages.error(request, _('不能删除当前登录管理员账号'))
                 elif target_user.is_superuser:
-                    messages.error(request, '不能删除超级管理员账号')
+                    messages.error(request, _('不能删除超级管理员账号'))
                 else:
                     username = target_user.username
                     target_user.delete()
                     messages.success(request, f'已删除用户账号：{username}')
             else:
                 if target_user == request.user:
-                    messages.error(request, '不能在列表中禁用当前登录管理员账号')
+                    messages.error(request, _('不能在列表中禁用当前登录管理员账号'))
                 elif target_user.is_superuser:
-                    messages.error(request, '不能禁用超级管理员账号')
+                    messages.error(request, _('不能禁用超级管理员账号'))
                 else:
                     target_user.is_active = not target_user.is_active
                     target_user.save(update_fields=['is_active'])
@@ -1910,7 +1911,7 @@ def manage_users(request):
                             mark_profile_inactive(profile, reason='admin_disable')
                     except UserProfile.DoesNotExist:
                         pass
-                    messages.success(request, f'已{"启用" if target_user.is_active else "禁用"}用户账号：{target_user.username}')
+                    messages.success(request, f'已{_('启用') if target_user.is_active else "禁用"}用户账号：{target_user.username}')
 
             return redirect('clubs:manage_users')
 
@@ -1994,7 +1995,7 @@ def _user_list_context(request, *, can_manage_users):
 def staff_view_users(request):
     """干事查看用户列表 - 查看专用，无编辑权限"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事可以查看用户列表')
+        messages.error(request, _('仅干事可以查看用户列表'))
         return redirect('clubs:index')
 
     context = _user_list_context(request, can_manage_users=False)
@@ -2006,7 +2007,7 @@ def staff_view_users(request):
 def create_user(request):
     """管理员创建用户账户 - 仅管理员可用"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以创建用户账户')
+        messages.error(request, _('仅管理员可以创建用户账户'))
         return redirect('clubs:index')
 
     if request.method == 'POST':
@@ -2113,7 +2114,7 @@ def create_user(request):
 def admin_edit_user_account(request, user_id):
     """管理员编辑用户账户信息 - 仅管理员可用"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以编辑用户账户信息')
+        messages.error(request, _('仅管理员可以编辑用户账户信息'))
         return redirect('clubs:index')
 
     # 获取目标用户
@@ -2121,7 +2122,7 @@ def admin_edit_user_account(request, user_id):
 
     # 确保管理员不能编辑自己的账户（使用自己的账户设置页面）
     if request.user == target_user:
-        messages.error(request, '请使用您自己的账户设置页面编辑个人信息')
+        messages.error(request, _('请使用您自己的账户设置页面编辑个人信息'))
         return redirect('clubs:edit_profile')
 
     errors = []
@@ -2442,7 +2443,7 @@ def admin_edit_user_account(request, user_id):
 def change_user_role(request, user_id):
     """修改用户角色 - 仅管理员可用"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以修改用户角色')
+        messages.error(request, _('仅管理员可以修改用户角色'))
         return redirect('clubs:index')
 
     target_user = get_object_or_404(User, pk=user_id)
@@ -2451,7 +2452,7 @@ def change_user_role(request, user_id):
         new_role = request.POST.get('new_role', '')
 
         if new_role not in ['president', 'staff', 'admin']:
-            messages.error(request, '角色不合法')
+            messages.error(request, _('角色不合法'))
             context = {'user': target_user}
             return render(request, 'clubs/admin/change_user_role.html', context)
 
@@ -2498,7 +2499,7 @@ def change_user_role(request, user_id):
 def change_staff_attributes(request, user_id):
     """修改干事的部门和职级属性 - 仅管理员可用"""
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以修改干事属性')
+        messages.error(request, _('仅管理员可以修改干事属性'))
         return redirect('clubs:index')
 
     target_user = get_object_or_404(User, pk=user_id)
@@ -2507,10 +2508,10 @@ def change_staff_attributes(request, user_id):
     try:
         profile = target_user.profile
         if profile.role not in ('staff', 'admin'):
-            messages.error(request, '仅干事或管理员支持修改部门/职级属性')
+            messages.error(request, _('仅干事或管理员支持修改部门/职级属性'))
             return redirect('clubs:manage_users')
     except UserProfile.DoesNotExist:
-        messages.error(request, '用户角色信息不存在')
+        messages.error(request, _('用户角色信息不存在'))
         return redirect('clubs:manage_users')
 
     if request.method == 'POST':
@@ -2526,11 +2527,11 @@ def change_staff_attributes(request, user_id):
             try:
                 selected_department = Department.objects.get(id=int(department))
             except (ValueError, Department.DoesNotExist):
-                messages.error(request, '部门选择无效')
+                messages.error(request, _('部门选择无效'))
                 return redirect(next_url)
 
         if staff_level and staff_level not in valid_levels:
-            messages.error(request, '职级选择无效')
+            messages.error(request, _('职级选择无效'))
             return redirect(next_url)
 
         try:
@@ -2550,7 +2551,7 @@ def change_staff_attributes(request, user_id):
 
         return redirect(next_url)
 
-    messages.info(request, '请在用户管理列表中使用“属性”弹窗修改部门和职级。')
+    messages.info(request, _('请在用户管理列表中使用“属性”弹窗修改部门和职级。'))
     return redirect('clubs:manage_users')
 
 
@@ -2616,7 +2617,7 @@ def toggle_club_form_channel(request, channel_id, club_id):
 def zip_download(request):
     submission_key = (request.GET.get('id') or '').strip()
     if not submission_key:
-        messages.error(request, '缺少有效的请求编号')
+        messages.error(request, _('缺少有效的请求编号'))
         return redirect('clubs:index')
 
     submission = get_object_or_404(
@@ -2624,15 +2625,15 @@ def zip_download(request):
         public_id=submission_key,
     )
     if not (is_staff_or_admin(request.user) or _is_president_of_club(request.user, submission.club)):
-        messages.error(request, '无权下载此提交的材料')
+        messages.error(request, _('无权下载此提交的材料'))
         return redirect('clubs:index')
     if not submission.channel.show_zip_download:
-        messages.error(request, '这个通道未开启打包 ZIP 下载')
+        messages.error(request, _('这个通道未开启打包 ZIP 下载'))
         return redirect('clubs:index')
 
     uploaded_files = [item for item in submission.uploaded_files.all() if item.file]
     if not uploaded_files:
-        messages.warning(request, '这个提交没有可打包下载的文件')
+        messages.warning(request, _('这个提交没有可打包下载的文件'))
         return redirect('clubs:staff_audit_center')
 
     import zipfile
@@ -2671,7 +2672,7 @@ def change_club_status(request, club_id):
     """
     club = get_object_or_404(Club, pk=club_id)
     if not _can_manage_club(request.user, club):
-        messages.error(request, '您没有权限执行此操作（干事仅可管理自己负责的社团）')
+        messages.error(request, _('您没有权限执行此操作（干事仅可管理自己负责的社团）'))
         return redirect('clubs:club_detail', club_id=club_id)
 
     if request.method == 'POST':
@@ -2680,7 +2681,7 @@ def change_club_status(request, club_id):
         # 验证状态值
         valid_statuses = ['active', 'inactive', 'suspended']
         if new_status not in valid_statuses:
-            messages.error(request, '无效的社团状态')
+            messages.error(request, _('无效的社团状态'))
             return redirect('clubs:club_detail', club_id=club_id)
 
         # 如果状态没有改变
@@ -2714,7 +2715,7 @@ def update_club_description(request, club_id):
 
     club.description = request.POST.get('description', '').strip()
     club.save(update_fields=['description'])
-    messages.success(request, "社团简介已更新")
+    messages.success(request, _('社团简介已更新'))
     return redirect('clubs:club_detail', club_id=club_id)
 
 
@@ -2730,7 +2731,7 @@ def direct_edit_club_info(request, club_id):
     """
     club = get_object_or_404(Club, pk=club_id)
     if not _can_manage_club(request.user, club):
-        messages.error(request, '您没有权限执行此操作（干事仅可管理自己负责的社团）')
+        messages.error(request, _('您没有权限执行此操作（干事仅可管理自己负责的社团）'))
         return redirect('clubs:club_detail', club_id=club_id)
 
     if request.method == 'POST':
@@ -2774,7 +2775,7 @@ def direct_edit_club_info(request, club_id):
 
         club.save()
 
-        messages.success(request, '社团信息已成功更新！')
+        messages.success(request, _('社团信息已成功更新！'))
         return redirect('clubs:club_detail', club_id=club_id)
 
     # GET 请求：显示表单
@@ -2792,7 +2793,7 @@ def delete_club(request, club_id):
     """
     club = get_object_or_404(Club, pk=club_id)
     if not _can_manage_club(request.user, club):
-        messages.error(request, '您没有权限执行此操作（干事仅可管理自己负责的社团）')
+        messages.error(request, _('您没有权限执行此操作（干事仅可管理自己负责的社团）'))
         return redirect('clubs:club_detail', club_id=club_id)
 
     if request.method == 'POST':
@@ -2807,7 +2808,7 @@ def delete_club(request, club_id):
                 return redirect('clubs:index')  # 删除后重定向到首页
         else:
             # 显示错误消息
-            messages.error(request, '社团名称输入错误，删除失败！')
+            messages.error(request, _('社团名称输入错误，删除失败！'))
 
     # GET 请求：返回确认页面
     context = {
@@ -2828,13 +2829,13 @@ def delete_club(request, club_id):
 def president_member_management(request):
     """社长端社员管理：编辑资料、调整状态、移除社员。"""
     if not is_president_mode(request):
-        messages.error(request, '仅社长可访问社员管理')
+        messages.error(request, _('仅社长可访问社员管理'))
         return redirect('clubs:index')
 
     club_ids = _get_president_club_ids(request.user)
     clubs = Club.objects.filter(id__in=club_ids).order_by('name')
     if not clubs.exists():
-        messages.error(request, '您当前没有可管理的社团')
+        messages.error(request, _('您当前没有可管理的社团'))
         return redirect('clubs:user_dashboard')
 
     selected_club_id = request.GET.get('club_id') or request.POST.get('club_id')
@@ -2847,7 +2848,7 @@ def president_member_management(request):
         selected_club_id = clubs.first().id
 
     if selected_club_id not in club_ids:
-        messages.error(request, '无权限管理该社团社员')
+        messages.error(request, _('无权限管理该社团社员'))
         return redirect('clubs:president_member_management')
 
     club = get_object_or_404(Club, id=selected_club_id)
@@ -2859,7 +2860,7 @@ def president_member_management(request):
 
         if action == 'remove_member' and membership:
             if membership.user_profile.role == 'admin':
-                messages.error(request, '管理员账号不允许从此处移除')
+                messages.error(request, _('管理员账号不允许从此处移除'))
             else:
                 name = membership.user_profile.get_full_name()
                 membership.delete()
@@ -2868,11 +2869,11 @@ def president_member_management(request):
         elif action == 'set_status' and membership:
             status = request.POST.get('status', 'active').strip()
             if status not in ['active', 'inactive']:
-                messages.error(request, '无效的成员状态')
+                messages.error(request, _('无效的成员状态'))
             else:
                 membership.status = status
                 membership.save(update_fields=['status', 'updated_at'])
-                messages.success(request, '成员状态已更新')
+                messages.success(request, _('成员状态已更新'))
 
         elif action == 'update_profile' and membership:
             profile = membership.user_profile
@@ -2920,7 +2921,7 @@ def president_member_management(request):
                 profile.user.email = email
                 profile.user.first_name = real_name
                 profile.user.save(update_fields=['email', 'first_name'])
-                messages.success(request, '社员信息已更新')
+                messages.success(request, _('社员信息已更新'))
 
         return redirect(f"{reverse('clubs:president_member_management')}?club_id={club.id}")
 
@@ -2992,7 +2993,7 @@ def president_member_management(request):
 def manage_departments(request):
     """管理部门"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
+        messages.error(request, _('您没有权限执行此操作'))
         return redirect('clubs:index')
 
     departments = Department.objects.all()
@@ -3003,7 +3004,7 @@ def manage_departments(request):
 def add_department(request):
     """添加部门"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
+        messages.error(request, _('您没有权限执行此操作'))
         return redirect('clubs:index')
 
     if request.method == 'POST':
@@ -3021,7 +3022,7 @@ def add_department(request):
                 icon=icon,
                 order=int(order)
             )
-            messages.success(request, '部门添加成功')
+            messages.success(request, _('部门添加成功'))
             return redirect('clubs:manage_departments')
         except Exception as e:
             messages.error(request, f'添加失败: {str(e)}')
@@ -3062,7 +3063,7 @@ def room_calendar(request):
     # 获取所有可用房间
     rooms = Room.objects.filter(status='available')
     if not rooms.exists():
-        messages.error(request, '暂时没有可用的房间')
+        messages.error(request, _('暂时没有可用的房间'))
         return redirect('clubs:index')
 
     # 确定当前选中的房间
@@ -3182,7 +3183,7 @@ def room_calendar(request):
 def edit_department(request, dept_id):
     """编辑部门"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
+        messages.error(request, _('您没有权限执行此操作'))
         return redirect('clubs:index')
 
     dept = get_object_or_404(Department, pk=dept_id)
@@ -3202,13 +3203,13 @@ def edit_department(request, dept_id):
             if order < 0:
                 raise ValueError('order must be >= 0')
         except (TypeError, ValueError):
-            messages.error(request, '排序顺序必须是大于或等于 0 的整数')
+            messages.error(request, _('排序顺序必须是大于或等于 0 的整数'))
             return render(request, 'clubs/admin/department_form.html', {
                 'title': '编辑部门',
                 'department': dept,
             })
         if not name:
-            messages.error(request, '部门名称不能为空')
+            messages.error(request, _('部门名称不能为空'))
             return render(request, 'clubs/admin/department_form.html', {
                 'title': '编辑部门',
                 'department': dept,
@@ -3227,7 +3228,7 @@ def edit_department(request, dept_id):
                 'title': '编辑部门',
                 'department': dept,
             })
-        messages.success(request, '部门更新成功')
+        messages.success(request, _('部门更新成功'))
         return redirect('clubs:manage_departments')
 
     return render(request, 'clubs/admin/department_form.html', {
@@ -3241,13 +3242,13 @@ def edit_department(request, dept_id):
 def delete_department(request, dept_id):
     """删除部门"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '您没有权限执行此操作')
+        messages.error(request, _('您没有权限执行此操作'))
         return redirect('clubs:index')
 
     dept = get_object_or_404(Department, pk=dept_id)
     if request.method == 'POST':
         dept.delete()
-        messages.success(request, '部门删除成功')
+        messages.success(request, _('部门删除成功'))
 
     return redirect('clubs:manage_departments')
 
@@ -3303,12 +3304,12 @@ def submit_room_booking(request):
         participant_count = request.POST.get('participant_count')
 
         if not all([room_id, date_str, start_time_str, end_time_str, purpose, contact_phone, participant_count]):
-            messages.error(request, '请填写所有必填项')
+            messages.error(request, _('请填写所有必填项'))
             return redirect('clubs:submit_room_booking')
 
         # 验证手机号格式
         if not re.match(r'^1[3-9]\d{9}$', contact_phone):
-            messages.error(request, '请输入有效的11位手机号码')
+            messages.error(request, _('请输入有效的11位手机号码'))
             return redirect('clubs:submit_room_booking')
 
         room = get_object_or_404(Room, pk=room_id)
@@ -3320,7 +3321,7 @@ def submit_room_booking(request):
 
         # 验证时间顺序
         if start_time >= end_time:
-            messages.error(request, '结束时间必须晚于开始时间')
+            messages.error(request, _('结束时间必须晚于开始时间'))
             return redirect('clubs:submit_room_booking')
 
         # 验证是否为有效的固定时间段
@@ -3331,7 +3332,7 @@ def submit_room_booking(request):
         ).exists()
 
         if not is_valid_slot:
-            messages.error(request, '请选择有效的固定时间段')
+            messages.error(request, _('请选择有效的固定时间段'))
             return redirect('clubs:room_calendar')
 
         # 确定社团
@@ -3341,17 +3342,17 @@ def submit_room_booking(request):
             # 验证用户是否有权代表该社团申请（如果是社长）
             if not is_staff_or_admin(request.user):
                 if not _is_president_of_club(request.user, club):
-                    messages.error(request, '您不是该社团的社长，无法代表申请')
+                    messages.error(request, _('您不是该社团的社长，无法代表申请'))
                     return redirect('clubs:submit_room_booking')
         else:
             # 个人申请，必须是干事或管理员
             if not is_staff_or_admin(request.user):
-                messages.error(request, '普通用户必须选择社团进行申请')
+                messages.error(request, _('普通用户必须选择社团进行申请'))
                 return redirect('clubs:submit_room_booking')
 
         participant_count_int = int(participant_count)
         if participant_count_int < 1:
-            messages.error(request, '参与人数必须大于 0')
+            messages.error(request, _('参与人数必须大于 0'))
             return redirect('clubs:submit_room_booking')
 
         # 锁住房间，在同一事务中检查冲突并创建，防止并发撞车。
@@ -3367,13 +3368,13 @@ def submit_room_booking(request):
             special_requirements=special_requirements,
             participant_count=participant_count_int,
         )
-        messages.success(request, '预约提交成功')
+        messages.success(request, _('预约提交成功'))
     except BookingConflictError as exc:
         messages.error(request, str(exc))
         return redirect('clubs:room_calendar')
     except Exception:
         logger.exception('房间预约提交失败')
-        messages.error(request, '预约失败，请稍后重试')
+        messages.error(request, _('预约失败，请稍后重试'))
         # 发生错误时，最好能保留用户输入，但这里简化处理
         return redirect('clubs:room_calendar')
 
@@ -3397,7 +3398,7 @@ def edit_room_booking(request, booking_id):
     """编辑预约"""
     booking = get_object_or_404(RoomBooking.objects.select_related('room', 'club', 'user'), pk=booking_id)
     if not booking.can_edit(request.user):
-        messages.error(request, '您没有权限编辑此预约')
+        messages.error(request, _('您没有权限编辑此预约'))
         return redirect('clubs:my_room_bookings')
 
     rooms = Room.objects.filter(status='available').order_by('name')
@@ -3423,11 +3424,11 @@ def edit_room_booking(request, booking_id):
             participant_count = request.POST.get('participant_count')
 
             if not all([room_id, date_str, start_time_str, end_time_str, purpose, contact_phone, participant_count]):
-                messages.error(request, '请填写所有必填项')
+                messages.error(request, _('请填写所有必填项'))
                 raise ValueError('missing required fields')
 
             if not re.match(r'^1[3-9]\d{9}$', contact_phone):
-                messages.error(request, '请输入有效的11位手机号码')
+                messages.error(request, _('请输入有效的11位手机号码'))
                 raise ValueError('invalid phone')
 
             room = get_object_or_404(Room, pk=room_id, status='available')
@@ -3436,26 +3437,26 @@ def edit_room_booking(request, booking_id):
             end_time = datetime.strptime(end_time_str, '%H:%M').time()
 
             if start_time >= end_time:
-                messages.error(request, '结束时间必须晚于开始时间')
+                messages.error(request, _('结束时间必须晚于开始时间'))
                 raise ValueError('invalid time range')
 
             if not TimeSlot.objects.filter(start_time=start_time, end_time=end_time, is_active=True).exists():
-                messages.error(request, '请选择有效的固定时间段')
+                messages.error(request, _('请选择有效的固定时间段'))
                 raise ValueError('invalid time slot')
 
             club = None
             if club_id:
                 club = get_object_or_404(Club, pk=club_id)
                 if not staff_or_admin and not _is_president_of_club(request.user, club):
-                    messages.error(request, '您不是该社团的现任社长，无法代表申请')
+                    messages.error(request, _('您不是该社团的现任社长，无法代表申请'))
                     raise ValueError('invalid club')
             elif not staff_or_admin:
-                messages.error(request, '普通用户必须选择社团进行申请')
+                messages.error(request, _('普通用户必须选择社团进行申请'))
                 raise ValueError('missing club')
 
             participant_count_int = int(participant_count)
             if participant_count_int < 1:
-                messages.error(request, '参与人数必须大于 0')
+                messages.error(request, _('参与人数必须大于 0'))
                 raise ValueError('invalid participant count')
 
             update_room_booking(
@@ -3470,7 +3471,7 @@ def edit_room_booking(request, booking_id):
                 special_requirements=special_requirements,
                 participant_count=participant_count_int,
             )
-            messages.success(request, '预约已更新')
+            messages.success(request, _('预约已更新'))
             return redirect('clubs:my_room_bookings')
         except BookingConflictError as exc:
             messages.error(request, str(exc))
@@ -3492,11 +3493,11 @@ def delete_room_booking(request, booking_id):
     """取消预约"""
     booking = get_object_or_404(RoomBooking.objects.select_related('room', 'club'), pk=booking_id)
     if not booking.can_delete(request.user):
-        messages.error(request, '您没有权限取消此预约')
+        messages.error(request, _('您没有权限取消此预约'))
         return redirect('clubs:my_room_bookings')
     if request.method == 'POST':
         booking.delete()
-        messages.success(request, '预约已取消')
+        messages.success(request, _('预约已取消'))
         return redirect('clubs:my_room_bookings')
     return render(request, 'clubs/delete_room_booking.html', {'booking': booking})
 
@@ -3512,17 +3513,17 @@ def admin_room_add(request):
         room_status = request.POST.get('status', 'available').strip()
         valid_statuses = {value for value, _label in Room.STATUS_CHOICES}
         if not room_name:
-            messages.error(request, '房间名称不能为空')
+            messages.error(request, _('房间名称不能为空'))
             return redirect('clubs:admin_room_add')
         try:
             room_capacity = int(capacity_raw)
             if room_capacity < 1 or room_capacity > 100000:
                 raise ValueError('capacity')
         except (TypeError, ValueError):
-            messages.error(request, '容纳人数必须是 1-100000 的整数')
+            messages.error(request, _('容纳人数必须是 1-100000 的整数'))
             return redirect('clubs:admin_room_add')
         if room_status not in valid_statuses:
-            messages.error(request, '房间状态无效')
+            messages.error(request, _('房间状态无效'))
             return redirect('clubs:admin_room_add')
         try:
             Room.objects.create(
@@ -3533,7 +3534,7 @@ def admin_room_add(request):
                 status=room_status,
             )
         except IntegrityError:
-            messages.error(request, '已存在同名的房间')
+            messages.error(request, _('已存在同名的房间'))
             return redirect('clubs:admin_room_add')
         return redirect('clubs:admin_booking_management')
     return render(request, 'clubs/admin/room_form.html')
@@ -3551,17 +3552,17 @@ def admin_room_edit(request, room_id):
         room_status = request.POST.get('status', 'available').strip()
         valid_statuses = {value for value, _label in Room.STATUS_CHOICES}
         if not room_name:
-            messages.error(request, '房间名称不能为空')
+            messages.error(request, _('房间名称不能为空'))
             return redirect('clubs:admin_room_edit', room_id=room.pk)
         try:
             room_capacity = int(capacity_raw)
             if room_capacity < 1 or room_capacity > 100000:
                 raise ValueError('capacity')
         except (TypeError, ValueError):
-            messages.error(request, '容纳人数必须是 1-100000 的整数')
+            messages.error(request, _('容纳人数必须是 1-100000 的整数'))
             return redirect('clubs:admin_room_edit', room_id=room.pk)
         if room_status not in valid_statuses:
-            messages.error(request, '房间状态无效')
+            messages.error(request, _('房间状态无效'))
             return redirect('clubs:admin_room_edit', room_id=room.pk)
         room.name = room_name
         room.capacity = room_capacity
@@ -3571,7 +3572,7 @@ def admin_room_edit(request, room_id):
         try:
             room.save()
         except IntegrityError:
-            messages.error(request, '已存在同名的房间')
+            messages.error(request, _('已存在同名的房间'))
             return redirect('clubs:admin_room_edit', room_id=room.pk)
         return redirect('clubs:admin_booking_management')
     return render(request, 'clubs/admin/room_form.html', {'room': room})
@@ -3621,7 +3622,7 @@ def admin_time_slot_add(request):
         start_raw = request.POST.get('start_time', '').strip()
         end_raw = request.POST.get('end_time', '').strip()
         if not label:
-            messages.error(request, '时间段名称不能为空')
+            messages.error(request, _('时间段名称不能为空'))
             return redirect('clubs:admin_time_slot_add')
         try:
             start_time = datetime.strptime(start_raw, '%H:%M').time()
@@ -3629,7 +3630,7 @@ def admin_time_slot_add(request):
             if start_time >= end_time:
                 raise ValueError('time range')
         except (TypeError, ValueError):
-            messages.error(request, '时间格式无效，必须为 HH:MM 且结束时间晚于开始时间')
+            messages.error(request, _('时间格式无效，必须为 HH:MM 且结束时间晚于开始时间'))
             return redirect('clubs:admin_time_slot_add')
         TimeSlot.objects.create(
             start_time=start_time,
@@ -3652,7 +3653,7 @@ def admin_time_slot_edit(request, slot_id):
         start_raw = request.POST.get('start_time', '').strip()
         end_raw = request.POST.get('end_time', '').strip()
         if not label:
-            messages.error(request, '时间段名称不能为空')
+            messages.error(request, _('时间段名称不能为空'))
             return redirect('clubs:admin_time_slot_edit', slot_id=slot.pk)
         try:
             start_time = datetime.strptime(start_raw, '%H:%M').time()
@@ -3660,7 +3661,7 @@ def admin_time_slot_edit(request, slot_id):
             if start_time >= end_time:
                 raise ValueError('time range')
         except (TypeError, ValueError):
-            messages.error(request, '时间格式无效，必须为 HH:MM 且结束时间晚于开始时间')
+            messages.error(request, _('时间格式无效，必须为 HH:MM 且结束时间晚于开始时间'))
             return redirect('clubs:admin_time_slot_edit', slot_id=slot.pk)
         slot.start_time = start_time
         slot.end_time = end_time
@@ -3687,7 +3688,7 @@ def admin_time_slot_delete(request, slot_id):
 def manage_site_settings(request):
     """管理网站图标、第三方资源 CDN 与字体设置。"""
     if not is_staff_or_admin(request.user):
-        messages.error(request, '权限不足')
+        messages.error(request, _('权限不足'))
         return redirect('clubs:index')
 
     if request.method == 'POST':
@@ -3702,7 +3703,7 @@ def manage_site_settings(request):
             )
             cfg.save(update_fields=['site_name', 'homepage_title', 'homepage_subtitle'])
             cache.delete('site:presentation:v1')
-            messages.success(request, '站点名称与首页标题已保存，刷新页面后生效')
+            messages.success(request, _('站点名称与首页标题已保存，刷新页面后生效'))
             return redirect('clubs:site_settings')
         elif form_type == 'font_settings':
             from urllib.parse import urlsplit
@@ -3720,13 +3721,13 @@ def manage_site_settings(request):
             font_icon_url = request.POST.get('font_icon_url', '').strip()
             body_font_url = request.POST.get('body_font_url', '').strip()
             if not _valid_font_url(font_icon_url) or not _valid_font_url(body_font_url):
-                messages.error(request, '字体地址仅支持 http/https 或协议相对地址（//），请检查后重试。')
+                messages.error(request, _('字体地址仅支持 http/https 或协议相对地址（//），请检查后重试。'))
                 return redirect('clubs:site_settings')
             cfg.font_icon_url = font_icon_url or 'https://fonts.font.im/icon?family=Material+Icons'
             cfg.body_font_url = body_font_url
             cfg.body_font_family = request.POST.get('body_font_family', '').strip()
             cfg.save()
-            messages.success(request, '站点字体设置已保存，刷新页面后生效')
+            messages.success(request, _('站点字体设置已保存，刷新页面后生效'))
             return redirect('clubs:site_settings')
         elif form_type == 'cdn_settings':
             from urllib.parse import urlsplit
@@ -3740,31 +3741,31 @@ def manage_site_settings(request):
                 or parsed_url.query
                 or parsed_url.fragment
             ):
-                messages.error(request, '请输入有效的 CDN 基础地址（HTTP 或 HTTPS，且不包含查询参数）。')
+                messages.error(request, _('请输入有效的 CDN 基础地址（HTTP 或 HTTPS，且不包含查询参数）。'))
                 return redirect('clubs:site_settings')
             cdn_sri = {}
             raw_cdn_sri = request.POST.get('third_party_cdn_sri', '')
             try:
                 submitted_cdn_sri = json.loads(raw_cdn_sri)
             except json.JSONDecodeError:
-                messages.error(request, 'CDN 资源完整性校验失败，请重试。')
+                messages.error(request, _('CDN 资源完整性校验失败，请重试。'))
                 return redirect('clubs:site_settings')
             allowed_assets = {'chartjs', 'swiper_js', 'swiper_css', 'cropper_js', 'cropper_css'}
             if not isinstance(submitted_cdn_sri, dict):
-                messages.error(request, 'CDN 资源完整性校验格式无效，请重试。')
+                messages.error(request, _('CDN 资源完整性校验格式无效，请重试。'))
                 return redirect('clubs:site_settings')
             for asset, integrity in submitted_cdn_sri.items():
                 if asset in allowed_assets and isinstance(integrity, str) and re.fullmatch(r'sha384-[A-Za-z0-9+/]{64}', integrity):
                     cdn_sri[asset] = integrity
             if set(cdn_sri) != allowed_assets:
-                messages.error(request, 'CDN 资源完整性校验不完整，请重试。')
+                messages.error(request, _('CDN 资源完整性校验不完整，请重试。'))
                 return redirect('clubs:site_settings')
             cfg = SiteSettings.get_settings()
             cfg.third_party_cdn_base_url = cdn_base_url
             cfg.third_party_cdn_sri = cdn_sri
             cfg.save(update_fields=['third_party_cdn_base_url', 'third_party_cdn_sri'])
             cache.delete('site:presentation:v1')
-            messages.success(request, '第三方资源 CDN 已保存，刷新页面后生效')
+            messages.success(request, _('第三方资源 CDN 已保存，刷新页面后生效'))
             return redirect('clubs:site_settings')
         elif form_type == 'avatar_settings':
             from ..avatar_utils import clear_avatar_settings_cache
@@ -3772,7 +3773,7 @@ def manage_site_settings(request):
             cfg.cravatar_enabled = request.POST.get('cravatar_enabled') == 'on'
             cfg.save(update_fields=['cravatar_enabled'])
             clear_avatar_settings_cache()
-            messages.success(request, 'Cravatar 开关已保存，用户仍可随时上传本站头像')
+            messages.success(request, _('Cravatar 开关已保存，用户仍可随时上传本站头像'))
             return redirect('clubs:site_settings')
         elif 'favicon' in request.FILES:
             upload = request.FILES['favicon']
@@ -3863,7 +3864,7 @@ def admin_assign_presidents(request):
     POST — 根据提交数据，在 Officer 表中更新或创建社长记录。
     """
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以访问此页面')
+        messages.error(request, _('仅管理员可以访问此页面'))
         return redirect('clubs:index')
 
     if request.method == 'POST':
@@ -4704,11 +4705,11 @@ def history_submission_file(request, submission_key, attempt, index):
 def submit_dynamic_form(request, channel_slug, club_id):
     channel = _get_channel(channel_slug)
     if not is_channel_externally_available(channel):
-        messages.error(request, '该提交通道尚未发布或配置未完成，暂不能提交')
+        messages.error(request, _('该提交通道尚未发布或配置未完成，暂不能提交'))
         return redirect('clubs:user_dashboard')
     club = get_object_or_404(Club, pk=club_id)
     if not is_president_mode(request) or not _is_president_of_club(request.user, club):
-        messages.error(request, '只有该社团现任社长可以提交')
+        messages.error(request, _('只有该社团现任社长可以提交'))
         return redirect('clubs:user_dashboard')
 
     can_submit, cycle, policy_error = _can_create_submission(channel, club, request.user)
@@ -4748,10 +4749,10 @@ def submit_dynamic_form(request, channel_slug, club_id):
 def revise_dynamic_submission(request, submission_key):
     submission = _get_submission_or_404(submission_key)
     if not is_president_mode(request) or not _is_president_of_club(request.user, submission.club):
-        messages.error(request, '只有该社团现任社长可以修改补交')
+        messages.error(request, _('只有该社团现任社长可以修改补交'))
         return redirect('clubs:user_dashboard')
     if submission.status != 'rejected':
-        messages.error(request, '只有被打回的请求可以修改补交')
+        messages.error(request, _('只有被打回的请求可以修改补交'))
         return redirect('clubs:approval_detail', item_type=submission.channel.slug, submission_key=submission.public_id)
 
     fields = _rejected_field_queryset(submission)
@@ -4781,7 +4782,7 @@ def revise_dynamic_submission(request, submission_key):
                 if submission.status != 'rejected':
                     messages.error(
                         request,
-                        '该请求状态已变化（可能已被重新审核或修改结果），本次修改未保存，请刷新后重试',
+                        _('该请求状态已变化（可能已被重新审核或修改结果），本次修改未保存，请刷新后重试'),
                     )
                     return redirect(
                         'clubs:approval_detail',
@@ -4833,7 +4834,7 @@ def revise_dynamic_submission(request, submission_key):
                     'is_read',
                     'metadata',
                 ])
-            messages.success(request, '已补交被打回的内容，等待重新审核')
+            messages.success(request, _('已补交被打回的内容，等待重新审核'))
             return redirect('clubs:approval_detail', item_type=submission.channel.slug, submission_key=submission.public_id)
 
     return render(request, 'clubs/user/dynamic_form_submit.html', {
@@ -4862,7 +4863,7 @@ def revise_dynamic_submission(request, submission_key):
 @login_required(login_url=settings.LOGIN_URL)
 def approval_center_tabs(request, tab='all'):
     if not is_president_mode(request):
-        messages.error(request, '仅社长可以访问审批记录')
+        messages.error(request, _('仅社长可以访问审批记录'))
         return redirect('clubs:index')
     clubs = Club.objects.filter(officers__user_profile__user=request.user, officers__position='president', officers__is_current=True)
     items = (
@@ -4922,10 +4923,10 @@ def approval_center_tabs(request, tab='all'):
 def approval_detail(request, item_type, submission_key):
     submission = _get_submission_or_404(submission_key)
     if is_president_mode(request) and not _is_president_of_club(request.user, submission.club):
-        messages.error(request, '无权查看此提交')
+        messages.error(request, _('无权查看此提交'))
         return redirect('clubs:user_dashboard')
     if not (is_president_mode(request) or is_staff_or_admin(request.user)):
-        messages.error(request, '无权查看此提交')
+        messages.error(request, _('无权查看此提交'))
         return redirect('clubs:index')
     reviewer = submission.reviewer
     if reviewer:
@@ -4950,7 +4951,7 @@ def approval_detail(request, item_type, submission_key):
 @login_required(login_url=settings.LOGIN_URL)
 def staff_audit_center(request, tab='all'):
     if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以访问审核中心')
+        messages.error(request, _('仅干事和管理员可以访问审核中心'))
         return redirect('clubs:index')
     slug = tab.replace('_', '-')
     channels = list(_active_channels())
@@ -5243,7 +5244,7 @@ def _reenter_submission_review(submission, reviewer, comment):
 @login_required(login_url=settings.LOGIN_URL)
 def staff_review_form_submission(request, submission_key):
     if not is_staff_or_admin(request.user):
-        messages.error(request, '仅干事和管理员可以审核')
+        messages.error(request, _('仅干事和管理员可以审核'))
         return redirect('clubs:index')
     submission = _get_submission_or_404(submission_key)
     if request.method == 'POST':
@@ -5268,7 +5269,7 @@ def staff_review_form_submission(request, submission_key):
         if override_mode == 'reenter':
             is_override = True
         elif decision not in ['approved', 'rejected']:
-            messages.error(request, '请选择有效审核结果')
+            messages.error(request, _('请选择有效审核结果'))
             return redirect('clubs:staff_review_form_submission', submission_key=submission.public_id)
         else:
             is_override = False
@@ -5302,7 +5303,7 @@ def staff_review_form_submission(request, submission_key):
             if override_mode == 'reenter':
                 messages.success(
                     request,
-                    '已重新审核：请求已回到待审核，所有审核人需重新投票',
+                    _('已重新审核：请求已回到待审核，所有审核人需重新投票'),
                 )
             elif is_override:
                 if submission.status == 'pending':
@@ -5313,9 +5314,9 @@ def staff_review_form_submission(request, submission_key):
                         f'已修改你的审核结果，当前通过进度 {approved_count}/{required_count}',
                     )
                 elif submission.status == 'approved':
-                    messages.success(request, '已修改审核结果，请求已改为通过')
+                    messages.success(request, _('已修改审核结果，请求已改为通过'))
                 else:
-                    messages.success(request, '已修改审核结果，请求已改为打回')
+                    messages.success(request, _('已修改审核结果，请求已改为打回'))
             elif decision == 'approved':
                 approved_count = submission.approved_review_count()
                 required_count = submission.required_approval_count
@@ -5324,7 +5325,7 @@ def staff_review_form_submission(request, submission_key):
                 else:
                     messages.success(request, f'已记录本次通过，当前通过进度 {approved_count}/{required_count}')
             else:
-                messages.success(request, '审核结果已保存，提交已打回')
+                messages.success(request, _('审核结果已保存，提交已打回'))
             if decision == 'approved' and (_show_word_downloads(submission) or _show_zip_download(submission)):
                 return redirect('clubs:staff_review_form_submission', submission_key=submission.public_id)
             return redirect('clubs:staff_audit_center', tab=submission.channel.slug)
@@ -5360,21 +5361,21 @@ def staff_review_form_submission(request, submission_key):
 @require_POST
 def delete_audit_request(request, tab, item_key):
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以删除审核请求')
+        messages.error(request, _('仅管理员可以删除审核请求'))
         return redirect('clubs:staff_audit_center', tab=tab)
     submission = get_object_or_404(FormSubmission, public_id=item_key)
     slug = submission.channel.slug
     for uploaded in submission.uploaded_files.all():
         _delete_uploaded_record(uploaded)
     submission.delete()
-    messages.success(request, '审核请求已删除')
+    messages.success(request, _('审核请求已删除'))
     return redirect('clubs:staff_audit_center', tab=slug)
 
 
 @login_required(login_url=settings.LOGIN_URL)
 def manage_form_channels(request, channel_id=None):
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以管理提交通道')
+        messages.error(request, _('仅管理员可以管理提交通道'))
         return redirect('clubs:index')
     channels = FormChannel.objects.prefetch_related('fields', 'cycles').order_by('order', 'id')
     is_creating = request.GET.get('new') == '1'
@@ -5419,7 +5420,7 @@ def manage_form_channels(request, channel_id=None):
 @require_POST
 def save_form_channel(request, channel_id=None):
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以管理提交通道')
+        messages.error(request, _('仅管理员可以管理提交通道'))
         return redirect('clubs:index')
     channel = get_object_or_404(FormChannel, pk=channel_id) if channel_id else FormChannel()
     channel.name = request.POST.get('name', '').strip()
@@ -5456,9 +5457,9 @@ def save_form_channel(request, channel_id=None):
     except ValueError:
         channel.order = 0
     if not channel.name or not channel.slug:
-        messages.error(request, '通道名称和标识不能为空')
+        messages.error(request, _('通道名称和标识不能为空'))
     elif FormChannel.objects.filter(name__iexact=channel.name).exclude(pk=channel.pk).exists():
-        messages.error(request, '通道名称已存在，请换一个名称')
+        messages.error(request, _('通道名称已存在，请换一个名称'))
     else:
         try:
             channel.save()
@@ -5494,11 +5495,11 @@ def save_form_channel(request, channel_id=None):
                 missing_labels = [item['label'] for item in missing_required_field_infos(channel)]
                 messages.warning(request, f'通道已保存，但缺少必要字段：{"、".join(missing_labels)}。补齐前不会出现在社长侧提交入口。')
             elif channel.publish_status == 'draft':
-                messages.success(request, '通道已保存为草稿，不会出现在社长侧提交入口')
+                messages.success(request, _('通道已保存为草稿，不会出现在社长侧提交入口'))
             else:
-                messages.success(request, '通道已保存并可对外显示')
+                messages.success(request, _('通道已保存并可对外显示'))
         except IntegrityError:
-            messages.error(request, '通道标识已存在，请换一个 slug')
+            messages.error(request, _('通道标识已存在，请换一个 slug'))
     return redirect('clubs:manage_form_channels_detail', channel_id=channel.id) if channel.id else redirect('clubs:manage_form_channels')
 
 
@@ -5506,11 +5507,11 @@ def save_form_channel(request, channel_id=None):
 @require_POST
 def delete_form_channel(request, channel_id):
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以删除提交通道')
+        messages.error(request, _('仅管理员可以删除提交通道'))
         return redirect('clubs:index')
     channel = get_object_or_404(FormChannel, pk=channel_id)
     channel.delete()
-    messages.success(request, '通道已删除')
+    messages.success(request, _('通道已删除'))
     return redirect('clubs:manage_form_channels')
 
 
@@ -5518,12 +5519,12 @@ def delete_form_channel(request, channel_id):
 @require_POST
 def save_form_field(request, channel_id, field_id=None):
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以管理字段')
+        messages.error(request, _('仅管理员可以管理字段'))
         return redirect('clubs:index')
     channel = get_object_or_404(FormChannel, pk=channel_id)
     field = get_object_or_404(FormField, pk=field_id, channel=channel) if field_id else FormField(channel=channel)
     if field_id and is_locked_business_field(field):
-        messages.error(request, '这个字段已绑定内置业务逻辑，不能修改')
+        messages.error(request, _('这个字段已绑定内置业务逻辑，不能修改'))
         return redirect('clubs:manage_form_channels_detail', channel_id=channel.id)
     field.label = request.POST.get('label', '').strip()
     field.field_key = request.POST.get('field_key', '').strip()
@@ -5538,7 +5539,7 @@ def save_form_field(request, channel_id, field_id=None):
         and request.POST.get('merge_to_word') == 'on'
         and not field.validation.get('merge_to_word')
     ):
-        messages.warning(request, '合并 Word 只支持开启多文件后，且允许后缀全部为图片、PDF 或 Word（.docx）的文件字段')
+        messages.warning(request, _('合并 Word 只支持开启多文件后，且允许后缀全部为图片、PDF 或 Word（.docx）的文件字段'))
     field.is_active = request.POST.get('is_active') == 'on'
     try:
         field.order = int(request.POST.get('order', '0') or 0)
@@ -5570,13 +5571,13 @@ def save_form_field(request, channel_id, field_id=None):
                 pass
         field.example_file = None
     if not field.label or not field.field_key:
-        messages.error(request, '字段名称和标识不能为空')
+        messages.error(request, _('字段名称和标识不能为空'))
     else:
         try:
             field.save()
-            messages.success(request, '字段已保存')
+            messages.success(request, _('字段已保存'))
         except IntegrityError:
-            messages.error(request, '字段标识已存在，请换一个 field_key')
+            messages.error(request, _('字段标识已存在，请换一个 field_key'))
     return redirect('clubs:manage_form_channels_detail', channel_id=channel.id)
 
 
@@ -5584,14 +5585,14 @@ def save_form_field(request, channel_id, field_id=None):
 @require_POST
 def delete_form_field(request, channel_id, field_id):
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以删除字段')
+        messages.error(request, _('仅管理员可以删除字段'))
         return redirect('clubs:index')
     field = get_object_or_404(FormField, pk=field_id, channel_id=channel_id)
     if is_locked_business_field(field):
-        messages.error(request, '这个字段已绑定内置业务逻辑，不能删除')
+        messages.error(request, _('这个字段已绑定内置业务逻辑，不能删除'))
         return redirect('clubs:manage_form_channels_detail', channel_id=channel_id)
     field.delete()
-    messages.success(request, '字段已删除')
+    messages.success(request, _('字段已删除'))
     return redirect('clubs:manage_form_channels_detail', channel_id=channel_id)
 
 
@@ -5599,7 +5600,7 @@ def delete_form_field(request, channel_id, field_id):
 @require_POST
 def create_form_channel_cycle(request, channel_id):
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以管理周期')
+        messages.error(request, _('仅管理员可以管理周期'))
         return redirect('clubs:index')
     channel = get_object_or_404(FormChannel, pk=channel_id)
     name = request.POST.get('name', '').strip()
@@ -5612,7 +5613,7 @@ def create_form_channel_cycle(request, channel_id):
 @require_POST
 def close_form_channel_cycle(request, channel_id, cycle_id):
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以管理周期')
+        messages.error(request, _('仅管理员可以管理周期'))
         return redirect('clubs:index')
     cycle = get_object_or_404(FormCycle, pk=cycle_id, channel_id=channel_id)
     cycle.is_active = False
@@ -5625,7 +5626,7 @@ def close_form_channel_cycle(request, channel_id, cycle_id):
 @login_required(login_url=settings.LOGIN_URL)
 def admin_dashboard(request):
     if not _is_admin(request.user):
-        messages.error(request, '仅管理员可以访问此页面')
+        messages.error(request, _('仅管理员可以访问此页面'))
         return redirect('clubs:index')
     total_clubs = Club.objects.count()
     total_users = User.objects.count()
@@ -5757,10 +5758,10 @@ def notification_counts(request):
 def cancel_submission(request, submission_key):
     submission = get_object_or_404(FormSubmission, public_id=submission_key, status='pending')
     if not is_president_mode(request) or not _is_president_of_club(request.user, submission.club):
-        messages.error(request, '无权取消此提交')
+        messages.error(request, _('无权取消此提交'))
         return redirect('clubs:user_dashboard')
     for uploaded in submission.uploaded_files.all():
         _delete_uploaded_record(uploaded)
     submission.delete()
-    messages.success(request, '提交已取消')
+    messages.success(request, _('提交已取消'))
     return redirect('clubs:approval_center', tab='all')

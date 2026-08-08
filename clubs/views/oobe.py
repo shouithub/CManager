@@ -12,6 +12,7 @@ from ..email_utils import send_test_email_with_config
 from ..models import SMTPConfig, UserProfile
 from ..oobe_bootstrap import has_admin_user, write_pending_oobe_setup
 from ..site_assets import process_site_logo
+from django.utils.translation import gettext as _
 
 
 def _write_env_local(updates: dict):
@@ -426,7 +427,7 @@ def oobe_setup(request):
 
         messages.success(
             request,
-            'OOBE 配置已保存。请重启服务，系统会自动执行数据库迁移并完成管理员与邮箱配置初始化。'
+            _('OOBE 配置已保存。请重启服务，系统会自动执行数据库迁移并完成管理员与邮箱配置初始化。')
         )
         return redirect('clubs:oobe_setup')
 

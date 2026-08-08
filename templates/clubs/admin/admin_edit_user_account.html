@@ -1,6 +1,8 @@
 {% extends 'clubs/admin/base.html' %}
+{% load i18n %}
+{% load common_tags %}
 
-{% block title %}编辑用户账户 - {{ target_user.username }}{% endblock %}
+{% block title %}{% blocktrans with __i18n1=target_user.username %}编辑用户账户 - {{ __i18n1 }}{% endblocktrans %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -163,9 +165,9 @@
     <div class="page-header-left">
         <span class="material-icons">manage_accounts</span>
         <div class="page-header-content">
-            <h1>编辑用户账户</h1>
+            <h1>{% trans '编辑用户账户' %}</h1>
             <p class="subtitle">{{ target_user.username }}{% if target_user.profile.get_full_name %} - {{ target_user.profile.get_full_name }}{% endif %}</p>
-            <p class="page-header-desc">修改此用户的个人信息、账号权限和安全设置</p>
+            <p class="page-header-desc">{% trans '修改此用户的个人信息、账号权限和安全设置' %}</p>
         </div>
     </div>
     <a href="{% url 'clubs:manage_users' %}" class="page-back-btn" title="返回用户列表" aria-label="返回用户列表">
@@ -204,22 +206,18 @@
                 {{ target_user.profile.get_full_name|default:target_user.username }}
             </a>
             <span class="role-chip {{ target_user.profile.role }}">
-                {% if target_user.profile.role == 'president' %}社长
-                {% elif target_user.profile.role == 'staff' %}干事
-                {% elif target_user.profile.role == 'admin' %}管理员
-                {% elif target_user.profile.role == 'member' %}社员
-                {% else %}未设定{% endif %}
+                {% if target_user.profile.role == 'president' %}{% trans '社长' %}{% elif target_user.profile.role == 'staff' %}{% trans '干事' %}{% elif target_user.profile.role == 'admin' %}{% trans '管理员' %}{% elif target_user.profile.role == 'member' %}{% trans '社员' %}{% else %}{% trans '未设定' %}{% endif %}
             </span>
             {% if target_user.is_active %}
-                <span class="active-chip on"><span class="material-icons" style="font-size:0.85rem;">check_circle</span>账号启用</span>
+                <span class="active-chip on"><span class="material-icons" style="font-size:0.85rem;">check_circle</span>{% trans '账号启用' %}</span>
             {% else %}
-                <span class="active-chip off"><span class="material-icons" style="font-size:0.85rem;">block</span>账号禁用</span>
+                <span class="active-chip off"><span class="material-icons" style="font-size:0.85rem;">block</span>{% trans '账号禁用' %}</span>
             {% endif %}
         </div>
         <div class="user-banner-meta">
-            <span class="meta-item"><span class="material-icons">alternate_email</span>{{ target_user.email|default:"—" }}</span>
-            <span class="meta-item"><span class="material-icons">phone</span>{{ target_user.profile.phone|default:"—" }}</span>
-            <span class="meta-item"><span class="material-icons">calendar_today</span>加入于 {{ target_user.date_joined|date:"Y-m-d" }}</span>
+            <span class="meta-item"><span class="material-icons">alternate_email</span>{{ target_user.email|tdefault:"—" }}</span>
+            <span class="meta-item"><span class="material-icons">phone</span>{{ target_user.profile.phone|tdefault:"—" }}</span>
+            <span class="meta-item"><span class="material-icons">calendar_today</span>{% blocktrans with __i18n1=target_user.date_joined|date:"Y-m-d" %}加入于 {{ __i18n1 }}{% endblocktrans %}</span>
         </div>
     </div>
 </div>
@@ -230,21 +228,18 @@
     <!-- 账号信息 -->
     <div class="edit-card">
         <h3 class="edit-card-title">
-            <span class="material-icons">account_circle</span>
-            账号信息
-        </h3>
+            <span class="material-icons">account_circle</span>{% trans '账号信息' %}</h3>
 
         <!-- 用户名 -->
         <div class="form-block">
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_username">
-                <label class="f-label">用户名</label>
+                <label class="f-label">{% trans '用户名' %}</label>
                 <div class="f-inline">
                     <input class="f-input" name="new_username" value="{{ target_user.username }}" required>
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">save</span>保存
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存' %}</button>
                 </div>
             </form>
         </div>
@@ -256,12 +251,11 @@
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_full_name">
-                <label class="f-label">全名</label>
+                <label class="f-label">{% trans '全名' %}</label>
                 <div class="f-inline">
                     <input class="f-input" name="full_name" value="{{ target_user.profile.get_full_name|default:'' }}" placeholder="输入用户全名">
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">save</span>保存
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存' %}</button>
                 </div>
             </form>
         </div>
@@ -273,12 +267,11 @@
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_email">
-                <label class="f-label">邮箱</label>
+                <label class="f-label">{% trans '邮箱' %}</label>
                 <div class="f-inline">
                     <input class="f-input" type="email" name="email" value="{{ target_user.email }}" required>
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">save</span>保存
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存' %}</button>
                 </div>
             </form>
         </div>
@@ -290,12 +283,11 @@
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_phone">
-                <label class="f-label">电话</label>
+                <label class="f-label">{% trans '电话' %}</label>
                 <div class="f-inline">
                     <input class="f-input" name="phone" value="{{ target_user.profile.phone|default:'' }}" placeholder="例：13800138000">
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">save</span>保存
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存' %}</button>
                 </div>
             </form>
         </div>
@@ -307,12 +299,11 @@
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_student_id">
-                <label class="f-label">学号</label>
+                <label class="f-label">{% trans '学号' %}</label>
                 <div class="f-inline">
                     <input class="f-input" name="student_id" value="{{ target_user.profile.student_id|default:'' }}" placeholder="请输入学号">
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">save</span>保存
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存' %}</button>
                 </div>
             </form>
         </div>
@@ -328,8 +319,7 @@
                 <div class="f-inline">
                     <input class="f-input" name="qq" value="{{ target_user.profile.qq|default:'' }}" placeholder="例：1234567890">
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">save</span>保存
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存' %}</button>
                 </div>
             </form>
         </div>
@@ -341,12 +331,11 @@
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_wechat">
-                <label class="f-label">微信</label>
+                <label class="f-label">{% trans '微信' %}</label>
                 <div class="f-inline">
                     <input class="f-input" name="wechat" value="{{ target_user.profile.wechat|default:'' }}" placeholder="请输入微信号或昵称">
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">save</span>保存
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存' %}</button>
                 </div>
             </form>
         </div>
@@ -358,17 +347,16 @@
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_gender">
-                <label class="f-label">性别</label>
+                <label class="f-label">{% trans '性别' %}</label>
                 <div class="f-inline">
                     <select class="f-select" name="gender">
-                        <option value="">不设定</option>
-                        <option value="male" {% if target_user.profile.gender == 'male' %}selected{% endif %}>男</option>
-                        <option value="female" {% if target_user.profile.gender == 'female' %}selected{% endif %}>女</option>
-                        <option value="other" {% if target_user.profile.gender == 'other' %}selected{% endif %}>其他</option>
+                        <option value="">{% trans '不设定' %}</option>
+                        <option value="male" {% if target_user.profile.gender == 'male' %}selected{% endif %}>{% trans '男' %}</option>
+                        <option value="female" {% if target_user.profile.gender == 'female' %}selected{% endif %}>{% trans '女' %}</option>
+                        <option value="other" {% if target_user.profile.gender == 'other' %}selected{% endif %}>{% trans '其他' %}</option>
                     </select>
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">save</span>保存
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存' %}</button>
                 </div>
             </form>
         </div>
@@ -380,17 +368,16 @@
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_role">
-                <label class="f-label">角色</label>
+                <label class="f-label">{% trans '角色' %}</label>
                 <div class="f-inline">
                     <select class="f-select" name="new_role">
-                        <option value="president" {% if target_user.profile.role == 'president' %}selected{% endif %}>社长</option>
-                        <option value="staff"     {% if target_user.profile.role == 'staff'     %}selected{% endif %}>干事</option>
-                        <option value="admin"     {% if target_user.profile.role == 'admin'     %}selected{% endif %}>管理员</option>
-                        <option value="member"    {% if target_user.profile.role == 'member'    %}selected{% endif %}>社员</option>
+                        <option value="president" {% if target_user.profile.role == 'president' %}selected{% endif %}>{% trans '社长' %}</option>
+                        <option value="staff"     {% if target_user.profile.role == 'staff'     %}selected{% endif %}>{% trans '干事' %}</option>
+                        <option value="admin"     {% if target_user.profile.role == 'admin'     %}selected{% endif %}>{% trans '管理员' %}</option>
+                        <option value="member"    {% if target_user.profile.role == 'member'    %}selected{% endif %}>{% trans '社员' %}</option>
                     </select>
                     <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">save</span>保存
-                    </button>
+                        <span class="material-icons">save</span>{% trans '保存' %}</button>
                 </div>
             </form>
         </div>
@@ -399,15 +386,15 @@
 
         <!-- 账户启用/禁用 -->
         <div class="form-block">
-            <label class="f-label">账户启用状态</label>
+            <label class="f-label">{% trans '账户启用状态' %}</label>
             <div class="status-bloc">
                 <div class="status-bloc-info">
-                    <span class="status-bloc-lbl">当前状态</span>
+                    <span class="status-bloc-lbl">{% trans '当前状态' %}</span>
                     <span class="status-bloc-desc">
                         {% if target_user.is_active %}
-                            <span style="color:#28a745;font-weight:600;">✓ 已启用</span>
+                            <span style="color:#28a745;font-weight:600;">{% trans '✓ 已启用' %}</span>
                         {% else %}
-                            <span style="color:var(--md3-error);font-weight:600;">✗ 已禁用</span>
+                            <span style="color:var(--md3-error);font-weight:600;">{% trans '✗ 已禁用' %}</span>
                         {% endif %}
                     </span>
                 </div>
@@ -415,14 +402,11 @@
                     {% csrf_token %}
                     <input type="hidden" name="action" value="toggle_active">
                     {% if target_user.is_active %}
-                        <button type="submit" class="btn btn-danger"
-                            onclick="return confirm('确定禁用该用户账号？禁用后该用户将无法登录。')">
-                            <span class="material-icons">block</span>禁用账号
-                        </button>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm(gettext('确定禁用该用户账号？禁用后该用户将无法登录。'))">
+                            <span class="material-icons">block</span>{% trans '禁用账号' %}</button>
                     {% else %}
                         <button type="submit" class="btn btn-ok">
-                            <span class="material-icons">check_circle</span>启用账号
-                        </button>
+                            <span class="material-icons">check_circle</span>{% trans '启用账号' %}</button>
                     {% endif %}
                 </form>
             </div>
@@ -432,9 +416,7 @@
     <!-- 密码与安全 -->
     <div class="edit-card">
         <h3 class="edit-card-title">
-            <span class="material-icons">security</span>
-            密码与安全
-        </h3>
+            <span class="material-icons">security</span>{% trans '密码与安全' %}</h3>
 
         <!-- 修改密码 -->
         <div class="form-block">
@@ -442,21 +424,18 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="change_password">
                 <div style="margin-bottom:16px;">
-                    <label class="f-label">新密码 <span class="req">*</span></label>
+                    <label class="f-label">{% trans '新密码' %}<span class="req">*</span></label>
                     <div class="pw-group">
-                        <input class="f-input" type="password" id="new_password" name="new_password"
-                               placeholder="至少 6 个字符" minlength="6" required>
-                        <button type="button" class="pw-toggle" id="toggle-pw">显示</button>
+                        <input class="f-input" type="password" id="new_password" name="new_password" placeholder="{% trans '至少 6 个字符' %}" minlength="6" required=>
+                        <button type="button" class="pw-toggle" id="toggle-pw">{% trans '显示' %}</button>
                     </div>
                 </div>
                 <div style="margin-bottom:16px;">
-                    <label class="f-label">确认新密码 <span class="req">*</span></label>
-                    <input class="f-input" type="password" id="confirm_password" name="confirm_password"
-                           placeholder="再次输入新密码" minlength="6" required>
+                    <label class="f-label">{% trans '确认新密码' %}<span class="req">*</span></label>
+                    <input class="f-input" type="password" id="confirm_password" name="confirm_password" placeholder="{% trans '再次输入新密码' %}" minlength="6" required=>
                 </div>
                 <button type="submit" class="btn btn-primary btn-wide">
-                    <span class="material-icons">lock_reset</span>设置新密码
-                </button>
+                    <span class="material-icons">lock_reset</span>{% trans '设置新密码' %}</button>
             </form>
         </div>
 
@@ -464,17 +443,16 @@
 
         <!-- 解锁账号 -->
         <div class="form-block">
-            <label class="f-label">账号锁定</label>
+            <label class="f-label">{% trans '账号锁定' %}</label>
             <div class="status-bloc">
                 <div class="status-bloc-info">
-                    <span class="status-bloc-lbl">登录锁定</span>
-                    <span class="status-bloc-desc">若用户多次登录失败被锁定，可在此解锁</span>
+                    <span class="status-bloc-lbl">{% trans '登录锁定' %}</span>
+                    <span class="status-bloc-desc">{% trans '若用户多次登录失败被锁定，可在此解锁' %}</span>
                 </div>
                 <form method="post" action="{% url 'clubs:unlock_account' target_user.username %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-secondary">
-                        <span class="material-icons">lock_open</span>解锁账号
-                    </button>
+                        <span class="material-icons">lock_open</span>{% trans '解锁账号' %}</button>
                 </form>
             </div>
         </div>
@@ -489,13 +467,13 @@
         var pw2 = document.getElementById('confirm_password');
         var show = pw1.type === 'password';
         pw1.type = pw2.type = show ? 'text' : 'password';
-        this.textContent = show ? '隐藏' : '显示';
+        this.textContent = show ? gettext('隐藏') : gettext('显示');
     });
     document.getElementById('password-form').addEventListener('submit', function (e) {
         var pw  = document.getElementById('new_password').value.trim();
         var cpw = document.getElementById('confirm_password').value.trim();
-        if (pw.length < 6) { alert('新密码至少需要 6 个字符'); e.preventDefault(); return; }
-        if (pw !== cpw)    { alert('两次输入的密码不一致，请检查'); e.preventDefault(); }
+        if (pw.length < 6) { alert(gettext('新密码至少需要 6 个字符')); e.preventDefault(); return; }
+        if (pw !== cpw)    { alert(gettext('两次输入的密码不一致，请检查')); e.preventDefault(); }
     });
 </script>
 

@@ -1,7 +1,8 @@
 {% extends base_template %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}预约管理{% endblock %}
+{% block title %}{% trans '预约管理' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -197,30 +198,28 @@
     <div class="page-header">
         <span class="material-icons">calendar_today</span>
         <div class="page-header-content">
-            <h1>预约管理</h1>
-            <div class="subtitle">管理预约记录、房间资源与时间段设置</div>
+            <h1>{% trans '预约管理' %}</h1>
+            <div class="subtitle">{% trans '管理预约记录、房间资源与时间段设置' %}</div>
         </div>
     </div>
 
     <section class="section-card">
         <div class="section-header">
             <h2 class="section-title">
-                <span class="material-icons">event_note</span>
-                预约记录
-            </h2>
+                <span class="material-icons">event_note</span>{% trans '预约记录' %}</h2>
         </div>
         {% if bookings %}
         <div class="table-responsive">
             <table class="md3-table">
                 <thead>
                     <tr>
-                        <th>日期</th>
-                        <th>时间</th>
-                        <th>房间</th>
-                        <th>借用人</th>
-                        <th>社团</th>
-                        <th>用途</th>
-                        <th>状态</th>
+                        <th>{% trans '日期' %}</th>
+                        <th>{% trans '时间' %}</th>
+                        <th>{% trans '房间' %}</th>
+                        <th>{% trans '借用人' %}</th>
+                        <th>{% trans '社团' %}</th>
+                        <th>{% trans '用途' %}</th>
+                        <th>{% trans '状态' %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -234,9 +233,9 @@
                         <td>{{ booking.purpose|truncatechars:24 }}</td>
                         <td>
                             {% if booking.status == 'active' %}
-                            <span class="status-badge status-active">有效</span>
+                            <span class="status-badge status-active">{% trans '有效' %}</span>
                             {% else %}
-                            <span class="status-badge status-cancelled">已取消</span>
+                            <span class="status-badge status-cancelled">{% trans '已取消' %}</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -245,38 +244,34 @@
             </table>
         </div>
         {% if bookings.paginator.num_pages > 1 %}
-        <nav aria-label="预约列表分页" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:18px;">
-            {% if bookings.has_previous %}<a class="btn btn-primary" href="{% querystring page=bookings.previous_page_number %}">上一页</a>{% endif %}
-            <span>第 {{ bookings.number }} / {{ bookings.paginator.num_pages }} 页，共 {{ bookings.paginator.count }} 条</span>
-            {% if bookings.has_next %}<a class="btn btn-primary" href="{% querystring page=bookings.next_page_number %}">下一页</a>{% endif %}
+        <nav aria-label="{% trans '预约列表分页' %}" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:18px;">
+            {% if bookings.has_previous %}<a class="btn btn-primary" href="{% querystring page=bookings.previous_page_number %}">{% trans '上一页' %}</a>{% endif %}
+            <span>{% blocktrans with __i18n1=bookings.number __i18n2=bookings.paginator.num_pages __i18n3=bookings.paginator.count %}第 {{ __i18n1 }} / {{ __i18n2 }} 页，共 {{ __i18n3 }} 条{% endblocktrans %}</span>
+            {% if bookings.has_next %}<a class="btn btn-primary" href="{% querystring page=bookings.next_page_number %}">{% trans '下一页' %}</a>{% endif %}
         </nav>
         {% endif %}
         {% else %}
-        <div class="empty-state">暂无预约记录</div>
+        <div class="empty-state">{% trans '暂无预约记录' %}</div>
         {% endif %}
     </section>
 
     <section class="section-card">
         <div class="section-header">
             <h2 class="section-title">
-                <span class="material-icons">meeting_room</span>
-                房间管理
-            </h2>
+                <span class="material-icons">meeting_room</span>{% trans '房间管理' %}</h2>
             <a href="{% url 'clubs:admin_room_add' %}" class="btn btn-primary">
-                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">add</span>
-                增加房间
-            </a>
+                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">add</span>{% trans '增加房间' %}</a>
         </div>
         {% if rooms %}
         <div class="table-responsive">
             <table class="md3-table">
                 <thead>
                     <tr>
-                        <th>房间名称</th>
-                        <th>容量</th>
-                        <th>位置</th>
-                        <th>状态</th>
-                        <th style="text-align:right;">操作</th>
+                        <th>{% trans '房间名称' %}</th>
+                        <th>{% trans '容量' %}</th>
+                        <th>{% trans '位置' %}</th>
+                        <th>{% trans '状态' %}</th>
+                        <th style="text-align:right;">{% trans '操作' %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -291,16 +286,13 @@
                         <td>
                             {% if room.status == 'available' %}
                             <span class="status-badge status-available">
-                                <span class="material-icons" style="font-size:16px;">check_circle</span> 可用
-                            </span>
+                                <span class="material-icons" style="font-size:16px;">check_circle</span>{% trans '可用' %}</span>
                             {% elif room.status == 'maintenance' %}
                             <span class="status-badge status-maintenance">
-                                <span class="material-icons" style="font-size:16px;">build</span> 维护中
-                            </span>
+                                <span class="material-icons" style="font-size:16px;">build</span>{% trans '维护中' %}</span>
                             {% else %}
                             <span class="status-badge status-closed">
-                                <span class="material-icons" style="font-size:16px;">block</span> 关闭
-                            </span>
+                                <span class="material-icons" style="font-size:16px;">block</span>{% trans '关闭' %}</span>
                             {% endif %}
                         </td>
                         <td style="text-align:right;">
@@ -310,7 +302,7 @@
                                 </a>
                                 <form action="{% url 'clubs:admin_room_delete' room.id %}" method="POST" style="display: inline;" onsubmit="return confirm('确定要删除这个房间吗？');">
                                     {% csrf_token %}
-                                    <button type="submit" class="icon-btn delete" title="删除">
+                                    <button type="submit" class="icon-btn delete" title="{% trans '删除' %}">
                                         <span class="material-icons" style="font-size:20px;">delete</span>
                                     </button>
                                 </form>
@@ -322,25 +314,19 @@
             </table>
         </div>
         {% else %}
-        <div class="empty-state">暂无房间配置</div>
+        <div class="empty-state">{% trans '暂无房间配置' %}</div>
         {% endif %}
     </section>
 
     <section class="section-card">
         <div class="section-header">
             <h2 class="section-title">
-                <span class="material-icons">schedule</span>
-                时间段设置
-            </h2>
+                <span class="material-icons">schedule</span>{% trans '时间段设置' %}</h2>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <a href="{% url 'clubs:admin_time_slot_add' %}" class="btn btn-primary">
-                    <span class="material-icons" style="font-size: 1.125rem;">add</span>
-                    添加时间段
-                </a>
+                    <span class="material-icons" style="font-size: 1.125rem;">add</span>{% trans '添加时间段' %}</a>
                 <button type="button" class="btn btn-primary" data-csv-import-open="timeSlotImportModal">
-                    <span class="material-icons" style="font-size: 1.125rem;">upload_file</span>
-                    批量导入
-                </button>
+                    <span class="material-icons" style="font-size: 1.125rem;">upload_file</span>{% trans '批量导入' %}</button>
             </div>
         </div>
         {% if time_slots %}
@@ -348,11 +334,11 @@
             <table class="md3-table">
                 <thead>
                     <tr>
-                        <th>显示名称</th>
-                        <th>开始时间</th>
-                        <th>结束时间</th>
-                        <th>状态</th>
-                        <th style="text-align:right;">操作</th>
+                        <th>{% trans '显示名称' %}</th>
+                        <th>{% trans '开始时间' %}</th>
+                        <th>{% trans '结束时间' %}</th>
+                        <th>{% trans '状态' %}</th>
+                        <th style="text-align:right;">{% trans '操作' %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -363,9 +349,9 @@
                         <td>{{ slot.end_time|time:"H:i" }}</td>
                         <td>
                             {% if slot.is_active %}
-                            <span class="status-badge status-active">启用</span>
+                            <span class="status-badge status-active">{% trans '启用' %}</span>
                             {% else %}
-                            <span class="status-badge status-inactive">禁用</span>
+                            <span class="status-badge status-inactive">{% trans '禁用' %}</span>
                             {% endif %}
                         </td>
                         <td style="text-align:right;">
@@ -375,7 +361,7 @@
                                 </a>
                                 <form action="{% url 'clubs:admin_time_slot_delete' slot.id %}" method="POST" style="display: inline;" onsubmit="return confirm('确定要删除这个时间段吗？');">
                                     {% csrf_token %}
-                                    <button type="submit" class="icon-btn delete" title="删除">
+                                    <button type="submit" class="icon-btn delete" title="{% trans '删除' %}">
                                         <span class="material-icons" style="font-size:20px;">delete</span>
                                     </button>
                                 </form>
@@ -387,7 +373,7 @@
             </table>
         </div>
         {% else %}
-        <div class="empty-state">暂无时间段配置</div>
+        <div class="empty-state">{% trans '暂无时间段配置' %}</div>
         {% endif %}
     </section>
 </div>

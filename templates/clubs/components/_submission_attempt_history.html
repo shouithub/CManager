@@ -1,3 +1,4 @@
+{% load i18n %}
 {% comment %}
 历史轮次时间线（共享组件）。
 配合视图 attempt_groups 使用：按提交轮次同时展示旧审核记录与
@@ -506,12 +507,12 @@
 <div class="ah-block">
     <div class="ah-header">
         <span class="material-icons">history</span>
-        <span class="ah-header-title">历史提交与审核记录</span>
+        <span class="ah-header-title">{% trans '历史提交与审核记录' %}</span>
         {% if attempt_groups %}
-        <span class="ah-chip">共 {{ attempt_groups|length }} 次提交</span>
+        <span class="ah-chip">{% blocktrans with __i18n1=attempt_groups|length %}共 {{ __i18n1 }} 次提交{% endblocktrans %}</span>
         {% endif %}
         {% if reviewer_count %}
-        <span class="ah-chip progress">已审核 {{ reviewer_count }} 人</span>
+        <span class="ah-chip progress">{% blocktrans with __i18n1=reviewer_count %}已审核 {{ __i18n1 }} 人{% endblocktrans %}</span>
         {% endif %}
     </div>
 
@@ -526,31 +527,31 @@
             <details class="ah-item" {% if forloop.last %}open{% endif %}>
                 <summary>
                     <div class="ah-item-head">
-                        <strong>第 {{ group.attempt }} 次提交{% if forloop.last %}<span class="ah-chip" style="margin-left:6px;">当前轮次</span>{% endif %}</strong>
+                        <strong>{% blocktrans with __i18n1=group.attempt %}第 {{ __i18n1 }} 次提交{% endblocktrans %}{% if forloop.last %}<span class="ah-chip" style="margin-left:6px;">{% trans '当前轮次' %}</span>{% endif %}</strong>
                         {% if group.status_label %}
                         <span class="item-status {{ group.status }}">{{ group.status_label }}</span>
                         {% endif %}
                         {% if group.reviews %}
-                        <span class="ah-chip">已审核 {{ group.reviews|length }} 人</span>
+                        <span class="ah-chip">{% blocktrans with __i18n1=group.reviews|length %}已审核 {{ __i18n1 }} 人{% endblocktrans %}</span>
                         {% endif %}
                         <span class="ah-chevron material-icons">expand_more</span>
                     </div>
                     <div class="ah-item-sub">
                         <span class="material-icons">schedule</span>
-                        <span>{% if group.submitted_at %}{{ group.submitted_at }}{% else %}没有数据{% endif %}</span>
+                        <span>{% if group.submitted_at %}{{ group.submitted_at }}{% else %}{% trans '没有数据' %}{% endif %}</span>
                     </div>
                 </summary>
                 <div class="ah-body">
                     {% if group.reviews %}
                     <section class="ah-section">
-                        <h4 class="ah-section-title"><span class="material-icons">rate_review</span>审核记录</h4>
+                        <h4 class="ah-section-title"><span class="material-icons">rate_review</span>{% trans '审核记录' %}</h4>
                         <div class="ah-reviews">
                             {% for review in group.reviews %}
                             <div class="ah-review">
                                 <span class="ah-review-avatar">{% if review.reviewer %}{{ review.reviewer|first|upper }}{% else %}?{% endif %}</span>
                                 <div class="ah-review-main">
                                     <div class="ah-review-top">
-                                        <strong>{% if review.reviewer %}{{ review.reviewer }}{% else %}已注销用户{% endif %}</strong>
+                                        <strong>{% if review.reviewer %}{{ review.reviewer }}{% else %}{% trans '已注销用户' %}{% endif %}</strong>
                                         <span class="item-status {{ review.status }}">{{ review.status_label }}</span>
                                         <span class="ah-review-time">{{ review.reviewed_at }}</span>
                                     </div>
@@ -566,7 +567,7 @@
 
                     {% if group.fields or group.files %}
                     <section class="ah-section">
-                        <h4 class="ah-section-title"><span class="material-icons">edit_note</span>提交内容</h4>
+                        <h4 class="ah-section-title"><span class="material-icons">edit_note</span>{% trans '提交内容' %}</h4>
                         {% if group.fields %}
                         <div class="ah-fields">
                             {% for field in group.fields %}
@@ -594,7 +595,7 @@
                                 <img src="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" alt="{{ file.file_name }}" loading="lazy">
                             </a>
                             {% else %}
-                            <span class="ah-file-missing">文件已丢失</span>
+                            <span class="ah-file-missing">{% trans '文件已丢失' %}</span>
                             {% endif %}
                             {% endif %}
                             <div class="ah-file-main">
@@ -602,17 +603,14 @@
                                 <div class="ah-file-actions">
                                     {% if file.office_preview_url and not file.is_image %}
                                     <button class="file-preview-button js-office-preview" type="button" data-office-preview-url="{{ file.office_preview_url }}" data-office-file-name="{{ file.file_name }}">
-                                        <span class="material-icons">visibility</span>预览
-                                    </button>
+                                        <span class="material-icons">visibility</span>{% trans '预览' %}</button>
                                     {% endif %}
                                     {% if not file.is_image %}
                                     <a class="file-preview-button" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" target="_blank" rel="noopener">
-                                        <span class="material-icons">open_in_new</span>查看
-                                    </a>
+                                        <span class="material-icons">open_in_new</span>{% trans '查看' %}</a>
                                     {% endif %}
                                     <a class="file-link" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}" target="_blank" rel="noopener">
-                                        <span class="material-icons">download</span>下载
-                                    </a>
+                                        <span class="material-icons">download</span>{% trans '下载' %}</a>
                                 </div>
                                 {% if file.review_comment %}
                                 <span class="ah-file-comment">{{ file.review_comment }}</span>
@@ -622,7 +620,7 @@
                         {% endfor %}
                     </section>
                     {% elif not group.reviews %}
-                    <p class="ah-empty">该轮次没有可回溯的提交内容</p>
+                    <p class="ah-empty">{% trans '该轮次没有可回溯的提交内容' %}</p>
                     {% endif %}
                 </div>
             </details>
@@ -636,7 +634,7 @@
                 <span class="ah-dot"><span class="material-icons">swap_horiz</span></span>
             </div>
             <div class="ah-override-block">
-                <div class="ah-override-title"><span class="material-icons">history</span>状态修改记录</div>
+                <div class="ah-override-title"><span class="material-icons">history</span>{% trans '状态修改记录' %}</div>
                 <div class="ah-overrides">
                     {% for entry in override_history %}
                     <div class="ah-override">
@@ -648,9 +646,9 @@
                                 <span class="item-status {{ entry.new_status }}">{{ entry.new_status_label }}</span>
                             </span>
                             {% if entry.mode == 'reenter' %}
-                            <span class="ah-chip progress">重新进入审核</span>
+                            <span class="ah-chip progress">{% trans '重新进入审核' %}</span>
                             {% else %}
-                            <span class="ah-chip">直接修改</span>
+                            <span class="ah-chip">{% trans '直接修改' %}</span>
                             {% endif %}
                         </div>
                         <div class="ah-override-meta">{{ entry.at_label }}</div>
@@ -666,7 +664,7 @@
     </div>
     {% else %}
     {% if not override_history %}
-    <div class="empty-state">暂无审核记录</div>
+    <div class="empty-state">{% trans '暂无审核记录' %}</div>
     {% endif %}
     {% endif %}
 </div>

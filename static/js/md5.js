@@ -165,7 +165,7 @@
     function hashFile(file, onProgress) {
         return new Promise(function (resolve, reject) {
             if (!file || typeof file.slice !== 'function') {
-                reject(new Error('无法读取文件内容'));
+                reject(new Error(gettext('无法读取文件内容')));
                 return;
             }
             var chunkSize = 2 * 1024 * 1024;
@@ -182,7 +182,7 @@
                 var slice = file.slice(read, Math.min(read + chunkSize, total));
                 reader.onload = function () {
                     if (!reader.result) {
-                        reject(new Error('读取文件失败'));
+                        reject(new Error(gettext('读取文件失败')));
                         return;
                     }
                     hasher.update(new Uint8Array(reader.result));
@@ -193,7 +193,7 @@
                     nextChunk();
                 };
                 reader.onerror = function () {
-                    reject(new Error('读取文件失败，请重试'));
+                    reject(new Error(gettext('读取文件失败，请重试')));
                 };
                 reader.readAsArrayBuffer(slice);
             }
@@ -217,6 +217,6 @@
     if (hashBytes(new Uint8Array(0)) !== 'd41d8cd98f00b204e9800998ecf8427e' ||
         hashBytes(asciiBytes('abc')) !== '900150983cd24fb0d6963f7d28e17f72') {
         // eslint-disable-next-line no-console
-        console.error('[CManager] MD5 自检失败，文件去重将不可用');
+        console.error(gettext('[CManager] MD5 自检失败，文件去重将不可用'));
     }
 })();

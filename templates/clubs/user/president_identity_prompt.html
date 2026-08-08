@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}切换到社长身份{% endblock %}
+{% block title %}{% trans '切换到社长身份' %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -42,8 +43,8 @@
     <section class="page-header">
         <span class="material-icons">switch_account</span>
         <div class="page-header-content">
-            <h1>切换到社长身份</h1>
-            <p class="subtitle">当前账号还有 {{ president_club_count }} 个社团的现任社长身份</p>
+            <h1>{% trans '切换到社长身份' %}</h1>
+            <p class="subtitle">{% blocktrans with __i18n1=president_club_count %}当前账号还有 {{ __i18n1 }} 个社团的现任社长身份{% endblocktrans %}</p>
         </div>
         <a href="{% url 'clubs:index' %}" class="page-back-btn" title="返回首页" aria-label="返回首页">
             <span class="material-icons">arrow_back</span>
@@ -51,16 +52,14 @@
     </section>
 
     <section class="identity-card">
-        <p>您当前正在使用主身份。进入“我的社团”、社员管理、审批记录和提交通道前，需要先切换到社长身份。</p>
+        <p>{% trans '您当前正在使用主身份。进入“我的社团”、社员管理、审批记录和提交通道前，需要先切换到社长身份。' %}</p>
         <div class="identity-actions">
             <form method="post" action="{% url 'clubs:switch_identity' %}">
                 {% csrf_token %}
                 <input type="hidden" name="identity" value="president">
                 <input type="hidden" name="next" value="{% url 'clubs:user_dashboard' %}">
                 <button type="submit" class="btn btn-primary">
-                    <span class="material-icons">login</span>
-                    切换到社长身份
-                </button>
+                    <span class="material-icons">login</span>{% trans '切换到社长身份' %}</button>
             </form>
         </div>
     </section>

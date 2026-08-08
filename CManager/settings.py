@@ -195,6 +195,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -208,6 +209,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'clubs.context_processors.unread_approvals',
@@ -365,6 +367,17 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'zh-hans'
+
+# 多语言：简体中文（源语言，msgid 即中文）、English、维吾尔语（RTL）、蒙古语（西里尔）。
+# 语言通过 django_language Cookie 切换，未设置时回退到浏览器 Accept-Language。
+LANGUAGES = [
+    ('zh-hans', '简体中文'),
+    ('en', 'English'),
+    ('ug', 'ئۇيغۇرچە'),
+    ('mn', 'Монгол'),
+]
+
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 TIME_ZONE = 'Asia/Shanghai'
 

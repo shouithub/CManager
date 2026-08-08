@@ -1,6 +1,7 @@
 {% extends base_template %}
+{% load i18n %}
 
-{% block title %}{% if slot %}编辑时间段{% else %}添加时间段{% endif %}{% endblock %}
+{% block title %}{% if slot %}{% trans '编辑时间段' %}{% else %}{% trans '添加时间段' %}{% endif %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -137,8 +138,8 @@
     <div class="page-header">
         <span class="material-icons">schedule</span>
         <div class="page-header-content">
-            <h1>{% if slot %}编辑时间段{% else %}添加时间段{% endif %}</h1>
-            <div class="subtitle">{% if slot %}修改现有时间段配置{% else %}创建新的可选时间段{% endif %}</div>
+            <h1>{% if slot %}{% trans '编辑时间段' %}{% else %}{% trans '添加时间段' %}{% endif %}</h1>
+            <div class="subtitle">{% if slot %}{% trans '修改现有时间段配置' %}{% else %}{% trans '创建新的可选时间段' %}{% endif %}</div>
         </div>
         <a href="{% url 'clubs:admin_booking_management' %}" class="page-back-btn" title="返回预约管理" aria-label="返回预约管理">
             <span class="material-icons">arrow_back</span>
@@ -149,32 +150,30 @@
         {% csrf_token %}
         
         <div class="form-group">
-            <label for="label" class="form-label">显示名称</label>
+            <label for="label" class="form-label">{% trans '显示名称' %}</label>
             <input type="text" id="label" name="label" class="form-control" value="{{ slot.label|default:'' }}" required placeholder="例如：第1-2节">
         </div>
 
         <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
-                <label for="start_time" class="form-label">开始时间</label>
+                <label for="start_time" class="form-label">{% trans '开始时间' %}</label>
                 <input type="time" id="start_time" name="start_time" class="form-control" value="{{ slot.start_time|time:'H:i' }}" required>
             </div>
             <div>
-                <label for="end_time" class="form-label">结束时间</label>
+                <label for="end_time" class="form-label">{% trans '结束时间' %}</label>
                 <input type="time" id="end_time" name="end_time" class="form-control" value="{{ slot.end_time|time:'H:i' }}" required>
             </div>
         </div>
 
         <div class="form-check">
             <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {% if not slot or slot.is_active %}checked{% endif %}>
-            <label for="is_active" class="form-label" style="margin: 0;">启用此时间段</label>
+            <label for="is_active" class="form-label" style="margin: 0;">{% trans '启用此时间段' %}</label>
         </div>
 
         <div class="form-actions">
-            <a href="{% url 'clubs:admin_booking_management' %}" class="btn btn-secondary">取消</a>
+            <a href="{% url 'clubs:admin_booking_management' %}" class="btn btn-secondary">{% trans '取消' %}</a>
             <button type="submit" class="btn btn-primary">
-                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">save</span>
-                保存
-            </button>
+                <span class="material-icons" style="font-size: 1.125rem; color: var(--md3-on-primary);">save</span>{% trans '保存' %}</button>
         </div>
     </form>
 </div>
