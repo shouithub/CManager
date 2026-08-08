@@ -17,6 +17,7 @@ urlpatterns = [
     path('error-report/help/', error_views.error_help_request, name='error_help_request'),
     # API endpoints
     path('api/notification-counts/', views.notification_counts, name='notification_counts'),
+    path('api/auto-translate/', views.auto_translate_text, name='auto_translate_text'),
 
     # 公共页面
     path('', views.index, name='index'),

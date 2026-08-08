@@ -652,7 +652,7 @@
             {% if is_president %}
                 {% for channel in active_form_channels %}
                 <a href="{% url 'clubs:submit_dynamic_form' channel.slug club.id %}" class="action-btn btn-primary">
-                    <span class="material-icons">{{ channel.icon }}</span>{{ channel.name }}
+                    <span class="material-icons">{{ channel.icon }}</span>{{ channel|tr:'name' }}
                 </a>
                 {% endfor %}
             {% endif %}

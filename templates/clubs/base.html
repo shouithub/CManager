@@ -439,7 +439,7 @@
                         {% for channel in active_form_channels %}
                         <a href="{% url 'clubs:staff_audit_center' channel.slug %}" class="sidebar-menu-item">
                             <span class="icon"><span class="material-icons">{{ channel.icon }}</span></span>
-                            <span>{{ channel.name }}</span>
+                            <span>{{ channel|tr:'name' }}</span>
                             {% with count=audit_center_counts.channels|get_item:channel.slug %}
                             {% if count > 0 %}<span class="badge-count">{{ count }}</span>{% endif %}
                             {% endwith %}

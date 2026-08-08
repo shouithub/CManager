@@ -3,7 +3,7 @@
 {% load static %}
 {% load common_tags %}
 
-{% block title %}{{ channel.name }}{% endblock %}
+{% block title %}{{ channel|tr:'name' }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -640,9 +640,9 @@
     <section class="page-header">
         <span class="page-icon"><span class="material-icons">{{ channel.icon }}</span></span>
         <div>
-            <h1>{{ channel.name }}</h1>
+            <h1>{{ channel|tr:'name' }}</h1>
             <p>{{ club.name }}</p>
-            {% if channel.description %}<p>{{ channel.description }}</p>{% endif %}
+            {% if channel.description %}<p>{{ channel|tr:'description' }}</p>{% endif %}
         </div>
         <a href="{% url 'clubs:user_dashboard' %}" class="page-back-btn" title="返回工作台" aria-label="返回工作台">
             <span class="material-icons">arrow_back</span>
@@ -676,13 +676,13 @@
             <div class="example-file-row">
                 {% if example.file|is_image_file and example.file|file_exists %}
                 <a class="example-file-thumb" href="{{ example.file.url }}" target="_blank" rel="noopener" title="查看原图">
-                    <img src="{{ example.file.url }}" alt="{{ example.display_name }}" loading="lazy">
+                    <img src="{{ example.file.url }}" alt="{{ example|tr:'name' }}" loading="lazy">
                 </a>
                 {% else %}
                 <span class="example-file-icon"><span class="material-icons">insert_drive_file</span></span>
                 {% endif %}
                 <div class="example-file-main">
-                    <span class="example-file-name" title="{{ example.display_name }}">{{ example.display_name }}</span>
+                    <span class="example-file-name" title="{{ example|tr:'name' }}">{{ example|tr:'name' }}</span>
                     {% if example.file|is_image_file and example.file|file_exists %}
                     <span class="example-file-caption">{% trans '图片示例，点击缩略图查看原图' %}</span>
                     {% endif %}
@@ -693,7 +693,7 @@
                     {% if preview_url and not example.file|is_image_file %}
                     <button type="button" class="example-action-btn js-office-preview"
                             data-office-preview-url="{{ preview_url }}"
-                            data-office-file-name="{{ example.display_name }}">
+                            data-office-file-name="{{ example|tr:'name' }}">
                         <span class="material-icons">visibility</span>{% trans '预览' %}</button>
                     {% endif %}
                 </div>
@@ -711,9 +711,9 @@
         <section class="field-block">
             <label class="field-label">
                 <span class="material-icons">{% if field.field_type == 'file' %}attach_file{% elif field.field_type == 'date' %}event{% elif field.field_type == 'time' %}schedule{% else %}edit_note{% endif %}</span>
-                {{ field.label }}{% if field.required %}<span class="required">*</span>{% endif %}
+                {{ field|tr:'label' }}{% if field.required %}<span class="required">*</span>{% endif %}
             </label>
-            {% if field.help_text %}<div class="field-help">{{ field.help_text }}</div>{% endif %}
+            {% if field.help_text %}<div class="field-help">{{ field|tr:'help_text' }}</div>{% endif %}
             {% if revision_mode %}
                 {% if field.field_type == 'file' %}
                 <div class="revision-files">
@@ -758,9 +758,9 @@
             {% endif %}
 
             {% if field.field_type == 'textarea' %}
-            <textarea name="field_{{ field.id }}" class="field-control" placeholder="{{ field.placeholder }}" {% if field.required or revision_mode %}required{% endif %}>{{ item.value }}</textarea>
+            <textarea name="field_{{ field.id }}" class="field-control" placeholder="{{ field|tr:'placeholder' }}" {% if field.required or revision_mode %}required{% endif %}>{{ item.value }}</textarea>
             {% elif field.field_type == 'number' %}
-            <input type="number" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" placeholder="{{ field.placeholder }}" {% if field.required or revision_mode %}required{% endif %}>
+            <input type="number" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" placeholder="{{ field|tr:'placeholder' }}" {% if field.required or revision_mode %}required{% endif %}>
             {% elif field.field_type == 'date' %}
             <input type="date" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" {% if field.required or revision_mode %}required{% endif %}>
             {% elif field.field_type == 'time' %}
@@ -768,18 +768,18 @@
             {% elif field.field_type == 'select' %}
             <select name="field_{{ field.id }}" class="field-control" {% if field.required or revision_mode %}required{% endif %}>
                 <option value="">{% trans '请选择' %}</option>
-                {% for option in field.options %}<option value="{{ option }}" {% if option == item.value %}selected{% endif %}>{{ option }}</option>{% endfor %}
+                {% for option_value, option_label in field|tr_option_pairs %}<option value="{{ option_value }}" {% if option_value == item.value %}selected{% endif %}>{{ option_label }}</option>{% endfor %}
             </select>
             {% elif field.field_type == 'radio' %}
             <div class="option-grid">
-                {% for option in field.options %}
-                <label class="option-chip"><input type="radio" name="field_{{ field.id }}" value="{{ option }}" {% if option == item.value %}checked{% endif %} {% if field.required or revision_mode %}required{% endif %}>{{ option }}</label>
+                {% for option_value, option_label in field|tr_option_pairs %}
+                <label class="option-chip"><input type="radio" name="field_{{ field.id }}" value="{{ option_value }}" {% if option_value == item.value %}checked{% endif %} {% if field.required or revision_mode %}required{% endif %}>{{ option_label }}</label>
                 {% endfor %}
             </div>
             {% elif field.field_type == 'checkbox' %}
             <div class="option-grid">
-                {% for option in field.options %}
-                <label class="option-chip"><input type="checkbox" name="field_{{ field.id }}" value="{{ option }}" {% if option in item.selected_options %}checked{% endif %}>{{ option }}</label>
+                {% for option_value, option_label in field|tr_option_pairs %}
+                <label class="option-chip"><input type="checkbox" name="field_{{ field.id }}" value="{{ option_value }}" {% if option_value in item.selected_options %}checked{% endif %}>{{ option_label }}</label>
                 {% endfor %}
             </div>
             {% elif field.field_type == 'file' %}
@@ -788,10 +788,10 @@
                 <span class="material-icons">swap_horiz</span>{% trans '选择新文件后将替换上方被打回的文件' %}</div>
             {% endif %}
             {% with file_accept=field.allowed_extensions|join:"," %}
-            {% include 'clubs/components/_file_upload.html' with field_number=field.id label=field.label is_required=field.required allowed_extensions=file_accept max_size_mb=field.max_size_mb multiple=field.allow_multiple_files %}
+            {% include 'clubs/components/_file_upload.html' with field_number=field.id label=field|tr:'label' is_required=field.required allowed_extensions=file_accept max_size_mb=field.max_size_mb multiple=field.allow_multiple_files %}
             {% endwith %}
             {% else %}
-            <input type="text" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" placeholder="{{ field.placeholder }}" {% if field.required or revision_mode %}required{% endif %}>
+            <input type="text" name="field_{{ field.id }}" class="field-control" value="{{ item.value }}" placeholder="{{ field|tr:'placeholder' }}" {% if field.required or revision_mode %}required{% endif %}>
             {% endif %}
         </section>
         {% endwith %}

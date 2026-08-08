@@ -567,6 +567,51 @@ class FormField(models.Model):
         )
 
 
+class ObjectTranslation(models.Model):
+    """通用对象字段多语言翻译。
+
+    用于通道名称/说明、字段标签/提示/占位/选项、周期名称等动态内容的
+    多语言存储。object_type + object_id + field_name + language 唯一。
+    """
+
+    OBJECT_TYPE_CHOICES = [
+        ('formchannel', 'FormChannel'),
+        ('formfield', 'FormField'),
+        ('formcycle', 'FormCycle'),
+        ('channelexamplefile', 'ChannelExampleFile'),
+    ]
+
+    object_type = models.CharField(
+        max_length=20,
+        choices=OBJECT_TYPE_CHOICES,
+        verbose_name=gettext_lazy('对象类型'),
+    )
+    object_id = models.PositiveBigIntegerField(verbose_name=gettext_lazy('对象ID'))
+    field_name = models.CharField(max_length=30, verbose_name=gettext_lazy('字段名'))
+    language = models.CharField(max_length=10, verbose_name=gettext_lazy('语言代码'))
+    text = models.TextField(verbose_name=gettext_lazy('译文'))
+    auto_translated = models.BooleanField(
+        default=False,
+        verbose_name=gettext_lazy('是否机器翻译'),
+        help_text=gettext_lazy('由 UAPI 翻译服务自动生成，可手动覆盖'),
+    )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=gettext_lazy('更新时间'))
+
+    class Meta:
+        verbose_name = gettext_lazy('对象翻译')
+        verbose_name_plural = gettext_lazy('对象翻译')
+        ordering = ['object_type', 'object_id', 'field_name', 'language']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['object_type', 'object_id', 'field_name', 'language'],
+                name='unique_obj_translation',
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.object_type}:{self.object_id}:{self.field_name}:{self.language}'
+
+
 class FormSubmission(models.Model):
     """动态表单提交记录。"""
 
@@ -1250,6 +1295,24 @@ class SiteSettings(models.Model):
         default=False,
         verbose_name=gettext_lazy('开启错误页求助按钮'),
         help_text=gettext_lazy('开启后，404/500 错误页将显示“请求帮助”按钮，不依赖 SMTP 配置'),
+    )
+    auto_translate_enabled = models.BooleanField(
+        default=False,
+        verbose_name=gettext_lazy('开启内容自动翻译'),
+        help_text=gettext_lazy('开启后，通道与字段设置页可一键调用翻译服务生成英文、维吾尔语和蒙古语文案；关闭时仅保留手动填写。'),
+    )
+    translation_api_base_url = models.CharField(
+        max_length=500,
+        default='https://uapis.cn',
+        verbose_name=gettext_lazy('翻译服务地址'),
+        help_text=gettext_lazy('默认使用 UAPI 公共翻译服务 https://uapis.cn；自建或兼容网关请填完整地址。'),
+    )
+    translation_api_key = EncryptedCharField(
+        max_length=500,
+        blank=True,
+        default='',
+        verbose_name=gettext_lazy('翻译服务 API Key'),
+        help_text=gettext_lazy('UAPI 控制台可免费申请；公共接口匿名调用也可用，留空即可。'),
     )
 
     class Meta:

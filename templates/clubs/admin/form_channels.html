@@ -490,6 +490,101 @@
         font-size: 0.86rem;
     }
 
+    /* 多语言翻译面板 */
+    .translation-panel {
+        margin-top: 8px;
+        border: 1px solid var(--md3-outline-variant);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface-container-low);
+        overflow: hidden;
+    }
+
+    .translation-panel-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 9px 12px;
+        border: none;
+        background: transparent;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .translation-panel-header:hover {
+        background: var(--md3-surface-container-high);
+    }
+
+    .translation-toggle-icon {
+        margin-left: auto;
+        font-size: 1.1rem;
+        transition: transform 0.2s ease;
+    }
+
+    .translation-panel.is-open .translation-toggle-icon {
+        transform: rotate(180deg);
+    }
+
+    .translation-panel-body {
+        display: grid;
+        gap: 8px;
+        padding: 10px 12px 12px;
+        border-top: 1px solid var(--md3-outline-variant);
+    }
+
+    .translation-row {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr) auto;
+        align-items: start;
+        gap: 8px;
+    }
+
+    .translation-language {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 0;
+        color: var(--md3-on-surface-variant);
+        font-size: 0.78rem;
+        font-weight: 650;
+    }
+
+    .translation-language .material-icons {
+        font-size: 1rem;
+    }
+
+    .translation-language code {
+        font-size: 0.68rem;
+        opacity: 0.72;
+    }
+
+    .translation-panel-body .field-control {
+        min-height: 38px;
+        font-size: 0.82rem;
+    }
+
+    .translation-panel-body textarea.field-control {
+        min-height: 58px;
+    }
+
+    .translation-panel-body .helper-text {
+        grid-column: 1 / -1;
+        margin: 0;
+        font-size: 0.74rem;
+    }
+
+    @media (max-width: 720px) {
+        .translation-row {
+            grid-template-columns: 1fr;
+        }
+        .translation-panel-body .js-auto-translate {
+            justify-self: start;
+        }
+    }
+
     .form-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1210,7 +1305,8 @@
                     {% csrf_token %}
                     <div class="field-group">
                         <label>{% trans '通道名称' %}</label>
-                        <input class="field-control" name="name" value="{{ current.name }}" required placeholder="例如：报销申请">
+                        <input class="field-control" id="channel-name" name="name" value="{{ current.name }}" required placeholder="例如：报销申请">
+                        {% include 'clubs/admin/_translation_fields.html' with object=current field_name='name' source_id='channel-name' %}
                     </div>
                     <div class="field-group">
                         <label>{% trans 'URL 标识 slug' %}</label>
@@ -1221,16 +1317,22 @@
                         {% if current.example_files.all %}
                         <div style="display:grid;gap:6px;margin-top:10px;">
                             {% for example in current.example_files.all %}
-                            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
-                                <label class="switch-label" style="font-weight:400;margin:0;">
-                                    <input type="checkbox" name="delete_example_file" value="{{ example.id }}">
-                                    <span class="material-icons" style="font-size:1rem;">attach_file</span>
-                                </label>
-                                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ example.display_name }}</span>
-                                <a href="{{ example.file.url }}" target="_blank" rel="noopener" class="btn btn-outlined btn-sm">{% trans '下载' %}</a>
-                                <button type="button" class="btn btn-outlined btn-sm js-office-preview"
-                                        data-office-preview-url="{{ example.file|office_preview_url:request }}"
-                                        data-office-file-name="{{ example.display_name }}">{% trans '预览' %}</button>
+                            <div style="display:grid;gap:6px;border:1px solid var(--md3-outline-variant);border-radius:12px;padding:8px;">
+                                <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                                    <label class="switch-label" style="font-weight:400;margin:0;">
+                                        <input type="checkbox" name="delete_example_file" value="{{ example.id }}">
+                                        <span class="material-icons" style="font-size:1rem;">attach_file</span>
+                                    </label>
+                                    <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ example.display_name }}</span>
+                                    <a href="{{ example.file.url }}" target="_blank" rel="noopener" class="btn btn-outlined btn-sm">{% trans '下载' %}</a>
+                                    <button type="button" class="btn btn-outlined btn-sm js-office-preview"
+                                            data-office-preview-url="{{ example.file|office_preview_url:request }}"
+                                            data-office-file-name="{{ example.display_name }}">{% trans '预览' %}</button>
+                                </div>
+                                <input type="hidden" id="example-name-{{ example.id }}" value="{{ example.display_name }}">
+                                {% with example_id=example.id|stringformat:'s' %}
+                                {% include 'clubs/admin/_translation_fields.html' with object=example field_name='name' source_id='example-name-'|add:example_id %}
+                                {% endwith %}
                             </div>
                             {% endfor %}
                             <label class="switch-label"><input type="checkbox" name="clear_channel_examples">{% trans '清除全部示例文件' %}</label>
@@ -1249,7 +1351,8 @@
                     </div>
                     <div class="field-group span-2">
                         <label>{% trans '通道说明' %}</label>
-                        <textarea class="field-control" name="description" rows="3" placeholder="{% trans '给管理员看的说明，也会作为社长侧提交提示' %}">{{ current.description }}</textarea>
+                        <textarea class="field-control" id="channel-description" name="description" rows="3" placeholder="{% trans '给管理员看的说明，也会作为社长侧提交提示' %}">{{ current.description }}</textarea>
+                        {% include 'clubs/admin/_translation_fields.html' with object=current field_name='description' source_id='channel-description' is_textarea=True %}
                     </div>
                     <div class="field-group span-2">
                         <label>{% trans '发布状态' %}</label>
@@ -1329,10 +1432,13 @@
                 {% endif %}
                 <div class="cycle-panel">
                     <label>{% trans '周期管理' %}</label>
-                    <form method="post" action="{% url 'clubs:create_form_channel_cycle' current.id %}" class="button-row">
+                    <form method="post" action="{% url 'clubs:create_form_channel_cycle' current.id %}">
                         {% csrf_token %}
-                        <input class="field-control" name="name" placeholder="{% trans '新周期名称，例如：2026年年审' %}">
-                        <button class="btn btn-outlined" type="submit"><span class="material-icons">add</span>{% trans '新建周期' %}</button>
+                        <div class="button-row">
+                            <input class="field-control" id="cycle-name" name="name" placeholder="{% trans '新周期名称，例如：2026年年审' %}">
+                            <button class="btn btn-outlined" type="submit"><span class="material-icons">add</span>{% trans '新建周期' %}</button>
+                        </div>
+                        {% include 'clubs/admin/_translation_fields.html' with object=None field_name='name' source_id='cycle-name' %}
                     </form>
                     {% for cycle in current.cycles.all %}
                     <div class="cycle-row">
@@ -1359,7 +1465,7 @@
             {% for field in current.fields.all %}
             <section class="question-card js-question-card is-collapsed{% if field.field_key in locked_field_keys %} is-locked{% endif %}">
                 <div class="question-head">
-                    <input form="field-form-{{ field.id }}" class="field-control question-title-input js-label-input" name="label" value="{{ field.label }}" required placeholder="问题标题" {% if field.field_key in locked_field_keys %}disabled{% endif %}>
+                    <input form="field-form-{{ field.id }}" id="field-label-{{ field.id }}" class="field-control question-title-input js-label-input" name="label" value="{{ field.label }}" required placeholder="问题标题" {% if field.field_key in locked_field_keys %}disabled{% endif %}>
                     <select form="field-form-{{ field.id }}" class="field-control js-field-type" name="field_type" {% if field.field_key in locked_field_keys %}disabled{% endif %}>
                         {% for value,label in field_types %}
                         <option value="{{ value }}" {% if field.field_type == value %}selected{% endif %}>{{ label }}</option>
@@ -1387,6 +1493,9 @@
                     <div class="locked-field-note">
                         <span class="material-icons">lock</span>{% trans '这个字段已连接内置业务逻辑，不能修改或删除。' %}</div>
                     {% endif %}
+                    {% with field_id=field.id|stringformat:'s' %}
+                    {% include 'clubs/admin/_translation_fields.html' with object=field field_name='label' source_id='field-label-'|add:field_id %}
+                    {% endwith %}
                     <div class="field-key-row">
                         <div class="field-group">
                             <label>{% trans '字段标识 field_key' %}</label>
@@ -1400,11 +1509,17 @@
                     <div class="type-section">
                         <div class="field-group">
                             <label>{% trans '占位提示' %}</label>
-                            <input class="field-control" name="placeholder" value="{{ field.placeholder }}" placeholder="填写时显示在输入框内">
+                            <input class="field-control" id="field-placeholder-{{ field.id }}" name="placeholder" value="{{ field.placeholder }}" placeholder="填写时显示在输入框内">
+                            {% with field_id=field.id|stringformat:'s' %}
+                            {% include 'clubs/admin/_translation_fields.html' with object=field field_name='placeholder' source_id='field-placeholder-'|add:field_id %}
+                            {% endwith %}
                         </div>
                         <div class="field-group">
                             <label>{% trans '补充说明' %}</label>
-                            <input class="field-control" name="help_text" value="{{ field.help_text }}" placeholder="显示在字段下方">
+                            <input class="field-control" id="field-help-{{ field.id }}" name="help_text" value="{{ field.help_text }}" placeholder="显示在字段下方">
+                            {% with field_id=field.id|stringformat:'s' %}
+                            {% include 'clubs/admin/_translation_fields.html' with object=field field_name='help_text' source_id='field-help-'|add:field_id %}
+                            {% endwith %}
                         </div>
                     </div>
                     <div class="type-section js-type-section" data-types="text textarea">
@@ -1430,7 +1545,10 @@
                     <div class="type-section js-type-section" data-types="select radio checkbox">
                         <div class="field-group span-2">
                             <label>{% trans '选项' %}</label>
-                            <textarea class="js-options-raw" name="options">{{ field.option_lines }}</textarea>
+                            <textarea class="js-options-raw" id="field-options-{{ field.id }}" name="options">{{ field.option_lines }}</textarea>
+                            {% with field_id=field.id|stringformat:'s' %}
+                            {% include 'clubs/admin/_translation_fields.html' with object=field field_name='options' source_id='field-options-'|add:field_id is_options=True %}
+                            {% endwith %}
                             <div class="option-editor js-option-editor">
                                 <div class="option-chip-list js-option-list" aria-live="polite"></div>
                                 <div class="option-input-row">
@@ -1494,7 +1612,7 @@
 
             <section class="question-card is-new js-question-card" id="new-field">
                 <div class="question-head">
-                    <input form="new-field-form" class="field-control question-title-input js-label-input" name="label" required= placeholder="{% trans '新增问题标题' %}">
+                    <input form="new-field-form" id="new-field-label" class="field-control question-title-input js-label-input" name="label" required= placeholder="{% trans '新增问题标题' %}">
                     <select form="new-field-form" class="field-control js-field-type" name="field_type">
                         {% for value,label in field_types %}
                         <option value="{{ value }}">{{ label }}</option>
@@ -1504,6 +1622,7 @@
                 </div>
                 <form id="new-field-form" method="post" enctype="multipart/form-data" action="{% url 'clubs:add_form_field' current.id %}">
                     {% csrf_token %}
+                    {% include 'clubs/admin/_translation_fields.html' with object=None field_name='label' source_id='new-field-label' %}
                     <div class="field-key-row">
                         <div class="field-group">
                             <label>{% trans '字段标识 field_key' %}</label>
@@ -1517,11 +1636,13 @@
                     <div class="type-section">
                         <div class="field-group">
                             <label>{% trans '占位提示' %}</label>
-                            <input class="field-control" name="placeholder" placeholder="{% trans '填写时显示在输入框内' %}">
+                            <input class="field-control" id="new-field-placeholder" name="placeholder" placeholder="{% trans '填写时显示在输入框内' %}">
+                            {% include 'clubs/admin/_translation_fields.html' with object=None field_name='placeholder' source_id='new-field-placeholder' %}
                         </div>
                         <div class="field-group">
                             <label>{% trans '补充说明' %}</label>
-                            <input class="field-control" name="help_text" placeholder="{% trans '显示在字段下方' %}">
+                            <input class="field-control" id="new-field-help" name="help_text" placeholder="{% trans '显示在字段下方' %}">
+                            {% include 'clubs/admin/_translation_fields.html' with object=None field_name='help_text' source_id='new-field-help' %}
                         </div>
                     </div>
                     <div class="type-section js-type-section" data-types="text textarea">
@@ -1547,7 +1668,8 @@
                     <div class="type-section js-type-section" data-types="select radio checkbox">
                         <div class="field-group span-2">
                             <label>{% trans '选项' %}</label>
-                            <textarea class="js-options-raw" name="options"></textarea>
+                            <textarea class="js-options-raw" id="new-field-options" name="options"></textarea>
+                            {% include 'clubs/admin/_translation_fields.html' with object=None field_name='options' source_id='new-field-options' is_options=True %}
                             <div class="option-editor js-option-editor">
                                 <div class="option-chip-list js-option-list" aria-live="polite"></div>
                                 <div class="option-input-row">
@@ -1917,6 +2039,73 @@
 
             input.addEventListener('input', updateIconPreview);
             updateIconPreview();
+        });
+
+        // 多语言翻译面板：展开/收起 + 一键自动翻译
+        document.querySelectorAll('.translation-panel').forEach(function (panel) {
+            const header = panel.querySelector('[data-translation-toggle]');
+            const body = panel.querySelector('.translation-panel-body');
+            if (!header || !body) return;
+            header.addEventListener('click', function () {
+                const open = body.hidden;
+                body.hidden = !open;
+                panel.classList.toggle('is-open', open);
+                const icon = header.querySelector('.translation-toggle-icon');
+                if (icon) icon.textContent = open ? 'expand_less' : 'expand_more';
+            });
+        });
+
+        document.querySelectorAll('.js-auto-translate').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const row = button.closest('.translation-row');
+                const targetInput = row ? row.querySelector('.js-translation-input') : null;
+                const sourceInput = button.dataset.sourceField
+                    ? document.getElementById(button.dataset.sourceField)
+                    : null;
+                if (!sourceInput || !targetInput) return;
+                const source = sourceInput.value.trim();
+                if (!source) {
+                    targetInput.value = '';
+                    targetInput.focus();
+                    return;
+                }
+                const targetLanguage = button.dataset.language;
+                const originalText = button.textContent;
+                button.disabled = true;
+                button.classList.add('is-loading');
+                const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                const data = new FormData();
+                data.append('source', source);
+                data.append('target', targetLanguage);
+                fetch('{% url "clubs:auto_translate_text" %}', {
+                    method: 'POST',
+                    body: data,
+                    headers: csrfInput
+                        ? { 'X-CSRFToken': csrfInput.value }
+                        : {}
+                }).then(function (response) {
+                    return response.json().catch(function () {
+                        return {};
+                    }).then(function (payload) {
+                        if (!response.ok) {
+                            throw new Error(payload.error || gettext('翻译失败'));
+                        }
+                        return payload;
+                    });
+                }).then(function (payload) {
+                    targetInput.value = payload.translated_text || '';
+                }).catch(function (error) {
+                    if (window.showToast) {
+                        window.showToast(error.message || String(error), 'error');
+                    } else {
+                        alert(error.message || String(error));
+                    }
+                }).finally(function () {
+                    button.disabled = false;
+                    button.classList.remove('is-loading');
+                    button.textContent = originalText;
+                });
+            });
         });
     })();
 </script>

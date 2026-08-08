@@ -3775,6 +3775,35 @@ def manage_site_settings(request):
             clear_avatar_settings_cache()
             messages.success(request, _('Cravatar 开关已保存，用户仍可随时上传本站头像'))
             return redirect('clubs:site_settings')
+        elif form_type == 'auto_translate_settings':
+            from urllib.parse import urlsplit
+
+            cfg = SiteSettings.get_settings()
+            cfg.auto_translate_enabled = request.POST.get('auto_translate_enabled') == 'on'
+            raw_url = (request.POST.get('translation_api_base_url') or '').strip()
+            if raw_url:
+                parsed_url = urlsplit(raw_url)
+                if parsed_url.scheme not in ('http', 'https') or not parsed_url.netloc:
+                    messages.error(request, _('翻译服务地址仅支持 http/https，请检查后重试。'))
+                    return redirect('clubs:site_settings')
+                cfg.translation_api_base_url = raw_url.rstrip('/')
+            else:
+                cfg.translation_api_base_url = 'https://uapis.cn'
+            api_key = (request.POST.get('translation_api_key') or '').strip()
+            if api_key:
+                cfg.translation_api_key = api_key
+            elif request.POST.get('clear_translation_api_key') == 'on':
+                cfg.translation_api_key = ''
+            cfg.save(update_fields=[
+                'auto_translate_enabled',
+                'translation_api_base_url',
+                'translation_api_key',
+            ])
+            messages.success(
+                request,
+                _('自动翻译设置已保存；开启后可在通道与字段设置页一键翻译英文、维吾尔语和蒙古语'),
+            )
+            return redirect(f'{reverse("clubs:site_settings")}?tab=translate')
         elif 'favicon' in request.FILES:
             upload = request.FILES['favicon']
             ok, logo_message = process_site_logo(upload, allow_webp=False)
@@ -3963,6 +3992,88 @@ def _active_channels():
         .prefetch_related('fields')
         .order_by('order', 'id')
     )
+
+
+def _parse_translation_fields(post):
+    """把表单里的 translations[field][lang] 展平字段还原为嵌套字典。"""
+    from ..services.object_translations import (
+        TRANSLATION_LANGUAGES,
+        parse_options_translation,
+    )
+
+    translations = {}
+    for key, raw_value in post.items():
+        match = re.fullmatch(r'translations\[([A-Za-z_]+)\]\[([a-z-]+)\]', key)
+        if not match:
+            continue
+        field_name, language = match.groups()
+        if language not in TRANSLATION_LANGUAGES:
+            continue
+        value = (raw_value or '').strip()
+        if field_name == 'options' and value:
+            value = json.dumps(parse_options_translation(value), ensure_ascii=False)
+        translations.setdefault(field_name, {})[language] = value
+    return translations
+
+
+def _save_object_translations(obj, post):
+    """保存对象译文；站点开启自动翻译时按字段源文案补齐缺失语言，失败静默降级。"""
+    from ..services.object_translations import save_object_translations
+
+    translations = _parse_translation_fields(post)
+    if not translations:
+        return
+    model_name = obj._meta.model_name
+    source_field_map = {
+        'formchannel': {'name': 'name', 'description': 'description'},
+        'formfield': {
+            'label': 'label',
+            'help_text': 'help_text',
+            'placeholder': 'placeholder',
+            'options': 'option_lines',
+        },
+        'formcycle': {'name': 'name'},
+        'channelexamplefile': {'name': 'display_name'},
+    }.get(model_name, {})
+    source_texts = {}
+    for field_name in translations:
+        attr_name = source_field_map.get(field_name)
+        if not attr_name:
+            continue
+        raw_value = getattr(obj, attr_name, '') or ''
+        source_texts[field_name] = (
+            '\n'.join(str(item) for item in raw_value) if isinstance(raw_value, list) else str(raw_value)
+        )
+    cfg = SiteSettings.get_settings()
+    try:
+        save_object_translations(
+            obj,
+            translations,
+            auto_translate=bool(cfg.auto_translate_enabled),
+            source_texts=source_texts,
+        )
+    except Exception:
+        logger.exception('保存对象译文失败')
+
+
+def _parse_example_file_translations(post):
+    """把示例文件译文表单值还原为 {example_id: {field_name: {lang: text}}}。"""
+    from ..services.object_translations import TRANSLATION_LANGUAGES
+
+    translations = {}
+    for key, raw_value in post.items():
+        match = re.fullmatch(
+            r'example_translations\[(\d+)\]\[([A-Za-z_]+)\]\[([a-z-]+)\]',
+            key,
+        )
+        if not match:
+            continue
+        example_id, field_name, language = match.groups()
+        if language not in TRANSLATION_LANGUAGES:
+            continue
+        value = (raw_value or '').strip()
+        translations.setdefault(int(example_id), {}).setdefault(field_name, {})[language] = value
+    return translations
 
 
 def _get_channel(slug, active_only=True):
@@ -4515,6 +4626,30 @@ def _submission_attempt_groups(submission, request=None):
             )
         entry['reviews'] = reviews_by_attempt.get(attempt, [])
         if request is not None:
+            field_map = {
+                field.field_key: field
+                for field in submission.channel.fields.all()
+            }
+            from ..services.object_translations import translated_text
+
+            for field_info in entry.get('fields') or []:
+                field = field_map.get(field_info.get('field_key'))
+                if field is None:
+                    continue
+                field_info['label'] = (
+                    translated_text(field, 'label')
+                    or field_info.get('label')
+                    or field.label
+                )
+            for file_info in entry.get('files') or []:
+                field = field_map.get(file_info.get('field_key'))
+                if field is None:
+                    continue
+                file_info['field_label'] = (
+                    translated_text(field, 'label')
+                    or file_info.get('field_label')
+                    or field.label
+                )
             for file_info in entry.get('files') or []:
                 file_info['office_preview_url'] = _office_preview_url_for_name(
                     request,
@@ -5405,6 +5540,14 @@ def manage_form_channels(request, channel_id=None):
         'channel_summary': channel_summary,
         'current': current,
         'is_creating': is_creating or current is None,
+        'auto_translate_enabled': bool(SiteSettings.get_settings().auto_translate_enabled),
+        'translation_languages': [
+            (code, label) for code, label in (
+                ('en', 'English'),
+                ('ug', 'ئۇيغۇرچە'),
+                ('mn', 'Монгол'),
+            )
+        ],
         'field_types': FormField.FIELD_TYPE_CHOICES,
         'builtin_actions': FormChannel.BUILTIN_ACTION_CHOICES,
         'submission_policies': FormChannel.SUBMISSION_POLICY_CHOICES,
@@ -5414,6 +5557,34 @@ def manage_form_channels(request, channel_id=None):
         'missing_required_field_infos': missing_field_infos,
         'locked_field_keys': locked_field_keys,
     })
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@require_POST
+def auto_translate_text(request):
+    """API: 调用 UAPI 翻译服务翻译单段文本，供通道/字段设置页一键翻译。"""
+    if not _is_admin(request.user):
+        return JsonResponse({'error': '仅管理员可以使用自动翻译'}, status=403)
+    from ..services.object_translations import (
+        TRANSLATION_LANGUAGES,
+        translate_text,
+    )
+
+    cfg = SiteSettings.get_settings()
+    if not cfg.auto_translate_enabled:
+        return JsonResponse({'error': '自动翻译未开启，请在站点设置中开启'}, status=400)
+    source = (request.POST.get('source') or '').strip()
+    target = (request.POST.get('target') or '').strip()
+    if not source:
+        return JsonResponse({'error': '源文本不能为空'}, status=400)
+    if target not in TRANSLATION_LANGUAGES:
+        return JsonResponse({'error': '不支持的目标语言'}, status=400)
+    try:
+        result = translate_text(source, target)
+    except Exception as exc:
+        logger.warning('auto translate api failed: %s', exc)
+        return JsonResponse({'error': f'翻译服务调用失败：{exc}'}, status=502)
+    return JsonResponse({'translated_text': result})
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -5463,6 +5634,7 @@ def save_form_channel(request, channel_id=None):
     else:
         try:
             channel.save()
+            _save_object_translations(channel, request.POST)
             example_files = request.FILES.getlist('example_files')
             for example_upload in example_files:
                 example_error = validate_upload(
@@ -5483,6 +5655,26 @@ def save_form_channel(request, channel_id=None):
                     )
                     for upload in example_files
                 ])
+            example_translations = _parse_example_file_translations(request.POST)
+            if example_translations:
+                from ..services.object_translations import save_object_translations
+
+                example_map = {
+                    example.pk: example
+                    for example in channel.example_files.filter(
+                        pk__in=example_translations.keys(),
+                    )
+                }
+                for example_id, translations in example_translations.items():
+                    example = example_map.get(example_id)
+                    if example is None:
+                        continue
+                    save_object_translations(
+                        example,
+                        translations,
+                        auto_translate=bool(SiteSettings.get_settings().auto_translate_enabled),
+                        source_texts={'name': example.display_name},
+                    )
             delete_ids = [
                 int(item) for item in request.POST.getlist('delete_example_file') if item.isdigit()
             ]
@@ -5575,6 +5767,7 @@ def save_form_field(request, channel_id, field_id=None):
     else:
         try:
             field.save()
+            _save_object_translations(field, request.POST)
             messages.success(request, _('字段已保存'))
         except IntegrityError:
             messages.error(request, _('字段标识已存在，请换一个 field_key'))
@@ -5605,6 +5798,7 @@ def create_form_channel_cycle(request, channel_id):
     channel = get_object_or_404(FormChannel, pk=channel_id)
     name = request.POST.get('name', '').strip()
     cycle = create_form_cycle(channel, name=name, user=request.user)
+    _save_object_translations(cycle, request.POST)
     messages.success(request, f'周期已创建：{cycle.name}')
     return redirect('clubs:manage_form_channels_detail', channel_id=channel_id)
 

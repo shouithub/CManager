@@ -3,7 +3,7 @@
 {% load static %}
 {% load common_tags %}
 
-{% block title %}{% blocktrans with __i18n1=submission.channel.name %}审核 {{ __i18n1 }}{% endblocktrans %}{% endblock %}
+{% block title %}{% blocktrans with __i18n1=submission.channel|tr:'name' %}审核 {{ __i18n1 }}{% endblocktrans %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -597,7 +597,7 @@
     <section class="page-header">
         <span class="page-icon"><span class="material-icons">{{ submission.channel.icon }}</span></span>
         <div>
-            <h1>{{ submission.channel.name }} · {{ submission.display_title }}</h1>
+            <h1>{{ submission.channel|tr:'name' }} · {{ submission.display_title }}</h1>
             <div class="meta-row">
                 <span>{% blocktrans with __i18n1=submission.public_id %}请求编号：{{ __i18n1 }}{% endblocktrans %}</span>
                 <span>{{ submission.club.name }}</span>
@@ -647,7 +647,7 @@
             <div class="field-item">
                 <div class="field-label">
                     <span class="material-icons">{% if row.field.field_type == 'file' %}attach_file{% else %}notes{% endif %}</span>
-                    {{ row.field.label }}
+                    {{ row.field|tr:'label' }}
                     {% if row.field.field_type != 'file' and row.review_status %}
                     <span class="item-status {{ row.review_status }}">{{ row.value_obj.get_review_status_display }}</span>
                     {% endif %}
@@ -687,7 +687,13 @@
                         </div>
                         {% empty %}{% trans '未上传' %}{% endfor %}
                     {% else %}
+                        {% if row.field.field_type == 'select' or row.field.field_type == 'radio' %}
+                        {{ row.value|tr_option_label:row.field|default:"-" }}
+                        {% elif row.field.field_type == 'checkbox' %}
+                        {% for item in row.value %}{{ item|tr_option_label:row.field }}{% if not forloop.last %}、{% endif %}{% empty %}-{% endfor %}
+                        {% else %}
                         {{ row.value|default:"-" }}
+                        {% endif %}
                         {% if row.review_comment %}<div class="item-comment">{{ row.review_comment }}</div>{% endif %}
                         {% if submission.status == 'pending' and row.value_obj %}
                         <div class="reject-control">

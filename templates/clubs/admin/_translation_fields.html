@@ -1,0 +1,41 @@
+{% load i18n %}
+{% load common_tags %}
+<div class="translation-panel" data-source-field="{{ source_id }}">
+    <div class="translation-panel-header" type="button" data-translation-toggle>
+        <span class="material-icons">translate</span>
+        <span>{% trans '多语言翻译' %}</span>
+        <span class="translation-toggle-icon material-icons">expand_more</span>
+    </div>
+    <div class="translation-panel-body" hidden>
+        {% for code, label in translation_languages %}
+        <div class="translation-row">
+            <div class="translation-language">
+                <span class="material-icons">language</span>
+                <span>{{ label }}</span>
+                <code>{{ code }}</code>
+            </div>
+            {% if is_options %}
+            <textarea class="field-control js-translation-input" name="translations[{{ field_name }}][{{ code }}]"
+                      rows="3" data-language="{{ code }}" data-translation-input placeholder="{% trans '每行一个译文选项，与源选项顺序一致' %}">{{ object|tr_options:field_name|join:"\n" }}</textarea>
+            {% elif is_textarea %}
+            <textarea class="field-control js-translation-input" name="translations[{{ field_name }}][{{ code }}]"
+                      rows="2" data-language="{{ code }}" data-translation-input>{{ object|tr:field_name }}</textarea>
+            {% else %}
+            <input class="field-control js-translation-input" name="translations[{{ field_name }}][{{ code }}]"
+                   data-language="{{ code }}" data-translation-input value="{{ object|tr:field_name }}">
+            {% endif %}
+            <button type="button" class="btn btn-outlined btn-sm js-auto-translate"
+                    data-language="{{ code }}" data-source-field="{{ source_id }}" {% if not auto_translate_enabled %}disabled title="{% trans '请在站点设置中开启自动翻译' %}"{% endif %}>
+                <span class="material-icons">auto_awesome</span>{% trans '自动翻译' %}
+            </button>
+        </div>
+        {% endfor %}
+        <p class="helper-text">
+            {% if auto_translate_enabled %}
+            {% trans '保存时，未填写译文的目标语言会尝试用源文案自动生成；也可点击右侧按钮单独翻译。' %}
+            {% else %}
+            {% trans '自动翻译未开启。可手动填写各语言译文，或在站点设置的“自动翻译”页签中开启。' %}
+            {% endif %}
+        </p>
+    </div>
+</div>

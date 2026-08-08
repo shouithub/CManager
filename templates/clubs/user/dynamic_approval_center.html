@@ -1,5 +1,6 @@
 {% extends base_template %}
 {% load i18n %}
+{% load common_tags %}
 
 {% block title %}{% trans '审批记录' %}{% endblock %}
 
@@ -417,7 +418,7 @@
         <section class="content-card">
             <div class="channel-card-header">
                 <h2 class="channel-title">
-                    <span class="material-icons">{{ group.channel.icon }}</span>{{ group.channel.name }}
+                    <span class="material-icons">{{ group.channel.icon }}</span>{{ group.channel|tr:'name' }}
                 </h2>
                 <span class="count-badge">{{ group.total_count }}</span>
             </div>
@@ -543,7 +544,7 @@
                             <span>{{ item.display_title }}</span>
                         </div>
                         <div class="record-meta">
-                            <span>{{ item.channel.name }}</span>
+                            <span>{{ item.channel|tr:'name' }}</span>
                             <span>{{ item.club.name }}</span>
                             <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                             <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
@@ -566,7 +567,7 @@
                                 <span>{{ item.display_title }}</span>
                             </div>
                             <div class="record-meta">
-                                <span>{{ item.channel.name }}</span>
+                                <span>{{ item.channel|tr:'name' }}</span>
                                 <span>{{ item.club.name }}</span>
                                 <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                                 <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
@@ -594,7 +595,7 @@
                             <span>{{ item.display_title }}</span>
                         </div>
                         <div class="record-meta">
-                            <span>{{ item.channel.name }}</span>
+                            <span>{{ item.channel|tr:'name' }}</span>
                             <span>{{ item.club.name }}</span>
                             <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                             <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>
@@ -617,7 +618,7 @@
                                 <span>{{ item.display_title }}</span>
                             </div>
                             <div class="record-meta">
-                                <span>{{ item.channel.name }}</span>
+                                <span>{{ item.channel|tr:'name' }}</span>
                                 <span>{{ item.club.name }}</span>
                                 <span>{% blocktrans with __i18n1=item.public_id %}编号 {{ __i18n1 }}{% endblocktrans %}</span>
                                 <span>{{ item.submitted_at|date:"Y-m-d H:i" }}</span>

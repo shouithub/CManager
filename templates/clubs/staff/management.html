@@ -1,6 +1,7 @@
 {% extends base_template %}
 {% load i18n %}
 {% load static %}
+{% load common_tags %}
 
 {% block title %}{% trans '社团管理' %}{% endblock %}
 
@@ -211,7 +212,7 @@
             
             {% for channel in toggle_channels %}
             <div class="control-group">
-                <span class="control-label">{{ channel.name }}:</span>
+                <span class="control-label">{{ channel|tr:'name' }}:</span>
                 <div class="control-button-group">
                     <form method="post" action="{% url 'clubs:toggle_form_channel_cycle' channel.id %}" style="margin: 0;">
                         {% csrf_token %}
@@ -222,7 +223,7 @@
                     </form>
                 </div>
                 {% if channel.active_cycle %}
-                <span style="font-size: 13px; color: var(--md3-on-surface-variant);">{% blocktrans with __i18n1=channel.active_cycle.name %}当前周期：{{ __i18n1 }}{% endblocktrans %}</span>
+                {% with cycle_name=channel.active_cycle|tr:'name' %}<span style="font-size: 13px; color: var(--md3-on-surface-variant);">{% blocktrans with __i18n1=cycle_name %}当前周期：{{ __i18n1 }}{% endblocktrans %}</span>{% endwith %}
                 {% elif channel.needs_cycle %}
                 <span style="font-size: 13px; color: var(--md3-on-surface-variant);">{% trans '当前未开启收集周期' %}</span>
                 {% endif %}
@@ -317,7 +318,7 @@
                             <th class="club-col-president">{% trans '社长' %}</th>
                             <th class="club-col-status">{% trans '状态' %}</th>
                             {% for channel in toggle_channels %}
-                            <th class="club-col-channel">{{ channel.name }}</th>
+                            <th class="club-col-channel">{{ channel|tr:'name' }}</th>
                             {% endfor %}
                             <th class="club-col-actions">{% trans '操作' %}</th>
                         </tr>
@@ -357,14 +358,14 @@
                                 {% endif %}
                             </td>
                             {% for state in club.dynamic_channel_states %}
-                            <td class="club-col-channel" data-label="{{ state.channel.name }}">
+                            <td class="club-col-channel" data-label="{{ state.channel|tr:'name' }}">
                                 <form method="post" action="{% url 'clubs:toggle_club_form_channel' state.channel.id club.id %}" class="channel-toggle-form">
                                     {% csrf_token %}
                                     <a
                                         href="#"
                                         role="button"
                                         class="channel-toggle-pill {% if state.is_enabled %}enabled{% else %}disabled{% endif %}"
-                                        title="切换 {{ club.name }} 的{{ state.channel.name }}"
+                                        title="切换 {{ club.name }} 的{{ state.channel|tr:'name' }}"
                                         onclick="this.closest('form').submit(); return false;"
                                         onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.closest('form').submit(); }"
                                     >

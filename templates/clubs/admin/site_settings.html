@@ -831,6 +831,72 @@
     .ia-cravatar-preview img { margin: 0 auto; }
 }
 
+/* ===== 横向选项卡导航 ===== */
+.ia-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 4px 0 20px;
+    border-bottom: 1px solid var(--md3-outline-variant);
+}
+
+.ia-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: none;
+    border: none;
+    padding: 11px 18px;
+    font-size: 0.94rem;
+    font-weight: 600;
+    color: var(--md3-on-surface-variant);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.18s ease, background-color 0.18s ease;
+    border-radius: var(--md3-radius-lg) var(--md3-radius-lg) 0 0;
+}
+
+.ia-tab-btn:hover {
+    background: var(--md3-surface-container-high);
+    color: var(--md3-on-surface);
+}
+
+.ia-tab-btn.active {
+    color: var(--md3-primary);
+}
+
+.ia-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--md3-primary);
+    border-radius: 3px 3px 0 0;
+}
+
+.ia-tab-panel {
+    display: none;
+}
+
+.ia-tab-panel.active {
+    display: block;
+}
+
+@media (max-width: 700px) {
+    .ia-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    .ia-tab-btn {
+        flex: 0 0 auto;
+        padding: 10px 13px;
+        font-size: 0.86rem;
+    }
+}
+
 
 </style>
 
@@ -879,6 +945,18 @@
 </div>
 
 
+
+<!-- 横向选项卡 -->
+<div class="ia-tabs" role="tablist">
+  <button class="ia-tab-btn active" data-tab="basic" onclick="switchSiteTab('basic', this)">
+    <span class="material-icons">public</span>{% trans '站点信息与资源' %}</button>
+  <button class="ia-tab-btn" data-tab="branding" onclick="switchSiteTab('branding', this)">
+    <span class="material-icons">image</span>{% trans '图标与头像' %}</button>
+  <button class="ia-tab-btn" data-tab="translate" onclick="switchSiteTab('translate', this)">
+    <span class="material-icons">translate</span>{% trans '自动翻译' %}</button>
+</div>
+
+<div id="tab-branding" class="ia-tab-panel">
 
 
 
@@ -1033,6 +1111,12 @@
     </div>
   </form>
 </div>
+
+
+</div>{# /tab-branding #}
+
+<div id="tab-basic" class="ia-tab-panel active">
+
 
 
 <!-- ③ 站点信息 -->
@@ -1385,6 +1469,70 @@
 
 
 
+</div>{# /tab-basic #}
+
+
+
+<!-- ⑥ 自动翻译 -->
+<div id="tab-translate" class="ia-tab-panel">
+  <div class="ia-section">
+    <div class="ia-section-title">
+      <span class="material-icons">translate</span>{% trans '内容自动翻译' %}</div>
+    <form method="post" id="auto-translate-settings-form">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="auto_translate_settings">
+      <div class="ia-card">
+        <div class="ia-card-header">
+          <span class="material-icons">auto_awesome</span>
+          <h2>{% trans 'UAPI 翻译服务' %}</h2>
+        </div>
+        <div class="ia-card-body">
+          <label class="ia-avatar-provider">
+            <input type="checkbox" name="auto_translate_enabled" {% if cfg.auto_translate_enabled %}checked{% endif %}>
+            <span>
+              <strong>{% trans '开启内容自动翻译' %}</strong>
+              <span>{% trans '开启后，通道与字段设置页可一键调用翻译服务生成英文、维吾尔语和蒙古语文案；关闭时仅保留手动填写。' %}</span>
+            </span>
+          </label>
+
+          <div class="ia-field" style="margin-top:18px;">
+            <label for="translation_api_base_url">{% trans '翻译服务地址' %}</label>
+            <input type="url" name="translation_api_base_url" id="translation_api_base_url"
+                   value="{{ cfg.translation_api_base_url|default:'https://uapis.cn' }}" class="form-control"
+                   placeholder="https://uapis.cn">
+            <div class="ia-helper">
+              <span class="material-icons">info</span>{% trans '默认使用 UAPI 公共翻译服务；自建或兼容网关请填完整地址，例如 https://uapis.cn。' %}
+            </div>
+          </div>
+
+          <div class="ia-field" style="margin-top:14px;">
+            <label for="translation_api_key">{% trans '翻译服务 API Key（可选）' %}</label>
+            <input type="password" name="translation_api_key" id="translation_api_key"
+                   value="" class="form-control" autocomplete="new-password"
+                   placeholder="{% if cfg.translation_api_key %}{% trans '已配置，留空保持不变' %}{% else %}{% trans '公共接口匿名调用可用，留空即可' %}{% endif %}">
+            <div class="ia-helper">
+              <span class="material-icons">key</span>{% trans 'UAPI 控制台可申请 Key；匿名调用也可用。如需清除已保存的 Key，请勾选下方选项。' %}
+            </div>
+            <label class="switch-label" style="margin-top:10px;">
+              <input type="checkbox" name="clear_translation_api_key">{% trans '清除已保存的 API Key' %}</label>
+          </div>
+
+          <div class="ia-helper" style="margin-top:16px;">
+            <span class="material-icons">link</span>
+            <a href="https://uapis.cn/docs/api-reference/post-translate-text" target="_blank" rel="noopener noreferrer">
+              {% trans '查看 UAPI 翻译接口文档' %}</a>
+          </div>
+
+          <div class="ia-actions">
+            <button type="submit" class="btn btn-filled">
+              <span class="material-icons">save</span>{% trans '保存自动翻译设置' %}</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>{# /tab-translate #}
+
 </div>{# /ia-container #}
 
 
@@ -1500,6 +1648,28 @@
     }
   });
 })();
+</script>
+
+<script>
+function switchSiteTab(tabId, trigger) {
+    document.querySelectorAll('.ia-tab-panel').forEach(function (panel) {
+        panel.classList.remove('active');
+    });
+    document.querySelectorAll('.ia-tab-btn').forEach(function (btn) {
+        btn.classList.remove('active');
+    });
+    var targetPanel = document.getElementById('tab-' + tabId);
+    if (targetPanel) targetPanel.classList.add('active');
+    var activeButton = trigger || document.querySelector('.ia-tab-btn[data-tab="' + tabId + '"]');
+    if (activeButton) activeButton.classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    var requestedTab = new URLSearchParams(window.location.search).get('tab');
+    if (requestedTab && document.getElementById('tab-' + requestedTab)) {
+        switchSiteTab(requestedTab);
+    }
+});
 </script>
 
 

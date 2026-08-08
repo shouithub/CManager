@@ -1,9 +1,116 @@
 import os
 
 from django import template
+from django.utils.translation import get_language
 
 
 register = template.Library()
+
+
+@register.filter
+def tr(value, field_name=''):
+    """按当前语言返回对象字段译文；没有译文时回退到原始字段值。
+
+    用法：{{ channel.name|tr:'name' }} 或 {{ field.label|tr:'label' }}。
+    源语言或未配置译文时直接返回原始值，避免任何页面因为缺少译文而空白。
+    """
+    if value is None:
+        return ''
+    lang = get_language() or 'zh-hans'
+    if lang == 'zh-hans':
+        return _tr_fallback(value, str(field_name or ''))
+    from ..services.object_translations import translated_text
+
+    obj = value
+    text = translated_text(obj, str(field_name or ''), languages=[lang])
+    if text:
+        return text
+    return _tr_fallback(obj, str(field_name or ''))
+
+
+def _tr_fallback(value, field_name):
+    """译文缺失时回退到字段原始值；兼容 display_* 展示属性。"""
+    if not field_name:
+        return value
+    raw = getattr(value, field_name, None)
+    if raw is not None:
+        return raw
+    display_attr = getattr(value, f'display_{field_name}', None)
+    if display_attr is not None:
+        return display_attr
+    return getattr(value, field_name, value)
+
+
+@register.filter
+def tr_options(value, field_name='options'):
+    """按当前语言返回对象 options 字段的译文文本列表（与原始选项按索引对齐）。
+
+    用法：{{ field|tr_options }}，无译文时逐项回退原文。
+    """
+    return _translated_options(value, field_name)
+
+
+@register.filter
+def tr_option_pairs(value, field_name='options'):
+    """按当前语言返回 (原始值, 译文标签) 对，供选择类字段渲染时保留提交值。
+
+    用法：{% for value, label in field|tr_option_pairs %}...
+    """
+    raw_options = _raw_option_list(value, field_name)
+    translated = _translated_options(value, field_name)
+    return list(zip(raw_options, translated))
+
+
+@register.filter
+def tr_option_label(value, field):
+    """按当前语言返回选择类字段某个原始选项的译文标签。
+
+    用法：{{ option_value|tr_option_label:field }}；未配置译文时返回原始值。
+    """
+    if value is None:
+        return ''
+    for raw, label in tr_option_pairs(field):
+        if str(raw) == str(value):
+            return label
+    return value
+
+
+def _raw_option_list(value, field_name='options'):
+    if value is None:
+        return []
+    raw_options = getattr(value, str(field_name or 'options'), []) or []
+    return [str(item) for item in raw_options] if isinstance(raw_options, list) else []
+
+
+def _translated_options(value, field_name='options'):
+    import json
+
+    if value is None:
+        return []
+    lang = get_language() or 'zh-hans'
+    obj = value
+    raw_options = _raw_option_list(obj, field_name)
+    if lang == 'zh-hans':
+        return raw_options
+    from ..services.object_translations import translated_text
+
+    object_type = getattr(obj, '_meta', None) and getattr(obj._meta, 'model_name', None)
+    pk = getattr(obj, 'pk', None)
+    if not object_type or not pk:
+        return raw_options
+    try:
+        translated = translated_text(obj, str(field_name), languages=[lang])
+        if not translated:
+            return raw_options
+        parsed = json.loads(translated)
+        if not isinstance(parsed, list):
+            return raw_options
+    except Exception:
+        return raw_options
+    return [
+        str(parsed[index]) if index < len(parsed) and str(parsed[index]).strip() else str(item)
+        for index, item in enumerate(raw_options)
+    ]
 
 
 @register.filter

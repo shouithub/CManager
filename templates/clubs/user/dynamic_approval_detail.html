@@ -1,5 +1,6 @@
 {% extends base_template %}
 {% load i18n %}
+{% load common_tags %}
 {% load static %}
 
 {% block title %}{% trans '提交详情' %}{% endblock %}
@@ -533,7 +534,7 @@
     <section class="page-header">
         <span class="page-icon"><span class="material-icons">{{ submission.channel.icon }}</span></span>
         <div>
-            <h1>{{ submission.channel.name }} · {{ submission.display_title }}</h1>
+            <h1>{{ submission.channel|tr:'name' }} · {{ submission.display_title }}</h1>
             <div class="meta-row">
                 <span>{{ submission.club.name }}</span>
                 <span>{% blocktrans with __i18n1=submission.public_id %}请求编号：{{ __i18n1 }}{% endblocktrans %}</span>
