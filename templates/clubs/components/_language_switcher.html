@@ -1,0 +1,31 @@
+{% load i18n %}
+<div class="sidebar-lang-toggle{% if toggle_class %} {{ toggle_class }}{% endif %}"
+     id="{{ toggle_id }}"
+     onclick="toggleLangDropdown(event, '{{ dropdown_id }}', '{{ toggle_id }}')"
+     title="{% trans '界面语言' %}"
+     aria-haspopup="true"
+     aria-expanded="false">
+    <span class="material-icons">language</span>
+    <span class="lang-text">{{ LANGUAGE_CODE|language_name_local }}</span>
+    <span class="material-icons lang-caret">expand_more</span>
+</div>
+<div class="sidebar-lang-dropdown{% if dropdown_class %} {{ dropdown_class }}{% endif %}"
+     id="{{ dropdown_id }}"
+     role="menu"
+     aria-labelledby="{{ toggle_id }}">
+    {% get_available_languages as LANGUAGES %}
+    {% get_language_info_list for LANGUAGES as languages %}
+    {% for lang in languages %}
+    <form method="post" action="{% url 'set_language' %}">
+        {% csrf_token %}
+        <input type="hidden" name="language" value="{{ lang.code }}">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" role="menuitem"{% if lang.code == LANGUAGE_CODE %} class="current" aria-current="true"{% endif %}>
+            <span class="lang-name">{{ lang.name_local }}</span>
+            <span class="lang-check"{% if lang.code != LANGUAGE_CODE %} aria-hidden="true"{% endif %}>
+                {% if lang.code == LANGUAGE_CODE %}<span class="material-icons">check</span>{% endif %}
+            </span>
+        </button>
+    </form>
+    {% endfor %}
+</div>

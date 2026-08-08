@@ -2778,66 +2778,6 @@ body.sidebar-resizing {
     color: var(--md3-error);
 }
 
-/* 语言切换下拉：条目是 button，复用用户下拉的视觉模式 */
-.sidebar-lang-dropdown {
-    bottom: calc(100% + 44px) !important;
-}
-
-.sidebar-lang-dropdown button {
-    display: flex;
-    align-items: center;
-    gap: var(--md3-spacing-md);
-    padding: var(--md3-spacing-md) var(--md3-spacing-lg);
-    color: var(--md3-on-surface);
-    background: transparent;
-    border: 0;
-    width: 100%;
-    cursor: pointer;
-    font: inherit;
-    font-size: 0.875rem;
-    line-height: 20px;
-    letter-spacing: 0.1px;
-    text-align: left;
-    position: relative;
-    transition: background-color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
-}
-
-.sidebar-lang-dropdown button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--md3-on-surface);
-    opacity: 0;
-    transition: opacity var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
-}
-
-.sidebar-lang-dropdown button:hover::before {
-    opacity: 0.08;
-}
-
-.sidebar-lang-dropdown button:active::before {
-    opacity: 0.12;
-}
-
-.sidebar-lang-dropdown button span {
-    position: relative;
-    z-index: 1;
-}
-
-.sidebar-lang-dropdown button.current {
-    color: var(--md3-primary);
-    font-weight: 600;
-}
-
-.sidebar-lang-dropdown .lang-check {
-    width: 24px;
-    font-size: 20px;
-    text-align: center;
-}
-
 .sidebar-theme-toggle {
     display: flex;
     align-items: center;
@@ -3077,6 +3017,34 @@ body.sidebar-resizing {
     .sidebar-user-dropdown.active {
         display: block !important;
         animation: slideUpMobile var(--md3-motion-duration-short4) var(--md3-motion-easing-standard);
+    }
+
+    /* 移动端语言菜单同样固定在底栏上方 */
+    .sidebar-lang-dropdown {
+        position: fixed !important;
+        bottom: 68px !important;
+        top: auto !important;
+        left: 5% !important;
+        right: auto !important;
+        width: 60%;
+        max-width: 260px;
+        transform: none;
+    }
+
+    .sidebar-lang-dropdown.active {
+        display: block !important;
+        animation: slideUpMobile var(--md3-motion-duration-short4) var(--md3-motion-easing-standard);
+    }
+
+    /* 未登录页浮动语言菜单保持在按钮下方，不贴移动端底栏 */
+    .auth-lang-dropdown {
+        bottom: auto !important;
+        top: 64px !important;
+        left: auto !important;
+        right: 16px !important;
+        width: 220px;
+        max-width: calc(100vw - 32px);
+        transform: none;
     }
     
     @keyframes slideUpMobile {
@@ -4301,43 +4269,111 @@ fieldset legend {
 .sidebar-lang-toggle {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    border-radius: 999px;
+    gap: var(--md3-spacing-md);
+    padding: var(--md3-spacing-md) var(--md3-spacing-lg);
+    margin-bottom: var(--md3-spacing-md);
+    background-color: var(--md3-surface-container-low);
+    border: 1px solid var(--md3-outline-variant);
+    border-radius: var(--md3-radius-lg);
+    color: var(--md3-on-surface);
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    color: var(--md3-on-surface-variant);
-    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    transition: background-color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard), border-color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
 }
 
-.sidebar-lang-toggle:hover {
-    background: var(--md3-surface-container-high);
+.sidebar-lang-toggle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--md3-on-surface);
+    opacity: 0;
+    transition: opacity var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+}
+
+.sidebar-lang-toggle:hover::before {
+    opacity: 0.08;
+}
+
+.sidebar-lang-toggle:active::before {
+    opacity: 0.12;
 }
 
 .sidebar-lang-toggle .material-icons {
     font-size: 1.25rem;
+    color: var(--md3-primary);
+    position: relative;
+    z-index: 1;
+}
+
+.sidebar-lang-toggle .lang-text {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+    font-size: 0.875rem;
+    line-height: 20px;
+    letter-spacing: 0.1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-lang-toggle .lang-caret {
+    font-size: 1.1rem;
+    color: var(--md3-on-surface-variant);
 }
 
 .sidebar-lang-dropdown {
-    bottom: calc(100% + 44px);
-    left: 16px;
-    right: 16px;
+    display: none;
+    position: absolute !important;
+    left: var(--md3-spacing-md);
+    right: var(--md3-spacing-md);
+    bottom: calc(100% + 8px);
+    z-index: 1000;
+    background-color: var(--md3-surface-container-high);
+    border-radius: var(--md3-radius-lg);
+    padding: 8px 0;
+    box-shadow: var(--md3-elevation-2);
+    overflow: hidden;
+}
+
+.sidebar-lang-dropdown.active {
+    display: block;
+    animation: slideUp var(--md3-motion-duration-short4) var(--md3-motion-easing-standard);
+}
+
+.sidebar-lang-dropdown form {
+    margin: 0;
 }
 
 .sidebar-lang-dropdown button {
-    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 10px 14px;
-    border: none;
+    gap: var(--md3-spacing-md);
+    width: 100%;
+    padding: 12px var(--md3-spacing-lg);
+    border: 0;
     background: transparent;
     color: var(--md3-on-surface);
     cursor: pointer;
-    text-align: left;
     font: inherit;
-    border-radius: 8px;
+    font-size: 0.875rem;
+    line-height: 20px;
+    letter-spacing: 0.1px;
+    text-align: left;
+    position: relative;
+    transition: background-color var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
+}
+
+.sidebar-lang-dropdown button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--md3-on-surface);
+    opacity: 0;
+    transition: opacity var(--md3-motion-duration-short2) var(--md3-motion-easing-standard);
 }
 
 .sidebar-lang-dropdown button:hover,
@@ -4345,7 +4381,72 @@ fieldset legend {
     background: var(--md3-surface-container-high);
 }
 
-.sidebar-lang-dropdown button .material-icons {
-    font-size: 1.1rem;
+.sidebar-lang-dropdown button:hover::before {
+    opacity: 0.08;
+}
+
+.sidebar-lang-dropdown button:active::before {
+    opacity: 0.12;
+}
+
+.sidebar-lang-dropdown .lang-name {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-lang-dropdown .lang-check {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.sidebar-lang-dropdown .lang-check .material-icons {
+    font-size: 1.15rem;
     color: var(--md3-primary);
+}
+
+.sidebar-lang-dropdown button.current {
+    color: var(--md3-primary);
+    font-weight: 600;
+}
+
+/* 未登录页面右上角浮动语言切换（复用上方 MD3 样式） */
+.auth-lang-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1200;
+    margin-bottom: 0;
+    box-shadow: var(--md3-elevation-2);
+}
+
+.auth-lang-dropdown {
+    position: fixed !important;
+    top: 64px;
+    bottom: auto;
+    left: auto;
+    right: 16px;
+    width: 220px;
+    max-width: calc(100vw - 32px);
+    transform-origin: top right;
+}
+
+[dir="rtl"] .auth-lang-toggle {
+    right: auto;
+    left: 16px;
+}
+
+[dir="rtl"] .auth-lang-dropdown {
+    right: auto;
+    left: 16px;
+    transform-origin: top left;
 }

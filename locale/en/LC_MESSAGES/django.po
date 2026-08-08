@@ -1,9 +1,3 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -22,35 +16,35 @@ msgstr ""
 #: templates/clubs/staff/management.html:5
 #: templates/clubs/staff/management.html:195
 msgid "社团管理"
-msgstr ""
+msgstr "Club Management"
 
 #: clubs/i18n_extra.py:4
 msgid "暂无描述"
-msgstr ""
+msgstr "No description"
 
 #: clubs/i18n_extra.py:5
 msgid "未发布"
-msgstr ""
+msgstr "Unpublished"
 
 #: clubs/i18n_extra.py:6
 msgid "未填写"
-msgstr ""
+msgstr "Not filled"
 
 #: clubs/i18n_extra.py:7
 msgid "未设置邮箱"
-msgstr ""
+msgstr "Email not set"
 
 #: clubs/i18n_extra.py:8 templates/clubs/base.html:382
 msgid "用户管理"
-msgstr ""
+msgstr "User Management"
 
 #: clubs/i18n_extra.py:9
 msgid "管理所有用户账户和权限"
-msgstr ""
+msgstr "Manage all user accounts and permissions"
 
 #: clubs/i18n_extra.py:10
 msgid "系统用户管理"
-msgstr ""
+msgstr "System User Management"
 
 #: clubs/models.py:73 clubs/models.py:288 clubs/models.py:925
 msgid "用户"
@@ -58,7 +52,7 @@ msgstr "User"
 
 #: clubs/models.py:74 templates/clubs/admin/admin_edit_user_account.html:371
 msgid "角色"
-msgstr ""
+msgstr "Role"
 
 #: clubs/models.py:77 clubs/models.py:314 clubs/models.py:584
 #: clubs/models.py:819 clubs/models.py:1080 clubs/models.py:1120
@@ -181,7 +175,7 @@ msgstr ""
 #: clubs/models.py:1121 clubs/models.py:1335 clubs/models.py:1413
 #: templates/clubs/admin/edit_announcement.html:440
 msgid "创建时间"
-msgstr ""
+msgstr "Created At"
 
 #: clubs/models.py:136 clubs/models.py:183 clubs/models.py:317
 #: clubs/models.py:418 clubs/models.py:479 clubs/models.py:525
@@ -190,7 +184,7 @@ msgstr ""
 #: clubs/models.py:1082 clubs/models.py:1122 clubs/models.py:1336
 #: clubs/models.py:1414
 msgid "更新时间"
-msgstr ""
+msgstr "Updated At"
 
 #: clubs/models.py:162 clubs/models.py:163
 #: templates/clubs/admin/create_user.html:380
@@ -322,11 +316,11 @@ msgstr ""
 #: clubs/models.py:400 templates/clubs/admin/form_channels.html:1212
 #: templates/clubs/admin/form_channels.html:1607
 msgid "通道名称"
-msgstr ""
+msgstr "Channel Name"
 
 #: clubs/models.py:401
 msgid "通道标识"
-msgstr ""
+msgstr "Channel Slug"
 
 #: clubs/models.py:402
 msgid "图标"
@@ -334,7 +328,7 @@ msgstr ""
 
 #: clubs/models.py:403
 msgid "说明"
-msgstr ""
+msgstr "Description"
 
 #: clubs/models.py:404 clubs/models.py:517 clubs/models.py:1012
 #: clubs/models.py:1035 templates/clubs/admin/form_channels.html:1242
@@ -342,7 +336,7 @@ msgstr ""
 #: templates/clubs/admin/form_channels.html:1513
 #: templates/clubs/admin/form_channels.html:1619
 msgid "排序"
-msgstr ""
+msgstr "Order"
 
 #: clubs/models.py:405 clubs/models.py:457 clubs/models.py:478
 #: clubs/models.py:523 clubs/views/core.py:1914
@@ -351,32 +345,32 @@ msgstr ""
 #: templates/clubs/admin/form_channels.html:1593
 #: templates/clubs/admin/manage_users.html:1136
 msgid "启用"
-msgstr ""
+msgstr "Enabled"
 
 #: clubs/models.py:406 templates/clubs/admin/edit_announcement.html:450
 #: templates/clubs/admin/form_channels.html:1255
 #: templates/clubs/admin/form_channels.html:1632
 #: templates/clubs/admin/publish_announcement.html:453
 msgid "发布状态"
-msgstr ""
+msgstr "Publish Status"
 
 #: clubs/models.py:407
 msgid "内置通道"
-msgstr ""
+msgstr "Built-in Channel"
 
 #: clubs/models.py:408
 msgid "内置动作"
-msgstr ""
+msgstr "Built-in Action"
 
 #: clubs/models.py:409 templates/clubs/admin/form_channels.html:1272
 #: templates/clubs/admin/form_channels.html:1649
 msgid "提交策略"
-msgstr ""
+msgstr "Submission Policy"
 
 #: clubs/models.py:410 templates/clubs/admin/form_channels.html:1246
 #: templates/clubs/admin/form_channels.html:1623
 msgid "所需通过次数"
-msgstr ""
+msgstr "Required Approvals"
 
 #: clubs/models.py:411 templates/clubs/admin/_channel_settings_grid.html:26
 msgid "显示打包 ZIP 下载"
@@ -384,11 +378,11 @@ msgstr ""
 
 #: clubs/models.py:413
 msgid "显示未提交告警"
-msgstr ""
+msgstr "Show Unsubmitted Alert"
 
 #: clubs/models.py:414 templates/clubs/admin/_channel_alert_settings.html:18
 msgid "告警颜色"
-msgstr ""
+msgstr "Alert Color"
 
 #: clubs/models.py:416 templates/clubs/admin/form_channels.html:1280
 #: templates/clubs/admin/form_channels.html:1657
@@ -397,17 +391,17 @@ msgstr ""
 
 #: clubs/models.py:421 clubs/models.py:422
 msgid "提交通道"
-msgstr ""
+msgstr "Submission Channel"
 
 #: clubs/models.py:432 clubs/models.py:454 clubs/models.py:476
 #: clubs/models.py:579 templates/clubs/admin/form_channels.html:1158
 msgid "通道"
-msgstr ""
+msgstr "Channel"
 
 #: clubs/models.py:433 clubs/models.py:522
 #: templates/clubs/user/dynamic_form_submit.html:757
 msgid "示例文件"
-msgstr ""
+msgstr "Sample Files"
 
 #: clubs/models.py:434 clubs/models.py:733
 msgid "显示文件名"
@@ -424,11 +418,11 @@ msgstr ""
 
 #: clubs/models.py:455
 msgid "周期名称"
-msgstr ""
+msgstr "Cycle Name"
 
 #: clubs/models.py:456
 msgid "周期序号"
-msgstr ""
+msgstr "Cycle Number"
 
 #: clubs/models.py:458 clubs/models.py:1055 clubs/models.py:1109
 #: templates/clubs/admin/booking_management.html:338
@@ -436,7 +430,7 @@ msgstr ""
 #: templates/clubs/edit_room_booking.html:251
 #: templates/clubs/submit_room_booking.html:311
 msgid "开始时间"
-msgstr ""
+msgstr "Start Time"
 
 #: clubs/models.py:459 clubs/models.py:1056 clubs/models.py:1110
 #: templates/clubs/admin/booking_management.html:339
@@ -444,7 +438,7 @@ msgstr ""
 #: templates/clubs/edit_room_booking.html:262
 #: templates/clubs/submit_room_booking.html:318
 msgid "结束时间"
-msgstr ""
+msgstr "End Time"
 
 #: clubs/models.py:464 clubs/models.py:465
 msgid "表单周期"
@@ -464,38 +458,38 @@ msgstr ""
 
 #: clubs/models.py:513
 msgid "字段名称"
-msgstr ""
+msgstr "Field Name"
 
 #: clubs/models.py:514
 msgid "字段标识"
-msgstr ""
+msgstr "Field Key"
 
 #: clubs/models.py:515
 msgid "字段类型"
-msgstr ""
+msgstr "Field Type"
 
 #: clubs/models.py:516 templates/clubs/admin/form_channels.html:1479
 #: templates/clubs/admin/form_channels.html:1592
 msgid "必填"
-msgstr ""
+msgstr "Required"
 
 #: clubs/models.py:518 templates/clubs/change_club_status.html:260
 msgid "提示"
-msgstr ""
+msgstr "Notice"
 
 #: clubs/models.py:519 templates/clubs/admin/form_channels.html:1402
 #: templates/clubs/admin/form_channels.html:1519
 msgid "占位提示"
-msgstr ""
+msgstr "Placeholder"
 
 #: clubs/models.py:520 templates/clubs/admin/form_channels.html:1432
 #: templates/clubs/admin/form_channels.html:1549
 msgid "选项"
-msgstr ""
+msgstr "Options"
 
 #: clubs/models.py:521
 msgid "校验规则"
-msgstr ""
+msgstr "Validation Rules"
 
 #: clubs/models.py:528 clubs/models.py:529
 msgid "表单字段"
@@ -507,40 +501,40 @@ msgstr ""
 
 #: clubs/models.py:582
 msgid "提交人"
-msgstr ""
+msgstr "Submitter"
 
 #: clubs/models.py:583
 msgid "周期"
-msgstr ""
+msgstr "Cycle"
 
 #: clubs/models.py:585 clubs/models.py:673
 msgid "审核人"
-msgstr ""
+msgstr "Reviewer"
 
 #: clubs/models.py:586 clubs/models.py:675
 #: templates/clubs/staff/dynamic_submission_review.html:710
 msgid "审核意见"
-msgstr ""
+msgstr "Review Comment"
 
 #: clubs/models.py:587
 msgid "提交时间"
-msgstr ""
+msgstr "Submitted At"
 
 #: clubs/models.py:588 clubs/models.py:677
 msgid "审核时间"
-msgstr ""
+msgstr "Reviewed At"
 
 #: clubs/models.py:589 clubs/models.py:676
 msgid "提交次数"
-msgstr ""
+msgstr "Submission Count"
 
 #: clubs/models.py:590
 msgid "已读"
-msgstr ""
+msgstr "Read"
 
 #: clubs/models.py:591
 msgid "扩展信息"
-msgstr ""
+msgstr "Extra Info"
 
 #: clubs/models.py:594 clubs/models.py:595
 msgid "动态表单提交"
@@ -554,7 +548,7 @@ msgstr "Submit"
 
 #: clubs/models.py:674
 msgid "审核结果"
-msgstr ""
+msgstr "Review Result"
 
 #: clubs/models.py:680 clubs/models.py:681
 msgid "动态表单审核记录"
@@ -562,7 +556,7 @@ msgstr ""
 
 #: clubs/models.py:704 clubs/models.py:731
 msgid "字段"
-msgstr ""
+msgstr "Field"
 
 #: clubs/models.py:705
 msgid "文本值"
@@ -586,7 +580,7 @@ msgstr ""
 
 #: clubs/models.py:732
 msgid "文件"
-msgstr ""
+msgstr "File"
 
 #: clubs/models.py:734
 msgid "文件审核状态"
@@ -622,11 +616,11 @@ msgstr ""
 
 #: clubs/models.py:795 clubs/models.py:1013
 msgid "上传者"
-msgstr ""
+msgstr "Uploader"
 
 #: clubs/models.py:798 clubs/models.py:1058 clubs/models.py:1291
 msgid "是否启用"
-msgstr ""
+msgstr "Enabled"
 
 #: clubs/models.py:801 clubs/models.py:802
 msgid "模板"
@@ -637,33 +631,33 @@ msgstr ""
 #: templates/clubs/admin/edit_announcement.html:401
 #: templates/clubs/admin/publish_announcement.html:405
 msgid "公告标题"
-msgstr ""
+msgstr "Announcement Title"
 
 #: clubs/models.py:818 templates/clubs/admin/edit_announcement.html:398
 #: templates/clubs/admin/publish_announcement.html:419
 msgid "公告内容"
-msgstr ""
+msgstr "Announcement Content"
 
 #: clubs/models.py:820
 #: templates/clubs/admin/confirm_delete_announcement.html:31
 msgid "发布者"
-msgstr ""
+msgstr "Publisher"
 
 #: clubs/models.py:823 clubs/models.py:894
 #: templates/clubs/admin/confirm_delete_announcement.html:49
 #: templates/clubs/admin/edit_announcement.html:444
 msgid "发布时间"
-msgstr ""
+msgstr "Published At"
 
 #: clubs/models.py:825
 msgid "附件"
-msgstr ""
+msgstr "Attachment"
 
 #: clubs/models.py:829 clubs/models.py:1011
 #: templates/clubs/admin/carousel_form.html:526
 #: templates/clubs/admin/edit_announcement.html:420
 msgid "跳转链接"
-msgstr ""
+msgstr "Link"
 
 #: clubs/models.py:830
 msgid "可填写站内路径（如 /clubs/）或 http(s) 完整地址"
@@ -680,7 +674,7 @@ msgstr "Announcement"
 #: templates/clubs/admin/manage_users.html:1023
 #: templates/clubs/auth/register.html:196
 msgid "干事"
-msgstr ""
+msgstr "Staff"
 
 #: clubs/models.py:852
 msgid "分配时间"
@@ -700,11 +694,11 @@ msgstr ""
 
 #: clubs/models.py:882
 msgid "活动名称"
-msgstr ""
+msgstr "Activity Name"
 
 #: clubs/models.py:883 templates/clubs/public_activities.html:665
 msgid "活动类型"
-msgstr ""
+msgstr "Activity Type"
 
 #: clubs/models.py:884
 msgid "活动描述"
@@ -712,19 +706,19 @@ msgstr ""
 
 #: clubs/models.py:885 templates/clubs/public_activities.html:679
 msgid "活动日期"
-msgstr ""
+msgstr "Activity Date"
 
 #: clubs/models.py:886
 msgid "活动开始时间"
-msgstr ""
+msgstr "Start Time"
 
 #: clubs/models.py:887
 msgid "活动结束时间"
-msgstr ""
+msgstr "End Time"
 
 #: clubs/models.py:888
 msgid "活动地点"
-msgstr ""
+msgstr "Location"
 
 #: clubs/models.py:889
 msgid "预计参与人数"
@@ -732,11 +726,11 @@ msgstr ""
 
 #: clubs/models.py:890
 msgid "活动预算"
-msgstr ""
+msgstr "Budget"
 
 #: clubs/models.py:891
 msgid "联系人"
-msgstr ""
+msgstr "Contact Person"
 
 #: clubs/models.py:892 clubs/models.py:1115
 #: templates/clubs/admin/manage_users.html:1056
@@ -761,11 +755,11 @@ msgstr "Activity"
 
 #: clubs/models.py:909
 msgid "报名用户"
-msgstr ""
+msgstr "Participants"
 
 #: clubs/models.py:910
 msgid "报名时间"
-msgstr ""
+msgstr "Signed Up At"
 
 #: clubs/models.py:913 clubs/models.py:914
 msgid "活动报名"
@@ -838,7 +832,7 @@ msgstr ""
 
 #: clubs/models.py:994 clubs/models.py:995
 msgid "SMTP配置"
-msgstr ""
+msgstr "SMTP Config"
 
 #: clubs/models.py:1008 clubs/models.py:1018 clubs/models.py:1019
 msgid "轮播图片"
@@ -864,7 +858,7 @@ msgstr ""
 
 #: clubs/models.py:1031 templates/clubs/admin/department_form.html:191
 msgid "部门名称"
-msgstr ""
+msgstr "Department Name"
 
 #: clubs/models.py:1032 templates/clubs/admin/department_form.html:196
 msgid "职责描述"
@@ -898,25 +892,25 @@ msgstr "Department"
 #: clubs/models.py:1057 templates/clubs/admin/booking_management.html:337
 #: templates/clubs/admin/time_slot_form.html:153
 msgid "显示名称"
-msgstr ""
+msgstr "Display Name"
 
 #: clubs/models.py:1061 clubs/models.py:1062
 msgid "时间段"
-msgstr ""
+msgstr "Time Slots"
 
 #: clubs/models.py:1076 templates/clubs/admin/booking_management.html:270
 #: templates/clubs/admin/room_form.html:55
 msgid "房间名称"
-msgstr ""
+msgstr "Room Name"
 
 #: clubs/models.py:1077 templates/clubs/admin/room_form.html:60
 msgid "容纳人数"
-msgstr ""
+msgstr "Capacity"
 
 #: clubs/models.py:1078 templates/clubs/admin/booking_management.html:272
 #: templates/clubs/admin/room_form.html:65
 msgid "位置"
-msgstr ""
+msgstr "Location"
 
 #: clubs/models.py:1085 clubs/models.py:1086 clubs/models.py:1101
 #: templates/clubs/admin/booking_management.html:218
@@ -934,20 +928,20 @@ msgstr ""
 
 #: clubs/models.py:1108 templates/clubs/edit_room_booking.html:245
 msgid "借用日期"
-msgstr ""
+msgstr "Booking Date"
 
 #: clubs/models.py:1113
 msgid "借用目的"
-msgstr ""
+msgstr "Purpose"
 
 #: clubs/models.py:1114 templates/clubs/edit_room_booking.html:284
 msgid "预计使用人数"
-msgstr ""
+msgstr "Expected Participants"
 
 #: clubs/models.py:1118 templates/clubs/edit_room_booking.html:294
 #: templates/clubs/submit_room_booking.html:347
 msgid "特殊需求"
-msgstr ""
+msgstr "Special Needs"
 
 #: clubs/models.py:1118
 msgid "如需要投影仪、音响等设备"
@@ -959,7 +953,7 @@ msgstr ""
 
 #: clubs/models.py:1196 templates/clubs/admin/site_settings.html:1052
 msgid "站点名称（浏览器标题）"
-msgstr ""
+msgstr "Site Name (Browser Title)"
 
 #: clubs/models.py:1197
 msgid "显示在浏览器标签页标题中，修改后刷新页面生效"
@@ -967,7 +961,7 @@ msgstr ""
 
 #: clubs/models.py:1202 templates/clubs/admin/site_settings.html:1058
 msgid "首页主标题"
-msgstr ""
+msgstr "Homepage Main Title"
 
 #: clubs/models.py:1203
 msgid "显示在首页顶部横幅中的大标题"
@@ -975,7 +969,7 @@ msgstr ""
 
 #: clubs/models.py:1208 templates/clubs/admin/site_settings.html:1064
 msgid "首页副标题"
-msgstr ""
+msgstr "Homepage Subtitle"
 
 #: clubs/models.py:1209
 msgid "显示在首页顶部横幅中主标题下方"
@@ -1018,10 +1012,6 @@ msgid "正文字体族"
 msgstr ""
 
 #: clubs/models.py:1237
-msgid ""
-msgstr ""
-
-#: clubs/models.py:1241
 msgid "允许使用 Cravatar"
 msgstr ""
 
@@ -1031,7 +1021,7 @@ msgstr ""
 
 #: clubs/models.py:1246
 msgid "成员数量告警阈值"
-msgstr ""
+msgstr "Member Count Alert Threshold"
 
 #: clubs/models.py:1247
 msgid "成员数低于该值的社团会在干事社团管理页触发“社团成员数量预警”。"
@@ -1039,7 +1029,7 @@ msgstr ""
 
 #: clubs/models.py:1251 templates/clubs/admin/smtp_config.html:802
 msgid "开启错误页求助按钮"
-msgstr ""
+msgstr "Enable Help Button on Error Pages"
 
 #: clubs/models.py:1252
 msgid "开启后，404/500 错误页将显示“请求帮助”按钮，不依赖 SMTP 配置"
@@ -1049,11 +1039,11 @@ msgstr ""
 #: templates/clubs/admin/dashboard.html:1070
 #: templates/clubs/admin/site_settings.html:865
 msgid "站点设置"
-msgstr ""
+msgstr "Site Settings"
 
 #: clubs/models.py:1287 templates/clubs/admin/storage_config.html:275
 msgid "后端类型"
-msgstr ""
+msgstr "Backend Type"
 
 #: clubs/models.py:1288
 msgid "选择文件存储位置。切换后立即生效，已存文件不会自动迁移。"
@@ -1064,10 +1054,6 @@ msgid "关闭后强制降级到本地存储（紧急回退用）"
 msgstr ""
 
 #: clubs/models.py:1299
-msgid ""
-msgstr ""
-
-#: clubs/models.py:1304
 msgid "AWS S3 必填，如 us-east-1；MinIO 可留空"
 msgstr ""
 
@@ -1089,10 +1075,6 @@ msgid "自定义域名 / CDN"
 msgstr ""
 
 #: clubs/models.py:1323
-msgid ""
-msgstr ""
-
-#: clubs/models.py:1327 templates/clubs/admin/storage_config.html:359
 msgid "地址风格"
 msgstr ""
 
@@ -1110,7 +1092,7 @@ msgstr ""
 
 #: clubs/models.py:1339 clubs/models.py:1340
 msgid "存储配置"
-msgstr ""
+msgstr "Storage Config"
 
 #: clubs/models.py:1373 templates/clubs/admin/booking_management.html:216
 #: templates/clubs/public_activities.html:748
@@ -1147,39 +1129,39 @@ msgstr ""
 
 #: clubs/models.py:1436
 msgid "状态码"
-msgstr ""
+msgstr "Status Code"
 
 #: clubs/models.py:1438
 msgid "请求地址"
-msgstr ""
+msgstr "Request URL"
 
 #: clubs/models.py:1439
 msgid "请求方法"
-msgstr ""
+msgstr "Method"
 
 #: clubs/models.py:1440
 msgid "来源页面"
-msgstr ""
+msgstr "Referrer"
 
 #: clubs/models.py:1441
 msgid "浏览器UA"
-msgstr ""
+msgstr "User Agent"
 
 #: clubs/models.py:1442
 msgid "客户端IP"
-msgstr ""
+msgstr "Client IP"
 
 #: clubs/models.py:1443
 msgid "异常类型"
-msgstr ""
+msgstr "Exception Type"
 
 #: clubs/models.py:1444
 msgid "异常信息"
-msgstr ""
+msgstr "Exception Message"
 
 #: clubs/models.py:1445
 msgid "用户标识"
-msgstr ""
+msgstr "User ID"
 
 #: clubs/models.py:1446
 msgid "用户请求帮助"
@@ -1187,7 +1169,7 @@ msgstr ""
 
 #: clubs/models.py:1447
 msgid "求助时间"
-msgstr ""
+msgstr "Help Requested At"
 
 #: clubs/models.py:1448
 msgid "求助联系邮箱"
@@ -1202,7 +1184,7 @@ msgstr ""
 #: templates/clubs/user/dynamic_approval_center.html:475
 #: templates/clubs/user/dynamic_approval_center.html:585
 msgid "已处理"
-msgstr ""
+msgstr "Processed"
 
 #: clubs/models.py:1451
 msgid "处理时间"
@@ -1214,15 +1196,15 @@ msgstr ""
 
 #: clubs/models.py:1460
 msgid "发生时间"
-msgstr ""
+msgstr "Occurred At"
 
 #: clubs/models.py:1463 clubs/models.py:1464
 msgid "错误日志"
-msgstr ""
+msgstr "Error Log"
 
 #: clubs/permissions.py:61 clubs/views/core.py:3691
 msgid "权限不足"
-msgstr ""
+msgstr "Insufficient Permission"
 
 #: clubs/services/csv_import.py:117
 msgid "部分数据有问题："
@@ -1233,10 +1215,6 @@ msgid "日期筛选格式无效，已忽略"
 msgstr ""
 
 #: clubs/views/admin_settings.py:40
-msgid ""
-msgstr ""
-
-#: clubs/views/admin_settings.py:43
 msgid "错误页求助按钮已保存"
 msgstr ""
 
@@ -1282,27 +1260,23 @@ msgstr ""
 
 #: clubs/views/auth.py:189
 msgid "用户名和密码不能为空"
-msgstr ""
+msgstr "Username and password cannot be empty"
 
 #: clubs/views/auth.py:196 clubs/views/auth.py:271
 msgid "登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！"
-msgstr ""
+msgstr "Too many login attempts. Please wait 5 minutes or contact an admin to reset your password!"
 
 #: clubs/views/auth.py:215
 msgid "您的账号正在审核中，请等待管理员批准！"
 msgstr ""
 
 #: clubs/views/auth.py:227
-msgid ""
-msgstr ""
-
-#: clubs/views/auth.py:232
 msgid "为了账户安全，请先修改密码后再继续使用系统。"
 msgstr ""
 
 #: clubs/views/auth.py:279
 msgid "用户名或密码错误"
-msgstr ""
+msgstr "Incorrect username or password"
 
 #: clubs/views/auth.py:294
 msgid "用户档案不存在，无法延期"
@@ -1318,7 +1292,7 @@ msgstr ""
 
 #: clubs/views/auth.py:314
 msgid "已登出"
-msgstr ""
+msgstr "Logged out"
 
 #: clubs/views/auth.py:337
 msgid "当前账号没有现任社长身份，无法切换"
@@ -1342,7 +1316,7 @@ msgstr ""
 
 #: clubs/views/auth.py:429 clubs/views/auth.py:753
 msgid "您没有权限访问此页面"
-msgstr ""
+msgstr "You do not have permission to access this page"
 
 #: clubs/views/auth.py:432 clubs/views/auth.py:756 clubs/views/auth.py:1088
 msgid "用户角色未配置"
@@ -1417,10 +1391,6 @@ msgid "已检测到 Cravatar 头像并启用"
 msgstr ""
 
 #: clubs/views/auth.py:616
-msgid ""
-msgstr ""
-
-#: clubs/views/auth.py:618
 msgid "暂时无法连接 Cravatar，请稍后重试；当前头像未更改"
 msgstr ""
 
@@ -1446,15 +1416,15 @@ msgstr ""
 
 #: clubs/views/auth.py:999
 msgid "邮箱已验证"
-msgstr ""
+msgstr "Email verified"
 
 #: clubs/views/auth.py:1006
 msgid "验证码不能为空"
-msgstr ""
+msgstr "Verification code is required"
 
 #: clubs/views/auth.py:1019
 msgid "邮箱验证成功！"
-msgstr ""
+msgstr "Email verified successfully!"
 
 #: clubs/views/auth.py:1049
 msgid "邮箱已验证，无需重新发送"
@@ -1482,15 +1452,15 @@ msgstr ""
 
 #: clubs/views/bug_logs.py:35
 msgid "已标记为已处理"
-msgstr ""
+msgstr "Marked as processed"
 
 #: clubs/views/bug_logs.py:41
 msgid "已恢复为未处理"
-msgstr ""
+msgstr "Restored to unprocessed"
 
 #: clubs/views/bug_logs.py:44
 msgid "日志已删除"
-msgstr ""
+msgstr "Log deleted"
 
 #: clubs/views/bug_logs.py:46
 msgid "未知操作"
@@ -1789,7 +1759,7 @@ msgstr ""
 
 #: clubs/views/core.py:3371
 msgid "预约提交成功"
-msgstr ""
+msgstr "Booking submitted"
 
 #: clubs/views/core.py:3377
 msgid "预约失败，请稍后重试"
@@ -1813,7 +1783,7 @@ msgstr ""
 
 #: clubs/views/core.py:3500
 msgid "预约已取消"
-msgstr ""
+msgstr "Booking cancelled"
 
 #: clubs/views/core.py:3516 clubs/views/core.py:3555
 msgid "房间名称不能为空"
@@ -1892,10 +1862,6 @@ msgid "只有被打回的请求可以修改补交"
 msgstr ""
 
 #: clubs/views/core.py:4785
-msgid ""
-msgstr ""
-
-#: clubs/views/core.py:4837
 msgid "已补交被打回的内容，等待重新审核"
 msgstr ""
 
@@ -1984,10 +1950,6 @@ msgid "这个字段已绑定内置业务逻辑，不能修改"
 msgstr ""
 
 #: clubs/views/core.py:5542
-msgid ""
-msgstr ""
-
-#: clubs/views/core.py:5574
 msgid "字段名称和标识不能为空"
 msgstr ""
 
@@ -2036,12 +1998,8 @@ msgid "无效的日期格式"
 msgstr ""
 
 #: clubs/views/oobe.py:430
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/_channel_alert_settings.html:4
 msgid "告警设置"
-msgstr ""
+msgstr "Alert Settings"
 
 #: templates/clubs/admin/_channel_alert_settings.html:4
 msgid "在干事“社团管理”页生成未提交告警，并自定义告警卡片的主题色。"
@@ -2049,7 +2007,7 @@ msgstr ""
 
 #: templates/clubs/admin/_channel_alert_settings.html:10
 msgid "未提交告警"
-msgstr ""
+msgstr "Unsubmitted Alert"
 
 #: templates/clubs/admin/_channel_alert_settings.html:11
 #, python-format
@@ -2062,7 +2020,7 @@ msgstr ""
 
 #: templates/clubs/admin/_channel_settings_grid.html:4
 msgid "通道开关"
-msgstr ""
+msgstr "Channel Switch"
 
 #: templates/clubs/admin/_channel_settings_grid.html:4
 msgid "控制通道的启用状态与各处展示行为。"
@@ -2070,7 +2028,7 @@ msgstr ""
 
 #: templates/clubs/admin/_channel_settings_grid.html:10
 msgid "运行启用"
-msgstr ""
+msgstr "Runtime Enabled"
 
 #: templates/clubs/admin/_channel_settings_grid.html:11
 msgid "停用后通道不会出现在任何提交入口"
@@ -2078,7 +2036,7 @@ msgstr ""
 
 #: templates/clubs/admin/_channel_settings_grid.html:18
 msgid "标记为内置默认"
-msgstr ""
+msgstr "Mark as Built-in"
 
 #: templates/clubs/admin/_channel_settings_grid.html:19
 msgid "表示该通道由系统业务动作生成"
@@ -2106,7 +2064,7 @@ msgstr ""
 
 #: templates/clubs/admin/_material_icon_field.html:4
 msgid "Material 图标"
-msgstr ""
+msgstr "Material Icon"
 
 #: templates/clubs/admin/_material_icon_field.html:21
 #, python-format
@@ -2124,7 +2082,7 @@ msgstr ""
 
 #: templates/clubs/admin/admin_edit_user_account.html:168
 msgid "编辑用户账户"
-msgstr ""
+msgstr "Edit User Account"
 
 #: templates/clubs/admin/admin_edit_user_account.html:170
 msgid "修改此用户的个人信息、账号权限和安全设置"
@@ -2139,7 +2097,7 @@ msgstr ""
 #: templates/clubs/staff/management.html:317
 #: templates/clubs/staff/management.html:331
 msgid "社长"
-msgstr ""
+msgstr "President"
 
 #: templates/clubs/admin/admin_edit_user_account.html:209
 #: templates/clubs/admin/admin_edit_user_account.html:376
@@ -2148,7 +2106,7 @@ msgstr ""
 #: templates/clubs/admin/manage_users.html:1025
 #: templates/clubs/oobe_setup.html:476 templates/clubs/user_detail.html:260
 msgid "管理员"
-msgstr ""
+msgstr "Admin"
 
 #: templates/clubs/admin/admin_edit_user_account.html:209
 #: templates/clubs/admin/admin_edit_user_account.html:377
@@ -2156,14 +2114,14 @@ msgstr ""
 #: templates/clubs/admin/manage_users.html:1027
 #: templates/clubs/club_detail.html:515
 msgid "社员"
-msgstr ""
+msgstr "Member"
 
 #: templates/clubs/admin/admin_edit_user_account.html:209
 #: templates/clubs/admin/change_user_role.html:76
 #: templates/clubs/admin/change_user_role.html:79
 #: templates/clubs/admin/manage_users.html:1029
 msgid "未设定"
-msgstr ""
+msgstr "Not set"
 
 #: templates/clubs/admin/admin_edit_user_account.html:212
 msgid "账号启用"
@@ -2180,7 +2138,7 @@ msgstr ""
 
 #: templates/clubs/admin/admin_edit_user_account.html:231
 msgid "账号信息"
-msgstr ""
+msgstr "Account Info"
 
 #: templates/clubs/admin/admin_edit_user_account.html:238
 #: templates/clubs/admin/change_user_role.html:49
@@ -2212,7 +2170,7 @@ msgstr "Save"
 
 #: templates/clubs/admin/admin_edit_user_account.html:254
 msgid "全名"
-msgstr ""
+msgstr "Full Name"
 
 #: templates/clubs/admin/admin_edit_user_account.html:270
 #: templates/clubs/admin/change_user_role.html:55
@@ -2227,74 +2185,74 @@ msgstr "Email"
 
 #: templates/clubs/admin/admin_edit_user_account.html:353
 msgid "不设定"
-msgstr ""
+msgstr "Not set"
 
 #: templates/clubs/admin/admin_edit_user_account.html:354
 #: templates/clubs/member_join_form.html:156
 #: templates/clubs/user/member_management.html:260
 msgid "男"
-msgstr ""
+msgstr "Male"
 
 #: templates/clubs/admin/admin_edit_user_account.html:355
 #: templates/clubs/member_join_form.html:157
 #: templates/clubs/user/member_management.html:261
 msgid "女"
-msgstr ""
+msgstr "Female"
 
 #: templates/clubs/admin/admin_edit_user_account.html:356
 #: templates/clubs/member_join_form.html:158
 #: templates/clubs/user/member_management.html:262
 msgid "其他"
-msgstr ""
+msgstr "Other"
 
 #: templates/clubs/admin/admin_edit_user_account.html:389
 msgid "账户启用状态"
-msgstr ""
+msgstr "Account Status"
 
 #: templates/clubs/admin/admin_edit_user_account.html:392
 #: templates/clubs/admin/storage_config.html:237
 #: templates/clubs/change_club_status.html:241
 #: templates/clubs/club_detail.html:352
 msgid "当前状态"
-msgstr ""
+msgstr "Current Status"
 
 #: templates/clubs/admin/admin_edit_user_account.html:395
 msgid "✓ 已启用"
-msgstr ""
+msgstr "Enabled"
 
 #: templates/clubs/admin/admin_edit_user_account.html:397
 msgid "✗ 已禁用"
-msgstr ""
+msgstr "Disabled"
 
 #: templates/clubs/admin/admin_edit_user_account.html:406
 msgid "禁用账号"
-msgstr ""
+msgstr "Disable Account"
 
 #: templates/clubs/admin/admin_edit_user_account.html:409
 msgid "启用账号"
-msgstr ""
+msgstr "Enable Account"
 
 #: templates/clubs/admin/admin_edit_user_account.html:419
 msgid "密码与安全"
-msgstr ""
+msgstr "Password & Security"
 
 #: templates/clubs/admin/admin_edit_user_account.html:427
 #: templates/clubs/user/edit_profile.html:557
 msgid "新密码"
-msgstr ""
+msgstr "New Password"
 
 #: templates/clubs/admin/admin_edit_user_account.html:429
 msgid "至少 6 个字符"
-msgstr ""
+msgstr "At least 6 characters"
 
 #: templates/clubs/admin/admin_edit_user_account.html:430
 msgid "显示"
-msgstr ""
+msgstr "Show"
 
 #: templates/clubs/admin/admin_edit_user_account.html:434
 #: templates/clubs/user/edit_profile.html:563
 msgid "确认新密码"
-msgstr ""
+msgstr "Confirm New Password"
 
 #: templates/clubs/admin/admin_edit_user_account.html:435
 msgid "再次输入新密码"
@@ -2306,11 +2264,11 @@ msgstr ""
 
 #: templates/clubs/admin/admin_edit_user_account.html:446
 msgid "账号锁定"
-msgstr ""
+msgstr "Account Lock"
 
 #: templates/clubs/admin/admin_edit_user_account.html:449
 msgid "登录锁定"
-msgstr ""
+msgstr "Login Lock"
 
 #: templates/clubs/admin/admin_edit_user_account.html:450
 msgid "若用户多次登录失败被锁定，可在此解锁"
@@ -2319,12 +2277,12 @@ msgstr ""
 #: templates/clubs/admin/admin_edit_user_account.html:455
 #: templates/clubs/admin/locked_accounts.html:133
 msgid "解锁账号"
-msgstr ""
+msgstr "Unlock Account"
 
 #: templates/clubs/admin/assign_presidents.html:5
 #: templates/clubs/admin/assign_presidents.html:216
 msgid "批量指定社长"
-msgstr ""
+msgstr "Assign Presidents"
 
 #: templates/clubs/admin/assign_presidents.html:217
 msgid "为每个社团指定当前社长（Officer 记录），未选择表示该社团暂无社长"
@@ -2332,34 +2290,20 @@ msgstr ""
 
 #: templates/clubs/admin/assign_presidents.html:221
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/assign_presidents.html:226
-#, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/assign_presidents.html:231
-#, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/assign_presidents.html:252
 msgid "搜索社团名称..."
 msgstr ""
 
 #: templates/clubs/admin/assign_presidents.html:265
 msgid "当前社长"
-msgstr ""
+msgstr "Current President"
 
 #: templates/clubs/admin/assign_presidents.html:266
 msgid "指定新社长"
-msgstr ""
+msgstr "Assign New President"
 
 #: templates/clubs/admin/assign_presidents.html:282
 msgid "未绑定"
-msgstr ""
+msgstr "Unbound"
 
 #: templates/clubs/admin/assign_presidents.html:287
 msgid "— 无社长 —"
@@ -2371,25 +2315,25 @@ msgstr ""
 
 #: templates/clubs/admin/assign_presidents.html:308
 msgid "保存所有指定"
-msgstr ""
+msgstr "Save All Assignments"
 
 #: templates/clubs/admin/base.html:4
 msgid "管理中心 - CManager"
-msgstr ""
+msgstr "Admin Center - CManager"
 
 #: templates/clubs/admin/booking_management.html:5
 #: templates/clubs/admin/booking_management.html:201
 #: templates/clubs/base.html:410
 msgid "预约管理"
-msgstr ""
+msgstr "Booking Management"
 
 #: templates/clubs/admin/booking_management.html:202
 msgid "管理预约记录、房间资源与时间段设置"
-msgstr ""
+msgstr "Manage bookings, rooms and time slots"
 
 #: templates/clubs/admin/booking_management.html:209
 msgid "预约记录"
-msgstr ""
+msgstr "Bookings"
 
 #: templates/clubs/admin/booking_management.html:217
 #: templates/clubs/public_activities.html:755
@@ -2398,15 +2342,15 @@ msgstr "Time"
 
 #: templates/clubs/admin/booking_management.html:221
 msgid "用途"
-msgstr ""
+msgstr "Purpose"
 
 #: templates/clubs/admin/booking_management.html:236
 msgid "有效"
-msgstr ""
+msgstr "Valid"
 
 #: templates/clubs/admin/booking_management.html:238
 msgid "已取消"
-msgstr ""
+msgstr "Cancelled"
 
 #: templates/clubs/admin/booking_management.html:247
 msgid "预约列表分页"
@@ -2419,13 +2363,13 @@ msgstr ""
 #: templates/clubs/staff/management.html:408
 #: templates/clubs/staff/management.html:412
 msgid "上一页"
-msgstr ""
+msgstr "Previous"
 
 #: templates/clubs/admin/booking_management.html:249
 #: templates/clubs/room_my_bookings.html:301
 #, python-format
 msgid "第 %(__i18n1)s / %(__i18n2)s 页，共 %(__i18n3)s 条"
-msgstr ""
+msgstr "Page %(__i18n1)s / %(__i18n2)s, %(__i18n3)s items"
 
 #: templates/clubs/admin/booking_management.html:250
 #: templates/clubs/admin/manage_users.html:1163 templates/clubs/index.html:1239
@@ -2434,25 +2378,25 @@ msgstr ""
 #: templates/clubs/staff/management.html:417
 #: templates/clubs/staff/management.html:421
 msgid "下一页"
-msgstr ""
+msgstr "Next"
 
 #: templates/clubs/admin/booking_management.html:254
 #: templates/clubs/room_my_bookings.html:317
 msgid "暂无预约记录"
-msgstr ""
+msgstr "No bookings"
 
 #: templates/clubs/admin/booking_management.html:261
 #: templates/clubs/base.html:466
 msgid "房间管理"
-msgstr ""
+msgstr "Room Management"
 
 #: templates/clubs/admin/booking_management.html:263
 msgid "增加房间"
-msgstr ""
+msgstr "Add Room"
 
 #: templates/clubs/admin/booking_management.html:271
 msgid "容量"
-msgstr ""
+msgstr "Capacity"
 
 #: templates/clubs/admin/booking_management.html:274
 #: templates/clubs/admin/booking_management.html:341
@@ -2465,12 +2409,12 @@ msgstr "Actions"
 #: templates/clubs/admin/booking_management.html:289
 #: templates/clubs/admin/room_form.html:77
 msgid "可用"
-msgstr ""
+msgstr "Available"
 
 #: templates/clubs/admin/booking_management.html:292
 #: templates/clubs/admin/room_form.html:78
 msgid "维护中"
-msgstr ""
+msgstr "Under Maintenance"
 
 #: templates/clubs/admin/booking_management.html:295
 #: templates/clubs/admin/form_channels.html:1343
@@ -2483,7 +2427,7 @@ msgstr ""
 #: templates/clubs/staff/management.html:371
 #: templates/clubs/user/member_management.html:542
 msgid "关闭"
-msgstr ""
+msgstr "Close"
 
 #: templates/clubs/admin/booking_management.html:305
 #: templates/clubs/admin/booking_management.html:364
@@ -2503,32 +2447,32 @@ msgstr "Delete"
 
 #: templates/clubs/admin/booking_management.html:317
 msgid "暂无房间配置"
-msgstr ""
+msgstr "No rooms"
 
 #: templates/clubs/admin/booking_management.html:324
 msgid "时间段设置"
-msgstr ""
+msgstr "Time Slot Settings"
 
 #: templates/clubs/admin/booking_management.html:327
 #: templates/clubs/admin/time_slot_form.html:4
 #: templates/clubs/admin/time_slot_form.html:141
 msgid "添加时间段"
-msgstr ""
+msgstr "Add Time Slot"
 
 #: templates/clubs/admin/booking_management.html:329
 #: templates/clubs/admin/manage_users.html:917
 #: templates/clubs/staff/management.html:199
 msgid "批量导入"
-msgstr ""
+msgstr "Batch Import"
 
 #: templates/clubs/admin/booking_management.html:354
 #: templates/clubs/admin/manage_users.html:1136
 msgid "禁用"
-msgstr ""
+msgstr "Disabled"
 
 #: templates/clubs/admin/booking_management.html:376
 msgid "暂无时间段配置"
-msgstr ""
+msgstr "No time slots"
 
 #: templates/clubs/admin/bug_logs.html:4
 msgid "BUG日志 - 管理员"
@@ -2537,7 +2481,7 @@ msgstr ""
 #: templates/clubs/admin/bug_logs.html:409
 #: templates/clubs/admin/dashboard.html:884
 msgid "BUG日志"
-msgstr ""
+msgstr "Bug Log"
 
 #: templates/clubs/admin/bug_logs.html:410
 msgid "记录系统 500 等错误与用户求助，便于排查与跟进"
@@ -2545,39 +2489,16 @@ msgstr ""
 
 #: templates/clubs/admin/bug_logs.html:414
 msgid "返回仪表板"
-msgstr ""
+msgstr "Back to Dashboard"
 
 #: templates/clubs/admin/bug_logs.html:420
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/bug_logs.html:425
-#, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/bug_logs.html:429
-#, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/bug_logs.html:433
-#, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/bug_logs.html:441
-#: templates/clubs/admin/manage_users.html:984
-#: templates/clubs/public_activities.html:623
-#: templates/clubs/public_activities.html:708
-#: templates/clubs/staff/management.html:303
 msgid "搜索"
 msgstr "Search"
 
 #: templates/clubs/admin/bug_logs.html:457
 msgid "等待帮助"
-msgstr ""
+msgstr "Waiting for Help"
 
 #: templates/clubs/admin/bug_logs.html:490
 #, python-format
@@ -2591,11 +2512,11 @@ msgstr ""
 
 #: templates/clubs/admin/bug_logs.html:506
 msgid "恢复未处理"
-msgstr ""
+msgstr "Mark Unprocessed"
 
 #: templates/clubs/admin/bug_logs.html:514
 msgid "标记已处理"
-msgstr ""
+msgstr "Mark Processed"
 
 #: templates/clubs/admin/bug_logs.html:530
 msgid "没有匹配的日志"
@@ -2620,13 +2541,13 @@ msgstr ""
 
 #: templates/clubs/admin/carousel_form.html:5
 msgid "编辑轮播"
-msgstr ""
+msgstr "Edit Carousel"
 
 #: templates/clubs/admin/carousel_form.html:5
 #: templates/clubs/admin/manage_carousel.html:353
 #: templates/clubs/admin/manage_carousel.html:410
 msgid "新增轮播"
-msgstr ""
+msgstr "Add Carousel"
 
 #: templates/clubs/admin/carousel_form.html:5
 msgid "- 管理后台"
@@ -2634,11 +2555,11 @@ msgstr ""
 
 #: templates/clubs/admin/carousel_form.html:463
 msgid "编辑轮播内容"
-msgstr ""
+msgstr "Edit Carousel Content"
 
 #: templates/clubs/admin/carousel_form.html:463
 msgid "新增轮播内容"
-msgstr ""
+msgstr "Add Carousel Content"
 
 #: templates/clubs/admin/carousel_form.html:464
 msgid "调整图片、文案与发布状态，保存后首页会自动更新"
@@ -2650,7 +2571,7 @@ msgstr ""
 
 #: templates/clubs/admin/carousel_form.html:485
 msgid "主视觉图片"
-msgstr ""
+msgstr "Hero Image"
 
 #: templates/clubs/admin/carousel_form.html:485
 msgid "首页会以居中裁切的方式展示图片"
@@ -2679,7 +2600,7 @@ msgstr ""
 
 #: templates/clubs/admin/carousel_form.html:505
 msgid "文案与链接"
-msgstr ""
+msgstr "Text & Link"
 
 #: templates/clubs/admin/carousel_form.html:505
 msgid "简洁的标题和描述更适合首屏阅读"
@@ -2717,7 +2638,7 @@ msgstr ""
 #: templates/clubs/admin/carousel_form.html:555
 #: templates/clubs/admin/edit_announcement.html:436
 msgid "发布设置"
-msgstr ""
+msgstr "Publish Settings"
 
 #: templates/clubs/admin/carousel_form.html:555
 msgid "控制展示状态与排列位置"
@@ -2725,7 +2646,7 @@ msgstr ""
 
 #: templates/clubs/admin/carousel_form.html:559
 msgid "排序值"
-msgstr ""
+msgstr "Sort Order"
 
 #: templates/clubs/admin/carousel_form.html:561
 msgid "数字越小越靠前。"
@@ -2734,7 +2655,7 @@ msgstr ""
 #: templates/clubs/admin/carousel_form.html:566
 #: templates/clubs/admin/carousel_form.html:569
 msgid "在首页展示"
-msgstr ""
+msgstr "Show on Homepage"
 
 #: templates/clubs/admin/carousel_form.html:567
 msgid "关闭后内容仍会保留，但访客不可见。"
@@ -2743,11 +2664,11 @@ msgstr ""
 #: templates/clubs/admin/carousel_form.html:580
 #: templates/clubs/user/edit_profile.html:434
 msgid "保存更改"
-msgstr ""
+msgstr "Save Changes"
 
 #: templates/clubs/admin/carousel_form.html:580
 msgid "创建轮播"
-msgstr ""
+msgstr "Create Carousel"
 
 #: templates/clubs/admin/change_user_role.html:4
 msgid "修改用户角色 - CManager"
@@ -2755,7 +2676,7 @@ msgstr ""
 
 #: templates/clubs/admin/change_user_role.html:11
 msgid "修改用户角色"
-msgstr ""
+msgstr "Change User Role"
 
 #: templates/clubs/admin/change_user_role.html:12
 msgid "调整用户在系统中的身份与权限范围"
@@ -2763,7 +2684,7 @@ msgstr ""
 
 #: templates/clubs/admin/change_user_role.html:66
 msgid "当前角色"
-msgstr ""
+msgstr "Current Role"
 
 #: templates/clubs/admin/change_user_role.html:70
 msgid "社长 (President)"
@@ -2779,7 +2700,7 @@ msgstr ""
 
 #: templates/clubs/admin/change_user_role.html:85
 msgid "修改为新角色"
-msgstr ""
+msgstr "Change to New Role"
 
 #: templates/clubs/admin/change_user_role.html:87
 #: templates/clubs/admin/publish_announcement.html:455
@@ -2811,7 +2732,7 @@ msgstr ""
 
 #: templates/clubs/admin/change_user_role.html:101
 msgid "角色权限说明"
-msgstr ""
+msgstr "Role Permissions"
 
 #: templates/clubs/admin/change_user_role.html:104
 msgid "👑 社长 (President)"
@@ -2884,7 +2805,7 @@ msgstr ""
 
 #: templates/clubs/admin/change_user_role.html:136
 msgid "⚠️ 确认修改角色"
-msgstr ""
+msgstr "Confirm Role Change"
 
 #: templates/clubs/admin/change_user_role.html:137
 #: templates/clubs/admin/create_user.html:426
@@ -2913,11 +2834,11 @@ msgstr "Cancel"
 
 #: templates/clubs/admin/confirm_delete_announcement.html:4
 msgid "删除公告"
-msgstr ""
+msgstr "Delete Announcement"
 
 #: templates/clubs/admin/confirm_delete_announcement.html:15
 msgid "⚠️ 删除公告确认"
-msgstr ""
+msgstr "Confirm Announcement Deletion"
 
 #: templates/clubs/admin/confirm_delete_announcement.html:21
 msgid "⚠️ 警告:"
@@ -2925,7 +2846,7 @@ msgstr ""
 
 #: templates/clubs/admin/confirm_delete_announcement.html:21
 msgid "此操作不可撤销，公告删除后无法恢复。"
-msgstr ""
+msgstr "This cannot be undone and the announcement cannot be restored."
 
 #: templates/clubs/admin/confirm_delete_announcement.html:57
 #: templates/clubs/admin/dashboard.html:1004
@@ -2933,7 +2854,7 @@ msgstr ""
 #: templates/clubs/admin/manage_announcements.html:299
 #: templates/clubs/admin/publish_announcement.html:493
 msgid "已发布"
-msgstr ""
+msgstr "Published"
 
 #: templates/clubs/admin/confirm_delete_announcement.html:59
 #: templates/clubs/admin/dashboard.html:1004
@@ -2945,13 +2866,13 @@ msgstr ""
 #: templates/clubs/admin/manage_announcements.html:303
 #: templates/clubs/admin/publish_announcement.html:493
 msgid "草稿"
-msgstr ""
+msgstr "Draft"
 
 #: templates/clubs/admin/confirm_delete_announcement.html:61
 #: templates/clubs/admin/dashboard.html:1004
 #: templates/clubs/admin/publish_announcement.html:493
 msgid "已归档"
-msgstr ""
+msgstr "Archived"
 
 #: templates/clubs/admin/confirm_delete_announcement.html:70
 msgid "🗑️ 确认删除"
@@ -2976,15 +2897,15 @@ msgstr ""
 #: templates/clubs/admin/create_user.html:256
 #: templates/clubs/admin/create_user.html:428
 msgid "创建用户账户"
-msgstr ""
+msgstr "Create User Account"
 
 #: templates/clubs/admin/create_user.html:257
 msgid "为系统创建新的用户账户"
-msgstr ""
+msgstr "Create a new user account"
 
 #: templates/clubs/admin/create_user.html:303
 msgid "登录用户名"
-msgstr ""
+msgstr "Login Username"
 
 #: templates/clubs/admin/create_user.html:314
 msgid "用于登录系统的用户名，3-30个字符"
@@ -2993,15 +2914,15 @@ msgstr ""
 #: templates/clubs/admin/create_user.html:318
 #: templates/clubs/user/edit_profile.html:390
 msgid "真实姓名"
-msgstr ""
+msgstr "Real Name"
 
 #: templates/clubs/admin/create_user.html:335
 msgid "邮箱地址"
-msgstr ""
+msgstr "Email Address"
 
 #: templates/clubs/admin/create_user.html:349
 msgid "电话号码"
-msgstr ""
+msgstr "Phone Number"
 
 #: templates/clubs/admin/create_user.html:366
 #: templates/clubs/oobe_setup.html:535
@@ -3010,7 +2931,7 @@ msgstr ""
 #: templates/clubs/user/member_management.html:246
 #: templates/clubs/user_detail.html:313
 msgid "微信号"
-msgstr ""
+msgstr "WeChat ID"
 
 #: templates/clubs/admin/create_user.html:387
 msgid "干事角色创建后需要管理员审核才能激活"
@@ -3027,7 +2948,7 @@ msgstr "Password"
 
 #: templates/clubs/admin/create_user.html:412
 msgid "输入密码"
-msgstr ""
+msgstr "Enter password"
 
 #: templates/clubs/admin/create_user.html:413
 msgid "密码至少6个字符"
@@ -3036,63 +2957,59 @@ msgstr ""
 #: templates/clubs/admin/create_user.html:417
 #: templates/clubs/oobe_setup.html:533
 msgid "确认密码"
-msgstr ""
+msgstr "Confirm Password"
 
 #: templates/clubs/admin/create_user.html:419
 msgid "再次输入密码"
-msgstr ""
+msgstr "Re-enter password"
 
 #: templates/clubs/admin/dashboard.html:4
 #: templates/clubs/admin/dashboard.html:842
 msgid "管理员仪表板"
-msgstr ""
+msgstr "Admin Dashboard"
 
 #: templates/clubs/admin/dashboard.html:843
 msgid "系统概览与管理中心"
-msgstr ""
+msgstr "System Overview & Admin Center"
 
 #: templates/clubs/admin/dashboard.html:853
 msgid "系统用户总数"
-msgstr ""
+msgstr "Total Users"
 
 #: templates/clubs/admin/dashboard.html:857
 msgid "已注册社团数"
-msgstr ""
+msgstr "Registered Clubs"
 
 #: templates/clubs/admin/dashboard.html:861
 msgid "待处理申请"
-msgstr ""
+msgstr "Pending Requests"
 
 #: templates/clubs/admin/dashboard.html:865
 #: templates/clubs/admin/dashboard.html:943
 msgid "近14天访问量"
-msgstr ""
+msgstr "Visits (14 days)"
 
 #: templates/clubs/admin/dashboard.html:873
 msgid "历史总体通过率"
-msgstr ""
+msgstr "Overall Approval Rate"
 
 #: templates/clubs/admin/dashboard.html:877
 msgid "历史总体拒绝率"
-msgstr ""
+msgstr "Overall Rejection Rate"
 
 #: templates/clubs/admin/dashboard.html:886
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/dashboard.html:894
 msgid "有用户正在等待帮助："
-msgstr ""
+msgstr "Users waiting for help:"
 
 #: templates/clubs/admin/dashboard.html:926
 msgid "查看全部 BUG 日志"
-msgstr ""
+msgstr "View All Bug Logs"
 
 #: templates/clubs/admin/dashboard.html:926
 #, python-format
 msgid "（%(__i18n1)s 条未处理）"
-msgstr ""
+msgstr "(%(__i18n1)s unprocessed)"
 
 #: templates/clubs/admin/dashboard.html:934
 msgid "各类申请数量分布"
@@ -3155,42 +3072,42 @@ msgstr ""
 
 #: templates/clubs/admin/dashboard.html:1042
 msgid "快速操作"
-msgstr ""
+msgstr "Quick Actions"
 
 #: templates/clubs/admin/dashboard.html:1046
 #: templates/clubs/admin/manage_departments.html:5
 #: templates/clubs/admin/manage_departments.html:268
 msgid "管理部门介绍"
-msgstr ""
+msgstr "Manage Departments"
 
 #: templates/clubs/admin/dashboard.html:1050
 msgid "管理轮播图"
-msgstr ""
+msgstr "Manage Carousel"
 
 #: templates/clubs/admin/dashboard.html:1054
 msgid "修改材料"
-msgstr ""
+msgstr "Edit Materials"
 
 #: templates/clubs/admin/dashboard.html:1058
 msgid "管理公告"
-msgstr ""
+msgstr "Manage Announcements"
 
 #: templates/clubs/admin/dashboard.html:1062
 msgid "邮箱设置"
-msgstr ""
+msgstr "Email Settings"
 
 #: templates/clubs/admin/dashboard.html:1066
 msgid "S3存储设置"
-msgstr ""
+msgstr "S3 Storage Settings"
 
 #: templates/clubs/admin/dashboard.html:1074
 msgid "指定社团社长"
-msgstr ""
+msgstr "Assign Club Presidents"
 
 #: templates/clubs/admin/dashboard.html:1078
 #: templates/clubs/admin/locked_accounts.html:100
 msgid "被锁定账号"
-msgstr ""
+msgstr "Locked Accounts"
 
 #: templates/clubs/admin/dashboard.html:1085
 msgid "用户角色分布"
@@ -3278,12 +3195,12 @@ msgstr ""
 #: templates/clubs/direct_edit_club_info.html:285
 #: templates/clubs/edit_room_booking.html:302
 msgid "保存修改"
-msgstr ""
+msgstr "Save Changes"
 
 #: templates/clubs/admin/form_channels.html:6
 #: templates/clubs/admin/form_channels.html:1128
 msgid "提交通道管理"
-msgstr ""
+msgstr "Submission Channel Management"
 
 #: templates/clubs/admin/form_channels.html:1129
 msgid "统一配置提交入口、表单字段、审核策略与业务动作。"
@@ -3292,11 +3209,11 @@ msgstr ""
 #: templates/clubs/admin/form_channels.html:1133
 #: templates/clubs/admin/form_channels.html:1602
 msgid "新增通道"
-msgstr ""
+msgstr "Add Channel"
 
 #: templates/clubs/admin/form_channels.html:1136
 msgid "通道状态概览"
-msgstr ""
+msgstr "Channel Overview"
 
 #: templates/clubs/admin/form_channels.html:1139
 #: templates/clubs/staff/dynamic_audit_center.html:501
@@ -3305,15 +3222,15 @@ msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1143
 msgid "对外开放"
-msgstr ""
+msgstr "Public"
 
 #: templates/clubs/admin/form_channels.html:1151
 msgid "需要处理"
-msgstr ""
+msgstr "Needs Attention"
 
 #: templates/clubs/admin/form_channels.html:1165
 msgid "搜索名称或标识"
-msgstr ""
+msgstr "Search name or slug"
 
 #: templates/clubs/admin/form_channels.html:1165
 msgid "搜索通道名称或标识"
@@ -3321,10 +3238,6 @@ msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1175
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/form_channels.html:1177
 msgid "· 草稿"
 msgstr ""
 
@@ -3334,7 +3247,7 @@ msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1182
 msgid "停用"
-msgstr ""
+msgstr "Disabled"
 
 #: templates/clubs/admin/form_channels.html:1182
 #: templates/clubs/admin/form_channels.html:1206
@@ -3343,22 +3256,17 @@ msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1187
 msgid "还没有通道"
-msgstr ""
+msgstr "No channels yet"
 
 #: templates/clubs/admin/form_channels.html:1189
 msgid "没有匹配的通道"
-msgstr ""
+msgstr "No matching channels"
 
 #: templates/clubs/admin/form_channels.html:1193
 msgid "新建一个通道"
-msgstr ""
+msgstr "Create a channel"
 
 #: templates/clubs/admin/form_channels.html:1203
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/form_channels.html:1206
-#: templates/clubs/admin/manage_carousel.html:365
 msgid "已停用"
 msgstr ""
 
@@ -3415,16 +3323,12 @@ msgid "选择年份、月份、日期或轮次后，该通道会自动按每周�
 msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1292
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/form_channels.html:1295
 msgid "保存通道"
-msgstr ""
+msgstr "Save Channel"
 
 #: templates/clubs/admin/form_channels.html:1299
 msgid "删除通道"
-msgstr ""
+msgstr "Delete Channel"
 
 #: templates/clubs/admin/form_channels.html:1307
 msgid "当前通道不会出现在社长侧"
@@ -3456,7 +3360,7 @@ msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1331
 msgid "周期管理"
-msgstr ""
+msgstr "Cycle Management"
 
 #: templates/clubs/admin/form_channels.html:1334
 msgid "新周期名称，例如：2026年年审"
@@ -3464,7 +3368,7 @@ msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1335
 msgid "新建周期"
-msgstr ""
+msgstr "New Cycle"
 
 #: templates/clubs/admin/form_channels.html:1339
 #, python-format
@@ -3475,11 +3379,11 @@ msgstr ""
 #: templates/clubs/staff/management.html:220
 #: templates/clubs/staff/management.html:371
 msgid "开启"
-msgstr ""
+msgstr "On"
 
 #: templates/clubs/admin/form_channels.html:1339
 msgid "已关闭"
-msgstr ""
+msgstr "Off"
 
 #: templates/clubs/admin/form_channels.html:1348
 msgid "暂无周期。仅“每周期提交一次”的通道需要开启周期。"
@@ -3487,20 +3391,20 @@ msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1355
 msgid "字段配置"
-msgstr ""
+msgstr "Field Configuration"
 
 #: templates/clubs/admin/form_channels.html:1356
 #: templates/clubs/admin/form_channels.html:1596
 msgid "新增字段"
-msgstr ""
+msgstr "Add Field"
 
 #: templates/clubs/admin/form_channels.html:1370
 msgid "展开"
-msgstr ""
+msgstr "Expand"
 
 #: templates/clubs/admin/form_channels.html:1373
 msgid "业务锁定"
-msgstr ""
+msgstr "Business Locked"
 
 #: templates/clubs/admin/form_channels.html:1388
 msgid "这个字段已连接内置业务逻辑，不能修改或删除。"
@@ -3514,27 +3418,27 @@ msgstr ""
 #: templates/clubs/admin/form_channels.html:1406
 #: templates/clubs/admin/form_channels.html:1523
 msgid "补充说明"
-msgstr ""
+msgstr "Extra Notes"
 
 #: templates/clubs/admin/form_channels.html:1412
 #: templates/clubs/admin/form_channels.html:1529
 msgid "最大字数"
-msgstr ""
+msgstr "Max Words"
 
 #: templates/clubs/admin/form_channels.html:1418
 #: templates/clubs/admin/form_channels.html:1535
 msgid "最小值"
-msgstr ""
+msgstr "Minimum"
 
 #: templates/clubs/admin/form_channels.html:1422
 #: templates/clubs/admin/form_channels.html:1539
 msgid "最大值"
-msgstr ""
+msgstr "Maximum"
 
 #: templates/clubs/admin/form_channels.html:1426
 #: templates/clubs/admin/form_channels.html:1543
 msgid "步进"
-msgstr ""
+msgstr "Step"
 
 #: templates/clubs/admin/form_channels.html:1437
 #: templates/clubs/admin/form_channels.html:1554
@@ -3544,7 +3448,7 @@ msgstr ""
 #: templates/clubs/admin/form_channels.html:1439
 #: templates/clubs/admin/form_channels.html:1556
 msgid "添加"
-msgstr ""
+msgstr "Add"
 
 #: templates/clubs/admin/form_channels.html:1442
 msgid "选项会以标签形式展示，保存时仍按当前顺序写入字段配置。"
@@ -3553,47 +3457,47 @@ msgstr ""
 #: templates/clubs/admin/form_channels.html:1447
 #: templates/clubs/admin/form_channels.html:1563
 msgid "允许后缀"
-msgstr ""
+msgstr "Allowed Extensions"
 
 #: templates/clubs/admin/form_channels.html:1450
 #: templates/clubs/admin/form_channels.html:1566
 msgid "常用类型："
-msgstr ""
+msgstr "Common types:"
 
 #: templates/clubs/admin/form_channels.html:1451
 #: templates/clubs/admin/form_channels.html:1567
 msgid "图片"
-msgstr ""
+msgstr "Image"
 
 #: templates/clubs/admin/form_channels.html:1452
 #: templates/clubs/admin/form_channels.html:1568
 msgid "文档"
-msgstr ""
+msgstr "Document"
 
 #: templates/clubs/admin/form_channels.html:1453
 #: templates/clubs/admin/form_channels.html:1569
 msgid "视频"
-msgstr ""
+msgstr "Video"
 
 #: templates/clubs/admin/form_channels.html:1454
 #: templates/clubs/admin/form_channels.html:1570
 msgid "音频"
-msgstr ""
+msgstr "Audio"
 
 #: templates/clubs/admin/form_channels.html:1455
 #: templates/clubs/admin/form_channels.html:1571
 msgid "压缩包"
-msgstr ""
+msgstr "Archive"
 
 #: templates/clubs/admin/form_channels.html:1459
 #: templates/clubs/admin/form_channels.html:1575
 msgid "最大文件大小 MB"
-msgstr ""
+msgstr "Max file size (MB)"
 
 #: templates/clubs/admin/form_channels.html:1463
 #: templates/clubs/admin/form_channels.html:1579
 msgid "允许一次上传多个文件"
-msgstr ""
+msgstr "Allow multiple file uploads"
 
 #: templates/clubs/admin/form_channels.html:1464
 #: templates/clubs/admin/form_channels.html:1580
@@ -3607,16 +3511,12 @@ msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1468
 #: templates/clubs/admin/form_channels.html:1584
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/form_channels.html:1473
 msgid "清除当前示例文件"
-msgstr ""
+msgstr "Clear Sample Files"
 
 #: templates/clubs/admin/form_channels.html:1484
 msgid "保存字段"
-msgstr ""
+msgstr "Save Field"
 
 #: templates/clubs/admin/form_channels.html:1492
 msgid "这个通道还没有字段，先新增一个问题。"
@@ -3628,7 +3528,7 @@ msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1503
 msgid "新字段"
-msgstr ""
+msgstr "New Field"
 
 #: templates/clubs/admin/form_channels.html:1520
 msgid "填写时显示在输入框内"
@@ -3673,7 +3573,7 @@ msgstr ""
 
 #: templates/clubs/admin/form_channels.html:1668
 msgid "创建通道"
-msgstr ""
+msgstr "Create Channel"
 
 #: templates/clubs/admin/locked_accounts.html:5
 msgid "被锁定账号 - 管理中心"
@@ -3706,7 +3606,7 @@ msgstr ""
 
 #: templates/clubs/admin/manage_announcements.html:287
 msgid "公告管理"
-msgstr ""
+msgstr "Announcement Management"
 
 #: templates/clubs/admin/manage_announcements.html:288
 msgid "发布、编辑与上下架站点公告"
@@ -3714,11 +3614,11 @@ msgstr ""
 
 #: templates/clubs/admin/manage_announcements.html:295
 msgid "总公告"
-msgstr ""
+msgstr "Total Announcements"
 
 #: templates/clubs/admin/manage_announcements.html:309
 msgid "全部公告"
-msgstr ""
+msgstr "All Announcements"
 
 #: templates/clubs/admin/manage_announcements.html:310
 #, python-format
@@ -3730,19 +3630,10 @@ msgstr ""
 #: templates/clubs/admin/publish_announcement.html:5
 #: templates/clubs/admin/publish_announcement.html:463
 msgid "发布公告"
-msgstr ""
+msgstr "Publish Announcement"
 
 #: templates/clubs/admin/manage_announcements.html:342
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/manage_announcements.html:348
-#, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/manage_announcements.html:354
 msgid "含跳转链接"
 msgstr ""
 
@@ -3752,11 +3643,11 @@ msgstr ""
 
 #: templates/clubs/admin/manage_announcements.html:366
 msgid "下线"
-msgstr ""
+msgstr "Take Down"
 
 #: templates/clubs/admin/manage_announcements.html:387
 msgid "还没有公告"
-msgstr ""
+msgstr "No announcements yet"
 
 #: templates/clubs/admin/manage_announcements.html:388
 msgid "发布第一条公告，向全校社团展示最新的通知与安排。"
@@ -3768,7 +3659,7 @@ msgstr ""
 
 #: templates/clubs/admin/manage_carousel.html:333
 msgid "首页轮播管理"
-msgstr ""
+msgstr "Homepage Carousel Management"
 
 #: templates/clubs/admin/manage_carousel.html:334
 msgid "管理首页首屏展示内容、显示状态与轮播顺序"
@@ -3776,7 +3667,7 @@ msgstr ""
 
 #: templates/clubs/admin/manage_carousel.html:338
 msgid "轮播统计"
-msgstr ""
+msgstr "Carousel Stats"
 
 #: templates/clubs/admin/manage_carousel.html:339
 msgid "全部内容"
@@ -3784,11 +3675,11 @@ msgstr ""
 
 #: templates/clubs/admin/manage_carousel.html:340
 msgid "正在展示"
-msgstr ""
+msgstr "Showing"
 
 #: templates/clubs/admin/manage_carousel.html:341
 msgid "暂未展示"
-msgstr ""
+msgstr "Not Showing"
 
 #: templates/clubs/admin/manage_carousel.html:348
 msgid "展示队列"
@@ -3805,7 +3696,7 @@ msgstr ""
 
 #: templates/clubs/admin/manage_carousel.html:365
 msgid "展示中"
-msgstr ""
+msgstr "On Display"
 
 #: templates/clubs/admin/manage_carousel.html:374
 msgid "尚未填写描述"
@@ -3840,11 +3731,11 @@ msgstr ""
 #: templates/clubs/admin/manage_users.html:919
 #: templates/clubs/staff/management.html:201
 msgid "导出数据"
-msgstr ""
+msgstr "Export Data"
 
 #: templates/clubs/admin/manage_users.html:921
 msgid "创建用户"
-msgstr ""
+msgstr "Create User"
 
 #: templates/clubs/admin/manage_users.html:925
 msgid "个用户"
@@ -3856,52 +3747,52 @@ msgstr ""
 
 #: templates/clubs/admin/manage_users.html:950
 msgid "所有角色"
-msgstr ""
+msgstr "All Roles"
 
 #: templates/clubs/admin/manage_users.html:956
 msgid "审核状态"
-msgstr ""
+msgstr "Review Status"
 
 #: templates/clubs/admin/manage_users.html:962
 msgid "生命周期"
-msgstr ""
+msgstr "Lifecycle"
 
 #: templates/clubs/admin/manage_users.html:968
 msgid "启用状态"
-msgstr ""
+msgstr "Enabled Status"
 
 #: templates/clubs/admin/manage_users.html:969
 msgid "已启用"
-msgstr ""
+msgstr "Enabled"
 
 #: templates/clubs/admin/manage_users.html:970
 #: templates/clubs/admin/manage_users.html:1091
 msgid "已禁用"
-msgstr ""
+msgstr "Disabled"
 
 #: templates/clubs/admin/manage_users.html:975
 msgid "全选本页"
-msgstr ""
+msgstr "Select This Page"
 
 #: templates/clubs/admin/manage_users.html:977
 msgid "已选 0 人"
-msgstr ""
+msgstr "0 selected"
 
 #: templates/clubs/admin/manage_users.html:978
 msgid "批量启用"
-msgstr ""
+msgstr "Enable Selected"
 
 #: templates/clubs/admin/manage_users.html:979
 msgid "批量禁用"
-msgstr ""
+msgstr "Disable Selected"
 
 #: templates/clubs/admin/manage_users.html:980
 msgid "批量删除"
-msgstr ""
+msgstr "Delete Selected"
 
 #: templates/clubs/admin/manage_users.html:986
 msgid "重置"
-msgstr ""
+msgstr "Reset"
 
 #: templates/clubs/admin/manage_users.html:1036
 #: templates/clubs/admin/review_staff_registration.html:252
@@ -3912,7 +3803,7 @@ msgstr "Pending"
 #: templates/clubs/admin/manage_users.html:1039
 #: templates/clubs/admin/review_staff_registration.html:254
 msgid "已批准"
-msgstr ""
+msgstr "Approved"
 
 #: templates/clubs/admin/manage_users.html:1042
 #: templates/clubs/admin/review_staff_registration.html:256
@@ -3921,15 +3812,15 @@ msgstr "Rejected"
 
 #: templates/clubs/admin/manage_users.html:1044
 msgid "未知"
-msgstr ""
+msgstr "Unknown"
 
 #: templates/clubs/admin/manage_users.html:1048
 msgid "已激活"
-msgstr ""
+msgstr "Activated"
 
 #: templates/clubs/admin/manage_users.html:1084
 msgid "账户状态"
-msgstr ""
+msgstr "Account Status"
 
 #: templates/clubs/admin/manage_users.html:1088
 #: templates/clubs/change_club_status.html:244
@@ -3937,7 +3828,7 @@ msgstr ""
 #: templates/clubs/staff/management.html:350
 #: templates/clubs/user/member_management.html:183
 msgid "活跃"
-msgstr ""
+msgstr "Active"
 
 #: templates/clubs/admin/manage_users.html:1105 templates/clubs/base.html:704
 #: templates/clubs/base.html:720
@@ -3948,25 +3839,25 @@ msgstr "Review"
 
 #: templates/clubs/admin/manage_users.html:1116
 msgid "属性"
-msgstr ""
+msgstr "Properties"
 
 #: templates/clubs/admin/manage_users.html:1121
 #: templates/clubs/admin/manage_users.html:1122
 msgid "解锁"
-msgstr ""
+msgstr "Unlock"
 
 #: templates/clubs/admin/manage_users.html:1127
 #: templates/clubs/user/dashboard.html:438
 msgid "详情"
-msgstr ""
+msgstr "Details"
 
 #: templates/clubs/admin/manage_users.html:1144
 msgid "删除账号"
-msgstr ""
+msgstr "Delete Account"
 
 #: templates/clubs/admin/manage_users.html:1156
 msgid "未找到匹配的用户"
-msgstr ""
+msgstr "No matching users"
 
 #: templates/clubs/admin/manage_users.html:1160
 msgid "用户列表分页"
@@ -3975,7 +3866,7 @@ msgstr ""
 #: templates/clubs/admin/manage_users.html:1162
 #, python-format
 msgid "第 %(__i18n1)s / %(__i18n2)s 页，共 %(__i18n3)s 人"
-msgstr ""
+msgstr "Page %(__i18n1)s / %(__i18n2)s, %(__i18n3)s users"
 
 #: templates/clubs/admin/manage_users.html:1169
 msgid "该页面为查看专用，不支持编辑。如需修改用户信息，请联系管理员。"
@@ -3990,13 +3881,8 @@ msgid "关闭属性弹窗"
 msgstr ""
 
 #: templates/clubs/admin/manage_users.html:1192
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/manage_users.html:1195
-#: templates/clubs/user_detail.html:268
 msgid "所属部门"
-msgstr ""
+msgstr "Department"
 
 #: templates/clubs/admin/manage_users.html:1197
 msgid "不设定部门"
@@ -4006,11 +3892,11 @@ msgstr ""
 #: templates/clubs/staff/manage_department.html:329
 #: templates/clubs/staff/manage_department.html:383
 msgid "职级"
-msgstr ""
+msgstr "Rank"
 
 #: templates/clubs/admin/manage_users.html:1215
 msgid "保存属性"
-msgstr ""
+msgstr "Save Properties"
 
 #: templates/clubs/admin/publish_announcement.html:382
 msgid "面向全校发布重要通知或活动信息，支持草稿与附件上传"
@@ -4051,7 +3937,7 @@ msgstr ""
 
 #: templates/clubs/admin/review_staff_registration.html:5
 msgid "审核干事申请"
-msgstr ""
+msgstr "Review Staff Applications"
 
 #: templates/clubs/admin/review_staff_registration.html:214
 msgid "审核干事注册申请"
@@ -4059,27 +3945,23 @@ msgstr ""
 
 #: templates/clubs/admin/review_staff_registration.html:223
 msgid "申请人信息"
-msgstr ""
+msgstr "Applicant Info"
 
 #: templates/clubs/admin/review_staff_registration.html:236
 msgid "查看完整档案"
-msgstr ""
+msgstr "View Full Profile"
 
 #: templates/clubs/admin/review_staff_registration.html:247
 msgid "申请时间"
-msgstr ""
+msgstr "Applied At"
 
 #: templates/clubs/admin/review_staff_registration.html:262
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/review_staff_registration.html:269
 msgid "审核决定"
-msgstr ""
+msgstr "Review Decision"
 
 #: templates/clubs/admin/review_staff_registration.html:277
 msgid "批准申请"
-msgstr ""
+msgstr "Approve Application"
 
 #: templates/clubs/admin/review_staff_registration.html:278
 msgid "该用户将成为干事并可立即登录使用干事功能。"
@@ -4087,7 +3969,7 @@ msgstr ""
 
 #: templates/clubs/admin/review_staff_registration.html:281
 msgid "拒绝申请"
-msgstr ""
+msgstr "Reject Application"
 
 #: templates/clubs/admin/review_staff_registration.html:282
 msgid "该用户申请被驳回，可后续重新发起注册申请。"
@@ -4103,17 +3985,17 @@ msgstr ""
 
 #: templates/clubs/admin/review_staff_registration.html:291
 msgid "快速批准"
-msgstr ""
+msgstr "Quick Approve"
 
 #: templates/clubs/admin/room_form.html:4
 #: templates/clubs/admin/room_form.html:42
 msgid "编辑房间"
-msgstr ""
+msgstr "Edit Room"
 
 #: templates/clubs/admin/room_form.html:4
 #: templates/clubs/admin/room_form.html:42
 msgid "添加房间"
-msgstr ""
+msgstr "Add Room"
 
 #: templates/clubs/admin/site_settings.html:9
 #, python-format
@@ -4165,14 +4047,6 @@ msgid "允许用户使用 Cravatar"
 msgstr ""
 
 #: templates/clubs/admin/site_settings.html:1023
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/site_settings.html:1026
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/site_settings.html:1029
 msgid "查看官方文档"
 msgstr ""
 
@@ -4182,7 +4056,7 @@ msgstr ""
 
 #: templates/clubs/admin/site_settings.html:1041
 msgid "站点信息"
-msgstr ""
+msgstr "Site Info"
 
 #: templates/clubs/admin/site_settings.html:1048
 msgid "站点名称与首页标题"
@@ -4190,7 +4064,7 @@ msgstr ""
 
 #: templates/clubs/admin/site_settings.html:1071
 msgid "保存站点信息"
-msgstr ""
+msgstr "Save Site Info"
 
 #: templates/clubs/admin/site_settings.html:1082
 msgid "第三方资源 CDN"
@@ -4205,16 +4079,12 @@ msgid "CDN 基础地址"
 msgstr ""
 
 #: templates/clubs/admin/site_settings.html:1101
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/site_settings.html:1113
 msgid "保存 CDN 设置"
 msgstr ""
 
 #: templates/clubs/admin/site_settings.html:1130
 msgid "字体配置"
-msgstr ""
+msgstr "Font Configuration"
 
 #: templates/clubs/admin/site_settings.html:1157
 msgid "图标字体 Material Icons"
@@ -4242,12 +4112,12 @@ msgstr ""
 
 #: templates/clubs/admin/site_settings.html:1367
 msgid "保存字体设置"
-msgstr ""
+msgstr "Save Font Settings"
 
 #: templates/clubs/admin/smtp_config.html:5
 #: templates/clubs/admin/smtp_config.html:766
 msgid "SMTP邮箱配置"
-msgstr ""
+msgstr "SMTP Email Settings"
 
 #: templates/clubs/admin/smtp_config.html:767
 msgid "管理发信服务、授权凭据与当前启用配置"
@@ -4262,10 +4132,6 @@ msgid "错误页求助"
 msgstr ""
 
 #: templates/clubs/admin/smtp_config.html:808
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/smtp_config.html:818
 msgid "已有配置"
 msgstr ""
 
@@ -4275,19 +4141,19 @@ msgstr ""
 
 #: templates/clubs/admin/smtp_config.html:832
 msgid "未激活"
-msgstr ""
+msgstr "Inactive"
 
 #: templates/clubs/admin/smtp_config.html:837
 msgid "服务地址"
-msgstr ""
+msgstr "Server Address"
 
 #: templates/clubs/admin/smtp_config.html:845
 msgid "加密"
-msgstr ""
+msgstr "Encryption"
 
 #: templates/clubs/admin/smtp_config.html:846
 msgid "无"
-msgstr ""
+msgstr "None"
 
 #: templates/clubs/admin/smtp_config.html:851
 msgid "点击展开操作"
@@ -4295,25 +4161,25 @@ msgstr ""
 
 #: templates/clubs/admin/smtp_config.html:859
 msgid "编辑配置"
-msgstr ""
+msgstr "Edit Config"
 
 #: templates/clubs/admin/smtp_config.html:868
 msgid "激活此配置"
-msgstr ""
+msgstr "Activate Config"
 
 #: templates/clubs/admin/smtp_config.html:874
 msgid "当前已激活"
-msgstr ""
+msgstr "Active"
 
 #: templates/clubs/admin/smtp_config.html:883
 msgid "删除配置"
-msgstr ""
+msgstr "Delete Config"
 
 #: templates/clubs/admin/smtp_config.html:888
 #: templates/clubs/admin/smtp_config.html:892
 #: templates/clubs/oobe_setup.html:832
 msgid "发送测试邮件"
-msgstr ""
+msgstr "Send Test Email"
 
 #: templates/clubs/admin/smtp_config.html:898
 msgid "输入接收测试邮件的邮箱地址"
@@ -4321,7 +4187,7 @@ msgstr ""
 
 #: templates/clubs/admin/smtp_config.html:900
 msgid "发送"
-msgstr ""
+msgstr "Send"
 
 #: templates/clubs/admin/smtp_config.html:915
 msgid "暂无SMTP配置"
@@ -4377,16 +4243,12 @@ msgid "创建后立即激活"
 msgstr ""
 
 #: templates/clubs/admin/smtp_config.html:1003
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/smtp_config.html:1009
 msgid "创建配置"
-msgstr ""
+msgstr "Create Config"
 
 #: templates/clubs/admin/smtp_config.html:1133
 msgid "编辑SMTP配置"
-msgstr ""
+msgstr "Edit SMTP Config"
 
 #: templates/clubs/admin/smtp_config.html:1184
 msgid "留空则保持原密码不变"
@@ -4406,11 +4268,11 @@ msgstr ""
 
 #: templates/clubs/admin/storage_config.html:208
 msgid "存储设置"
-msgstr ""
+msgstr "Storage Settings"
 
 #: templates/clubs/admin/storage_config.html:209
 msgid "配置文件存储后端（本地存储 / S3 兼容对象存储）"
-msgstr ""
+msgstr "Configure storage backend (local / S3-compatible)"
 
 #: templates/clubs/admin/storage_config.html:242
 msgid "存储已禁用（紧急降级到本地）"
@@ -4419,39 +4281,31 @@ msgstr ""
 #: templates/clubs/admin/storage_config.html:245
 #: templates/clubs/admin/storage_config.html:291
 msgid "S3 对象存储"
-msgstr ""
+msgstr "S3 Object Storage"
 
 #: templates/clubs/admin/storage_config.html:248
 #: templates/clubs/admin/storage_config.html:282
 msgid "本地存储"
-msgstr ""
+msgstr "Local Storage"
 
 #: templates/clubs/admin/storage_config.html:254
 msgid "路径："
-msgstr ""
+msgstr "Path:"
 
 #: templates/clubs/admin/storage_config.html:255
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/storage_config.html:263
 msgid "紧急回退本地"
-msgstr ""
+msgstr "Emergency Fallback"
 
 #: templates/clubs/admin/storage_config.html:271
 msgid "后端配置"
-msgstr ""
+msgstr "Backend Config"
 
 #: templates/clubs/admin/storage_config.html:283
 msgid "文件保存在服务器本地磁盘。适合单机部署或带宽充足场景。"
 msgstr ""
 
 #: templates/clubs/admin/storage_config.html:292
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/storage_config.html:300
 msgid "启用存储抽象层（关闭后强制降级到本地存储，用于紧急回退）"
 msgstr ""
 
@@ -4480,28 +4334,24 @@ msgid "用于直链访问"
 msgstr ""
 
 #: templates/clubs/admin/storage_config.html:354
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/storage_config.html:376
 msgid "保存配置"
-msgstr ""
+msgstr "Save Config"
 
 #: templates/clubs/admin/storage_config.html:378
 msgid "测试连接"
-msgstr ""
+msgstr "Test Connection"
 
 #: templates/clubs/admin/storage_config.html:384
 msgid "连接成功"
-msgstr ""
+msgstr "Connected"
 
 #: templates/clubs/admin/storage_config.html:384
 msgid "连接失败"
-msgstr ""
+msgstr "Connection Failed"
 
 #: templates/clubs/admin/storage_config.html:392
 msgid "说明与注意事项"
-msgstr ""
+msgstr "Notes & Caveats"
 
 #: templates/clubs/admin/storage_config.html:394
 msgid "1. 切换后端不会自动迁移历史文件。"
@@ -4516,10 +4366,6 @@ msgid "2. Office Online 预览依赖直链。"
 msgstr ""
 
 #: templates/clubs/admin/storage_config.html:395
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/storage_config.html:397
 msgid "Bucket ACL 必须允许匿名读取（或为对应文件设置公开读取）；"
 msgstr ""
 
@@ -4540,10 +4386,6 @@ msgid "3. Secret Access Key 明文存储。"
 msgstr ""
 
 #: templates/clubs/admin/storage_config.html:401
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/storage_config.html:402
 msgid "4. 切换后端立即生效，无需重启服务。"
 msgstr ""
 
@@ -4560,13 +4402,8 @@ msgid "5. 使用 S3 的核心收益："
 msgstr ""
 
 #: templates/clubs/admin/storage_config.html:403
-msgid ""
-msgstr ""
-
-#: templates/clubs/admin/time_slot_form.html:4
-#: templates/clubs/admin/time_slot_form.html:141
 msgid "编辑时间段"
-msgstr ""
+msgstr "Edit Time Slot"
 
 #: templates/clubs/admin/time_slot_form.html:142
 msgid "修改现有时间段配置"
@@ -4574,11 +4411,11 @@ msgstr ""
 
 #: templates/clubs/admin/time_slot_form.html:142
 msgid "创建新的可选时间段"
-msgstr ""
+msgstr "Create new time slot"
 
 #: templates/clubs/admin/time_slot_form.html:170
 msgid "启用此时间段"
-msgstr ""
+msgstr "Enable Time Slot"
 
 #: templates/clubs/auth/login.html:4
 msgid "登录"
@@ -4586,52 +4423,48 @@ msgstr "Login"
 
 #: templates/clubs/auth/login.html:150
 msgid "欢迎回来"
-msgstr ""
+msgstr "Welcome Back"
 
 #: templates/clubs/auth/login.html:151
 msgid "登录您的账户以继续"
-msgstr ""
+msgstr "Sign in to your account to continue"
 
 #: templates/clubs/auth/login.html:179 templates/clubs/auth/register.html:182
 msgid "请输入密码"
-msgstr ""
+msgstr "Enter password"
 
 #: templates/clubs/auth/login.html:183 templates/clubs/auth/register.html:257
 #: templates/clubs/index.html:1126
 msgid "立即登录"
-msgstr ""
+msgstr "Sign In"
 
 #: templates/clubs/auth/login.html:188
 msgid "登录已被锁定"
-msgstr ""
+msgstr "Login Locked"
 
 #: templates/clubs/auth/login.html:189
-msgid ""
-msgstr ""
-
-#: templates/clubs/auth/login.html:191 templates/clubs/auth/login.html:193
 msgid "联系管理员"
-msgstr ""
+msgstr "Contact Admin"
 
 #: templates/clubs/auth/login.html:198
 msgid "或者"
-msgstr ""
+msgstr "or"
 
 #: templates/clubs/auth/login.html:200
 msgid "还没有账户？"
-msgstr ""
+msgstr "No account yet?"
 
 #: templates/clubs/auth/login.html:200
 msgid "立即注册"
-msgstr ""
+msgstr "Register Now"
 
 #: templates/clubs/auth/register.html:4 templates/clubs/auth/register.html:131
 msgid "用户注册"
-msgstr ""
+msgstr "User Registration"
 
 #: templates/clubs/auth/register.html:132
 msgid "欢迎来到系统，请填写以下信息注册"
-msgstr ""
+msgstr "Welcome! Please fill in the following information to register"
 
 #: templates/clubs/auth/register.html:149
 msgid "请注册等待管理员审核，社长注册请直接登录"
@@ -4731,7 +4564,7 @@ msgstr ""
 
 #: templates/clubs/auth/register.html:223
 msgid "群众"
-msgstr ""
+msgstr "General public"
 
 #: templates/clubs/auth/register.html:230
 msgid "部门 *"
@@ -4751,16 +4584,16 @@ msgstr ""
 
 #: templates/clubs/auth/register.html:254
 msgid "创建账户"
-msgstr ""
+msgstr "Create Account"
 
 #: templates/clubs/auth/register.html:257
 msgid "已有账户？"
-msgstr ""
+msgstr "Already have an account?"
 
 #: templates/clubs/auth/verify_email.html:4
 #: templates/clubs/auth/verify_email.html:12
 msgid "邮箱验证"
-msgstr ""
+msgstr "Email Verification"
 
 #: templates/clubs/auth/verify_email.html:26
 msgid "验证码已发送到："
@@ -4772,7 +4605,7 @@ msgstr ""
 
 #: templates/clubs/auth/verify_email.html:34
 msgid "请输入验证码"
-msgstr ""
+msgstr "Enter verification code"
 
 #: templates/clubs/auth/verify_email.html:35
 msgid "6位数字"
@@ -4784,19 +4617,19 @@ msgstr ""
 
 #: templates/clubs/auth/verify_email.html:39
 msgid "验证"
-msgstr ""
+msgstr "Verify"
 
 #: templates/clubs/auth/verify_email.html:44
 msgid "没有收到验证码？"
-msgstr ""
+msgstr "Didn't receive the code?"
 
 #: templates/clubs/auth/verify_email.html:46
 msgid "重新发送验证码"
-msgstr ""
+msgstr "Resend Code"
 
 #: templates/clubs/base.html:362
 msgid "主要功能"
-msgstr ""
+msgstr "Main Features"
 
 #: templates/clubs/base.html:368 templates/clubs/base.html:687
 msgid "首页"
@@ -4804,54 +4637,49 @@ msgstr "Home"
 
 #: templates/clubs/base.html:378
 msgid "管理后台"
-msgstr ""
+msgstr "Admin Panel"
 
 #: templates/clubs/base.html:391 templates/clubs/base.html:402
 msgid "部门管理"
-msgstr ""
+msgstr "Department Management"
 
 #: templates/clubs/base.html:417 templates/clubs/user/dashboard.html:356
 msgid "我的社团"
-msgstr ""
+msgstr "My Clubs"
 
 #: templates/clubs/base.html:421 templates/clubs/club_detail.html:388
 #: templates/clubs/user/member_management.html:4
 #: templates/clubs/user/member_management.html:86
 msgid "社员管理"
-msgstr ""
+msgstr "Member Management"
 
 #: templates/clubs/base.html:430
 #: templates/clubs/staff/dynamic_audit_center.html:4
 #: templates/clubs/staff/dynamic_audit_center.html:500
 msgid "审核中心"
-msgstr ""
+msgstr "Review Center"
 
 #: templates/clubs/base.html:450
 #: templates/clubs/user/dynamic_approval_center.html:4
 #: templates/clubs/user/dynamic_approval_center.html:410
 msgid "审批记录"
-msgstr ""
+msgstr "Approval Records"
 
 #: templates/clubs/base.html:456
 msgid "全部记录"
-msgstr ""
+msgstr "All Records"
 
 #: templates/clubs/base.html:472
 msgid "房间日历"
-msgstr ""
+msgstr "Room Calendar"
 
 #: templates/clubs/base.html:476 templates/clubs/room_calendar.html:820
 #: templates/clubs/room_my_bookings.html:4
 #: templates/clubs/room_my_bookings.html:246
 msgid "我的预约"
-msgstr ""
+msgstr "My Bookings"
 
 #: templates/clubs/base.html:499
-#, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/base.html:515
 #, python-format
 msgid "切换到%(__i18n1)s身份"
 msgstr ""
@@ -4870,11 +4698,11 @@ msgstr "Logout"
 
 #: templates/clubs/base.html:535 templates/clubs/base.html:537
 msgid "切换主题"
-msgstr ""
+msgstr "Toggle Theme"
 
 #: templates/clubs/base.html:541
 msgid "拖拽调整侧边栏宽度"
-msgstr ""
+msgstr "Drag to resize sidebar"
 
 #: templates/clubs/base.html:642
 msgid "账号当前为不活跃状态。可选择“延期注销”恢复活跃1年（支持多次延期）。"
@@ -4890,7 +4718,7 @@ msgstr ""
 
 #: templates/clubs/base.html:677
 msgid "上海海洋大学社团管理服务中心 技术支持"
-msgstr ""
+msgstr "Shanghai Ocean University Club Management Service Center"
 
 #: templates/clubs/base.html:693
 msgid "管理"
@@ -4898,7 +4726,7 @@ msgstr "Manage"
 
 #: templates/clubs/base.html:729
 msgid "我的"
-msgstr ""
+msgstr "Mine"
 
 #: templates/clubs/base.html:738
 msgid "审批"
@@ -4906,46 +4734,46 @@ msgstr "Approve"
 
 #: templates/clubs/base.html:744
 msgid "更多"
-msgstr ""
+msgstr "More"
 
 #: templates/clubs/change_club_status.html:4
 #: templates/clubs/change_club_status.html:227
 msgid "改变社团状态"
-msgstr ""
+msgstr "Change Club Status"
 
 #: templates/clubs/change_club_status.html:233
 msgid "社团信息"
-msgstr ""
+msgstr "Club Info"
 
 #: templates/clubs/change_club_status.html:244
 #: templates/clubs/staff/manage_clubs.html:367
 #: templates/clubs/staff/management.html:353
 #: templates/clubs/user/member_management.html:184
 msgid "不活跃"
-msgstr ""
+msgstr "Inactive"
 
 #: templates/clubs/change_club_status.html:244
 #: templates/clubs/staff/manage_clubs.html:368
 #: templates/clubs/staff/management.html:356
 msgid "停止"
-msgstr ""
+msgstr "Suspended"
 
 #: templates/clubs/change_club_status.html:258
 msgid "操作成功"
-msgstr ""
+msgstr "Operation successful"
 
 #: templates/clubs/change_club_status.html:259
 #: templates/clubs/direct_edit_club_info.html:234
 msgid "操作失败"
-msgstr ""
+msgstr "Operation failed"
 
 #: templates/clubs/change_club_status.html:272
 msgid "选择新状态"
-msgstr ""
+msgstr "Choose new status"
 
 #: templates/clubs/change_club_status.html:284
 msgid "(当前)"
-msgstr ""
+msgstr "(current)"
 
 #: templates/clubs/change_club_status.html:293
 msgid "状态说明"
@@ -4977,11 +4805,11 @@ msgstr ""
 
 #: templates/clubs/club_detail.html:5 templates/clubs/club_detail.html:322
 msgid "社团详情"
-msgstr ""
+msgstr "Club Details"
 
 #: templates/clubs/club_detail.html:346
 msgid "成员人数"
-msgstr ""
+msgstr "Members"
 
 #: templates/clubs/club_detail.html:347
 #: templates/clubs/delete_room_booking.html:107
@@ -4989,78 +4817,78 @@ msgstr ""
 #: templates/clubs/staff/manage_department.html:319
 #: templates/clubs/staff/manage_department.html:373
 msgid "人"
-msgstr ""
+msgstr "people"
 
 #: templates/clubs/club_detail.html:371 templates/clubs/club_detail.html:680
 msgid "社团简介"
-msgstr ""
+msgstr "About"
 
 #: templates/clubs/club_detail.html:383
 msgid "成员列表"
-msgstr ""
+msgstr "Member List"
 
 #: templates/clubs/club_detail.html:395
 msgid "二维码生成设置"
-msgstr ""
+msgstr "QR Code Settings"
 
 #: templates/clubs/club_detail.html:398
 #: templates/clubs/user/member_management.html:111
 msgid "有效时长（分钟）"
-msgstr ""
+msgstr "Validity (minutes)"
 
 #: templates/clubs/club_detail.html:402
 #: templates/clubs/user/member_management.html:115
 msgid "使用次数"
-msgstr ""
+msgstr "Usage Limit"
 
 #: templates/clubs/club_detail.html:404
 #: templates/clubs/user/member_management.html:117
 msgid "1次（一次性）"
-msgstr ""
+msgstr "1 time (one-time)"
 
 #: templates/clubs/club_detail.html:405
 #: templates/clubs/user/member_management.html:118
 msgid "5次"
-msgstr ""
+msgstr "5 times"
 
 #: templates/clubs/club_detail.html:406
 #: templates/clubs/user/member_management.html:119
 msgid "10次"
-msgstr ""
+msgstr "10 times"
 
 #: templates/clubs/club_detail.html:407
 #: templates/clubs/user/member_management.html:120
 msgid "20次"
-msgstr ""
+msgstr "20 times"
 
 #: templates/clubs/club_detail.html:408
 #: templates/clubs/user/member_management.html:121
 msgid "50次"
-msgstr ""
+msgstr "50 times"
 
 #: templates/clubs/club_detail.html:409
 #: templates/clubs/user/member_management.html:122
 msgid "不限次数"
-msgstr ""
+msgstr "Unlimited"
 
 #: templates/clubs/club_detail.html:413
 #: templates/clubs/user/member_management.html:125
 msgid "生成二维码"
-msgstr ""
+msgstr "Generate QR Code"
 
 #: templates/clubs/club_detail.html:418
 msgid "招新二维码已生成"
-msgstr ""
+msgstr "Recruitment QR code generated"
 
 #: templates/clubs/club_detail.html:420
 #: templates/clubs/user/member_management.html:130
 msgid "招新二维码"
-msgstr ""
+msgstr "Recruitment QR Code"
 
 #: templates/clubs/club_detail.html:426
 #: templates/clubs/user/member_management.html:136
 msgid "复制链接"
-msgstr ""
+msgstr "Copy Link"
 
 #: templates/clubs/club_detail.html:436
 #: templates/clubs/staff/manage_department.html:326
@@ -5068,11 +4896,11 @@ msgstr ""
 #: templates/clubs/user/member_management.html:233
 #: templates/clubs/user/member_management.html:234
 msgid "姓名"
-msgstr ""
+msgstr "Name"
 
 #: templates/clubs/club_detail.html:438
 msgid "身份"
-msgstr ""
+msgstr "Role"
 
 #: templates/clubs/club_detail.html:439
 msgid "加入/任命日期"
@@ -5080,36 +4908,32 @@ msgstr ""
 
 #: templates/clubs/club_detail.html:440
 msgid "联系方式"
-msgstr ""
+msgstr "Contact"
 
 #: templates/clubs/club_detail.html:481
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/club_detail.html:490 templates/clubs/club_detail.html:522
 msgid "未公开"
-msgstr ""
+msgstr "Private"
 
 #: templates/clubs/club_detail.html:649
 msgid "管理操作"
-msgstr ""
+msgstr "Management"
 
 #: templates/clubs/club_detail.html:661
 msgid "修改资料"
-msgstr ""
+msgstr "Edit Profile"
 
 #: templates/clubs/club_detail.html:663
 msgid "更改状态"
-msgstr ""
+msgstr "Change Status"
 
 #: templates/clubs/club_detail.html:665 templates/clubs/delete_club.html:219
 msgid "删除社团"
-msgstr ""
+msgstr "Delete Club"
 
 #: templates/clubs/club_detail.html:676
 msgid "修改社团简介"
-msgstr ""
+msgstr "Edit Club Intro"
 
 #: templates/clubs/components/_alert_club_item.html:4
 #, python-format
@@ -5118,20 +4942,20 @@ msgstr ""
 
 #: templates/clubs/components/_alert_club_item.html:6
 msgid "社长:"
-msgstr ""
+msgstr "President:"
 
 #: templates/clubs/components/_alert_club_item.html:18
 msgid "未设置"
-msgstr ""
+msgstr "Not set"
 
 #: templates/clubs/components/_alert_club_item.html:21
 msgid "负责干事:"
-msgstr ""
+msgstr "Staff:"
 
 #: templates/clubs/components/_alert_club_item.html:30
 #: templates/clubs/user/dashboard.html:431
 msgid "暂未分配"
-msgstr ""
+msgstr "Not assigned"
 
 #: templates/clubs/components/_cropper_upload.html:22
 msgid "裁剪图片"
@@ -5156,19 +4980,19 @@ msgstr ""
 
 #: templates/clubs/components/_csv_import_modal.html:180
 msgid "下载导入模板"
-msgstr ""
+msgstr "Download Import Template"
 
 #: templates/clubs/components/_csv_import_modal.html:184
 msgid "浏览"
-msgstr ""
+msgstr "Browse"
 
 #: templates/clubs/components/_csv_import_modal.html:185
 msgid "未选择文件"
-msgstr ""
+msgstr "No file selected"
 
 #: templates/clubs/components/_csv_import_modal.html:189
 msgid "开始导入"
-msgstr ""
+msgstr "Start Import"
 
 #: templates/clubs/components/_csv_import_modal.html:191
 msgid "准备导入..."
@@ -5179,7 +5003,7 @@ msgstr ""
 #: templates/clubs/staff/dynamic_submission_review.html:665
 #: templates/clubs/user/dynamic_form_submit.html:729
 msgid "文件已丢失"
-msgstr ""
+msgstr "File lost"
 
 #: templates/clubs/components/_dynamic_submission_fields.html:27
 #: templates/clubs/components/_submission_attempt_history.html:610
@@ -5188,20 +5012,20 @@ msgstr ""
 #: templates/clubs/staff/dynamic_submission_review.html:670
 #: templates/clubs/user/dynamic_form_submit.html:733
 msgid "查看"
-msgstr ""
+msgstr "View"
 
 #: templates/clubs/components/_dynamic_submission_fields.html:39
 #: templates/clubs/staff/dynamic_submission_review.html:688
 msgid "未上传"
-msgstr ""
+msgstr "Not uploaded"
 
 #: templates/clubs/components/_file_upload.html:42
 msgid "(可选)"
-msgstr ""
+msgstr "(optional)"
 
 #: templates/clubs/components/_file_upload.html:51
 msgid "点击或拖拽"
-msgstr ""
+msgstr "Click or drag"
 
 #: templates/clubs/components/_file_upload.html:51
 msgid "多个文件"
@@ -5213,49 +5037,40 @@ msgstr ""
 
 #: templates/clubs/components/_file_upload.html:52
 msgid "点击选择文件"
-msgstr ""
+msgstr "Click to select files"
 
 #: templates/clubs/components/_file_upload.html:55
 #, python-format
 msgid "支持格式：%(__i18n1)s"
-msgstr ""
+msgstr "Supported formats: %(__i18n1)s"
 
 #: templates/clubs/components/_file_upload.html:56
 #, python-format
 msgid "（最大 %(__i18n1)sMB）"
-msgstr ""
+msgstr "(max %(__i18n1)sMB)"
 
 #: templates/clubs/components/_file_upload.html:81
 msgid "下载模板"
-msgstr ""
+msgstr "Download Template"
 
 #: templates/clubs/components/_file_upload.html:89
 msgid "当前文件："
-msgstr ""
+msgstr "Current file:"
 
 #: templates/clubs/components/_office_preview_modal.html:87
 msgid "在线预览"
-msgstr ""
+msgstr "Online Preview"
 
 #: templates/clubs/components/_office_preview_modal.html:88
 msgid "关闭预览"
-msgstr ""
+msgstr "Close Preview"
 
 #: templates/clubs/components/_office_preview_modal.html:92
 msgid "Office 在线预览"
-msgstr ""
+msgstr "Office Online Preview"
 
 #: templates/clubs/components/_staff_alerts.html:23
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/components/_staff_alerts.html:28
-#, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/components/_staff_alerts.html:33
 msgid "复制我负责的"
 msgstr ""
 
@@ -5265,12 +5080,12 @@ msgstr ""
 
 #: templates/clubs/components/_submission_attempt_history.html:510
 msgid "历史提交与审核记录"
-msgstr ""
+msgstr "Submission & Review History"
 
 #: templates/clubs/components/_submission_attempt_history.html:512
 #, python-format
 msgid "共 %(__i18n1)s 次提交"
-msgstr ""
+msgstr "%(__i18n1)s submissions"
 
 #: templates/clubs/components/_submission_attempt_history.html:515
 #: templates/clubs/components/_submission_attempt_history.html:535
@@ -5281,7 +5096,7 @@ msgstr ""
 #: templates/clubs/staff/dynamic_submission_review.html:609
 #, python-format
 msgid "已审核 %(__i18n1)s 人"
-msgstr ""
+msgstr "%(__i18n1)s reviewed"
 
 #: templates/clubs/components/_submission_attempt_history.html:530
 #: templates/clubs/staff/dynamic_audit_center.html:533
@@ -5292,19 +5107,19 @@ msgstr ""
 #: templates/clubs/user/dynamic_approval_detail.html:542
 #, python-format
 msgid "第 %(__i18n1)s 次提交"
-msgstr ""
+msgstr "Submission #%(__i18n1)s"
 
 #: templates/clubs/components/_submission_attempt_history.html:530
 msgid "当前轮次"
-msgstr ""
+msgstr "Current Round"
 
 #: templates/clubs/components/_submission_attempt_history.html:541
 msgid "没有数据"
-msgstr ""
+msgstr "No data"
 
 #: templates/clubs/components/_submission_attempt_history.html:547
 msgid "审核记录"
-msgstr ""
+msgstr "Review Records"
 
 #: templates/clubs/components/_submission_attempt_history.html:554
 msgid "已注销用户"
@@ -5314,7 +5129,7 @@ msgstr ""
 #: templates/clubs/staff/dynamic_submission_review.html:644
 #: templates/clubs/user/dynamic_approval_detail.html:600
 msgid "提交内容"
-msgstr ""
+msgstr "Submitted Content"
 
 #: templates/clubs/components/_submission_attempt_history.html:623
 msgid "该轮次没有可回溯的提交内容"
@@ -5326,15 +5141,15 @@ msgstr ""
 
 #: templates/clubs/components/_submission_attempt_history.html:649
 msgid "重新进入审核"
-msgstr ""
+msgstr "Re-enter Review"
 
 #: templates/clubs/components/_submission_attempt_history.html:651
 msgid "直接修改"
-msgstr ""
+msgstr "Direct Modify"
 
 #: templates/clubs/components/_submission_attempt_history.html:667
 msgid "暂无审核记录"
-msgstr ""
+msgstr "No review records"
 
 #: templates/clubs/delete_club.html:4
 #, python-format
@@ -5396,7 +5211,7 @@ msgstr ""
 #: templates/clubs/delete_room_booking.html:5
 #: templates/clubs/delete_room_booking.html:72
 msgid "取消预约"
-msgstr ""
+msgstr "Cancel Booking"
 
 #: templates/clubs/delete_room_booking.html:73
 msgid "确认后将立即释放该房间时间段"
@@ -5425,7 +5240,7 @@ msgstr ""
 
 #: templates/clubs/delete_room_booking.html:115
 msgid "确认取消"
-msgstr ""
+msgstr "Confirm Cancel"
 
 #: templates/clubs/direct_edit_club_info.html:4
 #, python-format
@@ -5504,19 +5319,11 @@ msgstr ""
 
 #: templates/clubs/edit_room_booking.html:255
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/edit_room_booking.html:264
 msgid "请选择结束时间..."
 msgstr ""
 
 #: templates/clubs/edit_room_booking.html:266
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/edit_room_booking.html:275
 msgid "使用详情"
 msgstr ""
 
@@ -5530,40 +5337,35 @@ msgstr ""
 
 #: templates/clubs/error_page.html:13
 msgid "页面不存在"
-msgstr ""
+msgstr "Page Not Found"
 
 #: templates/clubs/error_page.html:13 templates/clubs/error_page.html:233
 msgid "服务器开小差了"
-msgstr ""
+msgstr "Server Error"
 
 #: templates/clubs/error_page.html:233
 msgid "页面走丢了"
-msgstr ""
+msgstr "Page lost"
 
 #: templates/clubs/error_page.html:236
 msgid "你访问的地址不存在、已被移动，或者你无权查看该页面。"
-msgstr ""
+msgstr "The address does not exist, has been moved, or you are not allowed to view it."
 
 #: templates/clubs/error_page.html:236
-msgid ""
-msgstr ""
-
-#: templates/clubs/error_page.html:240
-#, python-format
 msgid "错误编号：#%(__i18n1)s"
-msgstr ""
+msgstr "Error code: #%(__i18n1)s"
 
 #: templates/clubs/error_page.html:245
 msgid "返回首页"
-msgstr ""
+msgstr "Back to Home"
 
 #: templates/clubs/error_page.html:248
 msgid "重新加载"
-msgstr ""
+msgstr "Reload"
 
 #: templates/clubs/error_page.html:255
 msgid "请求帮助"
-msgstr ""
+msgstr "Request Help"
 
 #: templates/clubs/error_page.html:261
 msgid "你的联系邮箱（选填）"
@@ -5575,27 +5377,27 @@ msgstr ""
 
 #: templates/clubs/error_page.html:263
 msgid "提交求助"
-msgstr ""
+msgstr "Submit Request"
 
 #: templates/clubs/index.html:6
 msgid "首页 - 社团管理系统"
-msgstr ""
+msgstr "Home - Club Management System"
 
 #: templates/clubs/index.html:1018
 msgid "社团总数"
-msgstr ""
+msgstr "Total Clubs"
 
 #: templates/clubs/index.html:1067
 msgid "最新公告"
-msgstr ""
+msgstr "Latest Announcements"
 
 #: templates/clubs/index.html:1092
 msgid "查看详情"
-msgstr ""
+msgstr "View Details"
 
 #: templates/clubs/index.html:1123
 msgid "已有账号"
-msgstr ""
+msgstr "Have an account"
 
 #: templates/clubs/index.html:1124
 msgid "登录后查看完整的部门信息、社团详情，管理您的社团事务"
@@ -5603,7 +5405,7 @@ msgstr ""
 
 #: templates/clubs/index.html:1132
 msgid "新用户？"
-msgstr ""
+msgstr "New user?"
 
 #: templates/clubs/index.html:1133
 msgid "注册账号后即可使用社团管理系统的全部功能"
@@ -5611,19 +5413,19 @@ msgstr ""
 
 #: templates/clubs/index.html:1135
 msgid "注册账号"
-msgstr ""
+msgstr "Register"
 
 #: templates/clubs/index.html:1145 templates/clubs/index.html:1181
 msgid "部门介绍"
-msgstr ""
+msgstr "Departments"
 
 #: templates/clubs/index.html:1214
 msgid "社团列表"
-msgstr ""
+msgstr "Club List"
 
 #: templates/clubs/index.html:1229
 msgid "我是社长"
-msgstr ""
+msgstr "I'm a President"
 
 #: templates/clubs/index.html:1236
 msgid "社团列表分页"
@@ -5632,7 +5434,7 @@ msgstr ""
 #: templates/clubs/index.html:1238 templates/clubs/public_activities.html:828
 #, python-format
 msgid "第 %(__i18n1)s / %(__i18n2)s 页"
-msgstr ""
+msgstr "Page %(__i18n1)s / %(__i18n2)s"
 
 #: templates/clubs/index.html:1252
 msgid "部门成员"
@@ -5731,10 +5533,6 @@ msgid "欢迎使用 CManager"
 msgstr ""
 
 #: templates/clubs/oobe_setup.html:470
-msgid ""
-msgstr ""
-
-#: templates/clubs/oobe_setup.html:481
 msgid "数据库"
 msgstr ""
 
@@ -5776,11 +5574,11 @@ msgstr ""
 
 #: templates/clubs/oobe_setup.html:547 templates/clubs/oobe_setup.html:811
 msgid "否"
-msgstr ""
+msgstr "No"
 
 #: templates/clubs/oobe_setup.html:548 templates/clubs/oobe_setup.html:811
 msgid "是"
-msgstr ""
+msgstr "Yes"
 
 #: templates/clubs/oobe_setup.html:555
 msgid "站点配置"
@@ -5836,10 +5634,6 @@ msgid "开发环境推荐 SQLite（无需额外服务）；生产环境推荐 Po
 msgstr ""
 
 #: templates/clubs/oobe_setup.html:634
-msgid ""
-msgstr ""
-
-#: templates/clubs/oobe_setup.html:638
 msgid "数据库类型"
 msgstr ""
 
@@ -5973,10 +5767,6 @@ msgid "提示："
 msgstr ""
 
 #: templates/clubs/oobe_setup.html:821
-msgid ""
-msgstr ""
-
-#: templates/clubs/oobe_setup.html:825
 msgid "保存目标："
 msgstr ""
 
@@ -5995,11 +5785,11 @@ msgstr ""
 
 #: templates/clubs/public_activities.html:605
 msgid "活动管理"
-msgstr ""
+msgstr "Activity Management"
 
 #: templates/clubs/public_activities.html:606
 msgid "查看和管理社团活动"
-msgstr ""
+msgstr "View and manage club activities"
 
 #: templates/clubs/public_activities.html:615
 msgid "筛选和搜索"
@@ -6023,7 +5813,7 @@ msgstr ""
 
 #: templates/clubs/public_activities.html:697
 msgid "全选"
-msgstr ""
+msgstr "Select All"
 
 #: templates/clubs/public_activities.html:699
 msgid "已选择 0 个活动"
@@ -6043,23 +5833,23 @@ msgstr ""
 
 #: templates/clubs/public_activities.html:769
 msgid "人数"
-msgstr ""
+msgstr "People"
 
 #: templates/clubs/public_activities.html:776
 msgid "活动简介"
-msgstr ""
+msgstr "Activity Intro"
 
 #: templates/clubs/public_activities.html:806
 msgid "已报名 / 取消"
-msgstr ""
+msgstr "Signed up / Cancel"
 
 #: templates/clubs/public_activities.html:812
 msgid "报名参加"
-msgstr ""
+msgstr "Sign Up"
 
 #: templates/clubs/public_activities.html:816
 msgid "登录参加"
-msgstr ""
+msgstr "Login to Join"
 
 #: templates/clubs/public_activities.html:824
 msgid "活动分页"
@@ -6067,27 +5857,27 @@ msgstr ""
 
 #: templates/clubs/public_activities.html:837
 msgid "暂无即将举办的活动"
-msgstr ""
+msgstr "No upcoming activities"
 
 #: templates/clubs/room_calendar.html:5
 msgid "房间预约日历"
-msgstr ""
+msgstr "Room Booking Calendar"
 
 #: templates/clubs/room_calendar.html:806
 msgid "今天"
-msgstr ""
+msgstr "Today"
 
 #: templates/clubs/room_calendar.html:808
 msgid "日期切换"
-msgstr ""
+msgstr "Change Date"
 
 #: templates/clubs/room_calendar.html:823
 msgid "导出周表"
-msgstr ""
+msgstr "Export Weekly"
 
 #: templates/clubs/room_calendar.html:852
 msgid "预约此时段"
-msgstr ""
+msgstr "Book This Slot"
 
 #: templates/clubs/room_calendar.html:873
 msgid "今日暂无预约，点击右上角立刻创建吧。"
@@ -6095,7 +5885,7 @@ msgstr ""
 
 #: templates/clubs/room_calendar.html:886
 msgid "预约详情"
-msgstr ""
+msgstr "Booking Details"
 
 #: templates/clubs/room_calendar.html:900
 msgid "导出预约周表"
@@ -6115,7 +5905,7 @@ msgstr ""
 
 #: templates/clubs/room_my_bookings.html:250
 msgid "新建预约"
-msgstr ""
+msgstr "New Booking"
 
 #: templates/clubs/room_my_bookings.html:300
 msgid "预约记录分页"
@@ -6135,7 +5925,7 @@ msgstr ""
 
 #: templates/clubs/staff/dynamic_audit_center.html:505
 msgid "全部"
-msgstr ""
+msgstr "All"
 
 #: templates/clubs/staff/dynamic_audit_center.html:531
 #: templates/clubs/staff/dynamic_audit_center.html:568
@@ -6151,7 +5941,7 @@ msgstr ""
 #: templates/clubs/user/dynamic_approval_center.html:622
 #, python-format
 msgid "编号 %(__i18n1)s"
-msgstr ""
+msgstr "No. %(__i18n1)s"
 
 #: templates/clubs/staff/dynamic_audit_center.html:534
 #: templates/clubs/staff/dynamic_audit_center.html:571
@@ -6161,16 +5951,16 @@ msgstr ""
 #: templates/clubs/user/dynamic_approval_detail.html:543
 #, python-format
 msgid "通过 %(__i18n1)s"
-msgstr ""
+msgstr "Approved %(__i18n1)s"
 
 #: templates/clubs/staff/dynamic_audit_center.html:553
 msgid "暂无待审核提交"
-msgstr ""
+msgstr "No pending submissions"
 
 #: templates/clubs/staff/dynamic_audit_center.html:557
 #, python-format
 msgid "还有 %(__i18n1)s 条待审核"
-msgstr ""
+msgstr "%(__i18n1)s pending"
 
 #: templates/clubs/staff/dynamic_audit_center.html:608
 #: templates/clubs/staff/dynamic_audit_center.html:649
@@ -6180,14 +5970,14 @@ msgstr ""
 
 #: templates/clubs/staff/dynamic_audit_center.html:629
 msgid "暂无已处理提交"
-msgstr ""
+msgstr "No processed submissions"
 
 #: templates/clubs/staff/dynamic_audit_center.html:633
 #: templates/clubs/user/dynamic_approval_center.html:500
 #: templates/clubs/user/dynamic_approval_center.html:611
 #, python-format
 msgid "还有 %(__i18n1)s 条已处理"
-msgstr ""
+msgstr "%(__i18n1)s processed"
 
 #: templates/clubs/staff/dynamic_audit_center.html:671
 msgid "待审核上一页"
@@ -6222,12 +6012,12 @@ msgstr ""
 #: templates/clubs/user/dynamic_approval_detail.html:545
 #, python-format
 msgid "还需 %(__i18n1)s 次通过"
-msgstr ""
+msgstr "%(__i18n1)s more approvals needed"
 
 #: templates/clubs/staff/dynamic_submission_review.html:620
 #: templates/clubs/user/dynamic_approval_detail.html:554
 msgid "下载合并 Word"
-msgstr ""
+msgstr "Download Merged Word"
 
 #: templates/clubs/staff/dynamic_submission_review.html:621
 #: templates/clubs/user/dynamic_approval_detail.html:555
@@ -6237,7 +6027,7 @@ msgstr ""
 #: templates/clubs/staff/dynamic_submission_review.html:629
 #: templates/clubs/user/dynamic_approval_detail.html:563
 msgid "下载压缩包"
-msgstr ""
+msgstr "Download Archive"
 
 #: templates/clubs/staff/dynamic_submission_review.html:630
 #: templates/clubs/user/dynamic_approval_detail.html:564
@@ -6246,15 +6036,15 @@ msgstr ""
 
 #: templates/clubs/staff/dynamic_submission_review.html:683
 msgid "打回这个文件"
-msgstr ""
+msgstr "Send Back This File"
 
 #: templates/clubs/staff/dynamic_submission_review.html:694
 msgid "打回这一项"
-msgstr ""
+msgstr "Send Back This Item"
 
 #: templates/clubs/staff/dynamic_submission_review.html:707
 msgid "审核处理"
-msgstr ""
+msgstr "Review Processing"
 
 #: templates/clubs/staff/dynamic_submission_review.html:714
 msgid "你已审核本轮提交，再次提交将修改你的审核结果"
@@ -6271,11 +6061,11 @@ msgstr "Approve"
 
 #: templates/clubs/staff/dynamic_submission_review.html:721
 msgid "拒绝"
-msgstr ""
+msgstr "Reject"
 
 #: templates/clubs/staff/dynamic_submission_review.html:729
 msgid "修改我的审核结果"
-msgstr ""
+msgstr "Change My Result"
 
 #: templates/clubs/staff/dynamic_submission_review.html:730
 msgid "只修改你自己的审核记录，其他审核人的投票和审核人数保持不变。"
@@ -6287,15 +6077,15 @@ msgstr ""
 
 #: templates/clubs/staff/dynamic_submission_review.html:737
 msgid "改为不通过"
-msgstr ""
+msgstr "Change to Reject"
 
 #: templates/clubs/staff/dynamic_submission_review.html:739
 msgid "改为通过"
-msgstr ""
+msgstr "Change to Approve"
 
 #: templates/clubs/staff/dynamic_submission_review.html:746
 msgid "管理员重新审核"
-msgstr ""
+msgstr "Admin Re-review"
 
 #: templates/clubs/staff/dynamic_submission_review.html:747
 msgid "保留当前审核历史，开启新一轮审核，所有审核人需要重新投票。"
@@ -6303,7 +6093,7 @@ msgstr ""
 
 #: templates/clubs/staff/dynamic_submission_review.html:751
 msgid "重新审核"
-msgstr ""
+msgstr "Re-review"
 
 #: templates/clubs/staff/dynamic_submission_review.html:757
 msgid "该通道绑定内置业务动作，审核结果不可覆盖修改"
@@ -6413,16 +6203,12 @@ msgstr ""
 
 #: templates/clubs/staff/manage_department.html:305
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/staff/manage_department.html:318
 msgid "部长"
-msgstr ""
+msgstr "Director"
 
 #: templates/clubs/staff/manage_department.html:372
 msgid "部员"
-msgstr ""
+msgstr "Member"
 
 #: templates/clubs/staff/manage_department.html:425
 msgid "当前部门暂无成员"
@@ -6430,10 +6216,6 @@ msgstr ""
 
 #: templates/clubs/staff/manage_department.html:426
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/staff/management.html:190
 msgid "✓ 复制成功"
 msgstr ""
 
@@ -6484,7 +6266,7 @@ msgstr ""
 
 #: templates/clubs/staff/management.html:269
 msgid "人数告警阈值"
-msgstr ""
+msgstr "Member Alert Threshold"
 
 #: templates/clubs/staff/management.html:270
 #, python-format
@@ -6497,19 +6279,11 @@ msgstr ""
 
 #: templates/clubs/staff/management.html:306
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/staff/management.html:391
 msgid "暂无社团记录"
 msgstr ""
 
 #: templates/clubs/staff/management.html:402
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/staff/management.html:439
 msgid "删除社团确认"
 msgstr ""
 
@@ -6532,7 +6306,7 @@ msgstr ""
 #: templates/clubs/staff/management.html:448
 #: templates/clubs/user/edit_profile.html:603
 msgid "确认删除"
-msgstr ""
+msgstr "Confirm Delete"
 
 #: templates/clubs/submit_room_booking.html:5
 #: templates/clubs/submit_room_booking.html:238
@@ -6548,10 +6322,6 @@ msgid "使用须知"
 msgstr ""
 
 #: templates/clubs/submit_room_booking.html:251
-msgid ""
-msgstr ""
-
-#: templates/clubs/submit_room_booking.html:277
 msgid "申请社团"
 msgstr ""
 
@@ -6629,27 +6399,27 @@ msgstr ""
 #: templates/clubs/user/dynamic_approval_center.html:427
 #: templates/clubs/user/dynamic_approval_center.html:534
 msgid "进行中"
-msgstr ""
+msgstr "In Progress"
 
 #: templates/clubs/user/dynamic_approval_center.html:448
 #: templates/clubs/user/dynamic_approval_center.html:556
 msgid "暂无进行中的请求"
-msgstr ""
+msgstr "No in-progress requests"
 
 #: templates/clubs/user/dynamic_approval_center.html:452
 #: templates/clubs/user/dynamic_approval_center.html:560
 #, python-format
 msgid "还有 %(__i18n1)s 条进行中"
-msgstr ""
+msgstr "%(__i18n1)s in progress"
 
 #: templates/clubs/user/dynamic_approval_center.html:496
 #: templates/clubs/user/dynamic_approval_center.html:607
 msgid "暂无已处理请求"
-msgstr ""
+msgstr "No processed requests"
 
 #: templates/clubs/user/dynamic_approval_center.html:526
 msgid "暂无审批记录"
-msgstr ""
+msgstr "No approval records"
 
 #: templates/clubs/user/dynamic_approval_center.html:635
 msgid "进行中上一页"
@@ -6661,27 +6431,23 @@ msgstr ""
 
 #: templates/clubs/user/dynamic_approval_detail.html:5
 msgid "提交详情"
-msgstr ""
+msgstr "Submission Details"
 
 #: templates/clubs/user/dynamic_approval_detail.html:571
 msgid "修改被打回内容"
-msgstr ""
+msgstr "Revise Returned Content"
 
 #: templates/clubs/user/dynamic_approval_detail.html:586
 msgid "总审核意见"
-msgstr ""
+msgstr "Overall Comment"
 
 #: templates/clubs/user/dynamic_form_submit.html:656
 #, python-format
 msgid "补交请求 %(__i18n1)s"
-msgstr ""
+msgstr "Revision Request %(__i18n1)s"
 
 #: templates/clubs/user/dynamic_form_submit.html:657
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/user/dynamic_form_submit.html:658
 msgid "待修改"
 msgstr ""
 
@@ -6701,7 +6467,7 @@ msgstr ""
 #: templates/clubs/user/dynamic_form_submit.html:752
 #, python-format
 msgid "打回原因：%(__i18n1)s"
-msgstr ""
+msgstr "Reason: %(__i18n1)s"
 
 #: templates/clubs/user/dynamic_form_submit.html:788
 msgid "选择新文件后将替换上方被打回的文件"
@@ -6713,32 +6479,32 @@ msgstr ""
 
 #: templates/clubs/user/dynamic_form_submit.html:804
 msgid "提交修改"
-msgstr ""
+msgstr "Submit Revision"
 
 #: templates/clubs/user/edit_profile.html:6
 #: templates/clubs/user/edit_profile.html:363
 msgid "个人中心"
-msgstr ""
+msgstr "Profile"
 
 #: templates/clubs/user/edit_profile.html:364
 msgid "管理个人资料、头像来源与账号安全"
-msgstr ""
+msgstr "Manage your profile, avatar and account security"
 
 #: templates/clubs/user/edit_profile.html:373
 msgid "头像设置"
-msgstr ""
+msgstr "Avatar Settings"
 
 #: templates/clubs/user/edit_profile.html:374
 msgid "账号安全"
-msgstr ""
+msgstr "Account Security"
 
 #: templates/clubs/user/edit_profile.html:381
 msgid "修改个人资料"
-msgstr ""
+msgstr "Edit Profile"
 
 #: templates/clubs/user/edit_profile.html:400
 msgid "手机号码"
-msgstr ""
+msgstr "Mobile Number"
 
 #: templates/clubs/user/edit_profile.html:428
 msgid "向其他用户公开我的联系方式"
@@ -6746,19 +6512,19 @@ msgstr ""
 
 #: templates/clubs/user/edit_profile.html:443
 msgid "修改头像"
-msgstr ""
+msgstr "Change Avatar"
 
 #: templates/clubs/user/edit_profile.html:455
 msgid "当前使用 Cravatar"
-msgstr ""
+msgstr "Using Cravatar"
 
 #: templates/clubs/user/edit_profile.html:455
 msgid "当前使用本站上传头像"
-msgstr ""
+msgstr "Using local avatar"
 
 #: templates/clubs/user/edit_profile.html:461
 msgid "使用 Cravatar 头像"
-msgstr ""
+msgstr "Use Cravatar"
 
 #: templates/clubs/user/edit_profile.html:463
 msgid "已有 QQ 头像？输入"
@@ -6769,16 +6535,12 @@ msgid "QQ号@qq.com"
 msgstr ""
 
 #: templates/clubs/user/edit_profile.html:463
-msgid ""
-msgstr ""
-
-#: templates/clubs/user/edit_profile.html:467
 msgid "改用本站头像"
-msgstr ""
+msgstr "Use Local Avatar"
 
 #: templates/clubs/user/edit_profile.html:469
 msgid "检测并使用"
-msgstr ""
+msgstr "Detect & Use"
 
 #: templates/clubs/user/edit_profile.html:473
 msgid "管理员暂未开放 Cravatar，仍可在下方上传本站头像。"
@@ -6786,7 +6548,7 @@ msgstr ""
 
 #: templates/clubs/user/edit_profile.html:478
 msgid "上传本站头像"
-msgstr ""
+msgstr "Upload Local Avatar"
 
 #: templates/clubs/user/edit_profile.html:479
 msgid "上传成功后会自动切换到本站头像。"
@@ -6802,7 +6564,7 @@ msgstr ""
 
 #: templates/clubs/user/edit_profile.html:501
 msgid "选择图片"
-msgstr ""
+msgstr "Choose Image"
 
 #: templates/clubs/user/edit_profile.html:514
 msgid "账号安全设置"
@@ -6811,11 +6573,11 @@ msgstr ""
 #: templates/clubs/user/edit_profile.html:519
 #: templates/clubs/user/edit_profile.html:537
 msgid "修改用户名"
-msgstr ""
+msgstr "Change Username"
 
 #: templates/clubs/user/edit_profile.html:525
 msgid "新用户名"
-msgstr ""
+msgstr "New Username"
 
 #: templates/clubs/user/edit_profile.html:527
 #, python-format
@@ -6825,7 +6587,7 @@ msgstr ""
 #: templates/clubs/user/edit_profile.html:531
 #: templates/clubs/user/edit_profile.html:552
 msgid "当前密码"
-msgstr ""
+msgstr "Current Password"
 
 #: templates/clubs/user/edit_profile.html:532
 msgid "验证身份以修改用户名"
@@ -6834,7 +6596,7 @@ msgstr ""
 #: templates/clubs/user/edit_profile.html:546
 #: templates/clubs/user/edit_profile.html:569
 msgid "修改密码"
-msgstr ""
+msgstr "Change Password"
 
 #: templates/clubs/user/edit_profile.html:559
 msgid "密码长度至少需6位"
@@ -6842,7 +6604,7 @@ msgstr ""
 
 #: templates/clubs/user/edit_profile.html:578
 msgid "危险区域"
-msgstr ""
+msgstr "Danger Zone"
 
 #: templates/clubs/user/edit_profile.html:579
 msgid "删除账户是不可逆的操作。所有相关数据将被永久删除。"
@@ -6850,7 +6612,7 @@ msgstr ""
 
 #: templates/clubs/user/edit_profile.html:582
 msgid "删除账户"
-msgstr ""
+msgstr "Delete Account"
 
 #: templates/clubs/user/edit_profile.html:593
 msgid "确认删除账户？"
@@ -6913,7 +6675,7 @@ msgstr ""
 #: templates/clubs/user/member_management.html:241
 #: templates/clubs/user/member_management.html:242
 msgid "手机号"
-msgstr ""
+msgstr "Mobile"
 
 #: templates/clubs/user/member_management.html:259
 msgid "不填"
@@ -6947,11 +6709,6 @@ msgid "当前账号还有 %(__i18n1)s 个社团的现任社长身份"
 msgstr ""
 
 #: templates/clubs/user/president_identity_prompt.html:55
-msgid ""
-msgstr ""
-
-#: templates/clubs/user_detail.html:4
-#, python-format
 msgid "用户详情 - %(__i18n1)s"
 msgstr ""
 
@@ -7002,10 +6759,6 @@ msgstr ""
 
 #: templates/clubs/user_detail.html:359
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/user_detail.html:361 templates/clubs/user_detail.html:399
 msgid "(已卸任)"
 msgstr ""
 
@@ -7015,9 +6768,5 @@ msgstr ""
 
 #: templates/clubs/user_detail.html:397
 #, python-format
-msgid ""
-msgstr ""
-
-#: templates/clubs/user_detail.html:406
 msgid "暂无所属社团记录"
 msgstr ""

@@ -338,6 +338,11 @@
 
     <!-- 遮罩层 (移动端) -->
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 未登录页面语言切换（右上角浮动） -->
+    {% if not user.is_authenticated %}
+    {% include 'clubs/components/_language_switcher.html' with toggle_id='guestLangToggle' dropdown_id='guestLangDropdown' toggle_class='auth-lang-toggle' dropdown_class='auth-lang-dropdown' %}
+    {% endif %}
     
     <!-- 左侧导航栏 -->
     <nav class="sidebar-nav" id="sidebar">
@@ -532,22 +537,7 @@
                 </a>
             </div>
             
-            <div class="sidebar-lang-toggle" onclick="toggleLangDropdown(event)" title="{% trans '界面语言' %}">
-                <span class="material-icons">language</span>
-                <span class="lang-text">{% trans '语言' %}</span>
-            </div>
-            <div class="sidebar-user-dropdown sidebar-lang-dropdown" id="langDropdown">
-                {% get_available_languages as LANGUAGES %}
-                {% get_language_info_list for LANGUAGES as languages %}
-                {% for lang in languages %}
-                <button type="button" onclick="switchLanguage('{{ lang.code }}')"{% if lang.code == LANGUAGE_CODE %} class="current"{% endif %}>
-                    <span class="lang-name">{{ lang.name_local }}</span>
-                    {% if lang.code == LANGUAGE_CODE %}
-                    <span class="material-icons">check</span>
-                    {% endif %}
-                </button>
-                {% endfor %}
-            </div>
+            {% include 'clubs/components/_language_switcher.html' with toggle_id='langToggle' dropdown_id='langDropdown' %}
 
             <div class="sidebar-theme-toggle" onclick="toggleTheme(event)" title="{% trans '切换主题' %}">
                 <span id="theme-icon" class="material-icons">brightness_4</span>
@@ -559,44 +549,31 @@
     </nav>
     <script>
         (function() {
-            function toggleLangDropdown(event) {
+            function toggleLangDropdown(event, dropdownId, toggleId) {
                 event.stopPropagation();
-                const dropdown = document.getElementById('langDropdown');
+                const dropdown = document.getElementById(dropdownId || 'langDropdown');
                 const userDropdown = document.getElementById('userDropdown');
                 if (userDropdown) userDropdown.classList.remove('active');
-                if (dropdown) dropdown.classList.toggle('active');
-            }
-
-            async function switchLanguage(code) {
-                const formData = new FormData();
-                formData.append('language', code);
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value
-                    || document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-                try {
-                    await fetch("{% url 'set_language' %}", {
-                        method: "POST",
-                        headers: { "X-CSRFToken": csrfToken || "" },
-                        body: formData,
-                        credentials: "same-origin",
-                    });
-                } catch (error) {
-                    // ignore
+                if (dropdown) {
+                    const open = dropdown.classList.toggle('active');
+                    const toggle = document.getElementById(toggleId || 'langToggle');
+                    if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
                 }
-                location.reload();
             }
 
             document.addEventListener('click', function(event) {
-                const dropdown = document.getElementById('langDropdown');
-                const toggle = document.querySelector('.sidebar-lang-toggle');
-                if (dropdown && dropdown.classList.contains('active')) {
-                    if (!toggle.contains(event.target) && !dropdown.contains(event.target)) {
+                document.querySelectorAll('.sidebar-lang-dropdown.active').forEach(function(dropdown) {
+                    const toggleId = dropdown.getAttribute('aria-labelledby');
+                    const toggle = toggleId ? document.getElementById(toggleId) : null;
+                    if ((toggle && !toggle.contains(event.target) && !dropdown.contains(event.target)) ||
+                        (!toggle && !dropdown.contains(event.target))) {
                         dropdown.classList.remove('active');
+                        if (toggle) toggle.setAttribute('aria-expanded', 'false');
                     }
-                }
+                });
             });
 
             window.toggleLangDropdown = toggleLangDropdown;
-            window.switchLanguage = switchLanguage;
 
 
             // 立即恢复侧边栏折叠状态，防止页面闪烁
@@ -780,6 +757,12 @@
 
             function toggleUserDropdown() {
                 const dropdown = document.getElementById('userDropdown');
+                document.querySelectorAll('.sidebar-lang-dropdown.active').forEach(function(langDropdown) {
+                    langDropdown.classList.remove('active');
+                    const toggleId = langDropdown.getAttribute('aria-labelledby');
+                    const toggle = toggleId ? document.getElementById(toggleId) : null;
+                    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+                });
                 if (dropdown) dropdown.classList.toggle('active');
             }
 

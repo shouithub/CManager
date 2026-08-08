@@ -211,6 +211,19 @@
     > `django-sslserver` 或让 Django 直接监听 HTTPS——生产环境 HTTPS 一律由 Nginx
     > 反向代理提供。
 
+9.  **多语言（可选）**
+    系统内置 Django 国际化框架，源字符串以中文编写，支持简体中文、英文、
+    维吾尔文（Uyghur）与蒙古文。界面右上角/侧边栏底部的语言按钮可即时切换。
+
+    维护翻译时，先重新提取源码字符串，再运行种子脚本补全高频词条，最后编译：
+    ```bash
+    python manage.py makemessages --all
+    python scripts/i18n_seed_all.py
+    python manage.py compilemessages
+    ```
+    新增语言时在 `CManager/settings.py` 的 `LANGUAGES` 中注册语言代码即可；
+    数据库中的动态内容（如表单通道名称）不参与 gettext 翻译。
+
 ## 🧭 开发目录指南
 
 项目目录职责、Django 管理命令与独立脚本的区别见
