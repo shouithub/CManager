@@ -1198,6 +1198,81 @@ class StaticPageSmokeTests(TestCase):
         self.assertContains(response, 'aria-label="搜索通道名称或标识"')
         self.assertContains(response, '通道状态概览')
 
+    def test_edit_channel_saves_when_duplicate_name_already_exists(self):
+        """历史数据中已有同名通道时，编辑其中一条不应被名称校验永久卡死。"""
+        from django.contrib.messages import get_messages
+
+        FormChannel.objects.create(
+            name='重复名称通道',
+            slug='duplicate-name-a',
+            is_active=True,
+            publish_status='published',
+        )
+        target = FormChannel.objects.create(
+            name='重复名称通道',
+            slug='duplicate-name-b',
+            is_active=True,
+            publish_status='published',
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('clubs:edit_form_channel', args=[target.pk]),
+            {
+                'name': '重复名称通道',
+                'slug': 'duplicate-name-b',
+                'icon': 'description',
+                'order': '0',
+                'required_approval_count': '1',
+                'publish_status': 'published',
+                'translations[name][en]': 'Duplicate Name Channel',
+            },
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 302)
+        debug_msgs = [str(item) for item in get_messages(response.wsgi_request)]
+        self.assertNotIn('通道名称已存在，请换一个名称', debug_msgs)
+        target.refresh_from_db()
+        self.assertEqual(target.name, '重复名称通道')
+
+    def test_rename_channel_to_taken_name_is_still_rejected(self):
+        """真正把名称改成另一个已存在的名称时，仍应被拒绝。"""
+        from django.contrib.messages import get_messages
+
+        FormChannel.objects.create(
+            name='已被占用名称',
+            slug='taken-name-channel',
+            is_active=True,
+            publish_status='published',
+        )
+        target = FormChannel.objects.create(
+            name='可修改名称',
+            slug='rename-target-channel',
+            is_active=True,
+            publish_status='published',
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('clubs:edit_form_channel', args=[target.pk]),
+            {
+                'name': '已被占用名称',
+                'slug': 'rename-target-channel',
+                'icon': 'description',
+                'order': '0',
+                'required_approval_count': '1',
+                'publish_status': 'published',
+            },
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 302)
+        debug_msgs = [str(item) for item in get_messages(response.wsgi_request)]
+        self.assertIn('通道名称已存在，请换一个名称', debug_msgs)
+        target.refresh_from_db()
+        self.assertEqual(target.name, '可修改名称')
+
     def test_new_form_channel_page_exposes_material_icon_preview_and_reference(self):
         self.client.force_login(self.admin)
 

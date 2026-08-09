@@ -5594,6 +5594,7 @@ def save_form_channel(request, channel_id=None):
         messages.error(request, _('仅管理员可以管理提交通道'))
         return redirect('clubs:index')
     channel = get_object_or_404(FormChannel, pk=channel_id) if channel_id else FormChannel()
+    original_name = channel.name if channel.pk else ''
     channel.name = request.POST.get('name', '').strip()
     channel.slug = request.POST.get('slug', '').strip()
     channel.icon = request.POST.get('icon', 'description').strip() or 'description'
@@ -5627,9 +5628,10 @@ def save_form_channel(request, channel_id=None):
         channel.order = int(request.POST.get('order', '0') or 0)
     except ValueError:
         channel.order = 0
+    name_unchanged = bool(channel.pk) and original_name.strip().casefold() == channel.name.casefold()
     if not channel.name or not channel.slug:
         messages.error(request, _('通道名称和标识不能为空'))
-    elif FormChannel.objects.filter(name__iexact=channel.name).exclude(pk=channel.pk).exists():
+    elif not name_unchanged and FormChannel.objects.filter(name__iexact=channel.name).exclude(pk=channel.pk).exists():
         messages.error(request, _('通道名称已存在，请换一个名称'))
     else:
         try:

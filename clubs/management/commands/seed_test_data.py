@@ -472,7 +472,7 @@ class Command(BaseCommand):
     def seed_form_channels(self, admin, clubs):
         specs = [
             (
-                "activity_application",
+                "activity-application",
                 "活动申请",
                 "event",
                 "社团活动策划、场地、安全预案等材料提交。",
@@ -509,7 +509,7 @@ class Command(BaseCommand):
                 ],
             ),
             (
-                "annual_review",
+                "annual-review",
                 "社团年审",
                 "fact_check",
                 "年度自查、成员情况、活动总结与财务情况提交。",
@@ -603,9 +603,9 @@ class Command(BaseCommand):
 
     def seed_submissions(self, users, clubs, channels):
         today = timezone.localdate()
-        activity_channel = channels["activity_application"]
+        activity_channel = channels["activity-application"]
         reimbursement_channel = channels["reimbursement"]
-        annual_review_channel = channels["annual_review"]
+        annual_review_channel = channels["annual-review"]
         annual_cycle = annual_review_channel.cycles.get(sequence=2026)
 
         activity_submission, _ = FormSubmission.objects.update_or_create(
