@@ -3333,7 +3333,7 @@ msgstr "Сувгийн тойм"
 #: templates/clubs/admin/form_channels.html:1139
 #: templates/clubs/staff/dynamic_audit_center.html:501
 msgid "全部通道"
-msgstr ""
+msgstr "Бүх суваг"
 
 #: templates/clubs/admin/form_channels.html:1143
 msgid "对外开放"
@@ -6226,11 +6226,11 @@ msgstr ""
 
 #: templates/clubs/staff/dynamic_audit_center.html:501
 msgid "当前分类："
-msgstr ""
+msgstr "Одоогийн ангилал: "
 
 #: templates/clubs/staff/dynamic_audit_center.html:503
 msgid "审核通道"
-msgstr ""
+msgstr "Шалгах суваг"
 
 #: templates/clubs/staff/dynamic_audit_center.html:505
 msgid "全部"
@@ -6290,21 +6290,21 @@ msgstr "Дахин %(__i18n1)s боловсруулсан"
 
 #: templates/clubs/staff/dynamic_audit_center.html:671
 msgid "待审核上一页"
-msgstr ""
+msgstr "Шалгалт хүлээж буй өмнөх хуудас"
 
 #: templates/clubs/staff/dynamic_audit_center.html:672
 msgid "待审核下一页"
-msgstr ""
+msgstr "Шалгалт хүлээж буй дараах хуудас"
 
 #: templates/clubs/staff/dynamic_audit_center.html:673
 #: templates/clubs/user/dynamic_approval_center.html:637
 msgid "已处理上一页"
-msgstr ""
+msgstr "Боловсруулсан өмнөх хуудас"
 
 #: templates/clubs/staff/dynamic_audit_center.html:674
 #: templates/clubs/user/dynamic_approval_center.html:638
 msgid "已处理下一页"
-msgstr ""
+msgstr "Боловсруулсан дараах хуудас"
 
 #: templates/clubs/staff/dynamic_submission_review.html:6
 #, python-format
@@ -6738,7 +6738,7 @@ msgstr ""
 
 #: templates/clubs/user/dynamic_approval_center.html:411
 msgid "查看社团提交请求的审核进度和处理结果"
-msgstr ""
+msgstr "Клубын илгээлтийн шалгалтын явц, үр дүнг харах"
 
 #: templates/clubs/user/dynamic_approval_center.html:427
 #: templates/clubs/user/dynamic_approval_center.html:534
@@ -6767,11 +6767,11 @@ msgstr "Баталгаажуулалтын бүртгэл алга"
 
 #: templates/clubs/user/dynamic_approval_center.html:635
 msgid "进行中上一页"
-msgstr ""
+msgstr "Явагдаж буй өмнөх хуудас"
 
 #: templates/clubs/user/dynamic_approval_center.html:636
 msgid "进行中下一页"
-msgstr ""
+msgstr "Явагдаж буй дараах хуудас"
 
 #: templates/clubs/user/dynamic_approval_detail.html:5
 msgid "提交详情"

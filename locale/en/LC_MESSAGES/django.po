@@ -3218,7 +3218,7 @@ msgstr "Channel Overview"
 #: templates/clubs/admin/form_channels.html:1139
 #: templates/clubs/staff/dynamic_audit_center.html:501
 msgid "全部通道"
-msgstr ""
+msgstr "All Channels"
 
 #: templates/clubs/admin/form_channels.html:1143
 msgid "对外开放"
@@ -5917,11 +5917,11 @@ msgstr ""
 
 #: templates/clubs/staff/dynamic_audit_center.html:501
 msgid "当前分类："
-msgstr ""
+msgstr "Current category: "
 
 #: templates/clubs/staff/dynamic_audit_center.html:503
 msgid "审核通道"
-msgstr ""
+msgstr "Review Channels"
 
 #: templates/clubs/staff/dynamic_audit_center.html:505
 msgid "全部"
@@ -5981,21 +5981,21 @@ msgstr "%(__i18n1)s processed"
 
 #: templates/clubs/staff/dynamic_audit_center.html:671
 msgid "待审核上一页"
-msgstr ""
+msgstr "Previous pending page"
 
 #: templates/clubs/staff/dynamic_audit_center.html:672
 msgid "待审核下一页"
-msgstr ""
+msgstr "Next pending page"
 
 #: templates/clubs/staff/dynamic_audit_center.html:673
 #: templates/clubs/user/dynamic_approval_center.html:637
 msgid "已处理上一页"
-msgstr ""
+msgstr "Previous processed page"
 
 #: templates/clubs/staff/dynamic_audit_center.html:674
 #: templates/clubs/user/dynamic_approval_center.html:638
 msgid "已处理下一页"
-msgstr ""
+msgstr "Next processed page"
 
 #: templates/clubs/staff/dynamic_submission_review.html:6
 #, python-format
@@ -6394,7 +6394,7 @@ msgstr ""
 
 #: templates/clubs/user/dynamic_approval_center.html:411
 msgid "查看社团提交请求的审核进度和处理结果"
-msgstr ""
+msgstr "View the review progress and processing results of club submissions"
 
 #: templates/clubs/user/dynamic_approval_center.html:427
 #: templates/clubs/user/dynamic_approval_center.html:534
@@ -6423,11 +6423,11 @@ msgstr "No approval records"
 
 #: templates/clubs/user/dynamic_approval_center.html:635
 msgid "进行中上一页"
-msgstr ""
+msgstr "Previous in-progress page"
 
 #: templates/clubs/user/dynamic_approval_center.html:636
 msgid "进行中下一页"
-msgstr ""
+msgstr "Next in-progress page"
 
 #: templates/clubs/user/dynamic_approval_detail.html:5
 msgid "提交详情"

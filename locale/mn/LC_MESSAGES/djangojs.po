@@ -94,3 +94,7 @@ msgstr ""
 #: static/js/theme-toggle.js:151
 msgid "浅色模式"
 msgstr ""
+
+#: templates/clubs/staff/dynamic_audit_center.html:546
+msgid "确定删除这条请求吗？"
+msgstr "Энэ хүсэлтийг устгах уу?"
