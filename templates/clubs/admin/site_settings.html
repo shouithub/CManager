@@ -1002,7 +1002,7 @@
           {% if site_favicon_preview_url %}
 
 
-            <img src="{{ site_favicon_preview_url }}" alt="当前 Favicon">
+            <img src="{{ site_favicon_preview_url }}" alt="{% trans '当前 Favicon' %}">
 
 
             <p>{% trans '当前网站图标' %}<br><span style="opacity:.6;font-size:.75rem;">{% trans '浏览器标签页显示' %}</span></p>
@@ -1136,19 +1136,30 @@
           <label for="site_name">{% trans '站点名称（浏览器标题）' %}</label>
           <input type="text" name="site_name" id="site_name"
                  value="{{ cfg.site_name|default:'社团管理系统' }}" class="form-control"
-                 maxlength="120" placeholder="社团管理系统">
+                 maxlength="120" placeholder="{% trans '社团管理系统' %}">
         </div>
         <div class="ia-field">
           <label for="homepage_title">{% trans '首页主标题' %}</label>
           <input type="text" name="homepage_title" id="homepage_title"
                  value="{{ cfg.homepage_title|default:'社团管理服务中心' }}" class="form-control"
-                 maxlength="120" placeholder="社团管理服务中心">
+                 maxlength="120" placeholder="{% trans '社团管理服务中心' %}">
         </div>
         <div class="ia-field">
           <label for="homepage_subtitle">{% trans '首页副标题' %}</label>
           <input type="text" name="homepage_subtitle" id="homepage_subtitle"
                  value="{{ cfg.homepage_subtitle|default:'致力于为社团提供全方位的管理与服务支持，促进社团健康发展' }}" class="form-control"
-                 maxlength="300" placeholder="致力于为社团提供全方位的管理与服务支持，促进社团健康发展">
+                 maxlength="300" placeholder="{% trans '致力于为社团提供全方位的管理与服务支持，促进社团健康发展' %}">
+        </div>
+        <div class="ia-field">
+          <label for="default_language">{% trans '全站默认语言' %}</label>
+          <select name="default_language" id="default_language" class="form-control">
+            {% get_language_info_list for LANGUAGES as languages %}
+            {% for lang in languages %}
+            <option value="{{ lang.code }}" {% if cfg.default_language == lang.code %}selected{% endif %}>{{ lang.name_local }}</option>
+            {% endfor %}
+          </select>
+          <div class="ia-helper">
+            <span class="material-icons">info</span>{% trans '未登录访客和未设置首选语言的用户将使用此语言；默认简体中文。' %}</div>
         </div>
         <div class="ia-actions">
           <button type="submit" class="btn btn-filled">
@@ -1370,7 +1381,7 @@
                      value="{{ cfg.body_font_url }}" class="form-control"
 
 
-                     placeholder="留空则不加载外部字体">
+                     placeholder="{% trans '留空则不加载外部字体' %}">
 
 
             </div>
@@ -1388,7 +1399,7 @@
                      value="{{ cfg.body_font_family }}" class="form-control"
 
 
-                     placeholder="例如 'Noto Sans SC', sans-serif">
+                     placeholder="{% trans "例如 'Noto Sans SC', sans-serif" %}">
 
 
             </div>

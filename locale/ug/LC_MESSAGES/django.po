@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-09 00:48+0800\n"
+"POT-Creation-Date: 2026-08-09 21:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -12,662 +12,679 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: clubs/apps.py:8 templates/clubs/base.html:386 templates/clubs/base.html:397
-#: templates/clubs/staff/management.html:5
-#: templates/clubs/staff/management.html:195
+#: clubs/apps.py:8 templates/clubs/base.html:434 templates/clubs/base.html:445
+#: templates/clubs/staff/management.html:6
+#: templates/clubs/staff/management.html:196
 msgid "社团管理"
 msgstr "بىرلەشمە باشقۇرۇش"
-
 #: clubs/i18n_extra.py:4
 msgid "暂无描述"
 msgstr "چۈشەندۈرۈش يوق"
-
 #: clubs/i18n_extra.py:5
 msgid "未发布"
 msgstr "ئېلان قىلىنمىغان"
-
 #: clubs/i18n_extra.py:6
 msgid "未填写"
 msgstr "تولدۇرۇلمىغان"
-
 #: clubs/i18n_extra.py:7
 msgid "未设置邮箱"
 msgstr "ئېلخەت تەڭشەلمىگەن"
-
-#: clubs/i18n_extra.py:8 templates/clubs/base.html:382
+#: clubs/i18n_extra.py:8 templates/clubs/base.html:430
 msgid "用户管理"
 msgstr "ئىشلەتكۈچى باشقۇرۇش"
-
 #: clubs/i18n_extra.py:9
 msgid "管理所有用户账户和权限"
 msgstr "بارلىق ئىشلەتكۈچى ھېساباتلىرى ۋە ھوقۇقلىرىنى باشقۇرۇش"
-
 #: clubs/i18n_extra.py:10
 msgid "系统用户管理"
 msgstr "سىستېما ئىشلەتكۈچى باشقۇرۇش"
-
-#: clubs/models.py:73 clubs/models.py:288 clubs/models.py:925
+#: clubs/models.py:32 templates/clubs/user/edit_profile.html:606
+msgid "跟随站点默认语言"
+msgstr "سايتنىڭ سۈكۈت تىلىغا ئەگىشىش"
+#: clubs/models.py:71 templates/clubs/auth/register.html:211
+msgid "中共党员"
+msgstr "كوممۇنىستىك پارتىيە ئەزاسى"
+#: clubs/models.py:72 templates/clubs/auth/register.html:212
+msgid "中共预备党员"
+msgstr "كوممۇنىستىك پارتىيەنىڭ نامزات ئەزاسى"
+#: clubs/models.py:73 templates/clubs/auth/register.html:213
+msgid "共青团员"
+msgstr "كوممۇنىستىك ياشلار ئىتتىپاقى ئەزاسى"
+#: clubs/models.py:74 templates/clubs/auth/register.html:214
+msgid "民革党员"
+msgstr "RCCK ئەزاسى"
+#: clubs/models.py:75 templates/clubs/auth/register.html:215
+msgid "民盟盟员"
+msgstr "CDL ئەزاسى"
+#: clubs/models.py:76 templates/clubs/auth/register.html:216
+msgid "民建会员"
+msgstr "CDNCA ئەزاسى"
+#: clubs/models.py:77 templates/clubs/auth/register.html:217
+msgid "农工党党员"
+msgstr "CPWDP ئەزاسى"
+#: clubs/models.py:78 templates/clubs/auth/register.html:218
+msgid "致公党党员"
+msgstr "CZGD ئەزاسى"
+#: clubs/models.py:79 templates/clubs/auth/register.html:219
+msgid "九三学社社员"
+msgstr "جىۈسەن جەمئىيىتى ئەزاسى"
+#: clubs/models.py:80 templates/clubs/auth/register.html:220
+msgid "台盟盟员"
+msgstr "TDSGL ئەزاسى"
+#: clubs/models.py:81 templates/clubs/auth/register.html:221
+msgid "无党派人士"
+msgstr "پارتىيەسىز زات"
+#: clubs/models.py:82 templates/clubs/auth/register.html:222
+msgid "入党积极分子"
+msgstr "پارتىيەگە كىرىش ئاكتىپچىسى"
+#: clubs/models.py:83 templates/clubs/auth/register.html:223
+msgid "群众"
+msgstr "ئاممىۋى"
+#: clubs/models.py:86 clubs/models.py:309 clubs/models.py:991
 msgid "用户"
 msgstr "ئىشلەتكۈچى"
-
-#: clubs/models.py:74 templates/clubs/admin/admin_edit_user_account.html:371
+#: clubs/models.py:87 templates/clubs/admin/admin_edit_user_account.html:371
 msgid "角色"
 msgstr "رول"
-
-#: clubs/models.py:77 clubs/models.py:314 clubs/models.py:584
-#: clubs/models.py:819 clubs/models.py:1080 clubs/models.py:1120
+#: clubs/models.py:90 clubs/models.py:335 clubs/models.py:650
+#: clubs/models.py:885 clubs/models.py:1146 clubs/models.py:1186
 #: templates/clubs/admin/booking_management.html:222
 #: templates/clubs/admin/booking_management.html:273
 #: templates/clubs/admin/booking_management.html:340
 #: templates/clubs/admin/confirm_delete_announcement.html:54
 #: templates/clubs/admin/review_staff_registration.html:249
 #: templates/clubs/admin/room_form.html:75
-#: templates/clubs/staff/management.html:318
-#: templates/clubs/staff/management.html:347
+#: templates/clubs/staff/management.html:319
+#: templates/clubs/staff/management.html:348
 #: templates/clubs/user/member_management.html:151
 msgid "状态"
 msgstr "ھالەت"
-
-#: clubs/models.py:80
+#: clubs/models.py:93
 msgid "关联部门"
 msgstr ""
 
-#: clubs/models.py:81
+#: clubs/models.py:94
 msgid "部员/部长"
 msgstr ""
 
-#: clubs/models.py:81
+#: clubs/models.py:94
 msgid "仅对干事有效"
 msgstr ""
 
-#: clubs/models.py:89
+#: clubs/models.py:102
 msgid "真名"
 msgstr ""
 
-#: clubs/models.py:90 templates/clubs/admin/admin_edit_user_account.html:302
+#: clubs/models.py:103 templates/clubs/admin/admin_edit_user_account.html:302
 #: templates/clubs/admin/create_user.html:393
 #: templates/clubs/admin/review_staff_registration.html:242
 #: templates/clubs/club_detail.html:437
 #: templates/clubs/staff/manage_department.html:327
 #: templates/clubs/staff/manage_department.html:381
-#: templates/clubs/user/edit_profile.html:410
+#: templates/clubs/user/edit_profile.html:411
 #: templates/clubs/user/member_management.html:237
 #: templates/clubs/user/member_management.html:238
 #: templates/clubs/user_detail.html:301
 msgid "学号"
 msgstr ""
 
-#: clubs/models.py:91 templates/clubs/admin/admin_edit_user_account.html:350
+#: clubs/models.py:104 templates/clubs/admin/admin_edit_user_account.html:350
 #: templates/clubs/user/member_management.html:257
 msgid "性别"
 msgstr ""
 
-#: clubs/models.py:92 templates/clubs/user/member_management.html:266
+#: clubs/models.py:105 templates/clubs/user/member_management.html:266
 #: templates/clubs/user/member_management.html:267
 msgid "学院"
 msgstr ""
 
-#: clubs/models.py:93 templates/clubs/user/member_management.html:270
+#: clubs/models.py:106 templates/clubs/user/member_management.html:270
 #: templates/clubs/user/member_management.html:271
 msgid "班级"
 msgstr ""
 
-#: clubs/models.py:94 templates/clubs/admin/admin_edit_user_account.html:286
+#: clubs/models.py:107 templates/clubs/admin/admin_edit_user_account.html:286
 #: templates/clubs/admin/review_staff_registration.html:244
 #: templates/clubs/staff/manage_department.html:328
 #: templates/clubs/staff/manage_department.html:382
 msgid "电话"
 msgstr "تېلېفون"
-
-#: clubs/models.py:96 templates/clubs/admin/admin_edit_user_account.html:334
+#: clubs/models.py:109 templates/clubs/admin/admin_edit_user_account.html:334
 #: templates/clubs/admin/manage_users.html:1060
 #: templates/clubs/admin/review_staff_registration.html:245
 msgid "微信"
 msgstr ""
 
-#: clubs/models.py:101 templates/clubs/admin/manage_users.html:1074
+#: clubs/models.py:114 templates/clubs/admin/manage_users.html:1074
 #: templates/clubs/admin/review_staff_registration.html:246
 #: templates/clubs/auth/register.html:208 templates/clubs/oobe_setup.html:537
-#: templates/clubs/user/edit_profile.html:415
+#: templates/clubs/user/edit_profile.html:416
 msgid "政治面貌"
-msgstr ""
-
-#: clubs/models.py:105 templates/clubs/oobe_setup.html:545
+msgstr "سىياسىي قىياپەت"
+#: clubs/models.py:118 templates/clubs/oobe_setup.html:545
 msgid "是否公开个人信息"
 msgstr ""
 
-#: clubs/models.py:108
+#: clubs/models.py:121
 msgid "是否需要修改密码"
 msgstr ""
 
-#: clubs/models.py:115
+#: clubs/models.py:128
 msgid "账号活跃状态"
 msgstr ""
 
-#: clubs/models.py:117
+#: clubs/models.py:130
 msgid "不活跃起始时间"
 msgstr ""
 
-#: clubs/models.py:118
+#: clubs/models.py:131
 msgid "活跃有效期至"
 msgstr ""
 
-#: clubs/models.py:121
+#: clubs/models.py:134
 msgid "头像"
 msgstr "باش رەسىم"
-
-#: clubs/models.py:126
+#: clubs/models.py:139
 msgid "头像来源"
 msgstr ""
 
-#: clubs/models.py:131
+#: clubs/models.py:144
 msgid "Cravatar 邮箱"
 msgstr ""
 
-#: clubs/models.py:132
+#: clubs/models.py:145
 msgid "仅在用户选择 Cravatar 头像时使用，不公开显示邮箱明文。"
 msgstr ""
 
-#: clubs/models.py:135 clubs/models.py:208 clubs/models.py:316
-#: clubs/models.py:417 clubs/models.py:461 clubs/models.py:524
-#: clubs/models.py:709 clubs/models.py:796 clubs/models.py:821
-#: clubs/models.py:930 clubs/models.py:990 clubs/models.py:1081
-#: clubs/models.py:1121 clubs/models.py:1335 clubs/models.py:1413
+#: clubs/models.py:152 templates/clubs/user/edit_profile.html:604
+msgid "首选语言"
+msgstr "ئالدىنقى تاللانغان تىل"
+#: clubs/models.py:153
+msgid "留空则跟随站点默认语言；选择后会跨设备同步保留。"
+msgstr ""
+
+#: clubs/models.py:156 clubs/models.py:229 clubs/models.py:337
+#: clubs/models.py:438 clubs/models.py:482 clubs/models.py:545
+#: clubs/models.py:775 clubs/models.py:862 clubs/models.py:887
+#: clubs/models.py:996 clubs/models.py:1056 clubs/models.py:1147
+#: clubs/models.py:1187 clubs/models.py:1426 clubs/models.py:1504
 #: templates/clubs/admin/edit_announcement.html:440
 msgid "创建时间"
 msgstr "قۇرۇلغان ۋاقىت"
-
-#: clubs/models.py:136 clubs/models.py:183 clubs/models.py:317
-#: clubs/models.py:418 clubs/models.py:479 clubs/models.py:525
-#: clubs/models.py:710 clubs/models.py:797 clubs/models.py:822
-#: clubs/models.py:895 clubs/models.py:991 clubs/models.py:1036
-#: clubs/models.py:1082 clubs/models.py:1122 clubs/models.py:1336
-#: clubs/models.py:1414
+#: clubs/models.py:157 clubs/models.py:204 clubs/models.py:338
+#: clubs/models.py:439 clubs/models.py:500 clubs/models.py:546
+#: clubs/models.py:619 clubs/models.py:776 clubs/models.py:863
+#: clubs/models.py:888 clubs/models.py:961 clubs/models.py:1057
+#: clubs/models.py:1102 clubs/models.py:1148 clubs/models.py:1188
+#: clubs/models.py:1427 clubs/models.py:1505
 msgid "更新时间"
 msgstr "يېڭىلانغان ۋاقىت"
-
-#: clubs/models.py:162 clubs/models.py:163
+#: clubs/models.py:183 clubs/models.py:184
 #: templates/clubs/admin/create_user.html:380
 msgid "用户角色"
 msgstr ""
 
-#: clubs/models.py:179 clubs/models.py:202 clubs/models.py:320
-#: clubs/models.py:321 clubs/models.py:346 clubs/models.py:477
-#: clubs/models.py:581 clubs/models.py:851 clubs/models.py:881
+#: clubs/models.py:200 clubs/models.py:223 clubs/models.py:341
+#: clubs/models.py:342 clubs/models.py:367 clubs/models.py:498
+#: clubs/models.py:647 clubs/models.py:917 clubs/models.py:947
 #: templates/clubs/admin/booking_management.html:220
-#: templates/clubs/base.html:708 templates/clubs/base.html:724
+#: templates/clubs/base.html:743 templates/clubs/base.html:759
 #: templates/clubs/delete_club.html:228
-#: templates/clubs/staff/management.html:328
+#: templates/clubs/staff/management.html:329
 msgid "社团"
 msgstr "بىرلەشمىلەر"
-
-#: clubs/models.py:180 templates/clubs/user/member_management.html:150
+#: clubs/models.py:201 templates/clubs/user/member_management.html:150
 msgid "成员"
 msgstr ""
 
-#: clubs/models.py:181
+#: clubs/models.py:202
 msgid "成员状态"
 msgstr ""
 
-#: clubs/models.py:182 templates/clubs/admin/manage_users.html:1096
+#: clubs/models.py:203 templates/clubs/admin/manage_users.html:1096
 msgid "加入时间"
 msgstr ""
 
-#: clubs/models.py:186 clubs/models.py:187
+#: clubs/models.py:207 clubs/models.py:208
 msgid "社团成员"
 msgstr ""
 
-#: clubs/models.py:201
+#: clubs/models.py:222
 msgid "一次性校验码"
 msgstr ""
 
-#: clubs/models.py:203 clubs/models.py:460
+#: clubs/models.py:224 clubs/models.py:481
 msgid "创建人"
 msgstr ""
 
-#: clubs/models.py:204 clubs/models.py:824 clubs/models.py:931
+#: clubs/models.py:225 clubs/models.py:890 clubs/models.py:997
 msgid "过期时间"
 msgstr ""
 
-#: clubs/models.py:205
+#: clubs/models.py:226
 msgid "最大使用次数（null表示不限次数）"
 msgstr ""
 
-#: clubs/models.py:206
+#: clubs/models.py:227
 msgid "已使用次数"
 msgstr ""
 
-#: clubs/models.py:207
+#: clubs/models.py:228
 msgid "使用时间"
 msgstr ""
 
-#: clubs/models.py:211 clubs/models.py:212
+#: clubs/models.py:232 clubs/models.py:233
 msgid "社员注册令牌"
 msgstr ""
 
-#: clubs/models.py:274
+#: clubs/models.py:295
 msgid "注册链接已失效或使用次数已耗尽"
 msgstr ""
 
-#: clubs/models.py:289
+#: clubs/models.py:310
 msgid "延期时间"
 msgstr ""
 
-#: clubs/models.py:290
+#: clubs/models.py:311
 msgid "延期前有效期"
 msgstr ""
 
-#: clubs/models.py:291
+#: clubs/models.py:312
 msgid "延期后有效期"
 msgstr ""
 
-#: clubs/models.py:292
+#: clubs/models.py:313
 msgid "延期原因"
 msgstr ""
 
-#: clubs/models.py:295 clubs/models.py:296
+#: clubs/models.py:316 clubs/models.py:317
 msgid "不活跃延期记录"
 msgstr ""
 
-#: clubs/models.py:311 templates/clubs/admin/assign_presidents.html:264
+#: clubs/models.py:332 templates/clubs/admin/assign_presidents.html:264
 #: templates/clubs/change_club_status.html:237
 #: templates/clubs/public_activities.html:637
-#: templates/clubs/staff/management.html:316
+#: templates/clubs/staff/management.html:317
 msgid "社团名称"
 msgstr ""
 
-#: clubs/models.py:312 templates/clubs/direct_edit_club_info.html:261
+#: clubs/models.py:333 templates/clubs/direct_edit_club_info.html:261
 msgid "社团介绍"
 msgstr ""
 
-#: clubs/models.py:313 templates/clubs/club_detail.html:340
+#: clubs/models.py:334 templates/clubs/club_detail.html:340
 #: templates/clubs/direct_edit_club_info.html:268
 msgid "成立日期"
 msgstr ""
 
-#: clubs/models.py:315
+#: clubs/models.py:336
 msgid "成员数"
 msgstr ""
 
-#: clubs/models.py:347 templates/clubs/admin/create_user.html:293
+#: clubs/models.py:368 templates/clubs/admin/create_user.html:293
 msgid "用户信息"
 msgstr ""
 
-#: clubs/models.py:348
+#: clubs/models.py:369
 msgid "职位"
 msgstr ""
 
-#: clubs/models.py:349
+#: clubs/models.py:370
 msgid "任命日期"
 msgstr ""
 
-#: clubs/models.py:350
+#: clubs/models.py:371
 msgid "结束日期"
 msgstr ""
 
-#: clubs/models.py:351
+#: clubs/models.py:372
 msgid "是否现任"
 msgstr ""
 
-#: clubs/models.py:354 clubs/models.py:355
+#: clubs/models.py:375 clubs/models.py:376
 msgid "社团干部"
 msgstr ""
 
-#: clubs/models.py:400 templates/clubs/admin/form_channels.html:1212
-#: templates/clubs/admin/form_channels.html:1607
+#: clubs/models.py:421 templates/clubs/admin/form_channels.html:1307
+#: templates/clubs/admin/form_channels.html:1729
 msgid "通道名称"
 msgstr "يول ئاتى"
-
-#: clubs/models.py:401
+#: clubs/models.py:422
 msgid "通道标识"
 msgstr "يول بەلگىسى"
-
-#: clubs/models.py:402
+#: clubs/models.py:423
 msgid "图标"
 msgstr ""
 
-#: clubs/models.py:403
+#: clubs/models.py:424
 msgid "说明"
 msgstr "چۈشەندۈرۈش"
-
-#: clubs/models.py:404 clubs/models.py:517 clubs/models.py:1012
-#: clubs/models.py:1035 templates/clubs/admin/form_channels.html:1242
-#: templates/clubs/admin/form_channels.html:1396
-#: templates/clubs/admin/form_channels.html:1513
-#: templates/clubs/admin/form_channels.html:1619
+#: clubs/models.py:425 clubs/models.py:538 clubs/models.py:1078
+#: clubs/models.py:1101 templates/clubs/admin/form_channels.html:1344
+#: templates/clubs/admin/form_channels.html:1505
+#: templates/clubs/admin/form_channels.html:1632
+#: templates/clubs/admin/form_channels.html:1741
 msgid "排序"
 msgstr "تەرتىپ"
-
-#: clubs/models.py:405 clubs/models.py:457 clubs/models.py:478
-#: clubs/models.py:523 clubs/views/core.py:1914
+#: clubs/models.py:426 clubs/models.py:478 clubs/models.py:499
+#: clubs/models.py:544 clubs/views/core.py:1914
 #: templates/clubs/admin/booking_management.html:352
-#: templates/clubs/admin/form_channels.html:1480
-#: templates/clubs/admin/form_channels.html:1593
+#: templates/clubs/admin/form_channels.html:1598
+#: templates/clubs/admin/form_channels.html:1715
 #: templates/clubs/admin/manage_users.html:1136
 msgid "启用"
 msgstr "قوزغىتىلغان"
-
-#: clubs/models.py:406 templates/clubs/admin/edit_announcement.html:450
-#: templates/clubs/admin/form_channels.html:1255
-#: templates/clubs/admin/form_channels.html:1632
+#: clubs/models.py:427 templates/clubs/admin/edit_announcement.html:450
+#: templates/clubs/admin/form_channels.html:1358
+#: templates/clubs/admin/form_channels.html:1754
 #: templates/clubs/admin/publish_announcement.html:453
 msgid "发布状态"
 msgstr "ئېلان ھالەتى"
-
-#: clubs/models.py:407
+#: clubs/models.py:428
 msgid "内置通道"
 msgstr "ئىچكى يول"
-
-#: clubs/models.py:408
+#: clubs/models.py:429
 msgid "内置动作"
 msgstr "ئىچكى ھەرىكەت"
-
-#: clubs/models.py:409 templates/clubs/admin/form_channels.html:1272
-#: templates/clubs/admin/form_channels.html:1649
+#: clubs/models.py:430 templates/clubs/admin/form_channels.html:1375
+#: templates/clubs/admin/form_channels.html:1771
 msgid "提交策略"
 msgstr "تاپشۇرۇش سىياسىتى"
-
-#: clubs/models.py:410 templates/clubs/admin/form_channels.html:1246
-#: templates/clubs/admin/form_channels.html:1623
+#: clubs/models.py:431 templates/clubs/admin/form_channels.html:1348
+#: templates/clubs/admin/form_channels.html:1745
 msgid "所需通过次数"
 msgstr "كېرەكلىك تەستىقلاش سانى"
-
-#: clubs/models.py:411 templates/clubs/admin/_channel_settings_grid.html:26
+#: clubs/models.py:432 templates/clubs/admin/_channel_settings_grid.html:26
 msgid "显示打包 ZIP 下载"
 msgstr ""
 
-#: clubs/models.py:413
+#: clubs/models.py:434
 msgid "显示未提交告警"
 msgstr "تاپشۇرمىغان ئاگاھلاندۇرۇشنى كۆرسىتىش"
-
-#: clubs/models.py:414 templates/clubs/admin/_channel_alert_settings.html:18
+#: clubs/models.py:435 templates/clubs/admin/_channel_alert_settings.html:18
 msgid "告警颜色"
 msgstr "ئاگاھلاندۇرۇش رەڭگى"
-
-#: clubs/models.py:416 templates/clubs/admin/form_channels.html:1280
-#: templates/clubs/admin/form_channels.html:1657
+#: clubs/models.py:437 templates/clubs/admin/form_channels.html:1383
+#: templates/clubs/admin/form_channels.html:1779
 msgid "周期判断方式"
 msgstr ""
 
-#: clubs/models.py:421 clubs/models.py:422
+#: clubs/models.py:442 clubs/models.py:443
 msgid "提交通道"
 msgstr "تاپشۇرۇش يولى"
-
-#: clubs/models.py:432 clubs/models.py:454 clubs/models.py:476
-#: clubs/models.py:579 templates/clubs/admin/form_channels.html:1158
+#: clubs/models.py:453 clubs/models.py:475 clubs/models.py:497
+#: clubs/models.py:645 templates/clubs/admin/form_channels.html:1253
 msgid "通道"
 msgstr "يول"
-
-#: clubs/models.py:433 clubs/models.py:522
+#: clubs/models.py:454 clubs/models.py:543
 #: templates/clubs/user/dynamic_form_submit.html:757
 msgid "示例文件"
 msgstr "ئۈلگە ھۆججەتلىرى"
-
-#: clubs/models.py:434 clubs/models.py:733
+#: clubs/models.py:455 clubs/models.py:799
 msgid "显示文件名"
 msgstr ""
 
-#: clubs/models.py:435 clubs/models.py:737 clubs/models.py:1014
+#: clubs/models.py:456 clubs/models.py:803 clubs/models.py:1080
 msgid "上传时间"
 msgstr ""
 
-#: clubs/models.py:438 clubs/models.py:439
+#: clubs/models.py:459 clubs/models.py:460
 #: templates/clubs/user/dynamic_form_submit.html:668
 msgid "通道示例文件"
 msgstr ""
 
-#: clubs/models.py:455
+#: clubs/models.py:476
 msgid "周期名称"
 msgstr "دەۋر ئاتى"
-
-#: clubs/models.py:456
+#: clubs/models.py:477
 msgid "周期序号"
 msgstr "دەۋر نومۇرى"
-
-#: clubs/models.py:458 clubs/models.py:1055 clubs/models.py:1109
+#: clubs/models.py:479 clubs/models.py:1121 clubs/models.py:1175
 #: templates/clubs/admin/booking_management.html:338
 #: templates/clubs/admin/time_slot_form.html:159
 #: templates/clubs/edit_room_booking.html:251
 #: templates/clubs/submit_room_booking.html:311
 msgid "开始时间"
 msgstr "باشلىنىش ۋاقتى"
-
-#: clubs/models.py:459 clubs/models.py:1056 clubs/models.py:1110
+#: clubs/models.py:480 clubs/models.py:1122 clubs/models.py:1176
 #: templates/clubs/admin/booking_management.html:339
 #: templates/clubs/admin/time_slot_form.html:163
 #: templates/clubs/edit_room_booking.html:262
 #: templates/clubs/submit_room_booking.html:318
 msgid "结束时间"
 msgstr "ئاخىرلىشىش ۋاقتى"
-
-#: clubs/models.py:464 clubs/models.py:465
+#: clubs/models.py:485 clubs/models.py:486
 msgid "表单周期"
 msgstr ""
 
-#: clubs/models.py:480
+#: clubs/models.py:501
 msgid "更新人"
 msgstr ""
 
-#: clubs/models.py:483 clubs/models.py:484
+#: clubs/models.py:504 clubs/models.py:505
 msgid "社团通道状态"
 msgstr ""
 
-#: clubs/models.py:512
+#: clubs/models.py:533
 msgid "所属通道"
 msgstr ""
 
-#: clubs/models.py:513
+#: clubs/models.py:534
 msgid "字段名称"
 msgstr "خەت بۆلەك ئاتى"
-
-#: clubs/models.py:514
+#: clubs/models.py:535
 msgid "字段标识"
 msgstr "خەت بۆلەك بەلگىسى"
-
-#: clubs/models.py:515
+#: clubs/models.py:536
 msgid "字段类型"
 msgstr "خەت بۆلەك تۈرى"
-
-#: clubs/models.py:516 templates/clubs/admin/form_channels.html:1479
-#: templates/clubs/admin/form_channels.html:1592
+#: clubs/models.py:537 templates/clubs/admin/form_channels.html:1597
+#: templates/clubs/admin/form_channels.html:1714
 msgid "必填"
 msgstr "تولۇقلاش مەجبۇرىي"
-
-#: clubs/models.py:518 templates/clubs/change_club_status.html:260
+#: clubs/models.py:539 templates/clubs/change_club_status.html:260
 msgid "提示"
 msgstr "ئىشارەت"
-
-#: clubs/models.py:519 templates/clubs/admin/form_channels.html:1402
-#: templates/clubs/admin/form_channels.html:1519
+#: clubs/models.py:540 templates/clubs/admin/form_channels.html:1511
+#: templates/clubs/admin/form_channels.html:1638
 msgid "占位提示"
 msgstr "ئورۇن تۇتقۇچ"
-
-#: clubs/models.py:520 templates/clubs/admin/form_channels.html:1432
-#: templates/clubs/admin/form_channels.html:1549
+#: clubs/models.py:541 templates/clubs/admin/form_channels.html:1547
+#: templates/clubs/admin/form_channels.html:1670
 msgid "选项"
 msgstr "تاللاشلار"
-
-#: clubs/models.py:521
+#: clubs/models.py:542
 msgid "校验规则"
 msgstr "تەكشۈرۈش قائىدىلىرى"
-
-#: clubs/models.py:528 clubs/models.py:529
+#: clubs/models.py:549 clubs/models.py:550
 msgid "表单字段"
 msgstr ""
 
-#: clubs/models.py:580
+#: clubs/models.py:608
+msgid "对象类型"
+msgstr ""
+
+#: clubs/models.py:610
+msgid "对象ID"
+msgstr ""
+
+#: clubs/models.py:611
+#, fuzzy
+#| msgid "字段名称"
+msgid "字段名"
+msgstr "خەت بۆلەك ئاتى"
+
+#: clubs/models.py:612
+msgid "语言代码"
+msgstr ""
+
+#: clubs/models.py:613
+msgid "译文"
+msgstr ""
+
+#: clubs/models.py:616
+msgid "是否机器翻译"
+msgstr ""
+
+#: clubs/models.py:617
+msgid "由 UAPI 翻译服务自动生成，可手动覆盖"
+msgstr ""
+
+#: clubs/models.py:622 clubs/models.py:623
+msgid "对象翻译"
+msgstr ""
+
+#: clubs/models.py:646
 msgid "请求编号"
 msgstr ""
 
-#: clubs/models.py:582
+#: clubs/models.py:648
 msgid "提交人"
 msgstr "تاپشۇرغۇچى"
-
-#: clubs/models.py:583
+#: clubs/models.py:649
 msgid "周期"
 msgstr "دەۋر"
-
-#: clubs/models.py:585 clubs/models.py:673
+#: clubs/models.py:651 clubs/models.py:739
 msgid "审核人"
 msgstr "تەكشۈرگۈچى"
-
-#: clubs/models.py:586 clubs/models.py:675
-#: templates/clubs/staff/dynamic_submission_review.html:710
+#: clubs/models.py:652 clubs/models.py:741
+#: templates/clubs/staff/dynamic_submission_review.html:716
 msgid "审核意见"
 msgstr "تەكشۈرۈش پىكرى"
-
-#: clubs/models.py:587
+#: clubs/models.py:653
 msgid "提交时间"
 msgstr "تاپشۇرۇلغان ۋاقىت"
-
-#: clubs/models.py:588 clubs/models.py:677
+#: clubs/models.py:654 clubs/models.py:743
 msgid "审核时间"
 msgstr "تەكشۈرۈلگەن ۋاقىت"
-
-#: clubs/models.py:589 clubs/models.py:676
+#: clubs/models.py:655 clubs/models.py:742
 msgid "提交次数"
 msgstr "تاپشۇرۇش سانى"
-
-#: clubs/models.py:590
+#: clubs/models.py:656
 msgid "已读"
 msgstr "ئوقۇلغان"
-
-#: clubs/models.py:591
+#: clubs/models.py:657
 msgid "扩展信息"
 msgstr "قوشۇمچە ئۇچۇر"
-
-#: clubs/models.py:594 clubs/models.py:595
+#: clubs/models.py:660 clubs/models.py:661
 msgid "动态表单提交"
 msgstr ""
 
-#: clubs/models.py:672 clubs/models.py:703 clubs/models.py:730
+#: clubs/models.py:738 clubs/models.py:769 clubs/models.py:796
 #: templates/clubs/member_join_form.html:204
 #: templates/clubs/user/dynamic_form_submit.html:804
 msgid "提交"
 msgstr "تاپشۇرۇش"
-
-#: clubs/models.py:674
+#: clubs/models.py:740
 msgid "审核结果"
 msgstr "تەكشۈرۈش نەتىجىسى"
-
-#: clubs/models.py:680 clubs/models.py:681
+#: clubs/models.py:746 clubs/models.py:747
 msgid "动态表单审核记录"
 msgstr ""
 
-#: clubs/models.py:704 clubs/models.py:731
+#: clubs/models.py:770 clubs/models.py:797
 msgid "字段"
 msgstr "خەت بۆلەك"
-
-#: clubs/models.py:705
+#: clubs/models.py:771
 msgid "文本值"
 msgstr ""
 
-#: clubs/models.py:706
+#: clubs/models.py:772
 msgid "结构化值"
 msgstr ""
 
-#: clubs/models.py:707
+#: clubs/models.py:773
 msgid "字段审核状态"
 msgstr ""
 
-#: clubs/models.py:708
+#: clubs/models.py:774
 msgid "字段打回原因"
 msgstr ""
 
-#: clubs/models.py:713 clubs/models.py:714
+#: clubs/models.py:779 clubs/models.py:780
 msgid "表单字段值"
 msgstr ""
 
-#: clubs/models.py:732
+#: clubs/models.py:798
 msgid "文件"
 msgstr "ھۆججەت"
-
-#: clubs/models.py:734
+#: clubs/models.py:800
 msgid "文件审核状态"
 msgstr ""
 
-#: clubs/models.py:735
+#: clubs/models.py:801
 msgid "文件打回原因"
 msgstr ""
 
-#: clubs/models.py:736
+#: clubs/models.py:802
 msgid "系统生成文件"
 msgstr ""
 
-#: clubs/models.py:740 clubs/models.py:741
+#: clubs/models.py:806 clubs/models.py:807
 msgid "表单上传文件"
 msgstr ""
 
-#: clubs/models.py:790
+#: clubs/models.py:856
 msgid "模板名称"
 msgstr ""
 
-#: clubs/models.py:791
+#: clubs/models.py:857
 msgid "模板类型"
 msgstr ""
 
-#: clubs/models.py:792
+#: clubs/models.py:858
 msgid "模板描述"
 msgstr ""
 
-#: clubs/models.py:794
+#: clubs/models.py:860
 msgid "模板文件"
 msgstr ""
 
-#: clubs/models.py:795 clubs/models.py:1013
+#: clubs/models.py:861 clubs/models.py:1079
 msgid "上传者"
 msgstr "يۈكلىگۈچى"
-
-#: clubs/models.py:798 clubs/models.py:1058 clubs/models.py:1291
+#: clubs/models.py:864 clubs/models.py:1124 clubs/models.py:1382
 msgid "是否启用"
 msgstr "قوزغىتىلغانمۇ"
-
-#: clubs/models.py:801 clubs/models.py:802
+#: clubs/models.py:867 clubs/models.py:868
 msgid "模板"
 msgstr ""
 
-#: clubs/models.py:817
+#: clubs/models.py:883
 #: templates/clubs/admin/confirm_delete_announcement.html:26
 #: templates/clubs/admin/edit_announcement.html:401
 #: templates/clubs/admin/publish_announcement.html:405
 msgid "公告标题"
 msgstr "ئۇقتۇرۇش ماۋزۇسى"
-
-#: clubs/models.py:818 templates/clubs/admin/edit_announcement.html:398
+#: clubs/models.py:884 templates/clubs/admin/edit_announcement.html:398
 #: templates/clubs/admin/publish_announcement.html:419
 msgid "公告内容"
 msgstr "ئۇقتۇرۇش مەزمۇنى"
-
-#: clubs/models.py:820
+#: clubs/models.py:886
 #: templates/clubs/admin/confirm_delete_announcement.html:31
 msgid "发布者"
 msgstr "ئېلان قىلغۇچى"
-
-#: clubs/models.py:823 clubs/models.py:894
+#: clubs/models.py:889 clubs/models.py:960
 #: templates/clubs/admin/confirm_delete_announcement.html:49
 #: templates/clubs/admin/edit_announcement.html:444
 msgid "发布时间"
 msgstr "ئېلان قىلىنغان ۋاقىت"
-
-#: clubs/models.py:825
+#: clubs/models.py:891
 msgid "附件"
 msgstr "قوشۇمچە ھۆججەت"
-
-#: clubs/models.py:829 clubs/models.py:1011
+#: clubs/models.py:895 clubs/models.py:1077
 #: templates/clubs/admin/carousel_form.html:526
 #: templates/clubs/admin/edit_announcement.html:420
 msgid "跳转链接"
 msgstr "ئۇلاش"
-
-#: clubs/models.py:830
+#: clubs/models.py:896
 msgid "可填写站内路径（如 /clubs/）或 http(s) 完整地址"
 msgstr ""
 
-#: clubs/models.py:834 clubs/models.py:835 templates/clubs/index.html:1080
+#: clubs/models.py:900 clubs/models.py:901 templates/clubs/index.html:1080
 msgid "公告"
 msgstr "ئۇقتۇرۇش"
-
-#: clubs/models.py:850 templates/clubs/admin/admin_edit_user_account.html:209
+#: clubs/models.py:916 templates/clubs/admin/admin_edit_user_account.html:209
 #: templates/clubs/admin/admin_edit_user_account.html:375
 #: templates/clubs/admin/create_user.html:384
 #: templates/clubs/admin/dashboard.html:1092
@@ -675,64 +692,55 @@ msgstr "ئۇقتۇرۇش"
 #: templates/clubs/auth/register.html:196
 msgid "干事"
 msgstr "خادىم"
-
-#: clubs/models.py:852
+#: clubs/models.py:918
 msgid "分配时间"
 msgstr ""
 
-#: clubs/models.py:853
+#: clubs/models.py:919
 msgid "是否有效"
 msgstr ""
 
-#: clubs/models.py:856 clubs/models.py:857
+#: clubs/models.py:922 clubs/models.py:923
 msgid "干事负责社团"
 msgstr ""
 
-#: clubs/models.py:880
+#: clubs/models.py:946
 msgid "来源提交"
 msgstr ""
 
-#: clubs/models.py:882
+#: clubs/models.py:948
 msgid "活动名称"
 msgstr "پائالىيەت ئاتى"
-
-#: clubs/models.py:883 templates/clubs/public_activities.html:665
+#: clubs/models.py:949 templates/clubs/public_activities.html:665
 msgid "活动类型"
 msgstr "پائالىيەت تۈرى"
-
-#: clubs/models.py:884
+#: clubs/models.py:950
 msgid "活动描述"
 msgstr ""
 
-#: clubs/models.py:885 templates/clubs/public_activities.html:679
+#: clubs/models.py:951 templates/clubs/public_activities.html:679
 msgid "活动日期"
 msgstr "پائالىيەت چېسلا"
-
-#: clubs/models.py:886
+#: clubs/models.py:952
 msgid "活动开始时间"
 msgstr "باشلىنىش ۋاقتى"
-
-#: clubs/models.py:887
+#: clubs/models.py:953
 msgid "活动结束时间"
 msgstr "ئاخىرلىشىش ۋاقتى"
-
-#: clubs/models.py:888
+#: clubs/models.py:954
 msgid "活动地点"
 msgstr "پائالىيەت ئورنى"
-
-#: clubs/models.py:889
+#: clubs/models.py:955
 msgid "预计参与人数"
 msgstr ""
 
-#: clubs/models.py:890
+#: clubs/models.py:956
 msgid "活动预算"
 msgstr "پائالىيەت خىراجىتى"
-
-#: clubs/models.py:891
+#: clubs/models.py:957
 msgid "联系人"
 msgstr "ئالاقىدىشى"
-
-#: clubs/models.py:892 clubs/models.py:1115
+#: clubs/models.py:958 clubs/models.py:1181
 #: templates/clubs/admin/manage_users.html:1056
 #: templates/clubs/edit_room_booking.html:288
 #: templates/clubs/oobe_setup.html:534
@@ -741,488 +749,483 @@ msgstr "ئالاقىدىشى"
 msgid "联系电话"
 msgstr ""
 
-#: clubs/models.py:893
+#: clubs/models.py:959
 msgid "是否公开报名"
 msgstr ""
 
-#: clubs/models.py:898 clubs/models.py:899
+#: clubs/models.py:964 clubs/models.py:965
 msgid "已发布活动"
 msgstr ""
 
-#: clubs/models.py:908 templates/clubs/base.html:372
+#: clubs/models.py:974 templates/clubs/base.html:420
 msgid "活动"
 msgstr "پائالىيەتلەر"
-
-#: clubs/models.py:909
+#: clubs/models.py:975
 msgid "报名用户"
 msgstr "تىزىملاتقان ئىشلەتكۈچىلەر"
-
-#: clubs/models.py:910
+#: clubs/models.py:976
 msgid "报名时间"
 msgstr "تىزىملاتقان ۋاقىت"
-
-#: clubs/models.py:913 clubs/models.py:914
+#: clubs/models.py:979 clubs/models.py:980
 msgid "活动报名"
 msgstr ""
 
-#: clubs/models.py:926
+#: clubs/models.py:992
 msgid "待验证邮箱"
 msgstr ""
 
-#: clubs/models.py:927
+#: clubs/models.py:993
 msgid "验证码"
 msgstr ""
 
-#: clubs/models.py:928
+#: clubs/models.py:994
 msgid "是否已验证"
 msgstr ""
 
-#: clubs/models.py:929
+#: clubs/models.py:995
 msgid "连续错误次数"
 msgstr ""
 
-#: clubs/models.py:934 clubs/models.py:935
+#: clubs/models.py:1000 clubs/models.py:1001
 msgid "邮箱验证码"
 msgstr ""
 
-#: clubs/models.py:977 templates/clubs/oobe_setup.html:798
+#: clubs/models.py:1043 templates/clubs/oobe_setup.html:798
 msgid "邮箱服务商"
 msgstr ""
 
-#: clubs/models.py:978 templates/clubs/admin/smtp_config.html:960
+#: clubs/models.py:1044 templates/clubs/admin/smtp_config.html:960
 #: templates/clubs/admin/smtp_config.html:1168
 msgid "SMTP服务器地址"
 msgstr ""
 
-#: clubs/models.py:979 templates/clubs/admin/smtp_config.html:967
+#: clubs/models.py:1045 templates/clubs/admin/smtp_config.html:967
 #: templates/clubs/admin/smtp_config.html:1174
 msgid "SMTP端口"
 msgstr ""
 
-#: clubs/models.py:980 templates/clubs/admin/smtp_config.html:950
+#: clubs/models.py:1046 templates/clubs/admin/smtp_config.html:950
 #: templates/clubs/admin/smtp_config.html:1159
 msgid "发送邮箱地址"
 msgstr ""
 
-#: clubs/models.py:981 templates/clubs/admin/smtp_config.html:977
+#: clubs/models.py:1047 templates/clubs/admin/smtp_config.html:977
 #: templates/clubs/admin/smtp_config.html:1183
 msgid "邮箱密码/授权码"
 msgstr ""
 
-#: clubs/models.py:981
+#: clubs/models.py:1047
 msgid "在数据库中加密存储；留空表示保持原值"
 msgstr ""
 
-#: clubs/models.py:982
+#: clubs/models.py:1048
 msgid "是否使用TLS加密"
 msgstr ""
 
-#: clubs/models.py:983 clubs/models.py:1015
+#: clubs/models.py:1049 clubs/models.py:1081
 msgid "是否激活"
 msgstr ""
 
-#: clubs/models.py:987 templates/clubs/admin/smtp_config.html:999
+#: clubs/models.py:1053 templates/clubs/admin/smtp_config.html:999
 #: templates/clubs/admin/smtp_config.html:1199
 msgid "求助通知收件邮箱"
 msgstr ""
 
-#: clubs/models.py:988
+#: clubs/models.py:1054
 msgid "配置 SMTP 后，用户点击求助时通知此邮箱；留空则通知所有管理员账号邮箱"
 msgstr ""
 
-#: clubs/models.py:994 clubs/models.py:995
+#: clubs/models.py:1060 clubs/models.py:1061
 msgid "SMTP配置"
 msgstr "SMTP تەڭشەكلىرى"
-
-#: clubs/models.py:1008 clubs/models.py:1018 clubs/models.py:1019
+#: clubs/models.py:1074 clubs/models.py:1084 clubs/models.py:1085
 msgid "轮播图片"
 msgstr ""
 
-#: clubs/models.py:1009 templates/clubs/admin/carousel_form.html:510
+#: clubs/models.py:1075 templates/clubs/admin/carousel_form.html:510
 msgid "标题"
 msgstr "ماۋزۇ"
-
-#: clubs/models.py:1010 clubs/models.py:1079
+#: clubs/models.py:1076 clubs/models.py:1145
 #: templates/clubs/admin/carousel_form.html:518
 #: templates/clubs/admin/room_form.html:70
 msgid "描述"
 msgstr "چۈشەندۈرۈش"
-
-#: clubs/models.py:1011
+#: clubs/models.py:1077
 msgid "点击轮播图跳转的地址"
 msgstr ""
 
-#: clubs/models.py:1012 templates/clubs/admin/department_form.html:218
+#: clubs/models.py:1078 templates/clubs/admin/department_form.html:218
 msgid "数字越小越靠前"
 msgstr ""
 
-#: clubs/models.py:1031 templates/clubs/admin/department_form.html:191
+#: clubs/models.py:1097 templates/clubs/admin/department_form.html:191
 msgid "部门名称"
 msgstr "بۆلۈم ئاتى"
-
-#: clubs/models.py:1032 templates/clubs/admin/department_form.html:196
+#: clubs/models.py:1098 templates/clubs/admin/department_form.html:196
 msgid "职责描述"
 msgstr ""
 
-#: clubs/models.py:1033 templates/clubs/admin/department_form.html:202
+#: clubs/models.py:1099 templates/clubs/admin/department_form.html:202
 msgid "多个重点工作用换行分隔"
 msgstr ""
 
-#: clubs/models.py:1033 templates/clubs/admin/department_form.html:201
+#: clubs/models.py:1099 templates/clubs/admin/department_form.html:201
 msgid "重点工作"
 msgstr ""
 
-#: clubs/models.py:1034
+#: clubs/models.py:1100
 msgid "Material Icons图标名称"
 msgstr ""
 
-#: clubs/models.py:1034
+#: clubs/models.py:1100
 msgid "图标名称"
 msgstr ""
 
-#: clubs/models.py:1041
+#: clubs/models.py:1107
 msgid "更新者"
 msgstr ""
 
-#: clubs/models.py:1045 clubs/models.py:1046
+#: clubs/models.py:1111 clubs/models.py:1112
 #: templates/clubs/admin/manage_users.html:1064
 msgid "部门"
 msgstr "بۆلۈملەر"
-
-#: clubs/models.py:1057 templates/clubs/admin/booking_management.html:337
+#: clubs/models.py:1123 templates/clubs/admin/booking_management.html:337
 #: templates/clubs/admin/time_slot_form.html:153
 msgid "显示名称"
 msgstr "كۆرسىتىش ئاتى"
-
-#: clubs/models.py:1061 clubs/models.py:1062
+#: clubs/models.py:1127 clubs/models.py:1128
 msgid "时间段"
 msgstr "ۋاقىت بۆلەكلىرى"
-
-#: clubs/models.py:1076 templates/clubs/admin/booking_management.html:270
+#: clubs/models.py:1142 templates/clubs/admin/booking_management.html:270
 #: templates/clubs/admin/room_form.html:55
 msgid "房间名称"
 msgstr "ئۆي ئاتى"
-
-#: clubs/models.py:1077 templates/clubs/admin/room_form.html:60
+#: clubs/models.py:1143 templates/clubs/admin/room_form.html:60
 msgid "容纳人数"
 msgstr "سىغدۇرۇش سانى"
-
-#: clubs/models.py:1078 templates/clubs/admin/booking_management.html:272
+#: clubs/models.py:1144 templates/clubs/admin/booking_management.html:272
 #: templates/clubs/admin/room_form.html:65
 msgid "位置"
 msgstr "ئورنى"
-
-#: clubs/models.py:1085 clubs/models.py:1086 clubs/models.py:1101
+#: clubs/models.py:1151 clubs/models.py:1152 clubs/models.py:1167
 #: templates/clubs/admin/booking_management.html:218
 #: templates/clubs/delete_room_booking.html:88
 msgid "房间"
 msgstr "ئۆيلەر"
-
-#: clubs/models.py:1104 templates/clubs/admin/booking_management.html:219
+#: clubs/models.py:1170 templates/clubs/admin/booking_management.html:219
 msgid "借用人"
 msgstr ""
 
-#: clubs/models.py:1105
+#: clubs/models.py:1171
 msgid "所属社团"
 msgstr ""
 
-#: clubs/models.py:1108 templates/clubs/edit_room_booking.html:245
+#: clubs/models.py:1174 templates/clubs/edit_room_booking.html:245
 msgid "借用日期"
 msgstr "ئىشلىتىش چېسلا"
-
-#: clubs/models.py:1113
+#: clubs/models.py:1179
 msgid "借用目的"
 msgstr "ئىشلىتىش مەقسىتى"
-
-#: clubs/models.py:1114 templates/clubs/edit_room_booking.html:284
+#: clubs/models.py:1180 templates/clubs/edit_room_booking.html:284
 msgid "预计使用人数"
 msgstr "مۆلچەرلەنگەن ئىشلەتكۈچى سانى"
-
-#: clubs/models.py:1118 templates/clubs/edit_room_booking.html:294
+#: clubs/models.py:1184 templates/clubs/edit_room_booking.html:294
 #: templates/clubs/submit_room_booking.html:347
 msgid "特殊需求"
 msgstr "ئالاھىدە ئېھتىياجلار"
-
-#: clubs/models.py:1118
+#: clubs/models.py:1184
 msgid "如需要投影仪、音响等设备"
 msgstr ""
 
-#: clubs/models.py:1125 clubs/models.py:1126
+#: clubs/models.py:1191 clubs/models.py:1192
 msgid "房间借用"
 msgstr ""
 
-#: clubs/models.py:1196 templates/clubs/admin/site_settings.html:1052
+#: clubs/models.py:1262 templates/clubs/admin/site_settings.html:1136
 msgid "站点名称（浏览器标题）"
 msgstr "توربەت ئاتى (كۆرگۈچ ماۋزۇسى)"
-
-#: clubs/models.py:1197
+#: clubs/models.py:1263
 msgid "显示在浏览器标签页标题中，修改后刷新页面生效"
 msgstr ""
 
-#: clubs/models.py:1202 templates/clubs/admin/site_settings.html:1058
+#: clubs/models.py:1268 templates/clubs/admin/site_settings.html:1142
 msgid "首页主标题"
 msgstr "باش بەت ئاساسلىق ماۋزۇسى"
-
-#: clubs/models.py:1203
+#: clubs/models.py:1269
 msgid "显示在首页顶部横幅中的大标题"
 msgstr ""
 
-#: clubs/models.py:1208 templates/clubs/admin/site_settings.html:1064
+#: clubs/models.py:1274 templates/clubs/admin/site_settings.html:1148
 msgid "首页副标题"
 msgstr "باش بەت تارماق ماۋزۇسى"
-
-#: clubs/models.py:1209
+#: clubs/models.py:1275
 msgid "显示在首页顶部横幅中主标题下方"
 msgstr ""
 
-#: clubs/models.py:1214
+#: clubs/models.py:1280
 msgid "第三方资源 CDN 基础地址"
 msgstr ""
 
-#: clubs/models.py:1215
+#: clubs/models.py:1281
 msgid "用于加载 Chart.js、Swiper 和 Cropper.js 等 cdnjs 资源。"
 msgstr ""
 
-#: clubs/models.py:1220
+#: clubs/models.py:1286
 msgid "第三方资源 SRI 校验值"
 msgstr ""
 
-#: clubs/models.py:1221
+#: clubs/models.py:1287
 msgid "由管理页面在切换 CDN 时自动计算。"
 msgstr ""
 
-#: clubs/models.py:1226
+#: clubs/models.py:1292
 msgid "图标字体 CSS 地址"
 msgstr ""
 
-#: clubs/models.py:1227
+#: clubs/models.py:1293
 msgid "Material Icons CSS 的完整 URL，修改后刷新页面生效"
 msgstr ""
 
-#: clubs/models.py:1231
+#: clubs/models.py:1297
 msgid "正文 Web 字体 CSS 地址"
 msgstr ""
 
-#: clubs/models.py:1232
+#: clubs/models.py:1298
 msgid "Google Fonts / 镜像字体的 CSS URL（留空则不加载额外字体）"
 msgstr ""
 
-#: clubs/models.py:1236
+#: clubs/models.py:1302
 msgid "正文字体族"
 msgstr ""
 
-#: clubs/models.py:1237
+#: clubs/models.py:1303
 msgid ""
 "CSS font-family 值，例如：'Noto Sans SC', sans-serif（留空则使用系统字体）"
 msgstr ""
 
-#: clubs/models.py:1241
+#: clubs/models.py:1307
 msgid "允许使用 Cravatar"
 msgstr ""
 
-#: clubs/models.py:1242
+#: clubs/models.py:1308
 msgid "开启后，用户可在本站上传头像与 Cravatar 之间自行选择。"
 msgstr ""
 
-#: clubs/models.py:1246
+#: clubs/models.py:1312
 msgid "成员数量告警阈值"
 msgstr "ئەزا سانى ئاگاھلاندۇرۇش چېكى"
-
-#: clubs/models.py:1247
+#: clubs/models.py:1313
 msgid "成员数低于该值的社团会在干事社团管理页触发“社团成员数量预警”。"
 msgstr ""
 
-#: clubs/models.py:1251 templates/clubs/admin/smtp_config.html:802
+#: clubs/models.py:1317 templates/clubs/admin/smtp_config.html:802
 msgid "开启错误页求助按钮"
 msgstr "خاتالىق بەتلىرىدە ياردەم كۇنۇپكىسىنى قوزغىتىش"
-
-#: clubs/models.py:1252
+#: clubs/models.py:1318
 msgid "开启后，404/500 错误页将显示“请求帮助”按钮，不依赖 SMTP 配置"
 msgstr ""
 
-#: clubs/models.py:1256 clubs/models.py:1257
+#: clubs/models.py:1322 templates/clubs/admin/site_settings.html:1504
+msgid "开启内容自动翻译"
+msgstr ""
+
+#: clubs/models.py:1323 templates/clubs/admin/site_settings.html:1505
+msgid ""
+"开启后，通道与字段设置页可一键调用翻译服务生成英文、维吾尔语和蒙古语文案；关"
+"闭时仅保留手动填写。"
+msgstr ""
+
+#: clubs/models.py:1328 templates/clubs/admin/site_settings.html:1510
+#, fuzzy
+#| msgid "服务地址"
+msgid "翻译服务地址"
+msgstr "مۇلازىمېتىر ئادرېسى"
+
+#: clubs/models.py:1329
+msgid ""
+"默认使用 UAPI 公共翻译服务 https://uapis.cn；自建或兼容网关请填完整地址。"
+msgstr ""
+
+#: clubs/models.py:1335
+msgid "翻译服务 API Key"
+msgstr ""
+
+#: clubs/models.py:1336
+msgid "UAPI 控制台可免费申请；公共接口匿名调用也可用，留空即可。"
+msgstr ""
+
+#: clubs/models.py:1342 templates/clubs/admin/site_settings.html:1154
+msgid "全站默认语言"
+msgstr "سايتنىڭ سۈكۈت تىلى"
+#: clubs/models.py:1343
+msgid "未登录用户与未设置首选语言的用户将使用此语言；默认简体中文。"
+msgstr ""
+
+#: clubs/models.py:1347 clubs/models.py:1348
 #: templates/clubs/admin/dashboard.html:1070
-#: templates/clubs/admin/site_settings.html:865
+#: templates/clubs/admin/site_settings.html:931
 msgid "站点设置"
 msgstr "توربەت تەڭشەكلىرى"
-
-#: clubs/models.py:1287 templates/clubs/admin/storage_config.html:275
+#: clubs/models.py:1378 templates/clubs/admin/storage_config.html:275
 msgid "后端类型"
 msgstr "ئارقا سۇپا تۈرى"
-
-#: clubs/models.py:1288
+#: clubs/models.py:1379
 msgid "选择文件存储位置。切换后立即生效，已存文件不会自动迁移。"
 msgstr ""
 
-#: clubs/models.py:1292
+#: clubs/models.py:1383
 msgid "关闭后强制降级到本地存储（紧急回退用）"
 msgstr ""
 
-#: clubs/models.py:1299
+#: clubs/models.py:1390
 msgid ""
 "AWS S3 留空；MinIO/阿里云/腾讯云等填兼容端点，如 https://s3.cn-"
 "north-1.amazonaws.com.cn"
 msgstr ""
 
-#: clubs/models.py:1304
+#: clubs/models.py:1395
 msgid "AWS S3 必填，如 us-east-1；MinIO 可留空"
 msgstr ""
 
-#: clubs/models.py:1308 templates/clubs/admin/storage_config.html:325
+#: clubs/models.py:1399 templates/clubs/admin/storage_config.html:325
 msgid "Bucket 名称"
 msgstr ""
 
-#: clubs/models.py:1309
+#: clubs/models.py:1400
 msgid "需提前在 S3 控制台创建；Office Online 预览要求 bucket 可公网匿名访问"
 msgstr ""
 
-#: clubs/models.py:1318
+#: clubs/models.py:1409
 msgid "在数据库中加密存储；管理页面不会回显原值"
 msgstr ""
 
-#: clubs/models.py:1322 templates/clubs/admin/storage_config.html:350
+#: clubs/models.py:1413 templates/clubs/admin/storage_config.html:350
 #: templates/clubs/admin/storage_config.html:398
 msgid "自定义域名 / CDN"
 msgstr ""
 
-#: clubs/models.py:1323
+#: clubs/models.py:1414
 msgid ""
 "如已配置 CDN，填写 CDN 域名（如 https://cdn.example.com）。留空则使用 S3 默"
 "认 URL。"
 msgstr ""
 
-#: clubs/models.py:1327 templates/clubs/admin/storage_config.html:359
+#: clubs/models.py:1418 templates/clubs/admin/storage_config.html:359
 msgid "地址风格"
 msgstr ""
 
-#: clubs/models.py:1328
+#: clubs/models.py:1419
 msgid "MinIO / 自建 S3 通常选 Path Style；AWS S3 选 Virtual Hosted"
 msgstr ""
 
-#: clubs/models.py:1331 templates/clubs/admin/storage_config.html:367
+#: clubs/models.py:1422 templates/clubs/admin/storage_config.html:367
 msgid "预签名 URL 有效期（秒）"
 msgstr ""
 
-#: clubs/models.py:1332
+#: clubs/models.py:1423
 msgid "私密 bucket 下载链接的有效时长，默认 1 小时"
 msgstr ""
 
-#: clubs/models.py:1339 clubs/models.py:1340
+#: clubs/models.py:1430 clubs/models.py:1431
 msgid "存储配置"
 msgstr "ساقلاش تەڭشەكلىرى"
-
-#: clubs/models.py:1373 templates/clubs/admin/booking_management.html:216
+#: clubs/models.py:1464 templates/clubs/admin/booking_management.html:216
 #: templates/clubs/public_activities.html:748
 msgid "日期"
 msgstr "چېسلا"
-
-#: clubs/models.py:1374
+#: clubs/models.py:1465
 msgid "访问次数"
 msgstr ""
 
-#: clubs/models.py:1377 clubs/models.py:1378
+#: clubs/models.py:1468 clubs/models.py:1469
 msgid "每日统计"
 msgstr ""
 
-#: clubs/models.py:1407
+#: clubs/models.py:1498
 msgid "文件MD5"
 msgstr ""
 
-#: clubs/models.py:1410
+#: clubs/models.py:1501
 msgid "存储路径"
 msgstr ""
 
-#: clubs/models.py:1411
+#: clubs/models.py:1502
 msgid "文件大小(字节)"
 msgstr ""
 
-#: clubs/models.py:1412
+#: clubs/models.py:1503
 msgid "引用计数"
 msgstr ""
 
-#: clubs/models.py:1417 clubs/models.py:1418
+#: clubs/models.py:1508 clubs/models.py:1509
 msgid "文件去重记录"
 msgstr ""
 
-#: clubs/models.py:1436
+#: clubs/models.py:1527
 msgid "状态码"
 msgstr "ھالەت كودى"
-
-#: clubs/models.py:1438
+#: clubs/models.py:1529
 msgid "请求地址"
 msgstr "تەلەپ ئادرېسى"
-
-#: clubs/models.py:1439
+#: clubs/models.py:1530
 msgid "请求方法"
 msgstr "ئۇسۇل"
-
-#: clubs/models.py:1440
+#: clubs/models.py:1531
 msgid "来源页面"
 msgstr "كەلگەن بەت"
-
-#: clubs/models.py:1441
+#: clubs/models.py:1532
 msgid "浏览器UA"
 msgstr "كۆرگۈچ UA"
-
-#: clubs/models.py:1442
+#: clubs/models.py:1533
 msgid "客户端IP"
 msgstr "خېنىم IP"
-
-#: clubs/models.py:1443
+#: clubs/models.py:1534
 msgid "异常类型"
 msgstr "ئالاھىدە خاتالىق تۈرى"
-
-#: clubs/models.py:1444
+#: clubs/models.py:1535
 msgid "异常信息"
 msgstr "خاتالىق ئۇچۇرى"
-
-#: clubs/models.py:1445
+#: clubs/models.py:1536
 msgid "用户标识"
 msgstr "ئىشلەتكۈچى بەلگىسى"
-
-#: clubs/models.py:1446
+#: clubs/models.py:1537
 msgid "用户请求帮助"
 msgstr ""
 
-#: clubs/models.py:1447
+#: clubs/models.py:1538
 msgid "求助时间"
 msgstr "ياردەم سورالغان ۋاقىت"
-
-#: clubs/models.py:1448
+#: clubs/models.py:1539
 msgid "求助联系邮箱"
 msgstr ""
 
-#: clubs/models.py:1449
+#: clubs/models.py:1540
 msgid "用户补充说明"
 msgstr ""
 
-#: clubs/models.py:1450 templates/clubs/admin/bug_logs.html:458
-#: templates/clubs/staff/dynamic_audit_center.html:588
-#: templates/clubs/user/dynamic_approval_center.html:475
-#: templates/clubs/user/dynamic_approval_center.html:585
+#: clubs/models.py:1541 templates/clubs/admin/bug_logs.html:458
+#: templates/clubs/staff/dynamic_audit_center.html:589
+#: templates/clubs/user/dynamic_approval_center.html:476
+#: templates/clubs/user/dynamic_approval_center.html:586
 msgid "已处理"
 msgstr "بىر تەرەپ قىلىنغان"
-
-#: clubs/models.py:1451
+#: clubs/models.py:1542
 msgid "处理时间"
 msgstr ""
 
-#: clubs/models.py:1458
+#: clubs/models.py:1549
 msgid "处理人"
 msgstr ""
 
-#: clubs/models.py:1460
+#: clubs/models.py:1551
 msgid "发生时间"
 msgstr "يۈز بەرگەن ۋاقىت"
-
-#: clubs/models.py:1463 clubs/models.py:1464
+#: clubs/models.py:1554 clubs/models.py:1555
 msgid "错误日志"
 msgstr "خاتالىق خاتىرىسى"
-
 #: clubs/permissions.py:61 clubs/views/core.py:3691
 msgid "权限不足"
 msgstr "ھوقۇق يېتەرسىز"
-
 #: clubs/services/csv_import.py:117
 msgid "部分数据有问题："
 msgstr ""
@@ -1283,11 +1286,9 @@ msgstr ""
 #: clubs/views/auth.py:189
 msgid "用户名和密码不能为空"
 msgstr "ئىشلەتكۈچى ئاتى ۋە پارول بوش بولمايدۇ"
-
 #: clubs/views/auth.py:196 clubs/views/auth.py:271
 msgid "登录尝试过多，请等待5分钟后再试，或联系管理员重置密码！"
 msgstr "كىرىش سىنىقى بەك كۆپ بولدى. 5 مىنۇت ساقلاپ قايتا سىناڭ ياكى پارولنى ئەسلىگە كەلتۈرۈش ئۈچۈن باشقۇرغۇچى بىلەن ئالاقىلىشىڭ!"
-
 #: clubs/views/auth.py:215
 msgid "您的账号正在审核中，请等待管理员批准！"
 msgstr ""
@@ -1305,7 +1306,6 @@ msgstr ""
 #: clubs/views/auth.py:279
 msgid "用户名或密码错误"
 msgstr "ئىشلەتكۈچى ئاتى ياكى پارول خاتا"
-
 #: clubs/views/auth.py:294
 msgid "用户档案不存在，无法延期"
 msgstr ""
@@ -1321,7 +1321,6 @@ msgstr ""
 #: clubs/views/auth.py:314
 msgid "已登出"
 msgstr "چىققان"
-
 #: clubs/views/auth.py:337
 msgid "当前账号没有现任社长身份，无法切换"
 msgstr ""
@@ -1342,11 +1341,10 @@ msgstr ""
 msgid "用户名输入错误，账户删除失败。"
 msgstr ""
 
-#: clubs/views/auth.py:429 clubs/views/auth.py:753
+#: clubs/views/auth.py:429 clubs/views/auth.py:786
 msgid "您没有权限访问此页面"
 msgstr "بۇ بەتنى كۆرۈش ھوقۇقىڭىز يوق"
-
-#: clubs/views/auth.py:432 clubs/views/auth.py:756 clubs/views/auth.py:1088
+#: clubs/views/auth.py:432 clubs/views/auth.py:789 clubs/views/auth.py:1121
 msgid "用户角色未配置"
 msgstr ""
 
@@ -1362,120 +1360,153 @@ msgstr ""
 msgid "用户档案不存在，请先联系管理员完善资料"
 msgstr ""
 
+#: clubs/views/auth.py:511
+msgid "真实姓名不能为空"
+msgstr "ھەقىقىي ئىسىم بوش بولمايدۇ"
+#: clubs/views/auth.py:514
+msgid "请输入有效的邮箱地址"
+msgstr "ئىناۋەتلىك ئېلخەت ئادرېسىنى كىرگۈزۈڭ"
+#: clubs/views/auth.py:517
+msgid "邮箱已被其他用户注册"
+msgstr "ئېلخەت باشقا ئىشلەتكۈچىدە مەۋجۇت"
+#: clubs/views/auth.py:519
+msgid "电话不能为空"
+msgstr "تېلېفون بوش بولمايدۇ"
+#: clubs/views/auth.py:521
+msgid "微信不能为空"
+msgstr "ۋېيشىن بوش بولمايدۇ"
+#: clubs/views/auth.py:523
+msgid "学号不能为空"
+msgstr "ئوقۇغۇچى نومۇرى بوش بولمايدۇ"
+#: clubs/views/auth.py:525
+msgid "政治面貌不能为空"
+msgstr "سىياسىي قىياپەت بوش بولمايدۇ"
+#: clubs/views/auth.py:527
+msgid "学号已被其他用户使用"
+msgstr "ئوقۇغۇچى نومۇرى باشقا ئىشلەتكۈچىدە مەۋجۇت"
+#: clubs/views/auth.py:532
+msgid "政治面貌无效"
+msgstr "سىياسىي قىياپەت ئەمەلدىن قالغان"
 #: clubs/views/auth.py:548
 msgid "个人信息已成功更新"
 msgstr ""
 
-#: clubs/views/auth.py:555
+#: clubs/views/auth.py:554
+msgid "无效的语言选择"
+msgstr "ئەمەلدىن قالغان تىل تاللاش"
+#: clubs/views/auth.py:573
+msgid "语言偏好已保存，将在所有设备同步生效"
+msgstr "تىل مايىلى ساقلاندى ۋە ھەممە ئۈسكۈنىلەردە كۈچكە ئىگە بولىدۇ"
+#: clubs/views/auth.py:580
+msgid "已恢复为站点默认语言"
+msgstr "سايتنىڭ سۈكۈت تىلىغا قايتۇرۇلدى"
+#: clubs/views/auth.py:588
 msgid "新用户名不能为空"
 msgstr ""
 
-#: clubs/views/auth.py:557
+#: clubs/views/auth.py:590
 msgid "用户名至少3个字符"
 msgstr ""
 
-#: clubs/views/auth.py:559
+#: clubs/views/auth.py:592
 msgid "用户名不能超过30个字符"
 msgstr ""
 
-#: clubs/views/auth.py:561
+#: clubs/views/auth.py:594
 msgid "用户名已被使用"
 msgstr ""
 
-#: clubs/views/auth.py:563
+#: clubs/views/auth.py:596
 msgid "密码不能为空"
 msgstr ""
 
-#: clubs/views/auth.py:567
+#: clubs/views/auth.py:600
 msgid "密码错误"
 msgstr ""
 
-#: clubs/views/auth.py:580
+#: clubs/views/auth.py:613
 msgid "原密码错误"
 msgstr ""
 
-#: clubs/views/auth.py:582
+#: clubs/views/auth.py:615
 msgid "两次输入的新密码不一致"
 msgstr ""
 
-#: clubs/views/auth.py:584
+#: clubs/views/auth.py:617
 msgid "新密码长度至少为6位"
 msgstr ""
 
-#: clubs/views/auth.py:593
+#: clubs/views/auth.py:626
 msgid "密码已修改"
 msgstr ""
 
-#: clubs/views/auth.py:600
+#: clubs/views/auth.py:633
 msgid "管理员暂未开放 Cravatar"
 msgstr ""
 
-#: clubs/views/auth.py:607
+#: clubs/views/auth.py:640
 msgid "请输入有效的 Cravatar 邮箱"
 msgstr ""
 
-#: clubs/views/auth.py:614
+#: clubs/views/auth.py:647
 msgid "已检测到 Cravatar 头像并启用"
 msgstr ""
 
-#: clubs/views/auth.py:616
+#: clubs/views/auth.py:649
 msgid ""
 "该邮箱没有可用的 Cravatar 头像，请先在 Cravatar 绑定头像或继续使用本站上传"
 msgstr ""
 
-#: clubs/views/auth.py:618
+#: clubs/views/auth.py:651
 msgid "暂时无法连接 Cravatar，请稍后重试；当前头像未更改"
 msgstr ""
 
-#: clubs/views/auth.py:620
+#: clubs/views/auth.py:653
 msgid "请输入已绑定 Cravatar 头像的邮箱"
 msgstr ""
 
-#: clubs/views/auth.py:626
+#: clubs/views/auth.py:659
 msgid "已切换为本站上传头像"
 msgstr ""
 
-#: clubs/views/auth.py:967
+#: clubs/views/auth.py:1000
 msgid "仅管理员可以修改人数告警阈值"
 msgstr ""
 
-#: clubs/views/auth.py:977
+#: clubs/views/auth.py:1010
 msgid "人数告警阈值需为 1-999 之间的整数"
 msgstr ""
 
-#: clubs/views/auth.py:995 clubs/views/auth.py:1045
+#: clubs/views/auth.py:1028 clubs/views/auth.py:1078
 msgid "邮箱验证记录不存在"
 msgstr ""
 
-#: clubs/views/auth.py:999
+#: clubs/views/auth.py:1032
 msgid "邮箱已验证"
 msgstr "ئېلخەت دەلىللەنگەن"
-
-#: clubs/views/auth.py:1006
+#: clubs/views/auth.py:1039
 msgid "验证码不能为空"
 msgstr "دەلىللەش كودى بوش بولمايدۇ"
-
-#: clubs/views/auth.py:1019
+#: clubs/views/auth.py:1052
 msgid "邮箱验证成功！"
 msgstr "ئېلخەت مۇۋەپپەقىيەتلىك دەلىللەندى!"
-
-#: clubs/views/auth.py:1049
+#: clubs/views/auth.py:1082
 msgid "邮箱已验证，无需重新发送"
 msgstr ""
 
-#: clubs/views/auth.py:1054
+#: clubs/views/auth.py:1087
 msgid "发送过于频繁，请稍后再试"
 msgstr ""
 
-#: clubs/views/auth.py:1085
+#: clubs/views/auth.py:1118
 msgid "您没有权限访问此页面，仅部长可以管理本部门人员"
 msgstr ""
 
-#: clubs/views/auth.py:1093
+#: clubs/views/auth.py:1126
 msgid "您的部门信息未配置，无法管理部门人员"
 msgstr ""
 
-#: clubs/views/auth.py:1170 clubs/views/core.py:2838
+#: clubs/views/auth.py:1203 clubs/views/core.py:2838
 msgid "您当前没有可管理的社团"
 msgstr ""
 
@@ -1486,15 +1517,12 @@ msgstr ""
 #: clubs/views/bug_logs.py:35
 msgid "已标记为已处理"
 msgstr "بىر تەرەپ قىلىنغان دەپ بەلگىلەندى"
-
 #: clubs/views/bug_logs.py:41
 msgid "已恢复为未处理"
 msgstr "بىر تەرەپ قىلىنمىغان ھالەتكە قايتۇرۇلدى"
-
 #: clubs/views/bug_logs.py:44
 msgid "日志已删除"
 msgstr "خاتىرە ئۆچۈرۈلدى"
-
 #: clubs/views/bug_logs.py:46
 msgid "未知操作"
 msgstr ""
@@ -1524,8 +1552,8 @@ msgid "审核结果不合法"
 msgstr ""
 
 #: clubs/views/core.py:874 clubs/views/core.py:890 clubs/views/core.py:929
-#: clubs/views/core.py:982 clubs/views/core.py:1040 clubs/views/core.py:3867
-#: clubs/views/core.py:5629
+#: clubs/views/core.py:982 clubs/views/core.py:1040 clubs/views/core.py:3907
+#: clubs/views/core.py:5843
 msgid "仅管理员可以访问此页面"
 msgstr ""
 
@@ -1793,7 +1821,6 @@ msgstr ""
 #: clubs/views/core.py:3371
 msgid "预约提交成功"
 msgstr "زاكاز مۇۋەپپەقىيەتلىك تاپشۇرۇلدى"
-
 #: clubs/views/core.py:3377
 msgid "预约失败，请稍后重试"
 msgstr ""
@@ -1817,7 +1844,6 @@ msgstr ""
 #: clubs/views/core.py:3500
 msgid "预约已取消"
 msgstr "زاكاز بىكار قىلىندى"
-
 #: clubs/views/core.py:3516 clubs/views/core.py:3555
 msgid "房间名称不能为空"
 msgstr ""
@@ -1842,190 +1868,236 @@ msgstr ""
 msgid "时间格式无效，必须为 HH:MM 且结束时间晚于开始时间"
 msgstr ""
 
-#: clubs/views/core.py:3706
+#: clubs/views/core.py:3707
+msgid "请选择有效的全站默认语言"
+msgstr ""
+
+#: clubs/views/core.py:3717
 msgid "站点名称与首页标题已保存，刷新页面后生效"
 msgstr ""
 
-#: clubs/views/core.py:3724
+#: clubs/views/core.py:3735
 msgid "字体地址仅支持 http/https 或协议相对地址（//），请检查后重试。"
 msgstr ""
 
-#: clubs/views/core.py:3730
+#: clubs/views/core.py:3741
 msgid "站点字体设置已保存，刷新页面后生效"
 msgstr ""
 
-#: clubs/views/core.py:3744
+#: clubs/views/core.py:3755
 msgid "请输入有效的 CDN 基础地址（HTTP 或 HTTPS，且不包含查询参数）。"
 msgstr ""
 
-#: clubs/views/core.py:3751
+#: clubs/views/core.py:3762
 msgid "CDN 资源完整性校验失败，请重试。"
 msgstr ""
 
-#: clubs/views/core.py:3755
+#: clubs/views/core.py:3766
 msgid "CDN 资源完整性校验格式无效，请重试。"
 msgstr ""
 
-#: clubs/views/core.py:3761
+#: clubs/views/core.py:3772
 msgid "CDN 资源完整性校验不完整，请重试。"
 msgstr ""
 
-#: clubs/views/core.py:3768
+#: clubs/views/core.py:3779
 msgid "第三方资源 CDN 已保存，刷新页面后生效"
 msgstr ""
 
-#: clubs/views/core.py:3776
+#: clubs/views/core.py:3787
 msgid "Cravatar 开关已保存，用户仍可随时上传本站头像"
 msgstr ""
 
-#: clubs/views/core.py:4708
+#: clubs/views/core.py:3798
+msgid "翻译服务地址仅支持 http/https，请检查后重试。"
+msgstr ""
+
+#: clubs/views/core.py:3815
+msgid ""
+"自动翻译设置已保存；开启后可在通道与字段设置页一键翻译英文、维吾尔语和蒙古语"
+msgstr ""
+
+#: clubs/views/core.py:3831
+msgid "默认镜像 (fonts.font.im)"
+msgstr "سۈكۈت كۆزگۈ (fonts.font.im)"
+#: clubs/views/core.py:3832
+msgid "SJTUG 镜像"
+msgstr "SJTUG كۆزگۈسى"
+#: clubs/views/core.py:3833
+msgid "中科大镜像"
+msgstr "USTC كۆزگۈسى"
+#: clubs/views/core.py:3836
+msgid "不使用外部字体"
+msgstr "سىرتقى خەت نۇسخىسى ئىشلەتمەسلىك"
+#: clubs/views/core.py:3837
+msgid "Noto Sans SC (fonts.font.im)"
+msgstr "Noto Sans SC (fonts.font.im)"
+#: clubs/views/core.py:3838
+msgid "Noto Sans SC (SJTUG)"
+msgstr "Noto Sans SC (SJTUG)"
+#: clubs/views/core.py:3839
+msgid "Noto Sans SC (loli.net)"
+msgstr "Noto Sans SC (loli.net)"
+#: clubs/views/core.py:3842
+msgid "BootCDN（默认）"
+msgstr "BootCDN (سۈكۈت)"
+#: clubs/views/core.py:3843
+msgid "cdnjs 官方"
+msgstr "cdnjs رەسمىي"
+#: clubs/views/core.py:3844
+msgid "未闻花名 CDN"
+msgstr "Anohana CDN"
+#: clubs/views/core.py:3845
+msgid "南科大镜像"
+msgstr "SUSTech كۆزگۈسى"
+#: clubs/views/core.py:4854
 msgid "该提交通道尚未发布或配置未完成，暂不能提交"
 msgstr ""
 
-#: clubs/views/core.py:4712
+#: clubs/views/core.py:4858
 msgid "只有该社团现任社长可以提交"
 msgstr ""
 
-#: clubs/views/core.py:4752
+#: clubs/views/core.py:4898
 msgid "只有该社团现任社长可以修改补交"
 msgstr ""
 
-#: clubs/views/core.py:4755
+#: clubs/views/core.py:4901
 msgid "只有被打回的请求可以修改补交"
 msgstr ""
 
-#: clubs/views/core.py:4785
+#: clubs/views/core.py:4931
 msgid ""
 "该请求状态已变化（可能已被重新审核或修改结果），本次修改未保存，请刷新后重试"
 msgstr ""
 
-#: clubs/views/core.py:4837
+#: clubs/views/core.py:4983
 msgid "已补交被打回的内容，等待重新审核"
 msgstr ""
 
-#: clubs/views/core.py:4866
+#: clubs/views/core.py:5012
 msgid "仅社长可以访问审批记录"
 msgstr ""
 
-#: clubs/views/core.py:4926 clubs/views/core.py:4929
+#: clubs/views/core.py:5077 clubs/views/core.py:5080
 msgid "无权查看此提交"
 msgstr ""
 
-#: clubs/views/core.py:4954
+#: clubs/views/core.py:5105
 msgid "仅干事和管理员可以访问审核中心"
 msgstr ""
 
-#: clubs/views/core.py:5247
+#: clubs/views/core.py:5400
 msgid "仅干事和管理员可以审核"
 msgstr ""
 
-#: clubs/views/core.py:5272
+#: clubs/views/core.py:5425
 msgid "请选择有效审核结果"
 msgstr ""
 
-#: clubs/views/core.py:5306
+#: clubs/views/core.py:5459
 msgid "已重新审核：请求已回到待审核，所有审核人需重新投票"
 msgstr ""
 
-#: clubs/views/core.py:5317
+#: clubs/views/core.py:5470
 msgid "已修改审核结果，请求已改为通过"
 msgstr ""
 
-#: clubs/views/core.py:5319
+#: clubs/views/core.py:5472
 msgid "已修改审核结果，请求已改为打回"
 msgstr ""
 
-#: clubs/views/core.py:5328
+#: clubs/views/core.py:5481
 msgid "审核结果已保存，提交已打回"
 msgstr ""
 
-#: clubs/views/core.py:5364
+#: clubs/views/core.py:5517
 msgid "仅管理员可以删除审核请求"
 msgstr ""
 
-#: clubs/views/core.py:5371
+#: clubs/views/core.py:5524
 msgid "审核请求已删除"
 msgstr ""
 
-#: clubs/views/core.py:5378 clubs/views/core.py:5423
+#: clubs/views/core.py:5531 clubs/views/core.py:5612
 msgid "仅管理员可以管理提交通道"
 msgstr ""
 
-#: clubs/views/core.py:5460
+#: clubs/views/core.py:5651
 msgid "通道名称和标识不能为空"
 msgstr ""
 
-#: clubs/views/core.py:5462
+#: clubs/views/core.py:5653
 msgid "通道名称已存在，请换一个名称"
 msgstr ""
 
-#: clubs/views/core.py:5498
+#: clubs/views/core.py:5710
 msgid "通道已保存为草稿，不会出现在社长侧提交入口"
 msgstr ""
 
-#: clubs/views/core.py:5500
+#: clubs/views/core.py:5712
 msgid "通道已保存并可对外显示"
 msgstr ""
 
-#: clubs/views/core.py:5502
+#: clubs/views/core.py:5714
 msgid "通道标识已存在，请换一个 slug"
 msgstr ""
 
-#: clubs/views/core.py:5510
+#: clubs/views/core.py:5722
 msgid "仅管理员可以删除提交通道"
 msgstr ""
 
-#: clubs/views/core.py:5514
+#: clubs/views/core.py:5726
 msgid "通道已删除"
 msgstr ""
 
-#: clubs/views/core.py:5522
+#: clubs/views/core.py:5734
 msgid "仅管理员可以管理字段"
 msgstr ""
 
-#: clubs/views/core.py:5527
+#: clubs/views/core.py:5739
 msgid "这个字段已绑定内置业务逻辑，不能修改"
 msgstr ""
 
-#: clubs/views/core.py:5542
+#: clubs/views/core.py:5754
 msgid ""
 "合并 Word 只支持开启多文件后，且允许后缀全部为图片、PDF 或 Word（.docx）的文"
 "件字段"
 msgstr ""
 
-#: clubs/views/core.py:5574
+#: clubs/views/core.py:5786
 msgid "字段名称和标识不能为空"
 msgstr ""
 
-#: clubs/views/core.py:5578
+#: clubs/views/core.py:5791
 msgid "字段已保存"
 msgstr ""
 
-#: clubs/views/core.py:5580
+#: clubs/views/core.py:5793
 msgid "字段标识已存在，请换一个 field_key"
 msgstr ""
 
-#: clubs/views/core.py:5588
+#: clubs/views/core.py:5801
 msgid "仅管理员可以删除字段"
 msgstr ""
 
-#: clubs/views/core.py:5592
+#: clubs/views/core.py:5805
 msgid "这个字段已绑定内置业务逻辑，不能删除"
 msgstr ""
 
-#: clubs/views/core.py:5595
+#: clubs/views/core.py:5808
 msgid "字段已删除"
 msgstr ""
 
-#: clubs/views/core.py:5603 clubs/views/core.py:5616
+#: clubs/views/core.py:5816 clubs/views/core.py:5830
 msgid "仅管理员可以管理周期"
 msgstr ""
 
-#: clubs/views/core.py:5761
+#: clubs/views/core.py:5975
 msgid "无权取消此提交"
 msgstr ""
 
-#: clubs/views/core.py:5766
+#: clubs/views/core.py:5980
 msgid "提交已取消"
 msgstr ""
 
@@ -2050,7 +2122,6 @@ msgstr ""
 #: templates/clubs/admin/_channel_alert_settings.html:4
 msgid "告警设置"
 msgstr "ئاگاھلاندۇرۇش تەڭشەكلىرى"
-
 #: templates/clubs/admin/_channel_alert_settings.html:4
 msgid "在干事“社团管理”页生成未提交告警，并自定义告警卡片的主题色。"
 msgstr ""
@@ -2058,7 +2129,6 @@ msgstr ""
 #: templates/clubs/admin/_channel_alert_settings.html:10
 msgid "未提交告警"
 msgstr "تاپشۇرمىغان ئاگاھلاندۇرۇش"
-
 #: templates/clubs/admin/_channel_alert_settings.html:11
 #, python-format
 msgid "开启后，干事社团管理页会显示“未提交%(__i18n1)s”告警"
@@ -2071,7 +2141,6 @@ msgstr ""
 #: templates/clubs/admin/_channel_settings_grid.html:4
 msgid "通道开关"
 msgstr "يول كالۇچى"
-
 #: templates/clubs/admin/_channel_settings_grid.html:4
 msgid "控制通道的启用状态与各处展示行为。"
 msgstr ""
@@ -2079,7 +2148,6 @@ msgstr ""
 #: templates/clubs/admin/_channel_settings_grid.html:10
 msgid "运行启用"
 msgstr "ئىجرا قوزغىتىش"
-
 #: templates/clubs/admin/_channel_settings_grid.html:11
 msgid "停用后通道不会出现在任何提交入口"
 msgstr ""
@@ -2087,7 +2155,6 @@ msgstr ""
 #: templates/clubs/admin/_channel_settings_grid.html:18
 msgid "标记为内置默认"
 msgstr "ئىچكى كۆڭۈلدىكى دەپ بەلگىلەش"
-
 #: templates/clubs/admin/_channel_settings_grid.html:19
 msgid "表示该通道由系统业务动作生成"
 msgstr ""
@@ -2115,7 +2182,6 @@ msgstr ""
 #: templates/clubs/admin/_material_icon_field.html:4
 msgid "Material 图标"
 msgstr "Material سىنبەلگىسى"
-
 #: templates/clubs/admin/_material_icon_field.html:21
 #, python-format
 msgid "正在预览：%(__i18n1)s"
@@ -2123,6 +2189,33 @@ msgstr ""
 
 #: templates/clubs/admin/_material_icon_field.html:22
 msgid "查看 Material Icons 图标目录"
+msgstr ""
+
+#: templates/clubs/admin/_translation_fields.html:6
+msgid "多语言翻译"
+msgstr ""
+
+#: templates/clubs/admin/_translation_fields.html:19
+msgid "每行一个译文选项，与源选项顺序一致"
+msgstr ""
+
+#: templates/clubs/admin/_translation_fields.html:28
+msgid "请在站点设置中开启自动翻译"
+msgstr ""
+
+#: templates/clubs/admin/_translation_fields.html:29
+#: templates/clubs/admin/site_settings.html:956
+msgid "自动翻译"
+msgstr "ئاپتوماتىك تەرجىمە"
+#: templates/clubs/admin/_translation_fields.html:35
+msgid ""
+"保存时，未填写译文的目标语言会尝试用源文案自动生成；也可点击右侧按钮单独翻"
+"译。"
+msgstr ""
+
+#: templates/clubs/admin/_translation_fields.html:37
+msgid ""
+"自动翻译未开启。可手动填写各语言译文，或在站点设置的“自动翻译”页签中开启。"
 msgstr ""
 
 #: templates/clubs/admin/admin_edit_user_account.html:5
@@ -2133,7 +2226,6 @@ msgstr ""
 #: templates/clubs/admin/admin_edit_user_account.html:168
 msgid "编辑用户账户"
 msgstr "ئىشلەتكۈچى ھېساباتىنى تەھرىرلەش"
-
 #: templates/clubs/admin/admin_edit_user_account.html:170
 msgid "修改此用户的个人信息、账号权限和安全设置"
 msgstr ""
@@ -2144,11 +2236,10 @@ msgstr ""
 #: templates/clubs/admin/dashboard.html:1088
 #: templates/clubs/admin/manage_users.html:1021
 #: templates/clubs/auth/register.html:195
-#: templates/clubs/staff/management.html:317
-#: templates/clubs/staff/management.html:331
+#: templates/clubs/staff/management.html:318
+#: templates/clubs/staff/management.html:332
 msgid "社长"
 msgstr "شۇجى"
-
 #: templates/clubs/admin/admin_edit_user_account.html:209
 #: templates/clubs/admin/admin_edit_user_account.html:376
 #: templates/clubs/admin/create_user.html:385
@@ -2157,7 +2248,6 @@ msgstr "شۇجى"
 #: templates/clubs/oobe_setup.html:476 templates/clubs/user_detail.html:260
 msgid "管理员"
 msgstr "باشقۇرغۇچى"
-
 #: templates/clubs/admin/admin_edit_user_account.html:209
 #: templates/clubs/admin/admin_edit_user_account.html:377
 #: templates/clubs/admin/dashboard.html:1100
@@ -2165,14 +2255,12 @@ msgstr "باشقۇرغۇچى"
 #: templates/clubs/club_detail.html:515
 msgid "社员"
 msgstr "ئەزا"
-
 #: templates/clubs/admin/admin_edit_user_account.html:209
 #: templates/clubs/admin/change_user_role.html:76
 #: templates/clubs/admin/change_user_role.html:79
 #: templates/clubs/admin/manage_users.html:1029
 msgid "未设定"
 msgstr "تەڭشەلمىگەن"
-
 #: templates/clubs/admin/admin_edit_user_account.html:212
 msgid "账号启用"
 msgstr ""
@@ -2189,7 +2277,6 @@ msgstr ""
 #: templates/clubs/admin/admin_edit_user_account.html:231
 msgid "账号信息"
 msgstr "ھېسابات ئۇچۇرى"
-
 #: templates/clubs/admin/admin_edit_user_account.html:238
 #: templates/clubs/admin/change_user_role.html:49
 #: templates/clubs/admin/review_staff_registration.html:241
@@ -2198,7 +2285,6 @@ msgstr "ھېسابات ئۇچۇرى"
 #: templates/clubs/staff/manage_department.html:379
 msgid "用户名"
 msgstr "ئىشلەتكۈچى ئاتى"
-
 #: templates/clubs/admin/admin_edit_user_account.html:242
 #: templates/clubs/admin/admin_edit_user_account.html:258
 #: templates/clubs/admin/admin_edit_user_account.html:274
@@ -2213,97 +2299,79 @@ msgstr "ئىشلەتكۈچى ئاتى"
 #: templates/clubs/admin/smtp_config.html:805
 #: templates/clubs/admin/time_slot_form.html:176
 #: templates/clubs/club_detail.html:685
-#: templates/clubs/staff/management.html:275
+#: templates/clubs/staff/management.html:276
 #: templates/clubs/user/member_management.html:186
 msgid "保存"
 msgstr "ساقلا"
-
 #: templates/clubs/admin/admin_edit_user_account.html:254
 msgid "全名"
 msgstr "تولۇق ئىسىم"
-
 #: templates/clubs/admin/admin_edit_user_account.html:270
 #: templates/clubs/admin/change_user_role.html:55
 #: templates/clubs/admin/review_staff_registration.html:243
 #: templates/clubs/admin/smtp_config.html:841
 #: templates/clubs/oobe_setup.html:496
-#: templates/clubs/user/edit_profile.html:395
+#: templates/clubs/user/edit_profile.html:396
 #: templates/clubs/user/member_management.html:253
 #: templates/clubs/user/member_management.html:254
 msgid "邮箱"
 msgstr "ئېلخەت"
-
 #: templates/clubs/admin/admin_edit_user_account.html:353
 msgid "不设定"
 msgstr "تەڭشەلمىگەن"
-
 #: templates/clubs/admin/admin_edit_user_account.html:354
 #: templates/clubs/member_join_form.html:156
 #: templates/clubs/user/member_management.html:260
 msgid "男"
 msgstr "ئەر"
-
 #: templates/clubs/admin/admin_edit_user_account.html:355
 #: templates/clubs/member_join_form.html:157
 #: templates/clubs/user/member_management.html:261
 msgid "女"
 msgstr "ئايال"
-
 #: templates/clubs/admin/admin_edit_user_account.html:356
 #: templates/clubs/member_join_form.html:158
 #: templates/clubs/user/member_management.html:262
 msgid "其他"
 msgstr "باشقا"
-
 #: templates/clubs/admin/admin_edit_user_account.html:389
 msgid "账户启用状态"
 msgstr "ھېسابات ھالەتى"
-
 #: templates/clubs/admin/admin_edit_user_account.html:392
 #: templates/clubs/admin/storage_config.html:237
 #: templates/clubs/change_club_status.html:241
 #: templates/clubs/club_detail.html:352
 msgid "当前状态"
 msgstr "نۆۋەتتىكى ھالەت"
-
 #: templates/clubs/admin/admin_edit_user_account.html:395
 msgid "✓ 已启用"
 msgstr "قوزغىتىلغان"
-
 #: templates/clubs/admin/admin_edit_user_account.html:397
 msgid "✗ 已禁用"
 msgstr "چەكلەنگەن"
-
 #: templates/clubs/admin/admin_edit_user_account.html:406
 msgid "禁用账号"
 msgstr "ھېساباتنى چەكلەش"
-
 #: templates/clubs/admin/admin_edit_user_account.html:409
 msgid "启用账号"
 msgstr "ھېساباتنى قوزغىتىش"
-
 #: templates/clubs/admin/admin_edit_user_account.html:419
 msgid "密码与安全"
 msgstr "پارول ۋە بىخەتەرلىك"
-
 #: templates/clubs/admin/admin_edit_user_account.html:427
-#: templates/clubs/user/edit_profile.html:557
+#: templates/clubs/user/edit_profile.html:558
 msgid "新密码"
 msgstr "يېڭى پارول"
-
 #: templates/clubs/admin/admin_edit_user_account.html:429
 msgid "至少 6 个字符"
 msgstr "كەم دېگەندە 6 بەلگە"
-
 #: templates/clubs/admin/admin_edit_user_account.html:430
 msgid "显示"
 msgstr "كۆرسەت"
-
 #: templates/clubs/admin/admin_edit_user_account.html:434
-#: templates/clubs/user/edit_profile.html:563
+#: templates/clubs/user/edit_profile.html:564
 msgid "确认新密码"
 msgstr "يېڭى پارولنى جەزملەش"
-
 #: templates/clubs/admin/admin_edit_user_account.html:435
 msgid "再次输入新密码"
 msgstr ""
@@ -2315,11 +2383,9 @@ msgstr ""
 #: templates/clubs/admin/admin_edit_user_account.html:446
 msgid "账号锁定"
 msgstr "ھېسابات قۇلۇپى"
-
 #: templates/clubs/admin/admin_edit_user_account.html:449
 msgid "登录锁定"
 msgstr "كىرىش قۇلۇپى"
-
 #: templates/clubs/admin/admin_edit_user_account.html:450
 msgid "若用户多次登录失败被锁定，可在此解锁"
 msgstr ""
@@ -2328,12 +2394,10 @@ msgstr ""
 #: templates/clubs/admin/locked_accounts.html:133
 msgid "解锁账号"
 msgstr "ھېساباتنى ئېچىش"
-
 #: templates/clubs/admin/assign_presidents.html:5
 #: templates/clubs/admin/assign_presidents.html:216
 msgid "批量指定社长"
 msgstr "شۇجىلارنى تۈركۈملەپ بەلگىلەش"
-
 #: templates/clubs/admin/assign_presidents.html:217
 msgid "为每个社团指定当前社长（Officer 记录），未选择表示该社团暂无社长"
 msgstr ""
@@ -2369,15 +2433,12 @@ msgstr ""
 #: templates/clubs/admin/assign_presidents.html:265
 msgid "当前社长"
 msgstr "نۆۋەتتىكى شۇجى"
-
 #: templates/clubs/admin/assign_presidents.html:266
 msgid "指定新社长"
 msgstr "يېڭى شۇجى بەلگىلەش"
-
 #: templates/clubs/admin/assign_presidents.html:282
 msgid "未绑定"
 msgstr "باغلانمىغان"
-
 #: templates/clubs/admin/assign_presidents.html:287
 msgid "— 无社长 —"
 msgstr ""
@@ -2389,42 +2450,33 @@ msgstr ""
 #: templates/clubs/admin/assign_presidents.html:308
 msgid "保存所有指定"
 msgstr "بارلىق بەلگىلەشنى ساقلاش"
-
 #: templates/clubs/admin/base.html:4
 msgid "管理中心 - CManager"
 msgstr "باشقۇرۇش مەركىزى - CManager"
-
 #: templates/clubs/admin/booking_management.html:5
 #: templates/clubs/admin/booking_management.html:201
-#: templates/clubs/base.html:410
+#: templates/clubs/base.html:458
 msgid "预约管理"
 msgstr "زاكاز باشقۇرۇش"
-
 #: templates/clubs/admin/booking_management.html:202
 msgid "管理预约记录、房间资源与时间段设置"
 msgstr "زاكاز، ئۆي ۋە ۋاقىت بۆلەكلىرىنى باشقۇرۇش"
-
 #: templates/clubs/admin/booking_management.html:209
 msgid "预约记录"
 msgstr "زاكاز خاتىرىلىرى"
-
 #: templates/clubs/admin/booking_management.html:217
 #: templates/clubs/public_activities.html:755
 msgid "时间"
 msgstr "ۋاقىت"
-
 #: templates/clubs/admin/booking_management.html:221
 msgid "用途"
 msgstr "ئىشلىتىش مەقسىتى"
-
 #: templates/clubs/admin/booking_management.html:236
 msgid "有效"
 msgstr "كۈچكە ئىگە"
-
 #: templates/clubs/admin/booking_management.html:238
 msgid "已取消"
 msgstr "بىكار قىلىنغان"
-
 #: templates/clubs/admin/booking_management.html:247
 msgid "预约列表分页"
 msgstr ""
@@ -2433,120 +2485,102 @@ msgstr ""
 #: templates/clubs/admin/manage_users.html:1161 templates/clubs/index.html:1237
 #: templates/clubs/public_activities.html:826
 #: templates/clubs/room_my_bookings.html:305
-#: templates/clubs/staff/management.html:408
-#: templates/clubs/staff/management.html:412
+#: templates/clubs/staff/management.html:409
+#: templates/clubs/staff/management.html:413
 msgid "上一页"
 msgstr "ئالدىنقى بەت"
-
 #: templates/clubs/admin/booking_management.html:249
 #: templates/clubs/room_my_bookings.html:301
 #, python-format
 msgid "第 %(__i18n1)s / %(__i18n2)s 页，共 %(__i18n3)s 条"
 msgstr "%(__i18n1)s / %(__i18n2)s بەت، جەمئى %(__i18n3)s"
-
 #: templates/clubs/admin/booking_management.html:250
 #: templates/clubs/admin/manage_users.html:1163 templates/clubs/index.html:1239
 #: templates/clubs/public_activities.html:830
 #: templates/clubs/room_my_bookings.html:308
-#: templates/clubs/staff/management.html:417
-#: templates/clubs/staff/management.html:421
+#: templates/clubs/staff/management.html:418
+#: templates/clubs/staff/management.html:422
 msgid "下一页"
 msgstr "كېيىنكى بەت"
-
 #: templates/clubs/admin/booking_management.html:254
 #: templates/clubs/room_my_bookings.html:317
 msgid "暂无预约记录"
 msgstr "زاكاز خاتىرىسى يوق"
-
 #: templates/clubs/admin/booking_management.html:261
-#: templates/clubs/base.html:466
+#: templates/clubs/base.html:514
 msgid "房间管理"
 msgstr "ئۆي باشقۇرۇش"
-
 #: templates/clubs/admin/booking_management.html:263
 msgid "增加房间"
 msgstr "ئۆي قوشۇش"
-
 #: templates/clubs/admin/booking_management.html:271
 msgid "容量"
 msgstr "سىغدۇرۇش"
-
 #: templates/clubs/admin/booking_management.html:274
 #: templates/clubs/admin/booking_management.html:341
-#: templates/clubs/staff/management.html:322
-#: templates/clubs/staff/management.html:376
+#: templates/clubs/staff/management.html:323
+#: templates/clubs/staff/management.html:377
 #: templates/clubs/user/member_management.html:154
 msgid "操作"
 msgstr "مەشغۇلاتلار"
-
 #: templates/clubs/admin/booking_management.html:289
 #: templates/clubs/admin/room_form.html:77
 msgid "可用"
 msgstr "ئىشلىتىشكە بولىدۇ"
-
 #: templates/clubs/admin/booking_management.html:292
 #: templates/clubs/admin/room_form.html:78
 msgid "维护中"
 msgstr "ئاسراش جەريانىدا"
-
 #: templates/clubs/admin/booking_management.html:295
-#: templates/clubs/admin/form_channels.html:1343
+#: templates/clubs/admin/form_channels.html:1449
 #: templates/clubs/admin/manage_users.html:1189
 #: templates/clubs/admin/room_form.html:79
 #: templates/clubs/components/_cropper_upload.html:23
 #: templates/clubs/components/_csv_import_modal.html:173
 #: templates/clubs/components/_staff_alerts.html:49
-#: templates/clubs/staff/management.html:220
-#: templates/clubs/staff/management.html:371
+#: templates/clubs/staff/management.html:221
+#: templates/clubs/staff/management.html:372
 #: templates/clubs/user/member_management.html:542
 msgid "关闭"
 msgstr "تاقاش"
-
 #: templates/clubs/admin/booking_management.html:305
 #: templates/clubs/admin/booking_management.html:364
 #: templates/clubs/admin/bug_logs.html:523
 #: templates/clubs/admin/dashboard.html:1014
-#: templates/clubs/admin/form_channels.html:1378
+#: templates/clubs/admin/form_channels.html:1484
 #: templates/clubs/admin/manage_announcements.html:375
 #: templates/clubs/admin/manage_carousel.html:396
 #: templates/clubs/admin/manage_departments.html:325
 #: templates/clubs/admin/manage_users.html:1145
 #: templates/clubs/admin/publish_announcement.html:514
-#: templates/clubs/staff/dynamic_audit_center.html:546
-#: templates/clubs/staff/dynamic_audit_center.html:622
-#: templates/clubs/staff/dynamic_audit_center.html:659
+#: templates/clubs/staff/dynamic_audit_center.html:547
+#: templates/clubs/staff/dynamic_audit_center.html:623
+#: templates/clubs/staff/dynamic_audit_center.html:660
 msgid "删除"
 msgstr "ئۆچۈرۈش"
-
 #: templates/clubs/admin/booking_management.html:317
 msgid "暂无房间配置"
 msgstr "ئۆي تەڭشەكلىرى يوق"
-
 #: templates/clubs/admin/booking_management.html:324
 msgid "时间段设置"
 msgstr "ۋاقىت بۆلەك تەڭشەكلىرى"
-
 #: templates/clubs/admin/booking_management.html:327
 #: templates/clubs/admin/time_slot_form.html:4
 #: templates/clubs/admin/time_slot_form.html:141
 msgid "添加时间段"
 msgstr "ۋاقىت بۆلەك قوشۇش"
-
 #: templates/clubs/admin/booking_management.html:329
 #: templates/clubs/admin/manage_users.html:917
-#: templates/clubs/staff/management.html:199
+#: templates/clubs/staff/management.html:200
 msgid "批量导入"
 msgstr "تۈركۈملەپ كىرگۈزۈش"
-
 #: templates/clubs/admin/booking_management.html:354
 #: templates/clubs/admin/manage_users.html:1136
 msgid "禁用"
 msgstr "چەكلەنگەن"
-
 #: templates/clubs/admin/booking_management.html:376
 msgid "暂无时间段配置"
 msgstr "ۋاقىت بۆلەك تەڭشەكلىرى يوق"
-
 #: templates/clubs/admin/bug_logs.html:4
 msgid "BUG日志 - 管理员"
 msgstr ""
@@ -2555,7 +2589,6 @@ msgstr ""
 #: templates/clubs/admin/dashboard.html:884
 msgid "BUG日志"
 msgstr "BUG خاتىرىسى"
-
 #: templates/clubs/admin/bug_logs.html:410
 msgid "记录系统 500 等错误与用户求助，便于排查与跟进"
 msgstr ""
@@ -2563,7 +2596,6 @@ msgstr ""
 #: templates/clubs/admin/bug_logs.html:414
 msgid "返回仪表板"
 msgstr "كۆرۈنمە تاختىغا قايتىش"
-
 #: templates/clubs/admin/bug_logs.html:420
 #, python-format
 msgid ""
@@ -2600,14 +2632,12 @@ msgstr ""
 #: templates/clubs/admin/manage_users.html:984
 #: templates/clubs/public_activities.html:623
 #: templates/clubs/public_activities.html:708
-#: templates/clubs/staff/management.html:303
+#: templates/clubs/staff/management.html:304
 msgid "搜索"
 msgstr "ئىزدەش"
-
 #: templates/clubs/admin/bug_logs.html:457
 msgid "等待帮助"
 msgstr "ياردەم كۈتۈۋاتىدۇ"
-
 #: templates/clubs/admin/bug_logs.html:490
 #, python-format
 msgid "求助于 %(__i18n1)s"
@@ -2621,11 +2651,9 @@ msgstr ""
 #: templates/clubs/admin/bug_logs.html:506
 msgid "恢复未处理"
 msgstr "بىر تەرەپ قىلىنمىغان دەپ بەلگىلەش"
-
 #: templates/clubs/admin/bug_logs.html:514
 msgid "标记已处理"
 msgstr "بىر تەرەپ قىلىندى دەپ بەلگىلەش"
-
 #: templates/clubs/admin/bug_logs.html:530
 msgid "没有匹配的日志"
 msgstr ""
@@ -2650,13 +2678,11 @@ msgstr ""
 #: templates/clubs/admin/carousel_form.html:5
 msgid "编辑轮播"
 msgstr "سىيرىلما رەسىمنى تەھرىرلەش"
-
 #: templates/clubs/admin/carousel_form.html:5
 #: templates/clubs/admin/manage_carousel.html:353
 #: templates/clubs/admin/manage_carousel.html:410
 msgid "新增轮播"
 msgstr "سىيرىلما رەسىم قوشۇش"
-
 #: templates/clubs/admin/carousel_form.html:5
 msgid "- 管理后台"
 msgstr ""
@@ -2664,11 +2690,9 @@ msgstr ""
 #: templates/clubs/admin/carousel_form.html:463
 msgid "编辑轮播内容"
 msgstr "سىيرىلما رەسىم مەزمۇنىنى تەھرىرلەش"
-
 #: templates/clubs/admin/carousel_form.html:463
 msgid "新增轮播内容"
 msgstr "سىيرىلما رەسىم مەزمۇنى قوشۇش"
-
 #: templates/clubs/admin/carousel_form.html:464
 msgid "调整图片、文案与发布状态，保存后首页会自动更新"
 msgstr ""
@@ -2680,7 +2704,6 @@ msgstr ""
 #: templates/clubs/admin/carousel_form.html:485
 msgid "主视觉图片"
 msgstr "ئاساسلىق رەسىم"
-
 #: templates/clubs/admin/carousel_form.html:485
 msgid "首页会以居中裁切的方式展示图片"
 msgstr ""
@@ -2709,7 +2732,6 @@ msgstr ""
 #: templates/clubs/admin/carousel_form.html:505
 msgid "文案与链接"
 msgstr "مەزمۇن ۋە ئۇلاش"
-
 #: templates/clubs/admin/carousel_form.html:505
 msgid "简洁的标题和描述更适合首屏阅读"
 msgstr ""
@@ -2747,7 +2769,6 @@ msgstr ""
 #: templates/clubs/admin/edit_announcement.html:436
 msgid "发布设置"
 msgstr "ئېلان تەڭشەكلىرى"
-
 #: templates/clubs/admin/carousel_form.html:555
 msgid "控制展示状态与排列位置"
 msgstr ""
@@ -2755,7 +2776,6 @@ msgstr ""
 #: templates/clubs/admin/carousel_form.html:559
 msgid "排序值"
 msgstr "تەرتىپ قىممىتى"
-
 #: templates/clubs/admin/carousel_form.html:561
 msgid "数字越小越靠前。"
 msgstr ""
@@ -2764,20 +2784,17 @@ msgstr ""
 #: templates/clubs/admin/carousel_form.html:569
 msgid "在首页展示"
 msgstr "باش بەتتە كۆرسىتىش"
-
 #: templates/clubs/admin/carousel_form.html:567
 msgid "关闭后内容仍会保留，但访客不可见。"
 msgstr ""
 
 #: templates/clubs/admin/carousel_form.html:580
-#: templates/clubs/user/edit_profile.html:434
+#: templates/clubs/user/edit_profile.html:435
 msgid "保存更改"
 msgstr "ئۆزگەرتىشنى ساقلاش"
-
 #: templates/clubs/admin/carousel_form.html:580
 msgid "创建轮播"
 msgstr "سىيرىلما رەسىم قۇرۇش"
-
 #: templates/clubs/admin/change_user_role.html:4
 msgid "修改用户角色 - CManager"
 msgstr ""
@@ -2785,7 +2802,6 @@ msgstr ""
 #: templates/clubs/admin/change_user_role.html:11
 msgid "修改用户角色"
 msgstr "ئىشلەتكۈچى رولىنى ئۆزگەرتىش"
-
 #: templates/clubs/admin/change_user_role.html:12
 msgid "调整用户在系统中的身份与权限范围"
 msgstr ""
@@ -2793,7 +2809,6 @@ msgstr ""
 #: templates/clubs/admin/change_user_role.html:66
 msgid "当前角色"
 msgstr "نۆۋەتتىكى رول"
-
 #: templates/clubs/admin/change_user_role.html:70
 msgid "社长 (President)"
 msgstr ""
@@ -2809,7 +2824,6 @@ msgstr ""
 #: templates/clubs/admin/change_user_role.html:85
 msgid "修改为新角色"
 msgstr "يېڭى رولغا ئۆزگەرتىش"
-
 #: templates/clubs/admin/change_user_role.html:87
 #: templates/clubs/admin/publish_announcement.html:455
 #: templates/clubs/admin/smtp_config.html:939
@@ -2841,7 +2855,6 @@ msgstr ""
 #: templates/clubs/admin/change_user_role.html:101
 msgid "角色权限说明"
 msgstr "رول ھوقۇق چۈشەندۈرۈشى"
-
 #: templates/clubs/admin/change_user_role.html:104
 msgid "👑 社长 (President)"
 msgstr ""
@@ -2914,7 +2927,6 @@ msgstr ""
 #: templates/clubs/admin/change_user_role.html:136
 msgid "⚠️ 确认修改角色"
 msgstr "رول ئۆزگەرتىشنى جەزملەش"
-
 #: templates/clubs/admin/change_user_role.html:137
 #: templates/clubs/admin/create_user.html:426
 #: templates/clubs/admin/department_form.html:225
@@ -2922,7 +2934,7 @@ msgstr "رول ئۆزگەرتىشنى جەزملەش"
 #: templates/clubs/admin/manage_users.html:1213
 #: templates/clubs/admin/publish_announcement.html:465
 #: templates/clubs/admin/room_form.html:84
-#: templates/clubs/admin/site_settings.html:1361
+#: templates/clubs/admin/site_settings.html:1456
 #: templates/clubs/admin/smtp_config.html:1206
 #: templates/clubs/admin/time_slot_form.html:174
 #: templates/clubs/change_club_status.html:303
@@ -2933,21 +2945,18 @@ msgstr "رول ئۆزگەرتىشنى جەزملەش"
 #: templates/clubs/edit_room_booking.html:300
 #: templates/clubs/room_calendar.html:922
 #: templates/clubs/room_my_bookings.html:293
-#: templates/clubs/staff/management.html:447
+#: templates/clubs/staff/management.html:448
 #: templates/clubs/submit_room_booking.html:353
-#: templates/clubs/user/edit_profile.html:602
+#: templates/clubs/user/edit_profile.html:639
 #: templates/clubs/user/member_management.html:279
 msgid "取消"
 msgstr "بىكار قىلىش"
-
 #: templates/clubs/admin/confirm_delete_announcement.html:4
 msgid "删除公告"
 msgstr "ئۇقتۇرۇشنى ئۆچۈرۈش"
-
 #: templates/clubs/admin/confirm_delete_announcement.html:15
 msgid "⚠️ 删除公告确认"
 msgstr "ئۇقتۇرۇشنى ئۆچۈرۈشنى جەزملەش"
-
 #: templates/clubs/admin/confirm_delete_announcement.html:21
 msgid "⚠️ 警告:"
 msgstr ""
@@ -2955,33 +2964,29 @@ msgstr ""
 #: templates/clubs/admin/confirm_delete_announcement.html:21
 msgid "此操作不可撤销，公告删除后无法恢复。"
 msgstr "بۇ مەشغۇلاتنى قايتۇرۇپ بولمايدۇ، ئۇقتۇرۇش ئۆچۈرۈلگەندىن كېيىن ئەسلىگە كەلمەيدۇ."
-
 #: templates/clubs/admin/confirm_delete_announcement.html:57
 #: templates/clubs/admin/dashboard.html:1004
-#: templates/clubs/admin/form_channels.html:1206
+#: templates/clubs/admin/form_channels.html:1301
 #: templates/clubs/admin/manage_announcements.html:299
 #: templates/clubs/admin/publish_announcement.html:493
 msgid "已发布"
 msgstr "ئېلان قىلىنغان"
-
 #: templates/clubs/admin/confirm_delete_announcement.html:59
 #: templates/clubs/admin/dashboard.html:1004
 #: templates/clubs/admin/edit_announcement.html:453
 #: templates/clubs/admin/edit_announcement.html:457
-#: templates/clubs/admin/form_channels.html:1147
-#: templates/clubs/admin/form_channels.html:1182
-#: templates/clubs/admin/form_channels.html:1206
+#: templates/clubs/admin/form_channels.html:1242
+#: templates/clubs/admin/form_channels.html:1277
+#: templates/clubs/admin/form_channels.html:1301
 #: templates/clubs/admin/manage_announcements.html:303
 #: templates/clubs/admin/publish_announcement.html:493
 msgid "草稿"
 msgstr "قارا تەييارلىق"
-
 #: templates/clubs/admin/confirm_delete_announcement.html:61
 #: templates/clubs/admin/dashboard.html:1004
 #: templates/clubs/admin/publish_announcement.html:493
 msgid "已归档"
 msgstr "ئارخىپلانغان"
-
 #: templates/clubs/admin/confirm_delete_announcement.html:70
 msgid "🗑️ 确认删除"
 msgstr ""
@@ -3006,41 +3011,34 @@ msgstr ""
 #: templates/clubs/admin/create_user.html:428
 msgid "创建用户账户"
 msgstr "ئىشلەتكۈچى ھېساباتى قۇرۇش"
-
 #: templates/clubs/admin/create_user.html:257
 msgid "为系统创建新的用户账户"
 msgstr "سىستېما ئۈچۈن يېڭى ئىشلەتكۈچى ھېساباتى قۇرۇش"
-
 #: templates/clubs/admin/create_user.html:303
 msgid "登录用户名"
 msgstr "كىرىش ئىشلەتكۈچى ئاتى"
-
 #: templates/clubs/admin/create_user.html:314
 msgid "用于登录系统的用户名，3-30个字符"
 msgstr ""
 
 #: templates/clubs/admin/create_user.html:318
-#: templates/clubs/user/edit_profile.html:390
+#: templates/clubs/user/edit_profile.html:391
 msgid "真实姓名"
 msgstr "ھەقىقىي ئىسىم"
-
 #: templates/clubs/admin/create_user.html:335
 msgid "邮箱地址"
 msgstr "ئېلخەت ئادرېسى"
-
 #: templates/clubs/admin/create_user.html:349
 msgid "电话号码"
 msgstr "تېلېفون نومۇرى"
-
 #: templates/clubs/admin/create_user.html:366
 #: templates/clubs/oobe_setup.html:535
-#: templates/clubs/user/edit_profile.html:405
+#: templates/clubs/user/edit_profile.html:406
 #: templates/clubs/user/member_management.html:245
 #: templates/clubs/user/member_management.html:246
 #: templates/clubs/user_detail.html:313
 msgid "微信号"
 msgstr "ۋىيچات نومۇرى"
-
 #: templates/clubs/admin/create_user.html:387
 msgid "干事角色创建后需要管理员审核才能激活"
 msgstr ""
@@ -3053,11 +3051,9 @@ msgstr ""
 #: templates/clubs/auth/login.html:178
 msgid "密码"
 msgstr "پارول"
-
 #: templates/clubs/admin/create_user.html:412
 msgid "输入密码"
 msgstr "پارولنى كىرگۈزۈڭ"
-
 #: templates/clubs/admin/create_user.html:413
 msgid "密码至少6个字符"
 msgstr ""
@@ -3066,45 +3062,35 @@ msgstr ""
 #: templates/clubs/oobe_setup.html:533
 msgid "确认密码"
 msgstr "پارولنى جەزملەش"
-
 #: templates/clubs/admin/create_user.html:419
 msgid "再次输入密码"
 msgstr "پارولنى قايتا كىرگۈزۈڭ"
-
 #: templates/clubs/admin/dashboard.html:4
 #: templates/clubs/admin/dashboard.html:842
 msgid "管理员仪表板"
 msgstr "باشقۇرغۇچى كۆرۈنمە تاختىسى"
-
 #: templates/clubs/admin/dashboard.html:843
 msgid "系统概览与管理中心"
 msgstr "سىستېما ئومۇمىي كۆرۈنۈشى ۋە باشقۇرۇش مەركىزى"
-
 #: templates/clubs/admin/dashboard.html:853
 msgid "系统用户总数"
 msgstr "سىستېما ئىشلەتكۈچىلەر سانى"
-
 #: templates/clubs/admin/dashboard.html:857
 msgid "已注册社团数"
 msgstr "تىزىملاتقان بىرلەشمە سانى"
-
 #: templates/clubs/admin/dashboard.html:861
 msgid "待处理申请"
 msgstr "بىر تەرەپ قىلىنمىغان تەلەپلەر"
-
 #: templates/clubs/admin/dashboard.html:865
 #: templates/clubs/admin/dashboard.html:943
 msgid "近14天访问量"
 msgstr "14 كۈنلۈك زىيارەت سانى"
-
 #: templates/clubs/admin/dashboard.html:873
 msgid "历史总体通过率"
 msgstr "ئومۇمىي تەستىقلاش نىسبىتى"
-
 #: templates/clubs/admin/dashboard.html:877
 msgid "历史总体拒绝率"
 msgstr "ئومۇمىي رەت قىلىش نىسبىتى"
-
 #: templates/clubs/admin/dashboard.html:886
 #, python-format
 msgid ""
@@ -3116,16 +3102,13 @@ msgstr ""
 #: templates/clubs/admin/dashboard.html:894
 msgid "有用户正在等待帮助："
 msgstr "ياردەم كۈتۈۋاتقان ئىشلەتكۈچىلەر:"
-
 #: templates/clubs/admin/dashboard.html:926
 msgid "查看全部 BUG 日志"
 msgstr "بارلىق BUG خاتىرىلىرىنى كۆرۈش"
-
 #: templates/clubs/admin/dashboard.html:926
 #, python-format
 msgid "（%(__i18n1)s 条未处理）"
 msgstr "(%(__i18n1)s بىر تەرەپ قىلىنمىغان)"
-
 #: templates/clubs/admin/dashboard.html:934
 msgid "各类申请数量分布"
 msgstr ""
@@ -3180,7 +3163,6 @@ msgstr ""
 #: templates/clubs/user/member_management.html:203
 msgid "编辑"
 msgstr "تەھرىرلەش"
-
 #: templates/clubs/admin/dashboard.html:1024
 msgid "查看链接"
 msgstr ""
@@ -3188,42 +3170,33 @@ msgstr ""
 #: templates/clubs/admin/dashboard.html:1042
 msgid "快速操作"
 msgstr "تېز مەشغۇلاتلار"
-
 #: templates/clubs/admin/dashboard.html:1046
 #: templates/clubs/admin/manage_departments.html:5
 #: templates/clubs/admin/manage_departments.html:268
 msgid "管理部门介绍"
 msgstr "بۆلۈم تونۇشتۇرۇشىنى باشقۇرۇش"
-
 #: templates/clubs/admin/dashboard.html:1050
 msgid "管理轮播图"
 msgstr "سىيرىلما رەسىملەرنى باشقۇرۇش"
-
 #: templates/clubs/admin/dashboard.html:1054
 msgid "修改材料"
 msgstr "ماتېرىياللارنى تەھرىرلەش"
-
 #: templates/clubs/admin/dashboard.html:1058
 msgid "管理公告"
 msgstr "ئۇقتۇرۇشلارنى باشقۇرۇش"
-
 #: templates/clubs/admin/dashboard.html:1062
 msgid "邮箱设置"
 msgstr "ئېلخەت تەڭشەكلىرى"
-
 #: templates/clubs/admin/dashboard.html:1066
 msgid "S3存储设置"
 msgstr "S3 ساقلاش تەڭشەكلىرى"
-
 #: templates/clubs/admin/dashboard.html:1074
 msgid "指定社团社长"
 msgstr "بىرلەشمە شۇجىسىنى بەلگىلەش"
-
 #: templates/clubs/admin/dashboard.html:1078
 #: templates/clubs/admin/locked_accounts.html:100
 msgid "被锁定账号"
 msgstr "چەكلەنگەن ھېساباتلار"
-
 #: templates/clubs/admin/dashboard.html:1085
 msgid "用户角色分布"
 msgstr ""
@@ -3282,7 +3255,7 @@ msgstr ""
 
 #: templates/clubs/admin/edit_announcement.html:454
 #: templates/clubs/admin/edit_announcement.html:458
-#: templates/clubs/admin/form_channels.html:1182
+#: templates/clubs/admin/form_channels.html:1277
 #: templates/clubs/admin/manage_announcements.html:366
 msgid "发布"
 msgstr ""
@@ -3311,47 +3284,40 @@ msgstr ""
 #: templates/clubs/edit_room_booking.html:302
 msgid "保存修改"
 msgstr "ئۆزگەرتىشنى ساقلاش"
-
 #: templates/clubs/admin/form_channels.html:6
-#: templates/clubs/admin/form_channels.html:1128
+#: templates/clubs/admin/form_channels.html:1223
 msgid "提交通道管理"
 msgstr "تاپشۇرۇش يولى باشقۇرۇش"
-
-#: templates/clubs/admin/form_channels.html:1129
+#: templates/clubs/admin/form_channels.html:1224
 msgid "统一配置提交入口、表单字段、审核策略与业务动作。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1133
-#: templates/clubs/admin/form_channels.html:1602
+#: templates/clubs/admin/form_channels.html:1228
+#: templates/clubs/admin/form_channels.html:1724
 msgid "新增通道"
 msgstr "يېڭى يول قوشۇش"
-
-#: templates/clubs/admin/form_channels.html:1136
+#: templates/clubs/admin/form_channels.html:1231
 msgid "通道状态概览"
 msgstr "يول ھالەت ئومۇمىي كۆرۈنۈشى"
-
-#: templates/clubs/admin/form_channels.html:1139
-#: templates/clubs/staff/dynamic_audit_center.html:501
+#: templates/clubs/admin/form_channels.html:1234
+#: templates/clubs/staff/dynamic_audit_center.html:502
 msgid "全部通道"
 msgstr "ھەممە يوللار"
 
-#: templates/clubs/admin/form_channels.html:1143
+#: templates/clubs/admin/form_channels.html:1238
 msgid "对外开放"
 msgstr "سىرتقا ئوچۇق"
-
-#: templates/clubs/admin/form_channels.html:1151
+#: templates/clubs/admin/form_channels.html:1246
 msgid "需要处理"
 msgstr "بىر تەرەپ قىلىش كېرەك"
-
-#: templates/clubs/admin/form_channels.html:1165
+#: templates/clubs/admin/form_channels.html:1260
 msgid "搜索名称或标识"
 msgstr "ئات ياكى بەلگە بويىچە ئىزدەش"
-
-#: templates/clubs/admin/form_channels.html:1165
+#: templates/clubs/admin/form_channels.html:1260
 msgid "搜索通道名称或标识"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1175
+#: templates/clubs/admin/form_channels.html:1270
 #, python-format
 msgid ""
 "\n"
@@ -3359,59 +3325,54 @@ msgid ""
 "                            "
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1177
+#: templates/clubs/admin/form_channels.html:1272
 msgid "· 草稿"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1178
+#: templates/clubs/admin/form_channels.html:1273
 msgid "· 未就绪"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1182
+#: templates/clubs/admin/form_channels.html:1277
 msgid "停用"
 msgstr "توختىتىلغان"
-
-#: templates/clubs/admin/form_channels.html:1182
-#: templates/clubs/admin/form_channels.html:1206
+#: templates/clubs/admin/form_channels.html:1277
+#: templates/clubs/admin/form_channels.html:1301
 msgid "未就绪"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1187
+#: templates/clubs/admin/form_channels.html:1282
 msgid "还没有通道"
 msgstr "تېخى يول يوق"
-
-#: templates/clubs/admin/form_channels.html:1189
+#: templates/clubs/admin/form_channels.html:1284
 msgid "没有匹配的通道"
 msgstr "ماس كېلىدىغان يول يوق"
-
-#: templates/clubs/admin/form_channels.html:1193
+#: templates/clubs/admin/form_channels.html:1288
 msgid "新建一个通道"
 msgstr "يېڭى يول قۇرۇش"
-
-#: templates/clubs/admin/form_channels.html:1203
+#: templates/clubs/admin/form_channels.html:1298
 msgid ""
 "编辑通道名称、入口标识、排序和通过审核后的业务动作。只有启用、已发布且业务字"
 "段完整的通道才会出现在社长侧提交入口。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1206
+#: templates/clubs/admin/form_channels.html:1301
 #: templates/clubs/admin/manage_carousel.html:365
 msgid "已停用"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1216
-#: templates/clubs/admin/form_channels.html:1611
+#: templates/clubs/admin/form_channels.html:1312
+#: templates/clubs/admin/form_channels.html:1733
 msgid "URL 标识 slug"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1230
+#: templates/clubs/admin/form_channels.html:1327
 #: templates/clubs/components/_file_upload.html:93
 #: templates/clubs/components/_submission_attempt_history.html:613
 #: templates/clubs/user/dynamic_form_submit.html:692
 msgid "下载"
 msgstr "چۈشۈرۈش"
-
-#: templates/clubs/admin/form_channels.html:1233
+#: templates/clubs/admin/form_channels.html:1330
 #: templates/clubs/components/_dynamic_submission_fields.html:34
 #: templates/clubs/components/_file_upload.html:96
 #: templates/clubs/components/_submission_attempt_history.html:606
@@ -3420,302 +3381,272 @@ msgstr "چۈشۈرۈش"
 #: templates/clubs/user/dynamic_form_submit.html:742
 msgid "预览"
 msgstr "ئالدىن كۆرۈش"
-
-#: templates/clubs/admin/form_channels.html:1236
+#: templates/clubs/admin/form_channels.html:1338
 msgid "清除全部示例文件"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1248
+#: templates/clubs/admin/form_channels.html:1350
 msgid "设置为 2 或以上时，需要不同审核人累计通过达到该次数，请求才会最终通过。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1251
-#: templates/clubs/admin/form_channels.html:1628
+#: templates/clubs/admin/form_channels.html:1353
+#: templates/clubs/admin/form_channels.html:1750
 msgid "通道说明"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1252
+#: templates/clubs/admin/form_channels.html:1354
 msgid "给管理员看的说明，也会作为社长侧提交提示"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1261
+#: templates/clubs/admin/form_channels.html:1364
 msgid "草稿不会出现在社长侧；已发布但字段未补齐时，也会自动隐藏。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1264
-#: templates/clubs/admin/form_channels.html:1641
+#: templates/clubs/admin/form_channels.html:1367
+#: templates/clubs/admin/form_channels.html:1763
 msgid "内置业务动作"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1286
+#: templates/clubs/admin/form_channels.html:1389
 msgid "选择年份、月份、日期或轮次后，该通道会自动按每周期提交一次处理。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1292
+#: templates/clubs/admin/form_channels.html:1395
 msgid ""
 "保存后，只有“运行启用 + 已发布 + 业务字段完整”的通道会对社长开放；删除会移除"
 "通道、字段和相关提交记录。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1295
+#: templates/clubs/admin/form_channels.html:1398
 msgid "保存通道"
 msgstr "يولنى ساقلاش"
-
-#: templates/clubs/admin/form_channels.html:1299
+#: templates/clubs/admin/form_channels.html:1402
 msgid "删除通道"
 msgstr "يولنى ئۆچۈرۈش"
-
-#: templates/clubs/admin/form_channels.html:1307
+#: templates/clubs/admin/form_channels.html:1410
 msgid "当前通道不会出现在社长侧"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1309
+#: templates/clubs/admin/form_channels.html:1412
 msgid "通道已停用。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1309
+#: templates/clubs/admin/form_channels.html:1412
 msgid "通道仍是草稿。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1309
+#: templates/clubs/admin/form_channels.html:1412
 msgid "通道已发布，但内置业务动作缺少必要字段。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1309
+#: templates/clubs/admin/form_channels.html:1412
 msgid "通道尚未满足外露条件。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1318
+#: templates/clubs/admin/form_channels.html:1421
 msgid "业务动作缺少必要字段"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1319
+#: templates/clubs/admin/form_channels.html:1422
 msgid "补齐以下字段前，通道不会出现在社长侧提交入口，直达提交 URL 也会被阻止。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1331
+#: templates/clubs/admin/form_channels.html:1434
 msgid "周期管理"
 msgstr "دەۋر باشقۇرۇش"
-
-#: templates/clubs/admin/form_channels.html:1334
+#: templates/clubs/admin/form_channels.html:1438
 msgid "新周期名称，例如：2026年年审"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1335
+#: templates/clubs/admin/form_channels.html:1439
 msgid "新建周期"
 msgstr "يېڭى دەۋر"
-
-#: templates/clubs/admin/form_channels.html:1339
+#: templates/clubs/admin/form_channels.html:1445
 #, python-format
 msgid " · 第%(__i18n1)s期 · "
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1339
-#: templates/clubs/staff/management.html:220
-#: templates/clubs/staff/management.html:371
+#: templates/clubs/admin/form_channels.html:1445
+#: templates/clubs/staff/management.html:221
+#: templates/clubs/staff/management.html:372
 msgid "开启"
 msgstr "قوزغىتىش"
-
-#: templates/clubs/admin/form_channels.html:1339
+#: templates/clubs/admin/form_channels.html:1445
 msgid "已关闭"
 msgstr "تاقاق"
-
-#: templates/clubs/admin/form_channels.html:1348
+#: templates/clubs/admin/form_channels.html:1454
 msgid "暂无周期。仅“每周期提交一次”的通道需要开启周期。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1355
+#: templates/clubs/admin/form_channels.html:1461
 msgid "字段配置"
 msgstr "خەت بۆلەك تەڭشەكلىرى"
-
-#: templates/clubs/admin/form_channels.html:1356
-#: templates/clubs/admin/form_channels.html:1596
+#: templates/clubs/admin/form_channels.html:1462
+#: templates/clubs/admin/form_channels.html:1718
 msgid "新增字段"
 msgstr "خەت بۆلەك قوشۇش"
-
-#: templates/clubs/admin/form_channels.html:1370
+#: templates/clubs/admin/form_channels.html:1476
 msgid "展开"
 msgstr "يايىش"
-
-#: templates/clubs/admin/form_channels.html:1373
+#: templates/clubs/admin/form_channels.html:1479
 msgid "业务锁定"
 msgstr "بىزنېس قۇلۇپى"
-
-#: templates/clubs/admin/form_channels.html:1388
+#: templates/clubs/admin/form_channels.html:1494
 msgid "这个字段已连接内置业务逻辑，不能修改或删除。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1392
-#: templates/clubs/admin/form_channels.html:1509
+#: templates/clubs/admin/form_channels.html:1501
+#: templates/clubs/admin/form_channels.html:1628
 msgid "字段标识 field_key"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1406
-#: templates/clubs/admin/form_channels.html:1523
+#: templates/clubs/admin/form_channels.html:1518
+#: templates/clubs/admin/form_channels.html:1643
 msgid "补充说明"
 msgstr "قوشۇمچە چۈشەندۈرۈش"
-
-#: templates/clubs/admin/form_channels.html:1412
-#: templates/clubs/admin/form_channels.html:1529
+#: templates/clubs/admin/form_channels.html:1527
+#: templates/clubs/admin/form_channels.html:1650
 msgid "最大字数"
 msgstr "ئەڭ كۆپ سۆز سانى"
-
-#: templates/clubs/admin/form_channels.html:1418
-#: templates/clubs/admin/form_channels.html:1535
+#: templates/clubs/admin/form_channels.html:1533
+#: templates/clubs/admin/form_channels.html:1656
 msgid "最小值"
 msgstr "ئەڭ كىچىك قىممەت"
-
-#: templates/clubs/admin/form_channels.html:1422
-#: templates/clubs/admin/form_channels.html:1539
+#: templates/clubs/admin/form_channels.html:1537
+#: templates/clubs/admin/form_channels.html:1660
 msgid "最大值"
 msgstr "ئەڭ چوڭ قىممەت"
-
-#: templates/clubs/admin/form_channels.html:1426
-#: templates/clubs/admin/form_channels.html:1543
+#: templates/clubs/admin/form_channels.html:1541
+#: templates/clubs/admin/form_channels.html:1664
 msgid "步进"
 msgstr "قەدەم"
-
-#: templates/clubs/admin/form_channels.html:1437
-#: templates/clubs/admin/form_channels.html:1554
+#: templates/clubs/admin/form_channels.html:1555
+#: templates/clubs/admin/form_channels.html:1676
 msgid "输入一个选项，例如：讲座"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1439
-#: templates/clubs/admin/form_channels.html:1556
+#: templates/clubs/admin/form_channels.html:1557
+#: templates/clubs/admin/form_channels.html:1678
 msgid "添加"
 msgstr "قوشۇش"
-
-#: templates/clubs/admin/form_channels.html:1442
+#: templates/clubs/admin/form_channels.html:1560
 msgid "选项会以标签形式展示，保存时仍按当前顺序写入字段配置。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1447
-#: templates/clubs/admin/form_channels.html:1563
+#: templates/clubs/admin/form_channels.html:1565
+#: templates/clubs/admin/form_channels.html:1685
 msgid "允许后缀"
 msgstr "قوبۇل قىلىدىغان كېڭەيتمە"
-
-#: templates/clubs/admin/form_channels.html:1450
-#: templates/clubs/admin/form_channels.html:1566
+#: templates/clubs/admin/form_channels.html:1568
+#: templates/clubs/admin/form_channels.html:1688
 msgid "常用类型："
 msgstr "ئادەتتىكى تۈرلەر:"
-
-#: templates/clubs/admin/form_channels.html:1451
-#: templates/clubs/admin/form_channels.html:1567
+#: templates/clubs/admin/form_channels.html:1569
+#: templates/clubs/admin/form_channels.html:1689
 msgid "图片"
 msgstr "رەسىم"
-
-#: templates/clubs/admin/form_channels.html:1452
-#: templates/clubs/admin/form_channels.html:1568
+#: templates/clubs/admin/form_channels.html:1570
+#: templates/clubs/admin/form_channels.html:1690
 msgid "文档"
 msgstr "ھۆججەت"
-
-#: templates/clubs/admin/form_channels.html:1453
-#: templates/clubs/admin/form_channels.html:1569
+#: templates/clubs/admin/form_channels.html:1571
+#: templates/clubs/admin/form_channels.html:1691
 msgid "视频"
 msgstr "سىن"
-
-#: templates/clubs/admin/form_channels.html:1454
-#: templates/clubs/admin/form_channels.html:1570
+#: templates/clubs/admin/form_channels.html:1572
+#: templates/clubs/admin/form_channels.html:1692
 msgid "音频"
 msgstr "ئاۋاز"
-
-#: templates/clubs/admin/form_channels.html:1455
-#: templates/clubs/admin/form_channels.html:1571
+#: templates/clubs/admin/form_channels.html:1573
+#: templates/clubs/admin/form_channels.html:1693
 msgid "压缩包"
 msgstr "سىقىلغان ھۆججەت"
-
-#: templates/clubs/admin/form_channels.html:1459
-#: templates/clubs/admin/form_channels.html:1575
+#: templates/clubs/admin/form_channels.html:1577
+#: templates/clubs/admin/form_channels.html:1697
 msgid "最大文件大小 MB"
 msgstr "ئەڭ چوڭ ھۆججەت چوڭلۇقى (MB)"
-
-#: templates/clubs/admin/form_channels.html:1463
-#: templates/clubs/admin/form_channels.html:1579
+#: templates/clubs/admin/form_channels.html:1581
+#: templates/clubs/admin/form_channels.html:1701
 msgid "允许一次上传多个文件"
 msgstr "بىر ۋاقىتتا كۆپ ھۆججەت يۈكلەشكە بولىدۇ"
-
-#: templates/clubs/admin/form_channels.html:1464
-#: templates/clubs/admin/form_channels.html:1580
+#: templates/clubs/admin/form_channels.html:1582
+#: templates/clubs/admin/form_channels.html:1702
 msgid "开启后，社长可以在同一个上传组件里选择或拖拽多个文件。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1467
-#: templates/clubs/admin/form_channels.html:1583
+#: templates/clubs/admin/form_channels.html:1585
+#: templates/clubs/admin/form_channels.html:1705
 msgid "将本字段上传的多个文件合并成一个 Word 文档"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1468
-#: templates/clubs/admin/form_channels.html:1584
+#: templates/clubs/admin/form_channels.html:1586
+#: templates/clubs/admin/form_channels.html:1706
 msgid ""
 "仅当允许后缀全部为图片、PDF 或 Word（.docx）且已开启多文件上传时可用；系统会"
 "把图片直接插入，把 PDF 转成图片后插入。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1473
+#: templates/clubs/admin/form_channels.html:1591
 msgid "清除当前示例文件"
 msgstr "نۆۋەتتىكى ئۈلگە ھۆججەتلەرنى تازىلاش"
-
-#: templates/clubs/admin/form_channels.html:1484
+#: templates/clubs/admin/form_channels.html:1602
 msgid "保存字段"
 msgstr "خەت بۆلەكنى ساقلاش"
-
-#: templates/clubs/admin/form_channels.html:1492
+#: templates/clubs/admin/form_channels.html:1610
 msgid "这个通道还没有字段，先新增一个问题。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1497
+#: templates/clubs/admin/form_channels.html:1615
 msgid "新增问题标题"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1503
+#: templates/clubs/admin/form_channels.html:1621
 msgid "新字段"
 msgstr "يېڭى خەت بۆلەك"
-
-#: templates/clubs/admin/form_channels.html:1520
+#: templates/clubs/admin/form_channels.html:1639
 msgid "填写时显示在输入框内"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1524
+#: templates/clubs/admin/form_channels.html:1644
 msgid "显示在字段下方"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1530
+#: templates/clubs/admin/form_channels.html:1651
 msgid "不限制可留空"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1536
-#: templates/clubs/admin/form_channels.html:1540
+#: templates/clubs/admin/form_channels.html:1657
+#: templates/clubs/admin/form_channels.html:1661
 msgid "可留空"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1544
+#: templates/clubs/admin/form_channels.html:1665
 msgid "例如：1 或 0.01"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1603
+#: templates/clubs/admin/form_channels.html:1725
 msgid "新通道默认保存为草稿，配置字段并发布后才会出现在社长侧提交入口。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1608
+#: templates/clubs/admin/form_channels.html:1730
 msgid "例如：场地申请"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1625
+#: templates/clubs/admin/form_channels.html:1747
 msgid "需要不同审核人累计通过达到该次数后才最终通过。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1629
+#: templates/clubs/admin/form_channels.html:1751
 msgid "这个通道用于收集什么内容"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1638
+#: templates/clubs/admin/form_channels.html:1760
 msgid "建议先保持草稿，字段配置完整后再发布。"
 msgstr ""
 
-#: templates/clubs/admin/form_channels.html:1668
+#: templates/clubs/admin/form_channels.html:1790
 msgid "创建通道"
 msgstr "يېڭى يول قۇرۇش"
-
 #: templates/clubs/admin/locked_accounts.html:5
 msgid "被锁定账号 - 管理中心"
 msgstr ""
@@ -3748,7 +3679,6 @@ msgstr ""
 #: templates/clubs/admin/manage_announcements.html:287
 msgid "公告管理"
 msgstr "ئۇقتۇرۇش باشقۇرۇش"
-
 #: templates/clubs/admin/manage_announcements.html:288
 msgid "发布、编辑与上下架站点公告"
 msgstr ""
@@ -3756,11 +3686,9 @@ msgstr ""
 #: templates/clubs/admin/manage_announcements.html:295
 msgid "总公告"
 msgstr "ئۇقتۇرۇش سانى"
-
 #: templates/clubs/admin/manage_announcements.html:309
 msgid "全部公告"
 msgstr "بارلىق ئۇقتۇرۇشلار"
-
 #: templates/clubs/admin/manage_announcements.html:310
 #, python-format
 msgid "共 %(__i18n1)s 条公告"
@@ -3772,7 +3700,6 @@ msgstr ""
 #: templates/clubs/admin/publish_announcement.html:463
 msgid "发布公告"
 msgstr "ئۇقتۇرۇش ئېلان قىلىش"
-
 #: templates/clubs/admin/manage_announcements.html:342
 #, python-format
 msgid ""
@@ -3800,11 +3727,9 @@ msgstr ""
 #: templates/clubs/admin/manage_announcements.html:366
 msgid "下线"
 msgstr "چۈشۈرۈش"
-
 #: templates/clubs/admin/manage_announcements.html:387
 msgid "还没有公告"
 msgstr "تېخى ئۇقتۇرۇش يوق"
-
 #: templates/clubs/admin/manage_announcements.html:388
 msgid "发布第一条公告，向全校社团展示最新的通知与安排。"
 msgstr ""
@@ -3816,7 +3741,6 @@ msgstr ""
 #: templates/clubs/admin/manage_carousel.html:333
 msgid "首页轮播管理"
 msgstr "باش بەت سىيرىلما رەسىم باشقۇرۇش"
-
 #: templates/clubs/admin/manage_carousel.html:334
 msgid "管理首页首屏展示内容、显示状态与轮播顺序"
 msgstr ""
@@ -3824,7 +3748,6 @@ msgstr ""
 #: templates/clubs/admin/manage_carousel.html:338
 msgid "轮播统计"
 msgstr "سىيرىلما رەسىم ستاتىستىكىسى"
-
 #: templates/clubs/admin/manage_carousel.html:339
 msgid "全部内容"
 msgstr ""
@@ -3832,11 +3755,9 @@ msgstr ""
 #: templates/clubs/admin/manage_carousel.html:340
 msgid "正在展示"
 msgstr "كۆرسىتىلىۋاتىدۇ"
-
 #: templates/clubs/admin/manage_carousel.html:341
 msgid "暂未展示"
 msgstr "كۆرسىتىلمىغان"
-
 #: templates/clubs/admin/manage_carousel.html:348
 msgid "展示队列"
 msgstr ""
@@ -3853,7 +3774,6 @@ msgstr ""
 #: templates/clubs/admin/manage_carousel.html:365
 msgid "展示中"
 msgstr "كۆرسىتىلىۋاتىدۇ"
-
 #: templates/clubs/admin/manage_carousel.html:374
 msgid "尚未填写描述"
 msgstr ""
@@ -3885,14 +3805,12 @@ msgid "暂无部门信息，点击右上角添加"
 msgstr ""
 
 #: templates/clubs/admin/manage_users.html:919
-#: templates/clubs/staff/management.html:201
+#: templates/clubs/staff/management.html:202
 msgid "导出数据"
 msgstr "سانلىق مەلۇماتنى چىقىرىش"
-
 #: templates/clubs/admin/manage_users.html:921
 msgid "创建用户"
 msgstr "ئىشلەتكۈچى قۇرۇش"
-
 #: templates/clubs/admin/manage_users.html:925
 msgid "个用户"
 msgstr ""
@@ -3904,117 +3822,92 @@ msgstr ""
 #: templates/clubs/admin/manage_users.html:950
 msgid "所有角色"
 msgstr "بارلىق روللار"
-
 #: templates/clubs/admin/manage_users.html:956
 msgid "审核状态"
 msgstr "تەكشۈرۈش ھالەتى"
-
 #: templates/clubs/admin/manage_users.html:962
 msgid "生命周期"
 msgstr "ھايات دەۋرى"
-
 #: templates/clubs/admin/manage_users.html:968
 msgid "启用状态"
 msgstr "قوزغىتىش ھالەتى"
-
 #: templates/clubs/admin/manage_users.html:969
 msgid "已启用"
 msgstr "قوزغىتىلغان"
-
 #: templates/clubs/admin/manage_users.html:970
 #: templates/clubs/admin/manage_users.html:1091
 msgid "已禁用"
 msgstr "چەكلەنگەن"
-
 #: templates/clubs/admin/manage_users.html:975
 msgid "全选本页"
 msgstr "بۇ بەتنى تاللاش"
-
 #: templates/clubs/admin/manage_users.html:977
 msgid "已选 0 人"
 msgstr "0 ئادەم تاللاندى"
-
 #: templates/clubs/admin/manage_users.html:978
 msgid "批量启用"
 msgstr "تۈركۈملەپ قوزغىتىش"
-
 #: templates/clubs/admin/manage_users.html:979
 msgid "批量禁用"
 msgstr "تۈركۈملەپ چەكلەش"
-
 #: templates/clubs/admin/manage_users.html:980
 msgid "批量删除"
 msgstr "تۈركۈملەپ ئۆچۈرۈش"
-
 #: templates/clubs/admin/manage_users.html:986
 msgid "重置"
 msgstr "ئەسلىگە قايتۇرۇش"
-
 #: templates/clubs/admin/manage_users.html:1036
 #: templates/clubs/admin/review_staff_registration.html:252
-#: templates/clubs/staff/dynamic_audit_center.html:516
+#: templates/clubs/staff/dynamic_audit_center.html:517
 msgid "待审核"
 msgstr "تەكشۈرۈلۈش كۈتۈلمەكتە"
-
 #: templates/clubs/admin/manage_users.html:1039
 #: templates/clubs/admin/review_staff_registration.html:254
 msgid "已批准"
 msgstr "تەستىقلانغان"
-
 #: templates/clubs/admin/manage_users.html:1042
 #: templates/clubs/admin/review_staff_registration.html:256
 msgid "已拒绝"
 msgstr "رەت قىلىنغان"
-
 #: templates/clubs/admin/manage_users.html:1044
 msgid "未知"
 msgstr "نامەلۇم"
-
 #: templates/clubs/admin/manage_users.html:1048
 msgid "已激活"
 msgstr "قوزغىتىلغان"
-
 #: templates/clubs/admin/manage_users.html:1084
 msgid "账户状态"
 msgstr "ھېسابات ھالەتى"
-
 #: templates/clubs/admin/manage_users.html:1088
 #: templates/clubs/change_club_status.html:244
 #: templates/clubs/staff/manage_clubs.html:366
-#: templates/clubs/staff/management.html:350
+#: templates/clubs/staff/management.html:351
 #: templates/clubs/user/member_management.html:183
 msgid "活跃"
 msgstr "ئاكتىپ"
-
-#: templates/clubs/admin/manage_users.html:1105 templates/clubs/base.html:704
-#: templates/clubs/base.html:720
-#: templates/clubs/staff/dynamic_audit_center.html:541
-#: templates/clubs/staff/dynamic_audit_center.html:577
+#: templates/clubs/admin/manage_users.html:1105 templates/clubs/base.html:739
+#: templates/clubs/base.html:755
+#: templates/clubs/staff/dynamic_audit_center.html:542
+#: templates/clubs/staff/dynamic_audit_center.html:578
 msgid "审核"
 msgstr "تەكشۈرۈش"
-
 #: templates/clubs/admin/manage_users.html:1116
 msgid "属性"
 msgstr "خاسلىقلار"
-
 #: templates/clubs/admin/manage_users.html:1121
 #: templates/clubs/admin/manage_users.html:1122
 msgid "解锁"
 msgstr "قۇلۇپنى ئېچىش"
-
 #: templates/clubs/admin/manage_users.html:1127
 #: templates/clubs/user/dashboard.html:438
 msgid "详情"
 msgstr "تەپسىلات"
-
 #: templates/clubs/admin/manage_users.html:1144
 msgid "删除账号"
 msgstr "ھېساباتنى ئۆچۈرۈش"
-
 #: templates/clubs/admin/manage_users.html:1156
 msgid "未找到匹配的用户"
 msgstr "ماس كېلىدىغان ئىشلەتكۈچى تېپىلمىدى"
-
 #: templates/clubs/admin/manage_users.html:1160
 msgid "用户列表分页"
 msgstr ""
@@ -4023,7 +3916,6 @@ msgstr ""
 #, python-format
 msgid "第 %(__i18n1)s / %(__i18n2)s 页，共 %(__i18n3)s 人"
 msgstr "%(__i18n1)s / %(__i18n2)s بەت، جەمئى %(__i18n3)s ئادەم"
-
 #: templates/clubs/admin/manage_users.html:1169
 msgid "该页面为查看专用，不支持编辑。如需修改用户信息，请联系管理员。"
 msgstr ""
@@ -4045,7 +3937,6 @@ msgstr ""
 #: templates/clubs/user_detail.html:268
 msgid "所属部门"
 msgstr "تەۋە بۆلۈم"
-
 #: templates/clubs/admin/manage_users.html:1197
 msgid "不设定部门"
 msgstr ""
@@ -4055,11 +3946,9 @@ msgstr ""
 #: templates/clubs/staff/manage_department.html:383
 msgid "职级"
 msgstr "دەرىجە"
-
 #: templates/clubs/admin/manage_users.html:1215
 msgid "保存属性"
 msgstr "خاسلىقلارنى ساقلاش"
-
 #: templates/clubs/admin/publish_announcement.html:382
 msgid "面向全校发布重要通知或活动信息，支持草稿与附件上传"
 msgstr ""
@@ -4100,7 +3989,6 @@ msgstr ""
 #: templates/clubs/admin/review_staff_registration.html:5
 msgid "审核干事申请"
 msgstr "خادىم تىزىملىتىشنى تەكشۈرۈش"
-
 #: templates/clubs/admin/review_staff_registration.html:214
 msgid "审核干事注册申请"
 msgstr ""
@@ -4108,15 +3996,12 @@ msgstr ""
 #: templates/clubs/admin/review_staff_registration.html:223
 msgid "申请人信息"
 msgstr "ئىلتىماس قىلغۇچى ئۇچۇرى"
-
 #: templates/clubs/admin/review_staff_registration.html:236
 msgid "查看完整档案"
 msgstr "تولۇق ئارخىپنى كۆرۈش"
-
 #: templates/clubs/admin/review_staff_registration.html:247
 msgid "申请时间"
 msgstr "ئىلتىماس قىلغان ۋاقىت"
-
 #: templates/clubs/admin/review_staff_registration.html:262
 msgid ""
 "请仅对“自行注册申请成为干事”的账号执行审核。批量导入的用户不会进入此审核流"
@@ -4126,11 +4011,9 @@ msgstr ""
 #: templates/clubs/admin/review_staff_registration.html:269
 msgid "审核决定"
 msgstr "تەكشۈرۈش قارارى"
-
 #: templates/clubs/admin/review_staff_registration.html:277
 msgid "批准申请"
 msgstr "ئىلتىماسنى تەستىقلاش"
-
 #: templates/clubs/admin/review_staff_registration.html:278
 msgid "该用户将成为干事并可立即登录使用干事功能。"
 msgstr ""
@@ -4138,7 +4021,6 @@ msgstr ""
 #: templates/clubs/admin/review_staff_registration.html:281
 msgid "拒绝申请"
 msgstr "ئىلتىماسنى رەت قىلىش"
-
 #: templates/clubs/admin/review_staff_registration.html:282
 msgid "该用户申请被驳回，可后续重新发起注册申请。"
 msgstr ""
@@ -4154,157 +4036,219 @@ msgstr ""
 #: templates/clubs/admin/review_staff_registration.html:291
 msgid "快速批准"
 msgstr "تېز تەستىقلاش"
-
 #: templates/clubs/admin/room_form.html:4
 #: templates/clubs/admin/room_form.html:42
 msgid "编辑房间"
 msgstr "ئۆينى تەھرىرلەش"
-
 #: templates/clubs/admin/room_form.html:4
 #: templates/clubs/admin/room_form.html:42
 msgid "添加房间"
 msgstr "ئۆي قوشۇش"
-
 #: templates/clubs/admin/site_settings.html:9
 #, python-format
 msgid "站点设置 - %(__i18n1)s"
-msgstr ""
-
-#: templates/clubs/admin/site_settings.html:868
+msgstr "توربەت تەڭشەكلىرى - %(__i18n1)s"
+#: templates/clubs/admin/site_settings.html:934
 msgid "管理网站图标、头像服务、第三方 CDN 与字体资源配置"
+msgstr "سايت بەلگىسى، باش رەسىم مۇلازىمىتى، CDN ۋە خەت نۇسخىسى مەنبەلىرىنى باشقۇرۇش"
+#: templates/clubs/admin/site_settings.html:952
+msgid "站点信息与资源"
+msgstr "توربەت ئۇچۇرى"
+
+#: templates/clubs/admin/site_settings.html:954
+msgid "图标与头像"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:894
+#: templates/clubs/admin/site_settings.html:972
 msgid "网站图标 Favicon"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:906
+#: templates/clubs/admin/site_settings.html:984
 msgid "当前图标与上传"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:930
+#: templates/clubs/admin/site_settings.html:1005
+msgid "当前 Favicon"
+msgstr "ھازىرقى Favicon"
+#: templates/clubs/admin/site_settings.html:1008
 msgid "当前网站图标"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:930
+#: templates/clubs/admin/site_settings.html:1008
 msgid "浏览器标签页显示"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:945
+#: templates/clubs/admin/site_settings.html:1023
 msgid "未设置自定义图标"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:969
+#: templates/clubs/admin/site_settings.html:1047
 msgid "选择新图标文件"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:981
+#: templates/clubs/admin/site_settings.html:1059
 msgid "支持 .ico / .png / .jpg，建议尺寸 64×64 或 128×128"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1009
+#: templates/clubs/admin/site_settings.html:1087
 msgid "用户头像服务"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1016
+#: templates/clubs/admin/site_settings.html:1094
 msgid "Cravatar 支持"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1022
+#: templates/clubs/admin/site_settings.html:1100
 msgid "允许用户使用 Cravatar"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1023
+#: templates/clubs/admin/site_settings.html:1101
 msgid ""
 "开启后，用户可以自行选择本站上传头像或已绑定邮箱的 Cravatar 头像；本站上传功"
 "能始终保留。"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1026
+#: templates/clubs/admin/site_settings.html:1104
 msgid ""
 "系统不会生成默认邮箱。用户输入邮箱时会先检测对应头像是否存在，检测成功后才会"
 "切换。"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1029
+#: templates/clubs/admin/site_settings.html:1107
 msgid "查看官方文档"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1030
+#: templates/clubs/admin/site_settings.html:1108
 msgid "保存头像设置"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1041
+#: templates/clubs/admin/site_settings.html:1125
 msgid "站点信息"
 msgstr "توربەت ئۇچۇرى"
-
-#: templates/clubs/admin/site_settings.html:1048
+#: templates/clubs/admin/site_settings.html:1132
 msgid "站点名称与首页标题"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1071
+#: templates/clubs/admin/site_settings.html:1139
+msgid "社团管理系统"
+msgstr "بىرلەشمە باشقۇرۇش سىستېمىسى"
+#: templates/clubs/admin/site_settings.html:1145
+msgid "社团管理服务中心"
+msgstr "بىرلەشمە باشقۇرۇش مۇلازىمەت مەركىزى"
+#: templates/clubs/admin/site_settings.html:1151
+msgid "致力于为社团提供全方位的管理与服务支持，促进社团健康发展"
+msgstr "بىرلەشمىلەرگە ھەر تەرەپلىمە باشقۇرۇش ۋە مۇلازىمەت ياردىمى بېرىش، ساغلام تەرەققىياتىنى قوزغىتىشقا بېغىشلانغان"
+#: templates/clubs/admin/site_settings.html:1162
+msgid "未登录访客和未设置首选语言的用户将使用此语言；默认简体中文。"
+msgstr "كىرمىگەن مېھمانلار ۋە ئالدىنقى تىل تاللىمىغان ئىشلەتكۈچىلەر بۇ تىلنى ئىشلىتىدۇ؛ سۈكۈت بولسا خەنزۇچە."
+#: templates/clubs/admin/site_settings.html:1166
 msgid "保存站点信息"
 msgstr "توربەت ئۇچۇرىنى ساقلاش"
-
-#: templates/clubs/admin/site_settings.html:1082
+#: templates/clubs/admin/site_settings.html:1177
 msgid "第三方资源 CDN"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1091
+#: templates/clubs/admin/site_settings.html:1186
 msgid "cdnjs 资源镜像"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1095
+#: templates/clubs/admin/site_settings.html:1190
 msgid "CDN 基础地址"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1101
+#: templates/clubs/admin/site_settings.html:1196
 msgid ""
 "该地址统一用于 Chart.js、Swiper 与 Cropper.js。保存时会自动重新计算并保存 5 "
 "个资源的 SHA-384 SRI 校验值；地址末尾的 / 会自动忽略。"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1113
+#: templates/clubs/admin/site_settings.html:1208
 msgid "保存 CDN 设置"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1130
+#: templates/clubs/admin/site_settings.html:1225
 msgid "字体配置"
 msgstr "خەت تەڭشەكلىرى"
-
-#: templates/clubs/admin/site_settings.html:1157
+#: templates/clubs/admin/site_settings.html:1252
 msgid "图标字体 Material Icons"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1169
+#: templates/clubs/admin/site_settings.html:1264
 msgid "CSS 加载地址"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1187
+#: templates/clubs/admin/site_settings.html:1282
 msgid "选择一个可用镜像以保证图标正常加载"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1262
+#: templates/clubs/admin/site_settings.html:1357
 msgid "正文字体（可选）"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1298
+#: templates/clubs/admin/site_settings.html:1384
+msgid "留空则不加载外部字体"
+msgstr "بوش قالدۇرۇلغاندا سىرتقى خەت نۇسخىسى يۈكلەنمەيدۇ"
+#: templates/clubs/admin/site_settings.html:1393
 msgid "font-family 值"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1322
+#: templates/clubs/admin/site_settings.html:1402
+msgid "例如 'Noto Sans SC', sans-serif"
+msgstr "مەسىلەن 'Noto Sans SC', sans-serif"
+#: templates/clubs/admin/site_settings.html:1417
 msgid "选择预设后自动填入地址和字体族名称"
 msgstr ""
 
-#: templates/clubs/admin/site_settings.html:1367
+#: templates/clubs/admin/site_settings.html:1462
 msgid "保存字体设置"
 msgstr "خەت تەڭشەكلىرىنى ساقلاش"
+#: templates/clubs/admin/site_settings.html:1491
+msgid "内容自动翻译"
+msgstr ""
+
+#: templates/clubs/admin/site_settings.html:1498
+msgid "UAPI 翻译服务"
+msgstr ""
+
+#: templates/clubs/admin/site_settings.html:1515
+msgid ""
+"默认使用 UAPI 公共翻译服务；自建或兼容网关请填完整地址，例如 https://"
+"uapis.cn。"
+msgstr ""
+
+#: templates/clubs/admin/site_settings.html:1520
+msgid "翻译服务 API Key（可选）"
+msgstr ""
+
+#: templates/clubs/admin/site_settings.html:1523
+msgid "已配置，留空保持不变"
+msgstr ""
+
+#: templates/clubs/admin/site_settings.html:1523
+msgid "公共接口匿名调用可用，留空即可"
+msgstr ""
+
+#: templates/clubs/admin/site_settings.html:1525
+msgid ""
+"UAPI 控制台可申请 Key；匿名调用也可用。如需清除已保存的 Key，请勾选下方选项。"
+msgstr ""
+
+#: templates/clubs/admin/site_settings.html:1528
+msgid "清除已保存的 API Key"
+msgstr ""
+
+#: templates/clubs/admin/site_settings.html:1534
+msgid "查看 UAPI 翻译接口文档"
+msgstr ""
+
+#: templates/clubs/admin/site_settings.html:1539
+msgid "保存自动翻译设置"
+msgstr ""
 
 #: templates/clubs/admin/smtp_config.html:5
 #: templates/clubs/admin/smtp_config.html:766
 msgid "SMTP邮箱配置"
 msgstr "SMTP ئېلخەت تەڭشەكلىرى"
-
 #: templates/clubs/admin/smtp_config.html:767
 msgid "管理发信服务、授权凭据与当前启用配置"
 msgstr ""
@@ -4334,19 +4278,15 @@ msgstr ""
 #: templates/clubs/admin/smtp_config.html:832
 msgid "未激活"
 msgstr "قوزغىتىلمىغان"
-
 #: templates/clubs/admin/smtp_config.html:837
 msgid "服务地址"
 msgstr "مۇلازىمېتىر ئادرېسى"
-
 #: templates/clubs/admin/smtp_config.html:845
 msgid "加密"
 msgstr "شىفىرلاش"
-
 #: templates/clubs/admin/smtp_config.html:846
 msgid "无"
 msgstr "يوق"
-
 #: templates/clubs/admin/smtp_config.html:851
 msgid "点击展开操作"
 msgstr ""
@@ -4354,25 +4294,20 @@ msgstr ""
 #: templates/clubs/admin/smtp_config.html:859
 msgid "编辑配置"
 msgstr "تەڭشەكنى تەھرىرلەش"
-
 #: templates/clubs/admin/smtp_config.html:868
 msgid "激活此配置"
 msgstr "بۇ تەڭشەكنى قوزغىتىش"
-
 #: templates/clubs/admin/smtp_config.html:874
 msgid "当前已激活"
 msgstr "نۆۋەتتە قوزغىتىلغان"
-
 #: templates/clubs/admin/smtp_config.html:883
 msgid "删除配置"
 msgstr "تەڭشەكنى ئۆچۈرۈش"
-
 #: templates/clubs/admin/smtp_config.html:888
 #: templates/clubs/admin/smtp_config.html:892
 #: templates/clubs/oobe_setup.html:832
 msgid "发送测试邮件"
 msgstr "سىناق ئېلخەت ئەۋەتىش"
-
 #: templates/clubs/admin/smtp_config.html:898
 msgid "输入接收测试邮件的邮箱地址"
 msgstr ""
@@ -4380,7 +4315,6 @@ msgstr ""
 #: templates/clubs/admin/smtp_config.html:900
 msgid "发送"
 msgstr "ئەۋەتىش"
-
 #: templates/clubs/admin/smtp_config.html:915
 msgid "暂无SMTP配置"
 msgstr ""
@@ -4443,11 +4377,9 @@ msgstr ""
 #: templates/clubs/admin/smtp_config.html:1009
 msgid "创建配置"
 msgstr "تەڭشەك قۇرۇش"
-
 #: templates/clubs/admin/smtp_config.html:1133
 msgid "编辑SMTP配置"
 msgstr "SMTP تەڭشەكنى تەھرىرلەش"
-
 #: templates/clubs/admin/smtp_config.html:1184
 msgid "留空则保持原密码不变"
 msgstr ""
@@ -4467,11 +4399,9 @@ msgstr ""
 #: templates/clubs/admin/storage_config.html:208
 msgid "存储设置"
 msgstr "ساقلاش تەڭشەكلىرى"
-
 #: templates/clubs/admin/storage_config.html:209
 msgid "配置文件存储后端（本地存储 / S3 兼容对象存储）"
 msgstr "ساقلاش ئارقا سۇپىسىنى تەڭشەش (يەرلىك / S3)"
-
 #: templates/clubs/admin/storage_config.html:242
 msgid "存储已禁用（紧急降级到本地）"
 msgstr ""
@@ -4480,16 +4410,13 @@ msgstr ""
 #: templates/clubs/admin/storage_config.html:291
 msgid "S3 对象存储"
 msgstr "S3 ئوبيېكت ساقلاش"
-
 #: templates/clubs/admin/storage_config.html:248
 #: templates/clubs/admin/storage_config.html:282
 msgid "本地存储"
 msgstr "يەرلىك ساقلاش"
-
 #: templates/clubs/admin/storage_config.html:254
 msgid "路径："
 msgstr "يول:"
-
 #: templates/clubs/admin/storage_config.html:255
 #, python-format
 msgid ""
@@ -4501,11 +4428,9 @@ msgstr ""
 #: templates/clubs/admin/storage_config.html:263
 msgid "紧急回退本地"
 msgstr "جىددىي ئەسلىگە قايتۇرۇش"
-
 #: templates/clubs/admin/storage_config.html:271
 msgid "后端配置"
 msgstr "ئارقا سۇپا تەڭشەكلىرى"
-
 #: templates/clubs/admin/storage_config.html:283
 msgid "文件保存在服务器本地磁盘。适合单机部署或带宽充足场景。"
 msgstr ""
@@ -4553,23 +4478,18 @@ msgstr ""
 #: templates/clubs/admin/storage_config.html:376
 msgid "保存配置"
 msgstr "تەڭشەكنى ساقلاش"
-
 #: templates/clubs/admin/storage_config.html:378
 msgid "测试连接"
 msgstr "ئۇلىنىشنى سىناش"
-
 #: templates/clubs/admin/storage_config.html:384
 msgid "连接成功"
 msgstr "ئۇلىنىش مۇۋەپپەقىيەتلىك"
-
 #: templates/clubs/admin/storage_config.html:384
 msgid "连接失败"
 msgstr "ئۇلىنىش مەغلۇپ بولدى"
-
 #: templates/clubs/admin/storage_config.html:392
 msgid "说明与注意事项"
 msgstr "چۈشەندۈرۈش ۋە ئەسكەرتىش"
-
 #: templates/clubs/admin/storage_config.html:394
 msgid "1. 切换后端不会自动迁移历史文件。"
 msgstr ""
@@ -4640,7 +4560,6 @@ msgstr ""
 #: templates/clubs/admin/time_slot_form.html:141
 msgid "编辑时间段"
 msgstr "ۋاقىت بۆلەكنى تەھرىرلەش"
-
 #: templates/clubs/admin/time_slot_form.html:142
 msgid "修改现有时间段配置"
 msgstr ""
@@ -4648,36 +4567,28 @@ msgstr ""
 #: templates/clubs/admin/time_slot_form.html:142
 msgid "创建新的可选时间段"
 msgstr "يېڭى ۋاقىت بۆلەك قۇرۇش"
-
 #: templates/clubs/admin/time_slot_form.html:170
 msgid "启用此时间段"
 msgstr "بۇ ۋاقىت بۆلەكنى قوزغىتىش"
-
 #: templates/clubs/auth/login.html:4
 msgid "登录"
 msgstr "كىرىش"
-
 #: templates/clubs/auth/login.html:150
 msgid "欢迎回来"
 msgstr "قايتا خۇش كەلدىڭىز"
-
 #: templates/clubs/auth/login.html:151
 msgid "登录您的账户以继续"
 msgstr "داۋاملاشتۇرۇش ئۈچۈن ھېساباتىڭىزغا كىرىڭ"
-
 #: templates/clubs/auth/login.html:179 templates/clubs/auth/register.html:182
 msgid "请输入密码"
 msgstr "پارولنى كىرگۈزۈڭ"
-
 #: templates/clubs/auth/login.html:183 templates/clubs/auth/register.html:257
 #: templates/clubs/index.html:1126
 msgid "立即登录"
 msgstr "دەرھال كىرىش"
-
 #: templates/clubs/auth/login.html:188
 msgid "登录已被锁定"
 msgstr "كىرىش چەكلەنگەن"
-
 #: templates/clubs/auth/login.html:189
 msgid ""
 "由于多次失败的登录尝试，您的账号（或此 IP）已被暂时锁定 5 分钟。请等待解锁或"
@@ -4687,27 +4598,21 @@ msgstr ""
 #: templates/clubs/auth/login.html:191 templates/clubs/auth/login.html:193
 msgid "联系管理员"
 msgstr "باشقۇرغۇچى بىلەن ئالاقىلىشىش"
-
 #: templates/clubs/auth/login.html:198
 msgid "或者"
 msgstr "ياكى"
-
 #: templates/clubs/auth/login.html:200
 msgid "还没有账户？"
 msgstr "تېخى ھېساباتىڭىز يوقمۇ؟"
-
 #: templates/clubs/auth/login.html:200
 msgid "立即注册"
 msgstr "دەرھال تىزىملىتىش"
-
 #: templates/clubs/auth/register.html:4 templates/clubs/auth/register.html:131
 msgid "用户注册"
 msgstr "ئىشلەتكۈچى تىزىملىتىش"
-
 #: templates/clubs/auth/register.html:132
 msgid "欢迎来到系统，请填写以下信息注册"
 msgstr "خۇش كەلدىڭىز! تىزىملىتىش ئۈچۈن تۆۋەندىكى ئۇچۇرلارنى تولدۇرۇڭ"
-
 #: templates/clubs/auth/register.html:149
 msgid "请注册等待管理员审核，社长注册请直接登录"
 msgstr ""
@@ -4756,58 +4661,6 @@ msgstr ""
 msgid "请选择政治面貌"
 msgstr ""
 
-#: templates/clubs/auth/register.html:211
-msgid "中共党员"
-msgstr ""
-
-#: templates/clubs/auth/register.html:212
-msgid "中共预备党员"
-msgstr ""
-
-#: templates/clubs/auth/register.html:213
-msgid "共青团员"
-msgstr ""
-
-#: templates/clubs/auth/register.html:214
-msgid "民革党员"
-msgstr ""
-
-#: templates/clubs/auth/register.html:215
-msgid "民盟盟员"
-msgstr ""
-
-#: templates/clubs/auth/register.html:216
-msgid "民建会员"
-msgstr ""
-
-#: templates/clubs/auth/register.html:217
-msgid "农工党党员"
-msgstr ""
-
-#: templates/clubs/auth/register.html:218
-msgid "致公党党员"
-msgstr ""
-
-#: templates/clubs/auth/register.html:219
-msgid "九三学社社员"
-msgstr ""
-
-#: templates/clubs/auth/register.html:220
-msgid "台盟盟员"
-msgstr ""
-
-#: templates/clubs/auth/register.html:221
-msgid "无党派人士"
-msgstr ""
-
-#: templates/clubs/auth/register.html:222
-msgid "入党积极分子"
-msgstr ""
-
-#: templates/clubs/auth/register.html:223
-msgid "群众"
-msgstr "ئاممىۋى"
-
 #: templates/clubs/auth/register.html:230
 msgid "部门 *"
 msgstr ""
@@ -4827,16 +4680,13 @@ msgstr ""
 #: templates/clubs/auth/register.html:254
 msgid "创建账户"
 msgstr "ھېسابات قۇرۇش"
-
 #: templates/clubs/auth/register.html:257
 msgid "已有账户？"
 msgstr "ھېساباتىڭىز بارمۇ؟"
-
 #: templates/clubs/auth/verify_email.html:4
 #: templates/clubs/auth/verify_email.html:12
 msgid "邮箱验证"
 msgstr "ئېلخەت دەلىللەش"
-
 #: templates/clubs/auth/verify_email.html:26
 msgid "验证码已发送到："
 msgstr ""
@@ -4848,7 +4698,6 @@ msgstr ""
 #: templates/clubs/auth/verify_email.html:34
 msgid "请输入验证码"
 msgstr "دەلىللەش كودىنى كىرگۈزۈڭ"
-
 #: templates/clubs/auth/verify_email.html:35
 msgid "6位数字"
 msgstr ""
@@ -4860,68 +4709,54 @@ msgstr ""
 #: templates/clubs/auth/verify_email.html:39
 msgid "验证"
 msgstr "دەلىللەش"
-
 #: templates/clubs/auth/verify_email.html:44
 msgid "没有收到验证码？"
 msgstr "كودنى ئالالمىدىڭىزمۇ؟"
-
 #: templates/clubs/auth/verify_email.html:46
 msgid "重新发送验证码"
 msgstr "كودنى قايتا ئەۋەتىش"
-
-#: templates/clubs/base.html:362
+#: templates/clubs/base.html:410
 msgid "主要功能"
 msgstr "ئاساسلىق ئىقتىدارلار"
-
-#: templates/clubs/base.html:368 templates/clubs/base.html:687
+#: templates/clubs/base.html:416 templates/clubs/base.html:722
 msgid "首页"
 msgstr "باش بەت"
-
-#: templates/clubs/base.html:378
+#: templates/clubs/base.html:426
 msgid "管理后台"
 msgstr "باشقۇرۇش سۇپىسى"
-
-#: templates/clubs/base.html:391 templates/clubs/base.html:402
+#: templates/clubs/base.html:439 templates/clubs/base.html:450
 msgid "部门管理"
 msgstr "بۆلۈم باشقۇرۇش"
-
-#: templates/clubs/base.html:417 templates/clubs/user/dashboard.html:356
+#: templates/clubs/base.html:465 templates/clubs/user/dashboard.html:356
 msgid "我的社团"
 msgstr "مېنىڭ بىرلەشمىلىرىم"
-
-#: templates/clubs/base.html:421 templates/clubs/club_detail.html:388
+#: templates/clubs/base.html:469 templates/clubs/club_detail.html:388
 #: templates/clubs/user/member_management.html:4
 #: templates/clubs/user/member_management.html:86
 msgid "社员管理"
 msgstr "ئەزالىق باشقۇرۇش"
-
-#: templates/clubs/base.html:430
-#: templates/clubs/staff/dynamic_audit_center.html:4
-#: templates/clubs/staff/dynamic_audit_center.html:500
+#: templates/clubs/base.html:478
+#: templates/clubs/staff/dynamic_audit_center.html:5
+#: templates/clubs/staff/dynamic_audit_center.html:501
 msgid "审核中心"
 msgstr "تەكشۈرۈش مەركىزى"
-
-#: templates/clubs/base.html:450
-#: templates/clubs/user/dynamic_approval_center.html:4
-#: templates/clubs/user/dynamic_approval_center.html:410
+#: templates/clubs/base.html:498
+#: templates/clubs/user/dynamic_approval_center.html:5
+#: templates/clubs/user/dynamic_approval_center.html:411
 msgid "审批记录"
 msgstr "تەستىقلاش خاتىرىلىرى"
-
-#: templates/clubs/base.html:456
+#: templates/clubs/base.html:504
 msgid "全部记录"
 msgstr "بارلىق خاتىرىلەر"
-
-#: templates/clubs/base.html:472
+#: templates/clubs/base.html:520
 msgid "房间日历"
 msgstr "ئۆي كالېندارى"
-
-#: templates/clubs/base.html:476 templates/clubs/room_calendar.html:820
+#: templates/clubs/base.html:524 templates/clubs/room_calendar.html:820
 #: templates/clubs/room_my_bookings.html:4
 #: templates/clubs/room_my_bookings.html:246
 msgid "我的预约"
 msgstr "مېنىڭ زاكازلىرىم"
-
-#: templates/clubs/base.html:499
+#: templates/clubs/base.html:547
 #, python-format
 msgid ""
 "\n"
@@ -4929,102 +4764,86 @@ msgid ""
 "                    "
 msgstr ""
 
-#: templates/clubs/base.html:515
+#: templates/clubs/base.html:563
 #, python-format
 msgid "切换到%(__i18n1)s身份"
 msgstr ""
 
-#: templates/clubs/base.html:523
+#: templates/clubs/base.html:571
 msgid "查看个人主页"
 msgstr ""
 
-#: templates/clubs/base.html:527
+#: templates/clubs/base.html:575
 msgid "管理个人信息"
 msgstr ""
 
-#: templates/clubs/base.html:531
+#: templates/clubs/base.html:579
 msgid "登出"
 msgstr "چىقىش"
-
-#: templates/clubs/base.html:535 templates/clubs/base.html:537
+#: templates/clubs/base.html:583 templates/clubs/base.html:585
 msgid "切换主题"
 msgstr "تېما ئالماشتۇرۇش"
-
-#: templates/clubs/base.html:541
+#: templates/clubs/base.html:589
 msgid "拖拽调整侧边栏宽度"
 msgstr "يان تاختىنىڭ كەڭلىكىنى سۆرەپ تەڭشەڭ"
-
-#: templates/clubs/base.html:642
+#: templates/clubs/base.html:677
 msgid "账号当前为不活跃状态。可选择“延期注销”恢复活跃1年（支持多次延期）。"
 msgstr ""
 
-#: templates/clubs/base.html:646
+#: templates/clubs/base.html:681
 msgid "延期注销"
 msgstr ""
 
-#: templates/clubs/base.html:648
+#: templates/clubs/base.html:683
 msgid "稍后处理"
 msgstr ""
 
-#: templates/clubs/base.html:677
+#: templates/clubs/base.html:712
 msgid "上海海洋大学社团管理服务中心 技术支持"
 msgstr "شاڭخەي دېڭىز ئۇنىۋېرسىتېتى بىرلەشمە باشقۇرۇش مۇلازىمەت مەركىزى"
-
-#: templates/clubs/base.html:693
+#: templates/clubs/base.html:728
 msgid "管理"
 msgstr "باشقۇرۇش"
-
-#: templates/clubs/base.html:729
+#: templates/clubs/base.html:764
 msgid "我的"
 msgstr "مېنىڭكى"
-
-#: templates/clubs/base.html:738
+#: templates/clubs/base.html:773
 msgid "审批"
 msgstr "تەستىقلاش"
-
-#: templates/clubs/base.html:744
+#: templates/clubs/base.html:779
 msgid "更多"
 msgstr "تېخىمۇ كۆپ"
-
 #: templates/clubs/change_club_status.html:4
 #: templates/clubs/change_club_status.html:227
 msgid "改变社团状态"
 msgstr "بىرلەشمە ھالەتini ئۆزگەرتىش"
-
 #: templates/clubs/change_club_status.html:233
 msgid "社团信息"
 msgstr "بىرلەشمە ئۇچۇرى"
-
 #: templates/clubs/change_club_status.html:244
 #: templates/clubs/staff/manage_clubs.html:367
-#: templates/clubs/staff/management.html:353
+#: templates/clubs/staff/management.html:354
 #: templates/clubs/user/member_management.html:184
 msgid "不活跃"
 msgstr "ئاكتىپ ئەمەس"
-
 #: templates/clubs/change_club_status.html:244
 #: templates/clubs/staff/manage_clubs.html:368
-#: templates/clubs/staff/management.html:356
+#: templates/clubs/staff/management.html:357
 msgid "停止"
 msgstr "توختىتىلغان"
-
 #: templates/clubs/change_club_status.html:258
 msgid "操作成功"
 msgstr "مەشغۇلات مۇۋەپپەقىيەتلىك بولدى"
-
 #: templates/clubs/change_club_status.html:259
 #: templates/clubs/direct_edit_club_info.html:234
 msgid "操作失败"
 msgstr "مەشغۇلات مەغلۇپ بولدى"
-
 #: templates/clubs/change_club_status.html:272
 msgid "选择新状态"
 msgstr "يېڭى ھالەتنى تاللاڭ"
-
 #: templates/clubs/change_club_status.html:284
 msgid "(当前)"
 msgstr "(نۆۋەتتىكى)"
-
 #: templates/clubs/change_club_status.html:293
 msgid "状态说明"
 msgstr ""
@@ -5056,11 +4875,9 @@ msgstr ""
 #: templates/clubs/club_detail.html:5 templates/clubs/club_detail.html:322
 msgid "社团详情"
 msgstr "بىرلەشمە تەپسىلاتى"
-
 #: templates/clubs/club_detail.html:346
 msgid "成员人数"
 msgstr "ئەزا سانى"
-
 #: templates/clubs/club_detail.html:347
 #: templates/clubs/delete_room_booking.html:107
 #: templates/clubs/public_activities.html:770
@@ -5068,78 +4885,62 @@ msgstr "ئەزا سانى"
 #: templates/clubs/staff/manage_department.html:373
 msgid "人"
 msgstr "ئادەم"
-
 #: templates/clubs/club_detail.html:371 templates/clubs/club_detail.html:680
 msgid "社团简介"
 msgstr "بىرلەشمە تونۇشتۇرۇشى"
-
 #: templates/clubs/club_detail.html:383
 msgid "成员列表"
 msgstr "ئەزالار تىزىملىكى"
-
 #: templates/clubs/club_detail.html:395
 msgid "二维码生成设置"
 msgstr "QR كود تەڭشەكلىرى"
-
 #: templates/clubs/club_detail.html:398
 #: templates/clubs/user/member_management.html:111
 msgid "有效时长（分钟）"
 msgstr "كۈچلۈك مۇددىتى (مىنۇت)"
-
 #: templates/clubs/club_detail.html:402
 #: templates/clubs/user/member_management.html:115
 msgid "使用次数"
 msgstr "ئىشلىتىش سانى"
-
 #: templates/clubs/club_detail.html:404
 #: templates/clubs/user/member_management.html:117
 msgid "1次（一次性）"
 msgstr "1 قېتىم (بىر قېتىملىق)"
-
 #: templates/clubs/club_detail.html:405
 #: templates/clubs/user/member_management.html:118
 msgid "5次"
 msgstr "5 قېتىم"
-
 #: templates/clubs/club_detail.html:406
 #: templates/clubs/user/member_management.html:119
 msgid "10次"
 msgstr "10 قېتىم"
-
 #: templates/clubs/club_detail.html:407
 #: templates/clubs/user/member_management.html:120
 msgid "20次"
 msgstr "20 قېتىم"
-
 #: templates/clubs/club_detail.html:408
 #: templates/clubs/user/member_management.html:121
 msgid "50次"
 msgstr "50 قېتىم"
-
 #: templates/clubs/club_detail.html:409
 #: templates/clubs/user/member_management.html:122
 msgid "不限次数"
 msgstr "چەكسىز"
-
 #: templates/clubs/club_detail.html:413
 #: templates/clubs/user/member_management.html:125
 msgid "生成二维码"
 msgstr "QR كود قۇرۇش"
-
 #: templates/clubs/club_detail.html:418
 msgid "招新二维码已生成"
 msgstr "قوبۇل قىلىش QR كودى ھاسىل قىلىندى"
-
 #: templates/clubs/club_detail.html:420
 #: templates/clubs/user/member_management.html:130
 msgid "招新二维码"
 msgstr "قوبۇل قىلىش QR كودى"
-
 #: templates/clubs/club_detail.html:426
 #: templates/clubs/user/member_management.html:136
 msgid "复制链接"
 msgstr "ئۇلانى كۆچۈرۈش"
-
 #: templates/clubs/club_detail.html:436
 #: templates/clubs/staff/manage_department.html:326
 #: templates/clubs/staff/manage_department.html:380
@@ -5147,11 +4948,9 @@ msgstr "ئۇلانى كۆچۈرۈش"
 #: templates/clubs/user/member_management.html:234
 msgid "姓名"
 msgstr "ئىسىم"
-
 #: templates/clubs/club_detail.html:438
 msgid "身份"
 msgstr "ھۆكۈمەت"
-
 #: templates/clubs/club_detail.html:439
 msgid "加入/任命日期"
 msgstr ""
@@ -5159,7 +4958,6 @@ msgstr ""
 #: templates/clubs/club_detail.html:440
 msgid "联系方式"
 msgstr "ئالاقە ئۇسۇلى"
-
 #: templates/clubs/club_detail.html:481
 #, python-format
 msgid ""
@@ -5171,27 +4969,21 @@ msgstr ""
 #: templates/clubs/club_detail.html:490 templates/clubs/club_detail.html:522
 msgid "未公开"
 msgstr "ئاشكارا ئەمەس"
-
 #: templates/clubs/club_detail.html:649
 msgid "管理操作"
 msgstr "باشقۇرۇش مەشغۇلاتلىرى"
-
 #: templates/clubs/club_detail.html:661
 msgid "修改资料"
 msgstr "ئۇچۇرلارنى تەھرىرلەش"
-
 #: templates/clubs/club_detail.html:663
 msgid "更改状态"
 msgstr "ھالەتنى ئۆزگەرتىش"
-
 #: templates/clubs/club_detail.html:665 templates/clubs/delete_club.html:219
 msgid "删除社团"
 msgstr "بىرلەشمىنى ئۆچۈرۈش"
-
 #: templates/clubs/club_detail.html:676
 msgid "修改社团简介"
 msgstr "بىرلەشمە تونۇشتۇرۇشىنى تەھرىرلەش"
-
 #: templates/clubs/components/_alert_club_item.html:4
 #, python-format
 msgid " (%(__i18n1)s人)"
@@ -5200,20 +4992,16 @@ msgstr ""
 #: templates/clubs/components/_alert_club_item.html:6
 msgid "社长:"
 msgstr "شۇجى:"
-
 #: templates/clubs/components/_alert_club_item.html:18
 msgid "未设置"
 msgstr "تەڭشەلمىگەن"
-
 #: templates/clubs/components/_alert_club_item.html:21
 msgid "负责干事:"
 msgstr "مەسئۇل خادىم:"
-
 #: templates/clubs/components/_alert_club_item.html:30
 #: templates/clubs/user/dashboard.html:431
 msgid "暂未分配"
 msgstr "تەيىنلەنمىگەن"
-
 #: templates/clubs/components/_cropper_upload.html:22
 msgid "裁剪图片"
 msgstr ""
@@ -5238,19 +5026,15 @@ msgstr ""
 #: templates/clubs/components/_csv_import_modal.html:180
 msgid "下载导入模板"
 msgstr "كىرگۈزۈش قېلىپىنى چۈشۈرۈش"
-
 #: templates/clubs/components/_csv_import_modal.html:184
 msgid "浏览"
 msgstr "كۆز يۈگۈرتۈش"
-
 #: templates/clubs/components/_csv_import_modal.html:185
 msgid "未选择文件"
 msgstr "ھۆججەت تاللانمىدى"
-
 #: templates/clubs/components/_csv_import_modal.html:189
 msgid "开始导入"
 msgstr "كىرگۈزۈشنى باشلاش"
-
 #: templates/clubs/components/_csv_import_modal.html:191
 msgid "准备导入..."
 msgstr ""
@@ -5261,29 +5045,24 @@ msgstr ""
 #: templates/clubs/user/dynamic_form_submit.html:729
 msgid "文件已丢失"
 msgstr "ھۆججەت يوقاپ كەتتى"
-
 #: templates/clubs/components/_dynamic_submission_fields.html:27
 #: templates/clubs/components/_submission_attempt_history.html:610
-#: templates/clubs/staff/dynamic_audit_center.html:617
-#: templates/clubs/staff/dynamic_audit_center.html:654
+#: templates/clubs/staff/dynamic_audit_center.html:618
+#: templates/clubs/staff/dynamic_audit_center.html:655
 #: templates/clubs/staff/dynamic_submission_review.html:670
 #: templates/clubs/user/dynamic_form_submit.html:733
 msgid "查看"
 msgstr "كۆرۈش"
-
 #: templates/clubs/components/_dynamic_submission_fields.html:39
 #: templates/clubs/staff/dynamic_submission_review.html:688
 msgid "未上传"
 msgstr "يۈكلەنمىگەن"
-
 #: templates/clubs/components/_file_upload.html:42
 msgid "(可选)"
 msgstr "(ئىختىيارى)"
-
 #: templates/clubs/components/_file_upload.html:51
 msgid "点击或拖拽"
 msgstr "چېكىڭ ياكى سۆرەڭ"
-
 #: templates/clubs/components/_file_upload.html:51
 msgid "多个文件"
 msgstr ""
@@ -5295,37 +5074,33 @@ msgstr ""
 #: templates/clubs/components/_file_upload.html:52
 msgid "点击选择文件"
 msgstr "ھۆججەت تاللاش ئۈچۈن چېكىڭ"
-
 #: templates/clubs/components/_file_upload.html:55
 #, python-format
 msgid "支持格式：%(__i18n1)s"
 msgstr "قوللايدىغان فورماتلار: %(__i18n1)s"
-
 #: templates/clubs/components/_file_upload.html:56
 #, python-format
 msgid "（最大 %(__i18n1)sMB）"
 msgstr "(ئەڭ چوڭ %(__i18n1)sMB)"
-
 #: templates/clubs/components/_file_upload.html:81
 msgid "下载模板"
 msgstr "قېلىپنى چۈشۈرۈش"
-
 #: templates/clubs/components/_file_upload.html:89
 msgid "当前文件："
 msgstr "نۆۋەتتىكى ھۆججەت:"
-
+#: templates/clubs/components/_language_switcher.html:5
+#: templates/clubs/user/edit_profile.html:592
+msgid "界面语言"
+msgstr "كۆرۈنمە تىلى"
 #: templates/clubs/components/_office_preview_modal.html:87
 msgid "在线预览"
 msgstr "توردا ئالدىن كۆرۈش"
-
 #: templates/clubs/components/_office_preview_modal.html:88
 msgid "关闭预览"
 msgstr "ئالدىن كۆرۈشنى تاقاش"
-
 #: templates/clubs/components/_office_preview_modal.html:92
 msgid "Office 在线预览"
 msgstr "Office توردا ئالدىن كۆرۈش"
-
 #: templates/clubs/components/_staff_alerts.html:23
 #, python-format
 msgid ""
@@ -5351,56 +5126,48 @@ msgstr ""
 #: templates/clubs/components/_submission_attempt_history.html:510
 msgid "历史提交与审核记录"
 msgstr "تاپشۇرۇش ۋە تەكشۈرۈش خاتىرىسى"
-
 #: templates/clubs/components/_submission_attempt_history.html:512
 #, python-format
 msgid "共 %(__i18n1)s 次提交"
 msgstr "جەمئى %(__i18n1)s قېتىم تاپشۇرۇلغان"
-
 #: templates/clubs/components/_submission_attempt_history.html:515
 #: templates/clubs/components/_submission_attempt_history.html:535
-#: templates/clubs/staff/dynamic_audit_center.html:535
-#: templates/clubs/staff/dynamic_audit_center.html:572
-#: templates/clubs/staff/dynamic_audit_center.html:606
-#: templates/clubs/staff/dynamic_audit_center.html:648
+#: templates/clubs/staff/dynamic_audit_center.html:536
+#: templates/clubs/staff/dynamic_audit_center.html:573
+#: templates/clubs/staff/dynamic_audit_center.html:607
+#: templates/clubs/staff/dynamic_audit_center.html:649
 #: templates/clubs/staff/dynamic_submission_review.html:609
 #, python-format
 msgid "已审核 %(__i18n1)s 人"
 msgstr "%(__i18n1)s ئادەم تەكشۈرگەن"
-
 #: templates/clubs/components/_submission_attempt_history.html:530
-#: templates/clubs/staff/dynamic_audit_center.html:533
-#: templates/clubs/staff/dynamic_audit_center.html:570
-#: templates/clubs/staff/dynamic_audit_center.html:603
-#: templates/clubs/staff/dynamic_audit_center.html:645
+#: templates/clubs/staff/dynamic_audit_center.html:534
+#: templates/clubs/staff/dynamic_audit_center.html:571
+#: templates/clubs/staff/dynamic_audit_center.html:604
+#: templates/clubs/staff/dynamic_audit_center.html:646
 #: templates/clubs/staff/dynamic_submission_review.html:607
-#: templates/clubs/user/dynamic_approval_detail.html:542
+#: templates/clubs/user/dynamic_approval_detail.html:543
 #, python-format
 msgid "第 %(__i18n1)s 次提交"
 msgstr "%(__i18n1)s-قېتىملىق تاپشۇرۇش"
-
 #: templates/clubs/components/_submission_attempt_history.html:530
 msgid "当前轮次"
 msgstr "نۆۋەتتىكى قېتىم"
-
 #: templates/clubs/components/_submission_attempt_history.html:541
 msgid "没有数据"
 msgstr "سانلىق مەلۇمات يوق"
-
 #: templates/clubs/components/_submission_attempt_history.html:547
 msgid "审核记录"
 msgstr "تەكشۈرۈش خاتىرىلىرى"
-
 #: templates/clubs/components/_submission_attempt_history.html:554
 msgid "已注销用户"
 msgstr ""
 
 #: templates/clubs/components/_submission_attempt_history.html:570
 #: templates/clubs/staff/dynamic_submission_review.html:644
-#: templates/clubs/user/dynamic_approval_detail.html:600
+#: templates/clubs/user/dynamic_approval_detail.html:601
 msgid "提交内容"
 msgstr "تاپشۇرۇلغان مەزمۇن"
-
 #: templates/clubs/components/_submission_attempt_history.html:623
 msgid "该轮次没有可回溯的提交内容"
 msgstr ""
@@ -5412,15 +5179,12 @@ msgstr ""
 #: templates/clubs/components/_submission_attempt_history.html:649
 msgid "重新进入审核"
 msgstr "تەكشۈرۈشكە قايتا كىرىش"
-
 #: templates/clubs/components/_submission_attempt_history.html:651
 msgid "直接修改"
 msgstr "بىۋاسىتە ئۆزگەرتىش"
-
 #: templates/clubs/components/_submission_attempt_history.html:667
 msgid "暂无审核记录"
 msgstr "تەكشۈرۈش خاتىرىسى يوق"
-
 #: templates/clubs/delete_club.html:4
 #, python-format
 msgid "删除社团 - %(__i18n1)s"
@@ -5482,7 +5246,6 @@ msgstr ""
 #: templates/clubs/delete_room_booking.html:72
 msgid "取消预约"
 msgstr "زاكازنى بىكار قىلىش"
-
 #: templates/clubs/delete_room_booking.html:73
 msgid "确认后将立即释放该房间时间段"
 msgstr ""
@@ -5511,7 +5274,6 @@ msgstr ""
 #: templates/clubs/delete_room_booking.html:115
 msgid "确认取消"
 msgstr "بىكار قىلىشنى جەزملەش"
-
 #: templates/clubs/direct_edit_club_info.html:4
 #, python-format
 msgid "直接修改社团信息 - %(__i18n1)s"
@@ -5622,19 +5384,15 @@ msgstr ""
 #: templates/clubs/error_page.html:13
 msgid "页面不存在"
 msgstr "بەت تېپىلمىدى"
-
 #: templates/clubs/error_page.html:13 templates/clubs/error_page.html:233
 msgid "服务器开小差了"
 msgstr "مۇلازىمېتىر خاتالىقى"
-
 #: templates/clubs/error_page.html:233
 msgid "页面走丢了"
 msgstr "بەت يوقاپ كەتتى"
-
 #: templates/clubs/error_page.html:236
 msgid "你访问的地址不存在、已被移动，或者你无权查看该页面。"
 msgstr "سىز زىيارەت قىلغان ئادرېس مەۋجۇت ئەمەس، يۆتكەلگەن ياكى كۆرۈش ھوقۇقىڭىز يوق."
-
 #: templates/clubs/error_page.html:236
 msgid ""
 "系统在处理请求时遇到了意外问题，技术团队已收到通知。请稍后重试，或提交求助让"
@@ -5645,19 +5403,15 @@ msgstr ""
 #, python-format
 msgid "错误编号：#%(__i18n1)s"
 msgstr "خاتالىق نومۇرى: #%(__i18n1)s"
-
 #: templates/clubs/error_page.html:245
 msgid "返回首页"
 msgstr "باش بەتكە قايتىش"
-
 #: templates/clubs/error_page.html:248
 msgid "重新加载"
 msgstr "قايتا يۈكلەش"
-
 #: templates/clubs/error_page.html:255
 msgid "请求帮助"
 msgstr "ياردەم سوراش"
-
 #: templates/clubs/error_page.html:261
 msgid "你的联系邮箱（选填）"
 msgstr ""
@@ -5669,27 +5423,21 @@ msgstr ""
 #: templates/clubs/error_page.html:263
 msgid "提交求助"
 msgstr "ياردەم تەلەپنى تاپشۇرۇش"
-
 #: templates/clubs/index.html:6
 msgid "首页 - 社团管理系统"
 msgstr "باش بەت - بىرلەشمە باشقۇرۇش سىستېمىسى"
-
 #: templates/clubs/index.html:1018
 msgid "社团总数"
 msgstr "بىرلەشمە سانى"
-
 #: templates/clubs/index.html:1067
 msgid "最新公告"
 msgstr "ئەڭ يېڭى ئۇقتۇرۇشلار"
-
 #: templates/clubs/index.html:1092
 msgid "查看详情"
 msgstr "تەپسىلاتنى كۆرۈش"
-
 #: templates/clubs/index.html:1123
 msgid "已有账号"
 msgstr "ھېساباتىڭىز بارمۇ"
-
 #: templates/clubs/index.html:1124
 msgid "登录后查看完整的部门信息、社团详情，管理您的社团事务"
 msgstr ""
@@ -5697,7 +5445,6 @@ msgstr ""
 #: templates/clubs/index.html:1132
 msgid "新用户？"
 msgstr "يېڭى ئىشلەتكۈچىمۇ؟"
-
 #: templates/clubs/index.html:1133
 msgid "注册账号后即可使用社团管理系统的全部功能"
 msgstr ""
@@ -5705,19 +5452,15 @@ msgstr ""
 #: templates/clubs/index.html:1135
 msgid "注册账号"
 msgstr "ھېسابات تىزىملىتىش"
-
 #: templates/clubs/index.html:1145 templates/clubs/index.html:1181
 msgid "部门介绍"
 msgstr "بۆلۈم تونۇشتۇرۇشى"
-
 #: templates/clubs/index.html:1214
 msgid "社团列表"
 msgstr "بىرلەشمە تىزىملىكى"
-
 #: templates/clubs/index.html:1229
 msgid "我是社长"
 msgstr "مەن شۇجى"
-
 #: templates/clubs/index.html:1236
 msgid "社团列表分页"
 msgstr ""
@@ -5726,7 +5469,6 @@ msgstr ""
 #, python-format
 msgid "第 %(__i18n1)s / %(__i18n2)s 页"
 msgstr "%(__i18n1)s / %(__i18n2)s بەت"
-
 #: templates/clubs/index.html:1252
 msgid "部门成员"
 msgstr ""
@@ -5778,7 +5520,7 @@ msgstr ""
 
 #: templates/clubs/member_join_form.html:155
 #: templates/clubs/user/dynamic_form_submit.html:770
-#: templates/clubs/user/edit_profile.html:417
+#: templates/clubs/user/edit_profile.html:418
 msgid "请选择"
 msgstr ""
 
@@ -5872,11 +5614,9 @@ msgstr ""
 #: templates/clubs/oobe_setup.html:547 templates/clubs/oobe_setup.html:811
 msgid "否"
 msgstr "ياق"
-
 #: templates/clubs/oobe_setup.html:548 templates/clubs/oobe_setup.html:811
 msgid "是"
 msgstr "ھەئە"
-
 #: templates/clubs/oobe_setup.html:555
 msgid "站点配置"
 msgstr ""
@@ -6095,11 +5835,9 @@ msgstr ""
 #: templates/clubs/public_activities.html:605
 msgid "活动管理"
 msgstr "پائالىيەت باشقۇرۇش"
-
 #: templates/clubs/public_activities.html:606
 msgid "查看和管理社团活动"
 msgstr "بىرلەشمە پائالىيەتلىرىنى كۆرۈش ۋە باشقۇرۇش"
-
 #: templates/clubs/public_activities.html:615
 msgid "筛选和搜索"
 msgstr ""
@@ -6123,7 +5861,6 @@ msgstr ""
 #: templates/clubs/public_activities.html:697
 msgid "全选"
 msgstr "ھەممىسىنى تاللاش"
-
 #: templates/clubs/public_activities.html:699
 msgid "已选择 0 个活动"
 msgstr ""
@@ -6143,23 +5880,18 @@ msgstr ""
 #: templates/clubs/public_activities.html:769
 msgid "人数"
 msgstr "سان"
-
 #: templates/clubs/public_activities.html:776
 msgid "活动简介"
 msgstr "پائالىيەت تونۇشتۇرۇشى"
-
 #: templates/clubs/public_activities.html:806
 msgid "已报名 / 取消"
 msgstr "تىزىملاتقان / بىكار قىلىش"
-
 #: templates/clubs/public_activities.html:812
 msgid "报名参加"
 msgstr "تىزىملىتىپ قاتنىشىش"
-
 #: templates/clubs/public_activities.html:816
 msgid "登录参加"
 msgstr "قاتنىشىش ئۈچۈن كىرىڭ"
-
 #: templates/clubs/public_activities.html:824
 msgid "活动分页"
 msgstr ""
@@ -6167,27 +5899,21 @@ msgstr ""
 #: templates/clubs/public_activities.html:837
 msgid "暂无即将举办的活动"
 msgstr "يېقىن كەلگۈسىدە پائالىيەت يوق"
-
 #: templates/clubs/room_calendar.html:5
 msgid "房间预约日历"
 msgstr "ئۆي زاكاز كالېندارى"
-
 #: templates/clubs/room_calendar.html:806
 msgid "今天"
 msgstr "بۈگۈن"
-
 #: templates/clubs/room_calendar.html:808
 msgid "日期切换"
 msgstr "چېسلا ئالماشتۇرۇش"
-
 #: templates/clubs/room_calendar.html:823
 msgid "导出周表"
 msgstr "ھەپتىلىك جەدۋەلنى چىقىرىش"
-
 #: templates/clubs/room_calendar.html:852
 msgid "预约此时段"
 msgstr "بۇ ۋاقىتنى زاكاز قىلىش"
-
 #: templates/clubs/room_calendar.html:873
 msgid "今日暂无预约，点击右上角立刻创建吧。"
 msgstr ""
@@ -6195,7 +5921,6 @@ msgstr ""
 #: templates/clubs/room_calendar.html:886
 msgid "预约详情"
 msgstr "زاكاز تەپسىلاتى"
-
 #: templates/clubs/room_calendar.html:900
 msgid "导出预约周表"
 msgstr ""
@@ -6215,7 +5940,6 @@ msgstr ""
 #: templates/clubs/room_my_bookings.html:250
 msgid "新建预约"
 msgstr "يېڭى زاكاز"
-
 #: templates/clubs/room_my_bookings.html:300
 msgid "预约记录分页"
 msgstr ""
@@ -6224,85 +5948,78 @@ msgstr ""
 msgid "您还没有预约任何房间，点击右上角\"新建预约\"开始申请。"
 msgstr ""
 
-#: templates/clubs/staff/dynamic_audit_center.html:501
+#: templates/clubs/staff/dynamic_audit_center.html:502
 msgid "当前分类："
 msgstr "ھازىرقى تۈر: "
 
-#: templates/clubs/staff/dynamic_audit_center.html:503
+#: templates/clubs/staff/dynamic_audit_center.html:504
 msgid "审核通道"
 msgstr "تەكشۈرۈش يوللىرى"
 
-#: templates/clubs/staff/dynamic_audit_center.html:505
+#: templates/clubs/staff/dynamic_audit_center.html:506
 msgid "全部"
 msgstr "ھەممىسى"
-
-#: templates/clubs/staff/dynamic_audit_center.html:531
-#: templates/clubs/staff/dynamic_audit_center.html:568
-#: templates/clubs/staff/dynamic_audit_center.html:602
-#: templates/clubs/staff/dynamic_audit_center.html:644
-#: templates/clubs/user/dynamic_approval_center.html:440
-#: templates/clubs/user/dynamic_approval_center.html:462
-#: templates/clubs/user/dynamic_approval_center.html:488
-#: templates/clubs/user/dynamic_approval_center.html:510
-#: templates/clubs/user/dynamic_approval_center.html:548
-#: templates/clubs/user/dynamic_approval_center.html:571
-#: templates/clubs/user/dynamic_approval_center.html:599
-#: templates/clubs/user/dynamic_approval_center.html:622
+#: templates/clubs/staff/dynamic_audit_center.html:532
+#: templates/clubs/staff/dynamic_audit_center.html:569
+#: templates/clubs/staff/dynamic_audit_center.html:603
+#: templates/clubs/staff/dynamic_audit_center.html:645
+#: templates/clubs/user/dynamic_approval_center.html:441
+#: templates/clubs/user/dynamic_approval_center.html:463
+#: templates/clubs/user/dynamic_approval_center.html:489
+#: templates/clubs/user/dynamic_approval_center.html:511
+#: templates/clubs/user/dynamic_approval_center.html:549
+#: templates/clubs/user/dynamic_approval_center.html:572
+#: templates/clubs/user/dynamic_approval_center.html:600
+#: templates/clubs/user/dynamic_approval_center.html:623
 #, python-format
 msgid "编号 %(__i18n1)s"
 msgstr "نومۇر %(__i18n1)s"
-
-#: templates/clubs/staff/dynamic_audit_center.html:534
-#: templates/clubs/staff/dynamic_audit_center.html:571
-#: templates/clubs/staff/dynamic_audit_center.html:605
-#: templates/clubs/staff/dynamic_audit_center.html:647
+#: templates/clubs/staff/dynamic_audit_center.html:535
+#: templates/clubs/staff/dynamic_audit_center.html:572
+#: templates/clubs/staff/dynamic_audit_center.html:606
+#: templates/clubs/staff/dynamic_audit_center.html:648
 #: templates/clubs/staff/dynamic_submission_review.html:608
-#: templates/clubs/user/dynamic_approval_detail.html:543
+#: templates/clubs/user/dynamic_approval_detail.html:544
 #, python-format
 msgid "通过 %(__i18n1)s"
 msgstr "%(__i18n1)s تەستىقلاندى"
-
-#: templates/clubs/staff/dynamic_audit_center.html:553
+#: templates/clubs/staff/dynamic_audit_center.html:554
 msgid "暂无待审核提交"
 msgstr "تەكشۈرۈلمەيدىغان تاپشۇرۇق يوق"
-
-#: templates/clubs/staff/dynamic_audit_center.html:557
+#: templates/clubs/staff/dynamic_audit_center.html:558
 #, python-format
 msgid "还有 %(__i18n1)s 条待审核"
 msgstr "تېخى %(__i18n1)s تەكشۈرۈلمەيدۇ"
-
-#: templates/clubs/staff/dynamic_audit_center.html:608
-#: templates/clubs/staff/dynamic_audit_center.html:649
+#: templates/clubs/staff/dynamic_audit_center.html:609
+#: templates/clubs/staff/dynamic_audit_center.html:650
 #, python-format
 msgid "最后审核：%(__i18n1)s"
 msgstr ""
 
-#: templates/clubs/staff/dynamic_audit_center.html:629
+#: templates/clubs/staff/dynamic_audit_center.html:630
 msgid "暂无已处理提交"
 msgstr "بىر تەرەپ قىلىنغان تاپشۇرۇق يوق"
-
-#: templates/clubs/staff/dynamic_audit_center.html:633
-#: templates/clubs/user/dynamic_approval_center.html:500
-#: templates/clubs/user/dynamic_approval_center.html:611
+#: templates/clubs/staff/dynamic_audit_center.html:634
+#: templates/clubs/user/dynamic_approval_center.html:501
+#: templates/clubs/user/dynamic_approval_center.html:612
 #, python-format
 msgid "还有 %(__i18n1)s 条已处理"
 msgstr "تېخى %(__i18n1)s بىر تەرەپ قىلىندى"
-
-#: templates/clubs/staff/dynamic_audit_center.html:671
+#: templates/clubs/staff/dynamic_audit_center.html:672
 msgid "待审核上一页"
 msgstr "تەكشۈرۈش كۈتۈلۈۋاتقان ئالدىنقى بەت"
 
-#: templates/clubs/staff/dynamic_audit_center.html:672
+#: templates/clubs/staff/dynamic_audit_center.html:673
 msgid "待审核下一页"
 msgstr "تەكشۈرۈش كۈتۈلۈۋاتقان كېيىنكى بەت"
 
-#: templates/clubs/staff/dynamic_audit_center.html:673
-#: templates/clubs/user/dynamic_approval_center.html:637
+#: templates/clubs/staff/dynamic_audit_center.html:674
+#: templates/clubs/user/dynamic_approval_center.html:638
 msgid "已处理上一页"
 msgstr "بىر تەرەپ قىلىنغان ئالدىنقى بەت"
 
-#: templates/clubs/staff/dynamic_audit_center.html:674
-#: templates/clubs/user/dynamic_approval_center.html:638
+#: templates/clubs/staff/dynamic_audit_center.html:675
+#: templates/clubs/user/dynamic_approval_center.html:639
 msgid "已处理下一页"
 msgstr "بىر تەرەپ قىلىنغان كېيىنكى بەت"
 
@@ -6312,107 +6029,93 @@ msgid "审核 %(__i18n1)s"
 msgstr ""
 
 #: templates/clubs/staff/dynamic_submission_review.html:602
-#: templates/clubs/user/dynamic_approval_detail.html:539
+#: templates/clubs/user/dynamic_approval_detail.html:540
 #, python-format
 msgid "请求编号：%(__i18n1)s"
 msgstr ""
 
 #: templates/clubs/staff/dynamic_submission_review.html:611
-#: templates/clubs/user/dynamic_approval_detail.html:545
+#: templates/clubs/user/dynamic_approval_detail.html:546
 #, python-format
 msgid "还需 %(__i18n1)s 次通过"
 msgstr "تېخى %(__i18n1)s قېتىم تەستىقلاش كېرەك"
-
 #: templates/clubs/staff/dynamic_submission_review.html:620
-#: templates/clubs/user/dynamic_approval_detail.html:554
+#: templates/clubs/user/dynamic_approval_detail.html:555
 msgid "下载合并 Word"
 msgstr "بىرلەشتۈرۈلگەن Word نى چۈشۈرۈش"
-
 #: templates/clubs/staff/dynamic_submission_review.html:621
-#: templates/clubs/user/dynamic_approval_detail.html:555
+#: templates/clubs/user/dynamic_approval_detail.html:556
 msgid "已通过发票合并文档"
 msgstr ""
 
 #: templates/clubs/staff/dynamic_submission_review.html:629
-#: templates/clubs/user/dynamic_approval_detail.html:563
+#: templates/clubs/user/dynamic_approval_detail.html:564
 msgid "下载压缩包"
 msgstr "سىقىلغان ھۆججەتنى چۈشۈرۈش"
-
 #: templates/clubs/staff/dynamic_submission_review.html:630
-#: templates/clubs/user/dynamic_approval_detail.html:564
+#: templates/clubs/user/dynamic_approval_detail.html:565
 msgid "全部原始附件"
 msgstr ""
 
 #: templates/clubs/staff/dynamic_submission_review.html:683
 msgid "打回这个文件"
 msgstr "بۇ ھۆججەتنى قايتۇرۇش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:694
+#: templates/clubs/staff/dynamic_submission_review.html:700
 msgid "打回这一项"
 msgstr "بۇ تۈرنى قايتۇرۇش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:707
+#: templates/clubs/staff/dynamic_submission_review.html:713
 msgid "审核处理"
 msgstr "تەكشۈرۈش بىر تەرەپ قىلىش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:714
+#: templates/clubs/staff/dynamic_submission_review.html:720
 msgid "你已审核本轮提交，再次提交将修改你的审核结果"
 msgstr ""
 
-#: templates/clubs/staff/dynamic_submission_review.html:716
+#: templates/clubs/staff/dynamic_submission_review.html:722
 msgid "打回"
 msgstr "قايتۇرۇش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:718
-#: templates/clubs/staff/dynamic_submission_review.html:723
+#: templates/clubs/staff/dynamic_submission_review.html:724
+#: templates/clubs/staff/dynamic_submission_review.html:729
 msgid "通过"
 msgstr "تەستىقلاش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:721
+#: templates/clubs/staff/dynamic_submission_review.html:727
 msgid "拒绝"
 msgstr "رەت قىلىش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:729
+#: templates/clubs/staff/dynamic_submission_review.html:735
 msgid "修改我的审核结果"
 msgstr "مېنىڭ تەكشۈرۈش نەتىجەمنى ئۆزگەرتىش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:730
+#: templates/clubs/staff/dynamic_submission_review.html:736
 msgid "只修改你自己的审核记录，其他审核人的投票和审核人数保持不变。"
 msgstr ""
 
-#: templates/clubs/staff/dynamic_submission_review.html:732
+#: templates/clubs/staff/dynamic_submission_review.html:738
 msgid "你尚未参与本轮审核，将作为审核人新增一条记录"
 msgstr ""
 
-#: templates/clubs/staff/dynamic_submission_review.html:737
+#: templates/clubs/staff/dynamic_submission_review.html:743
 msgid "改为不通过"
 msgstr "رەت قىلىشقا ئۆزگەرتىش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:739
+#: templates/clubs/staff/dynamic_submission_review.html:745
 msgid "改为通过"
 msgstr "تەستىقلاشقا ئۆزگەرتىش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:746
+#: templates/clubs/staff/dynamic_submission_review.html:752
 msgid "管理员重新审核"
 msgstr "باشقۇرغۇچى قايتا تەكشۈرۈش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:747
+#: templates/clubs/staff/dynamic_submission_review.html:753
 msgid "保留当前审核历史，开启新一轮审核，所有审核人需要重新投票。"
 msgstr ""
 
-#: templates/clubs/staff/dynamic_submission_review.html:751
+#: templates/clubs/staff/dynamic_submission_review.html:757
 msgid "重新审核"
 msgstr "قايتا تەكشۈرۈش"
-
-#: templates/clubs/staff/dynamic_submission_review.html:757
+#: templates/clubs/staff/dynamic_submission_review.html:763
 msgid "该通道绑定内置业务动作，审核结果不可覆盖修改"
 msgstr ""
 
-#: templates/clubs/staff/dynamic_submission_review.html:759
+#: templates/clubs/staff/dynamic_submission_review.html:765
 msgid "你已审核本次提交"
 msgstr ""
 
-#: templates/clubs/staff/dynamic_submission_review.html:761
+#: templates/clubs/staff/dynamic_submission_review.html:767
 msgid "该请求已完成审核，仅参与本轮审核的审核人或管理员可修改结果"
 msgstr ""
 
@@ -6421,7 +6124,7 @@ msgid "管理负责社团 - 干事后台"
 msgstr ""
 
 #: templates/clubs/staff/manage_clubs.html:321
-#: templates/clubs/staff/management.html:258
+#: templates/clubs/staff/management.html:259
 msgid "管理负责社团"
 msgstr ""
 
@@ -6523,11 +6226,9 @@ msgstr ""
 #: templates/clubs/staff/manage_department.html:318
 msgid "部长"
 msgstr "بۆلۈم باشلىقى"
-
 #: templates/clubs/staff/manage_department.html:372
 msgid "部员"
 msgstr "بۆلۈم ئەزاسى"
-
 #: templates/clubs/staff/manage_department.html:425
 msgid "当前部门暂无成员"
 msgstr ""
@@ -6540,69 +6241,68 @@ msgid ""
 "            "
 msgstr ""
 
-#: templates/clubs/staff/management.html:190
+#: templates/clubs/staff/management.html:191
 msgid "✓ 复制成功"
 msgstr ""
 
-#: templates/clubs/staff/management.html:196
+#: templates/clubs/staff/management.html:197
 msgid "管理社团功能、模板和用户信息"
 msgstr ""
 
-#: templates/clubs/staff/management.html:210
+#: templates/clubs/staff/management.html:211
 msgid "功能控制"
 msgstr ""
 
-#: templates/clubs/staff/management.html:225
+#: templates/clubs/staff/management.html:226
 #, python-format
 msgid "当前周期：%(__i18n1)s"
 msgstr ""
 
-#: templates/clubs/staff/management.html:227
+#: templates/clubs/staff/management.html:228
 msgid "当前未开启收集周期"
 msgstr ""
 
-#: templates/clubs/staff/management.html:231
+#: templates/clubs/staff/management.html:232
 msgid "暂无允许在本页开关的提交通道。"
 msgstr ""
 
-#: templates/clubs/staff/management.html:239
+#: templates/clubs/staff/management.html:240
 msgid "管理功能"
 msgstr ""
 
-#: templates/clubs/staff/management.html:248
+#: templates/clubs/staff/management.html:249
 msgid "查看用户名单"
 msgstr ""
 
-#: templates/clubs/staff/management.html:249
+#: templates/clubs/staff/management.html:250
 msgid "查看所有用户的详细信息和联系方式"
 msgstr ""
 
-#: templates/clubs/staff/management.html:251
+#: templates/clubs/staff/management.html:252
 msgid "用户名单"
 msgstr ""
 
-#: templates/clubs/staff/management.html:259
+#: templates/clubs/staff/management.html:260
 msgid "分配和管理干事负责的社团列表"
 msgstr ""
 
-#: templates/clubs/staff/management.html:261
+#: templates/clubs/staff/management.html:262
 msgid "负责社团"
 msgstr ""
 
-#: templates/clubs/staff/management.html:269
+#: templates/clubs/staff/management.html:270
 msgid "人数告警阈值"
 msgstr "ئەزا سانى ئاگاھلاندۇرۇش چېكى"
-
-#: templates/clubs/staff/management.html:270
+#: templates/clubs/staff/management.html:271
 #, python-format
 msgid "成员数低于该值的社团会触发“社团成员数量预警”，当前：%(__i18n1)s 人。"
 msgstr ""
 
-#: templates/clubs/staff/management.html:286
+#: templates/clubs/staff/management.html:287
 msgid "社团名单"
 msgstr ""
 
-#: templates/clubs/staff/management.html:306
+#: templates/clubs/staff/management.html:307
 #, python-format
 msgid ""
 "\n"
@@ -6610,11 +6310,11 @@ msgid ""
 "                "
 msgstr ""
 
-#: templates/clubs/staff/management.html:391
+#: templates/clubs/staff/management.html:392
 msgid "暂无社团记录"
 msgstr ""
 
-#: templates/clubs/staff/management.html:402
+#: templates/clubs/staff/management.html:403
 #, python-format
 msgid ""
 "\n"
@@ -6622,31 +6322,30 @@ msgid ""
 "                "
 msgstr ""
 
-#: templates/clubs/staff/management.html:439
+#: templates/clubs/staff/management.html:440
 msgid "删除社团确认"
 msgstr ""
 
-#: templates/clubs/staff/management.html:440
+#: templates/clubs/staff/management.html:441
 msgid "您正在删除社团"
 msgstr ""
 
-#: templates/clubs/staff/management.html:440
+#: templates/clubs/staff/management.html:441
 msgid "此操作无法撤销！所有相关数据将被永久删除。"
 msgstr ""
 
-#: templates/clubs/staff/management.html:441
+#: templates/clubs/staff/management.html:442
 msgid "请输入社团全名以确认："
 msgstr ""
 
-#: templates/clubs/staff/management.html:444
+#: templates/clubs/staff/management.html:445
 msgid "输入社团全名"
 msgstr ""
 
-#: templates/clubs/staff/management.html:448
-#: templates/clubs/user/edit_profile.html:603
+#: templates/clubs/staff/management.html:449
+#: templates/clubs/user/edit_profile.html:640
 msgid "确认删除"
 msgstr "ئۆچۈرۈشنى جەزملەش"
-
 #: templates/clubs/submit_room_booking.html:5
 #: templates/clubs/submit_room_booking.html:238
 msgid "预约房间"
@@ -6736,60 +6435,51 @@ msgstr ""
 msgid "您目前没有管理任何社团"
 msgstr ""
 
-#: templates/clubs/user/dynamic_approval_center.html:411
+#: templates/clubs/user/dynamic_approval_center.html:412
 msgid "查看社团提交请求的审核进度和处理结果"
 msgstr "بىرلەشمە تاپشۇرۇقلىرىنىڭ تەكشۈرۈش جەريانى ۋە نەتىجىسىنى كۆرۈش"
 
-#: templates/clubs/user/dynamic_approval_center.html:427
-#: templates/clubs/user/dynamic_approval_center.html:534
+#: templates/clubs/user/dynamic_approval_center.html:428
+#: templates/clubs/user/dynamic_approval_center.html:535
 msgid "进行中"
 msgstr "داۋاملىشىۋاتىدۇ"
-
-#: templates/clubs/user/dynamic_approval_center.html:448
-#: templates/clubs/user/dynamic_approval_center.html:556
+#: templates/clubs/user/dynamic_approval_center.html:449
+#: templates/clubs/user/dynamic_approval_center.html:557
 msgid "暂无进行中的请求"
 msgstr "داۋاملىشىۋاتقان تەلەپ يوق"
-
-#: templates/clubs/user/dynamic_approval_center.html:452
-#: templates/clubs/user/dynamic_approval_center.html:560
+#: templates/clubs/user/dynamic_approval_center.html:453
+#: templates/clubs/user/dynamic_approval_center.html:561
 #, python-format
 msgid "还有 %(__i18n1)s 条进行中"
 msgstr "تېخى %(__i18n1)s داۋاملىشىۋاتىدۇ"
-
-#: templates/clubs/user/dynamic_approval_center.html:496
-#: templates/clubs/user/dynamic_approval_center.html:607
+#: templates/clubs/user/dynamic_approval_center.html:497
+#: templates/clubs/user/dynamic_approval_center.html:608
 msgid "暂无已处理请求"
 msgstr "بىر تەرەپ قىلىنغان تەلەپ يوق"
-
-#: templates/clubs/user/dynamic_approval_center.html:526
+#: templates/clubs/user/dynamic_approval_center.html:527
 msgid "暂无审批记录"
 msgstr "تەستىقلاش خاتىرىسى يوق"
-
-#: templates/clubs/user/dynamic_approval_center.html:635
+#: templates/clubs/user/dynamic_approval_center.html:636
 msgid "进行中上一页"
 msgstr "داۋاملىشىۋاتقان ئالدىنقى بەت"
 
-#: templates/clubs/user/dynamic_approval_center.html:636
+#: templates/clubs/user/dynamic_approval_center.html:637
 msgid "进行中下一页"
 msgstr "داۋاملىشىۋاتقان كېيىنكى بەت"
 
-#: templates/clubs/user/dynamic_approval_detail.html:5
+#: templates/clubs/user/dynamic_approval_detail.html:6
 msgid "提交详情"
 msgstr "تاپشۇرۇش تەپسىلاتى"
-
-#: templates/clubs/user/dynamic_approval_detail.html:571
+#: templates/clubs/user/dynamic_approval_detail.html:572
 msgid "修改被打回内容"
 msgstr "قايتۇرۇلغان مەزمۇننى تەھرىرلەش"
-
-#: templates/clubs/user/dynamic_approval_detail.html:586
+#: templates/clubs/user/dynamic_approval_detail.html:587
 msgid "总审核意见"
 msgstr "ئومۇمىي تەكشۈرۈش پىكرى"
-
 #: templates/clubs/user/dynamic_form_submit.html:656
 #, python-format
 msgid "补交请求 %(__i18n1)s"
 msgstr "قايتا تاپشۇرۇش تەلەپ %(__i18n1)s"
-
 #: templates/clubs/user/dynamic_form_submit.html:657
 #, python-format
 msgid ""
@@ -6818,7 +6508,6 @@ msgstr ""
 #, python-format
 msgid "打回原因：%(__i18n1)s"
 msgstr "قايتۇرۇش سەۋەبى: %(__i18n1)s"
-
 #: templates/clubs/user/dynamic_form_submit.html:788
 msgid "选择新文件后将替换上方被打回的文件"
 msgstr ""
@@ -6830,155 +6519,155 @@ msgstr ""
 #: templates/clubs/user/dynamic_form_submit.html:804
 msgid "提交修改"
 msgstr "تۈزىتىلگەننى تاپشۇرۇش"
-
 #: templates/clubs/user/edit_profile.html:6
 #: templates/clubs/user/edit_profile.html:363
 msgid "个人中心"
 msgstr "شەخسىي مەركەز"
-
 #: templates/clubs/user/edit_profile.html:364
 msgid "管理个人资料、头像来源与账号安全"
 msgstr "شەخسىي ئۇچۇر، باش رەسىم ۋە ھېسابات بىخەتەرلىكىنى باشقۇرۇڭ"
-
 #: templates/clubs/user/edit_profile.html:373
 msgid "头像设置"
 msgstr "باش رەسىم تەڭشەكلىرى"
-
 #: templates/clubs/user/edit_profile.html:374
 msgid "账号安全"
 msgstr "ھېسابات بىخەتەرلىكى"
-
-#: templates/clubs/user/edit_profile.html:381
+#: templates/clubs/user/edit_profile.html:375
+msgid "语言偏好"
+msgstr "تىل مايىلى"
+#: templates/clubs/user/edit_profile.html:382
 msgid "修改个人资料"
 msgstr "شەخسىي ئۇچۇرنى تەھرىرلەش"
-
-#: templates/clubs/user/edit_profile.html:400
+#: templates/clubs/user/edit_profile.html:397
+msgid "用于找回密码和接收通知"
+msgstr "پارول ئەسلىگە كەلتۈرۈش ۋە ئۇقتۇرۇش ئالغاندا ئىشلىتىلىدۇ"
+#: templates/clubs/user/edit_profile.html:401
 msgid "手机号码"
 msgstr "يانفون نومۇرى"
-
-#: templates/clubs/user/edit_profile.html:428
+#: templates/clubs/user/edit_profile.html:429
 msgid "向其他用户公开我的联系方式"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:443
+#: templates/clubs/user/edit_profile.html:444
 msgid "修改头像"
 msgstr "باش رەسىمنى ئۆزگەرتىش"
-
-#: templates/clubs/user/edit_profile.html:455
+#: templates/clubs/user/edit_profile.html:449
+msgid "当前头像服务预览"
+msgstr "ھازىرقى باش رەسىم مۇلازىمەت كۆرۈنۈشى"
+#: templates/clubs/user/edit_profile.html:456
 msgid "当前使用 Cravatar"
 msgstr "Cravatar ئىشلىتىۋاتىدۇ"
-
-#: templates/clubs/user/edit_profile.html:455
+#: templates/clubs/user/edit_profile.html:456
 msgid "当前使用本站上传头像"
 msgstr "بۇ توربەتنىڭ باش رەسىمى ئىشلىتىلىۋاتىدۇ"
-
-#: templates/clubs/user/edit_profile.html:461
+#: templates/clubs/user/edit_profile.html:462
 msgid "使用 Cravatar 头像"
 msgstr "Cravatar باش رەسىمى ئىشلىتىش"
-
 #: templates/clubs/user/edit_profile.html:463
+msgid "Cravatar 邮箱或 QQ号@qq.com"
+msgstr "Cravatar ئېلخەت ياكى QQ نومۇر@qq.com"
+#: templates/clubs/user/edit_profile.html:464
 msgid "已有 QQ 头像？输入"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:463
+#: templates/clubs/user/edit_profile.html:464
 msgid "QQ号@qq.com"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:463
+#: templates/clubs/user/edit_profile.html:464
 msgid ""
 "（例如 123456@qq.com）即可尝试自动获取。提交后会先检测头像，成功后才会切换；"
 "请求地址不包含邮箱明文。"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:467
+#: templates/clubs/user/edit_profile.html:468
 msgid "改用本站头像"
 msgstr "بۇ توربەتنىڭ باش رەسىمىگە ئالماشتۇرۇش"
-
-#: templates/clubs/user/edit_profile.html:469
+#: templates/clubs/user/edit_profile.html:470
 msgid "检测并使用"
 msgstr "بايقاپ ئىشلىتىش"
-
-#: templates/clubs/user/edit_profile.html:473
+#: templates/clubs/user/edit_profile.html:474
 msgid "管理员暂未开放 Cravatar，仍可在下方上传本站头像。"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:478
+#: templates/clubs/user/edit_profile.html:479
 msgid "上传本站头像"
 msgstr "بۇ توربەتكە باش رەسىم يۈكلەش"
-
-#: templates/clubs/user/edit_profile.html:479
+#: templates/clubs/user/edit_profile.html:480
 msgid "上传成功后会自动切换到本站头像。"
 msgstr ""
 
 #: templates/clubs/user/edit_profile.html:489
+#: templates/clubs/user/edit_profile.html:490
 msgid "当前头像"
-msgstr ""
-
-#: templates/clubs/user/edit_profile.html:497
+msgstr "ھازىرقى باش رەسىم"
+#: templates/clubs/user/edit_profile.html:498
 msgid "支持 JPG、PNG、WebP，上传前会自动裁剪并压缩"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:501
+#: templates/clubs/user/edit_profile.html:502
 msgid "选择图片"
 msgstr "رەسىم تاللاش"
-
-#: templates/clubs/user/edit_profile.html:514
+#: templates/clubs/user/edit_profile.html:515
 msgid "账号安全设置"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:519
-#: templates/clubs/user/edit_profile.html:537
+#: templates/clubs/user/edit_profile.html:520
+#: templates/clubs/user/edit_profile.html:538
 msgid "修改用户名"
 msgstr "ئىشلەتكۈچى ئاتىنى ئۆزگەرتىش"
-
-#: templates/clubs/user/edit_profile.html:525
+#: templates/clubs/user/edit_profile.html:526
 msgid "新用户名"
 msgstr "يېڭى ئىشلەتكۈچى ئاتى"
-
-#: templates/clubs/user/edit_profile.html:527
+#: templates/clubs/user/edit_profile.html:528
 #, python-format
 msgid "当前用户名: %(__i18n1)s"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:531
-#: templates/clubs/user/edit_profile.html:552
+#: templates/clubs/user/edit_profile.html:532
+#: templates/clubs/user/edit_profile.html:553
 msgid "当前密码"
 msgstr "نۆۋەتتىكى پارول"
-
-#: templates/clubs/user/edit_profile.html:532
+#: templates/clubs/user/edit_profile.html:533
 msgid "验证身份以修改用户名"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:546
-#: templates/clubs/user/edit_profile.html:569
+#: templates/clubs/user/edit_profile.html:547
+#: templates/clubs/user/edit_profile.html:570
 msgid "修改密码"
 msgstr "پارولنى ئۆزگەرتىش"
-
-#: templates/clubs/user/edit_profile.html:559
+#: templates/clubs/user/edit_profile.html:560
 msgid "密码长度至少需6位"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:578
+#: templates/clubs/user/edit_profile.html:579
 msgid "危险区域"
 msgstr "خەتەرلىك رايون"
-
-#: templates/clubs/user/edit_profile.html:579
+#: templates/clubs/user/edit_profile.html:580
 msgid "删除账户是不可逆的操作。所有相关数据将被永久删除。"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:582
+#: templates/clubs/user/edit_profile.html:583
 msgid "删除账户"
 msgstr "ھېساباتنى ئۆچۈرۈش"
-
-#: templates/clubs/user/edit_profile.html:593
+#: templates/clubs/user/edit_profile.html:596
+msgid "选择您的首选语言后，会在所有设备同步保留；未选择时跟随站点默认语言。"
+msgstr "ئالدىنقى تاللانغان تىلىڭىز ھەممە ئۈسكۈنىلەردە ساقلىنىدۇ؛ تاللىمىسىڭىز سايتنىڭ سۈكۈت تىلى ئىشلىتىلىدۇ."
+#: templates/clubs/user/edit_profile.html:613
+msgid "当前生效语言"
+msgstr "ھازىرقى تىل"
+#: templates/clubs/user/edit_profile.html:619
+msgid "保存语言偏好"
+msgstr "تىل مايىلىنى ساقلاش"
+#: templates/clubs/user/edit_profile.html:630
 msgid "确认删除账户？"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:595
+#: templates/clubs/user/edit_profile.html:632
 msgid "此操作无法撤销。请输入您的用户名"
 msgstr ""
 
-#: templates/clubs/user/edit_profile.html:595
+#: templates/clubs/user/edit_profile.html:632
 msgid "以确认删除。"
 msgstr ""
 
@@ -7032,7 +6721,6 @@ msgstr ""
 #: templates/clubs/user/member_management.html:242
 msgid "手机号"
 msgstr "يانفون"
-
 #: templates/clubs/user/member_management.html:259
 msgid "不填"
 msgstr ""

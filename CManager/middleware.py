@@ -2,10 +2,63 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.db.utils import OperationalError, ProgrammingError
+from django.utils import translation
+from django.middleware.locale import LocaleMiddleware
 import logging
 
 
 logger = logging.getLogger(__name__)
+
+
+class UserPreferredLanguageMiddleware(LocaleMiddleware):
+    """站点级语言解析中间件。
+
+    优先级：
+    1. 已登录用户档案中的首选语言（跨设备同步，存数据库）；
+    2. Cookie 中的显式语言选择（未登录访客切换用）；
+    3. 站点设置中的全站默认语言；
+    4. settings.LANGUAGE_CODE 兜底。
+
+    直接部署在 LocaleMiddleware 的位置，因此模板 ``LANGUAGE_CODE``
+    与 ``get_language`` 都会拿到最终生效的语言。
+    """
+
+    @staticmethod
+    def _valid_language(code):
+        return any(lang_code == code for lang_code, _label in settings.LANGUAGES)
+
+    def _resolve_language(self, request):
+        # 1. 登录用户首选语言
+        if getattr(request, 'user', None) is not None and request.user.is_authenticated:
+            try:
+                preferred = request.user.profile.preferred_language
+            except Exception:
+                preferred = ''
+            if preferred and self._valid_language(preferred):
+                return preferred
+
+        # 2. Cookie 中的显式选择（访客语言切换）
+        # Django 5.2 起 LANGUAGE_SESSION_KEY 已移除，set_language 只写 cookie。
+        cookie_lang = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
+        if cookie_lang and self._valid_language(cookie_lang):
+            return cookie_lang
+
+        # 3. 站点默认语言
+        try:
+            from clubs.models import SiteSettings
+            default_language = SiteSettings.get_settings().default_language
+        except Exception:
+            default_language = ''
+        if default_language and self._valid_language(default_language):
+            return default_language
+
+        # 4. 兜底
+        return settings.LANGUAGE_CODE
+
+    def process_request(self, request):
+        language = self._resolve_language(request)
+        translation.activate(language)
+        request.LANGUAGE_CODE = translation.get_language()
 
 
 class ClientFileMd5Middleware:

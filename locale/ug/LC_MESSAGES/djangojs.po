@@ -22,7 +22,6 @@ msgstr ""
 #: static/js/csv-import.js:55
 msgid "未选择文件"
 msgstr "ھۆججەت تاللانمىدى"
-
 #: static/js/csv-import.js:101
 msgid "导入成功"
 msgstr ""
@@ -70,7 +69,6 @@ msgstr ""
 #: static/js/office-preview.js:13
 msgid "在线预览"
 msgstr "توردا ئالدىن كۆرۈش"
-
 #: static/js/theme-toggle.js:129
 msgid "深色"
 msgstr ""

@@ -195,7 +195,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
+    'CManager.middleware.UserPreferredLanguageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -369,7 +369,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'zh-hans'
 
 # 多语言：简体中文（源语言，msgid 即中文）、English、维吾尔语（RTL）、蒙古语（西里尔）。
-# 语言通过 django_language Cookie 切换，未设置时回退到浏览器 Accept-Language。
+# 语言解析由 CManager.middleware.UserPreferredLanguageMiddleware 完成：
+# 登录用户首选语言 > 访客 Cookie 切换 > 站点设置全站默认语言 > 本项目默认值。
 LANGUAGES = [
     ('zh-hans', '简体中文'),
     ('en', 'English'),

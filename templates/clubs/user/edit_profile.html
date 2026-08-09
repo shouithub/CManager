@@ -372,6 +372,7 @@
         <button class="tab-btn active" data-tab="info" onclick="switchTab('info', this)">{% trans '基本信息' %}</button>
         <button class="tab-btn" data-tab="avatar" onclick="switchTab('avatar', this)">{% trans '头像设置' %}</button>
         <button class="tab-btn" data-tab="security" onclick="switchTab('security', this)">{% trans '账号安全' %}</button>
+        <button class="tab-btn" data-tab="language" onclick="switchTab('language', this)">{% trans '语言偏好' %}</button>
     </div>
 
     <!-- 基本信息卡片 -->
@@ -393,7 +394,7 @@
                 
                 <div class="form-group">
                     <label class="form-label">{% trans '邮箱' %}</label>
-                    <input type="email" name="email" class="form-control" value="{{ user.email }}" placeholder="用于找回密码和接收通知">
+                    <input type="email" name="email" class="form-control" value="{{ user.email }}" placeholder="{% trans '用于找回密码和接收通知' %}">
                 </div>
                 
                 <div class="form-group">
@@ -445,7 +446,7 @@
 
         <div class="avatar-service-panel">
             {% if resolved_avatar_url %}
-            <img src="{{ resolved_avatar_url }}" alt="当前头像服务预览" referrerpolicy="no-referrer">
+            <img src="{{ resolved_avatar_url }}" alt="{% trans '当前头像服务预览' %}" referrerpolicy="no-referrer">
             {% else %}
             <div class="avatar-placeholder" style="width:96px;height:96px;">{{ profile.real_name|first }}</div>
             {% endif %}
@@ -459,7 +460,7 @@
                     {% csrf_token %}
                     <div class="form-group" style="margin-bottom:12px;">
                         <label class="form-label" for="avatar-email">{% trans '使用 Cravatar 头像' %}</label>
-                        <input type="email" id="avatar-email" name="avatar_email" class="form-control" value="{{ profile.avatar_email }}" placeholder="Cravatar 邮箱或 QQ号@qq.com" autocomplete="email" required>
+                        <input type="email" id="avatar-email" name="avatar_email" class="form-control" value="{{ profile.avatar_email }}" placeholder="{% trans 'Cravatar 邮箱或 QQ号@qq.com' %}" autocomplete="email" required>
                         <small style="display:block;color:var(--md3-on-surface-variant);line-height:1.6;">{% trans '已有 QQ 头像？输入' %}<strong style="color:var(--md3-primary);">{% trans 'QQ号@qq.com' %}</strong>{% trans '（例如 123456@qq.com）即可尝试自动获取。提交后会先检测头像，成功后才会切换；请求地址不包含邮箱明文。' %}</small>
                     </div>
                     <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;">
@@ -485,7 +486,7 @@
             <div class="avatar-preview-container">
                 <!-- 当前头像展示 -->
                 <div id="current-avatar-view" {% if not resolved_avatar_url %}style="display: none;"{% endif %}>
-                    <img src="{{ resolved_avatar_url }}" alt="当前头像" class="current-avatar">
+                    <img src="{{ resolved_avatar_url }}" alt="{% trans '当前头像' %}" class="current-avatar">
                     <p style="text-align: center; margin-top: 10px; color: var(--md3-on-surface-variant);">{% trans '当前头像' %}</p>
                 </div>
 
@@ -582,6 +583,42 @@
                     <span class="material-icons">delete_forever</span>{% trans '删除账户' %}</button>
             </div>
         </div>
+    </div>
+
+    <!-- 语言偏好卡片 -->
+    <div id="tab-language" class="card">
+        <div class="card-header">
+            <span class="material-icons">language</span>
+            <h2>{% trans '界面语言' %}</h2>
+        </div>
+
+        <p style="color: var(--md3-on-surface-variant); line-height: 1.7; margin: 0 0 var(--md3-spacing-lg);">
+            {% trans '选择您的首选语言后，会在所有设备同步保留；未选择时跟随站点默认语言。' %}
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_language">
+
+            <div class="form-group">
+                <label class="form-label" for="preferred-language">{% trans '首选语言' %}</label>
+                <select name="preferred_language" id="preferred-language" class="form-control">
+                    <option value="" {% if not profile.preferred_language %}selected{% endif %}>{% trans '跟随站点默认语言' %}</option>
+                    {% get_language_info_list for LANGUAGES as languages %}
+                    {% for lang in languages %}
+                    <option value="{{ lang.code }}" {% if profile.preferred_language == lang.code %}selected{% endif %}>{{ lang.name_local }}</option>
+                    {% endfor %}
+                </select>
+                <small style="display: block; color: var(--md3-on-surface-variant); line-height: 1.6; margin-top: 8px;">
+                    {% trans '当前生效语言' %}：<strong>{{ LANGUAGE_CODE|language_name_local }}</strong>
+                </small>
+            </div>
+
+            <div style="margin-top: 24px; text-align: right;">
+                <button type="submit" class="btn-primary">
+                    <span class="material-icons">save</span>{% trans '保存语言偏好' %}</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -708,7 +745,7 @@
                         var sidebarImage = container.querySelector('img');
                         if (!sidebarImage) {
                             sidebarImage = document.createElement('img');
-                            sidebarImage.alt = '用户头像';
+                            sidebarImage.alt = gettext('用户头像');
                             sidebarImage.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
                             container.replaceChildren(sidebarImage);
                         }

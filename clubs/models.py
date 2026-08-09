@@ -21,6 +21,19 @@ def form_submission_upload_path(instance, filename):
     return os.path.join('form_submissions', submission_id, filename)
 
 
+LANGUAGE_CHOICES = [
+    ('zh-hans', '简体中文'),
+    ('en', 'English'),
+    ('ug', 'ئۇيغۇرچە'),
+    ('mn', 'Монгол'),
+]
+
+PREFERRED_LANGUAGE_CHOICES = [
+    ('', gettext_lazy('跟随站点默认语言')),
+    *LANGUAGE_CHOICES,
+]
+
+
 class UserProfile(models.Model):
     """用户角色扩展模型"""
     ROLE_CHOICES = [
@@ -55,19 +68,19 @@ class UserProfile(models.Model):
     ]
     
     POLITICAL_STATUS_CHOICES = [
-        ('communist_party_member', '中共党员'),
-        ('communist_party_probationary', '中共预备党员'),
-        ('communist_youth_league', '共青团员'),
-        ('revolutionary_committee', '民革党员'),
-        ('china_democratic_league', '民盟盟员'),
-        ('democratic_national_construction', '民建会员'),
-        ('china_peasants_workers_democratic', '农工党党员'),
-        ('china_council_for_promoting', '致公党党员'),
-        ('jiusanshe', '九三学社社员'),
-        ('taiwan_democratic_self_government', '台盟盟员'),
-        ('non_party_personage', '无党派人士'),
-        ('progressive', '入党积极分子'),
-        ('non_member', '群众'),
+        ('communist_party_member', gettext_lazy('中共党员')),
+        ('communist_party_probationary', gettext_lazy('中共预备党员')),
+        ('communist_youth_league', gettext_lazy('共青团员')),
+        ('revolutionary_committee', gettext_lazy('民革党员')),
+        ('china_democratic_league', gettext_lazy('民盟盟员')),
+        ('democratic_national_construction', gettext_lazy('民建会员')),
+        ('china_peasants_workers_democratic', gettext_lazy('农工党党员')),
+        ('china_council_for_promoting', gettext_lazy('致公党党员')),
+        ('jiusanshe', gettext_lazy('九三学社社员')),
+        ('taiwan_democratic_self_government', gettext_lazy('台盟盟员')),
+        ('non_party_personage', gettext_lazy('无党派人士')),
+        ('progressive', gettext_lazy('入党积极分子')),
+        ('non_member', gettext_lazy('群众')),
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name=gettext_lazy('用户'))
@@ -130,6 +143,14 @@ class UserProfile(models.Model):
         default='',
         verbose_name=gettext_lazy('Cravatar 邮箱'),
         help_text=gettext_lazy('仅在用户选择 Cravatar 头像时使用，不公开显示邮箱明文。'),
+    )
+    preferred_language = models.CharField(
+        max_length=10,
+        choices=PREFERRED_LANGUAGE_CHOICES,
+        blank=True,
+        default='',
+        verbose_name=gettext_lazy('首选语言'),
+        help_text=gettext_lazy('留空则跟随站点默认语言；选择后会跨设备同步保留。'),
     )
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=gettext_lazy('创建时间'))
@@ -1313,6 +1334,13 @@ class SiteSettings(models.Model):
         default='',
         verbose_name=gettext_lazy('翻译服务 API Key'),
         help_text=gettext_lazy('UAPI 控制台可免费申请；公共接口匿名调用也可用，留空即可。'),
+    )
+    default_language = models.CharField(
+        max_length=10,
+        choices=LANGUAGE_CHOICES,
+        default='zh-hans',
+        verbose_name=gettext_lazy('全站默认语言'),
+        help_text=gettext_lazy('未登录用户与未设置首选语言的用户将使用此语言；默认简体中文。'),
     )
 
     class Meta:

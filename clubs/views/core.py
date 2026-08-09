@@ -3701,7 +3701,19 @@ def manage_site_settings(request):
                 request.POST.get('homepage_subtitle', '').strip()
                 or '致力于为社团提供全方位的管理与服务支持，促进社团健康发展'
             )
-            cfg.save(update_fields=['site_name', 'homepage_title', 'homepage_subtitle'])
+            valid_languages = {code for code, _label in settings.LANGUAGES}
+            default_language = (request.POST.get('default_language') or '').strip()
+            if default_language:
+                if default_language not in valid_languages:
+                    messages.error(request, _('请选择有效的全站默认语言'))
+                    return redirect('clubs:site_settings')
+                cfg.default_language = default_language
+            cfg.save(update_fields=[
+                'site_name',
+                'homepage_title',
+                'homepage_subtitle',
+                'default_language',
+            ])
             cache.delete('site:presentation:v1')
             messages.success(request, _('站点名称与首页标题已保存，刷新页面后生效'))
             return redirect('clubs:site_settings')
@@ -3817,21 +3829,21 @@ def manage_site_settings(request):
 
     cfg = SiteSettings.get_settings()
     presets = [
-        {'label': '默认镜像 (fonts.font.im)',    'value': 'https://fonts.font.im/icon?family=Material+Icons'},
-        {'label': 'SJTUG 镜像',                 'value': 'https://google-fonts.mirrors.sjtug.sjtu.edu.cn/icon?family=Material+Icons'},
-        {'label': '中科大镜像',                  'value': 'https://fonts.loli.net/icon?family=Material+Icons'},
+        {'label': _('默认镜像 (fonts.font.im)'), 'value': 'https://fonts.font.im/icon?family=Material+Icons'},
+        {'label': _('SJTUG 镜像'), 'value': 'https://google-fonts.mirrors.sjtug.sjtu.edu.cn/icon?family=Material+Icons'},
+        {'label': _('中科大镜像'), 'value': 'https://fonts.loli.net/icon?family=Material+Icons'},
     ]
     body_font_presets = [
-        {'label': '不使用外部字体',                   'url': '', 'family': ''},
-        {'label': 'Noto Sans SC (fonts.font.im)', 'url': 'https://fonts.font.im/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap', 'family': "'Noto Sans SC', sans-serif"},
-        {'label': 'Noto Sans SC (SJTUG)',         'url': 'https://google-fonts.mirrors.sjtug.sjtu.edu.cn/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap', 'family': "'Noto Sans SC', sans-serif"},
-        {'label': 'Noto Sans SC (loli.net)',      'url': 'https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap', 'family': "'Noto Sans SC', sans-serif"},
+        {'label': _('不使用外部字体'), 'url': '', 'family': ''},
+        {'label': _('Noto Sans SC (fonts.font.im)'), 'url': 'https://fonts.font.im/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap', 'family': "'Noto Sans SC', sans-serif"},
+        {'label': _('Noto Sans SC (SJTUG)'), 'url': 'https://google-fonts.mirrors.sjtug.sjtu.edu.cn/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap', 'family': "'Noto Sans SC', sans-serif"},
+        {'label': _('Noto Sans SC (loli.net)'), 'url': 'https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap', 'family': "'Noto Sans SC', sans-serif"},
     ]
     cdn_presets = [
-        {'label': 'BootCDN（默认）', 'value': 'https://cdn.bootcdn.net'},
-        {'label': 'cdnjs 官方', 'value': 'https://cdnjs.cloudflare.com'},
-        {'label': '未闻花名 CDN', 'value': 'https://cdnjs.snrat.com'},
-        {'label': '南科大镜像', 'value': 'https://mirrors.sustech.edu.cn/cdnjs'},
+        {'label': _('BootCDN（默认）'), 'value': 'https://cdn.bootcdn.net'},
+        {'label': _('cdnjs 官方'), 'value': 'https://cdnjs.cloudflare.com'},
+        {'label': _('未闻花名 CDN'), 'value': 'https://cdnjs.snrat.com'},
+        {'label': _('南科大镜像'), 'value': 'https://mirrors.sustech.edu.cn/cdnjs'},
     ]
     icon_preview_list = [
         'home', 'settings', 'people', 'notifications', 'search', 'dashboard',

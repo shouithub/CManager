@@ -11,7 +11,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 from django.conf import settings
 from django.contrib import messages
 from ..models import UserProfile, Club, FormChannel, FormCycle, FormChannelClubState, FormSubmission, StaffClubRelation, Officer
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.db import transaction
 from django.db.models import F, Q, Prefetch, Window
 from django.db.models.functions import RowNumber
@@ -508,28 +508,28 @@ def edit_profile(request):
             
             # 验证
             if not real_name:
-                errors.append('真实姓名不能为空')
+                errors.append(_('真实姓名不能为空'))
             if email:
                 if '@' not in email:
-                    errors.append('请输入有效的邮箱地址')
+                    errors.append(_('请输入有效的邮箱地址'))
                 elif User.objects.filter(email__iexact=email).exclude(id=user.id).exists():
                     if user.email.lower() != email:
-                        errors.append('邮箱已被其他用户注册')
+                        errors.append(_('邮箱已被其他用户注册'))
             if not phone:
-                errors.append('电话不能为空')
+                errors.append(_('电话不能为空'))
             if not wechat:
-                errors.append('微信不能为空')
+                errors.append(_('微信不能为空'))
             if not student_id:
-                errors.append('学号不能为空')
+                errors.append(_('学号不能为空'))
             if profile.role in ['president', 'staff', 'admin'] and not political_status:
-                errors.append('政治面貌不能为空')
+                errors.append(_('政治面貌不能为空'))
             if UserProfile.objects.filter(student_id=student_id).exclude(id=profile.id).exists():
-                errors.append('学号已被其他用户使用')
+                errors.append(_('学号已被其他用户使用'))
             valid_political_statuses = {
                 value for value, _label in UserProfile.POLITICAL_STATUS_CHOICES
             }
             if political_status and political_status not in valid_political_statuses:
-                errors.append('政治面貌无效')
+                errors.append(_('政治面貌无效'))
             
             if errors:
                 for error in errors:
@@ -546,6 +546,38 @@ def edit_profile(request):
                     profile.political_status = political_status
                 profile.save()
                 messages.success(request, _('个人信息已成功更新'))
+
+        elif action == 'update_language':
+            preferred_language = (request.POST.get('preferred_language') or '').strip()
+            valid_languages = {code for code, _label in settings.LANGUAGES}
+            if preferred_language and preferred_language not in valid_languages:
+                messages.error(request, _('无效的语言选择'))
+                return redirect(f"{reverse('clubs:edit_profile')}?tab=language")
+            profile.preferred_language = preferred_language
+            profile.save(update_fields=['preferred_language', 'updated_at'])
+            # 语言选择已持久化到用户档案，不再依赖会话（Django 5.2 起
+            # LANGUAGE_SESSION_KEY 已移除）。
+            response = redirect(f"{reverse('clubs:edit_profile')}?tab=language")
+            if preferred_language:
+                # 同步写一次 Cookie，保证当前设备立即生效并覆盖旧选择。
+                translation.activate(preferred_language)
+                response.set_cookie(
+                    settings.LANGUAGE_COOKIE_NAME,
+                    preferred_language,
+                    max_age=settings.LANGUAGE_COOKIE_AGE,
+                    httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
+                    secure=settings.LANGUAGE_COOKIE_SECURE,
+                    samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+                )
+                messages.success(request, _('语言偏好已保存，将在所有设备同步生效'))
+            else:
+                response.delete_cookie(
+                    settings.LANGUAGE_COOKIE_NAME,
+                    path=settings.LANGUAGE_COOKIE_PATH,
+                    domain=settings.LANGUAGE_COOKIE_DOMAIN,
+                )
+                messages.success(request, _('已恢复为站点默认语言'))
+            return response
                 
         elif action == 'change_username':
             new_username = request.POST.get('new_username', '').strip()

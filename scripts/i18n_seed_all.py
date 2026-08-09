@@ -224,6 +224,19 @@ CATALOG = {
     "女": ("Female", "ئايال", "Эмэгтэй"),
     "其他": ("Other", "باشقا", "Бусад"),
     "群众": ("General public", "ئاممىۋى", "Ерөнхий"),
+    "中共党员": ("Communist Party Member", "كوممۇنىستىك پارتىيە ئەزاسى", "ХКН-ийн гишүүн"),
+    "中共预备党员": ("Probationary Party Member", "كوممۇنىستىك پارتىيەنىڭ نامزات ئەزاسى", "ХКН-ийн нэр дэвшигч гишүүн"),
+    "共青团员": ("Communist Youth League Member", "كوممۇنىستىك ياشلار ئىتتىپاقى ئەزاسى", "ХЗЭ-ийн гишүүн"),
+    "民革党员": ("RCCK Member", "RCCK ئەزاسى", "ХХ-ийн гишүүн"),
+    "民盟盟员": ("CDL Member", "CDL ئەزاسى", "ДХН-ийн гишүүн"),
+    "民建会员": ("CDNCA Member", "CDNCA ئەزاسى", "ДБХ-ийн гишүүн"),
+    "农工党党员": ("CPWDP Member", "CPWDP ئەزاسى", "ДХХХ-ийн гишүүн"),
+    "致公党党员": ("CZGD Member", "CZGD ئەزاسى", "ХБ-ийн гишүүн"),
+    "九三学社社员": ("Jiusan Society Member", "جىۈسەن جەمئىيىتى ئەزاسى", "Жиусан нийгэмлэгийн гишүүн"),
+    "台盟盟员": ("TDSGL Member", "TDSGL ئەزاسى", "ТДХН-ийн гишүүн"),
+    "无党派人士": ("Non-Party Personage", "پارتىيەسىز زات", "Намын бус хүн"),
+    "入党积极分子": ("Party Activist", "پارتىيەگە كىرىش ئاكتىپچىسى", "Намын идэвхтэн"),
+    "政治面貌": ("Political Status", "سىياسىي قىياپەت", "Намын гишүүншил"),
 
     # ----- pagination / shared -----
     "上一页": ("Previous", "ئالدىنقى بەت", "Өмнөх"),
@@ -412,6 +425,50 @@ CATALOG = {
 
     # ----- settings / storage -----
     "站点设置": ("Site Settings", "توربەت تەڭشەكلىرى", "Сайтын тохиргоо"),
+    "站点设置 - %(__i18n1)s": ("Site Settings - %(__i18n1)s", "توربەت تەڭشەكلىرى - %(__i18n1)s", "Сайтын тохиргоо - %(__i18n1)s"),
+    "管理网站图标、头像服务、第三方 CDN 与字体资源配置": ("Manage site favicon, avatar service, third-party CDN and font resources", "سايت بەلگىسى، باش رەسىم مۇلازىمىتى، CDN ۋە خەت نۇسخىسى مەنبەلىرىنى باشقۇرۇش", "Сайтын дүрс, аватар үйлчилгээ, CDN болон фонтын нөөцийг удирдах"),
+    "全站默认语言": ("Site Default Language", "سايتنىڭ سۈكۈت تىلى", "Сайтын үндсэн хэл"),
+    "未登录访客和未设置首选语言的用户将使用此语言；默认简体中文。": ("Visitors and users without a preferred language will use this language; default is Simplified Chinese.", "كىرمىگەن مېھمانلار ۋە ئالدىنقى تىل تاللىمىغان ئىشلەتكۈچىلەر بۇ تىلنى ئىشلىتىدۇ؛ سۈكۈت بولسا خەنزۇچە.", "Нэвтрээгүй зочид болон хэл сонгоогүй хэрэглэгчид энэ хэлийг ашиглана; үндсэн нь хятад хэл."),
+    "默认镜像 (fonts.font.im)": ("Default Mirror (fonts.font.im)", "سۈكۈت كۆزگۈ (fonts.font.im)", "Үндсэн толь (fonts.font.im)"),
+    "SJTUG 镜像": ("SJTUG Mirror", "SJTUG كۆزگۈسى", "SJTUG толь"),
+    "中科大镜像": ("USTC Mirror", "USTC كۆزگۈسى", "USTC толь"),
+    "不使用外部字体": ("No External Fonts", "سىرتقى خەت نۇسخىسى ئىشلەتمەسلىك", "Гадны фонт ашиглахгүй"),
+    "Noto Sans SC (fonts.font.im)": ("Noto Sans SC (fonts.font.im)", "Noto Sans SC (fonts.font.im)", "Noto Sans SC (fonts.font.im)"),
+    "Noto Sans SC (SJTUG)": ("Noto Sans SC (SJTUG)", "Noto Sans SC (SJTUG)", "Noto Sans SC (SJTUG)"),
+    "Noto Sans SC (loli.net)": ("Noto Sans SC (loli.net)", "Noto Sans SC (loli.net)", "Noto Sans SC (loli.net)"),
+    "BootCDN（默认）": ("BootCDN (Default)", "BootCDN (سۈكۈت)", "BootCDN (үндсэн)"),
+    "cdnjs 官方": ("cdnjs Official", "cdnjs رەسمىي", "cdnjs албан ёсны"),
+    "未闻花名 CDN": ("Anohana CDN", "Anohana CDN", "Anohana CDN"),
+    "南科大镜像": ("SUSTech Mirror", "SUSTech كۆزگۈسى", "SUSTech толь"),
+    "留空则不加载外部字体": ("Leave blank to disable external fonts", "بوش قالدۇرۇلغاندا سىرتقى خەت نۇسخىسى يۈكلەنمەيدۇ", "Хоосон үлдээвэл гадны фонт ачаагдахгүй"),
+    "例如 'Noto Sans SC', sans-serif": ("e.g. 'Noto Sans SC', sans-serif", "مەسىلەن 'Noto Sans SC', sans-serif", "жишээ нь 'Noto Sans SC', sans-serif"),
+    "当前 Favicon": ("Current Favicon", "ھازىرقى Favicon", "Одоогийн Favicon"),
+    "社团管理系统": ("Club Management System", "بىرلەشمە باشقۇرۇش سىستېمىسى", "Клубын удирдлагын систем"),
+    "社团管理服务中心": ("Club Management Service Center", "بىرلەشمە باشقۇرۇش مۇلازىمەت مەركىزى", "Клубын удирдлагын үйлчилгээний төв"),
+    "致力于为社团提供全方位的管理与服务支持，促进社团健康发展": ("Dedicated to providing comprehensive management and service support for clubs and promoting their healthy development", "بىرلەشمىلەرگە ھەر تەرەپلىمە باشقۇرۇش ۋە مۇلازىمەت ياردىمى بېرىش، ساغلام تەرەققىياتىنى قوزغىتىشقا بېغىشلانغان", "Клубуудад бүрэн хэмжээний удирдлага, үйлчилгээний дэмжлэг үзүүлж, эрүүл хөгжлийг дэмжихэд зориулагдсан"),
+    "语言偏好": ("Language Preference", "تىل مايىلى", "Хэлний сонголт"),
+    "首选语言": ("Preferred Language", "ئالدىنقى تاللانغان تىل", "Сонгосон хэл"),
+    "跟随站点默认语言": ("Follow Site Default", "سايتنىڭ سۈكۈت تىلىغا ئەگىشىش", "Сайтын үндсэн хэлээр"),
+    "保存语言偏好": ("Save Language Preference", "تىل مايىلىنى ساقلاش", "Хэлний сонголтыг хадгалах"),
+    "当前生效语言": ("Current Language", "ھازىرقى تىل", "Одоогийн хэл"),
+    "选择您的首选语言后，会在所有设备同步保留；未选择时跟随站点默认语言。": ("Your preferred language is saved and synced across all devices; if unset, the site default language is used.", "ئالدىنقى تاللانغان تىلىڭىز ھەممە ئۈسكۈنىلەردە ساقلىنىدۇ؛ تاللىمىسىڭىز سايتنىڭ سۈكۈت تىلى ئىشلىتىلىدۇ.", "Таны сонгосон хэл бүх төхөөрөмжид хадгалагдана; сонгоогүй бол сайтын үндсэн хэлийг ашиглана."),
+    "语言偏好已保存，将在所有设备同步生效": ("Language preference saved and synced across all devices", "تىل مايىلى ساقلاندى ۋە ھەممە ئۈسكۈنىلەردە كۈچكە ئىگە بولىدۇ", "Хэлний сонголт хадгалагдаж, бүх төхөөрөмжид синхрончлогдлоо"),
+    "已恢复为站点默认语言": ("Reverted to the site default language", "سايتنىڭ سۈكۈت تىلىغا قايتۇرۇلدى", "Сайтын үндсэн хэл рүү буцаагдлаа"),
+    "无效的语言选择": ("Invalid language selection", "ئەمەلدىن قالغان تىل تاللاش", "Хүчингүй хэл сонголт"),
+    "用于找回密码和接收通知": ("For password recovery and notifications", "پارول ئەسلىگە كەلتۈرۈش ۋە ئۇقتۇرۇش ئالغاندا ئىشلىتىلىدۇ", "Нууц үг сэргээх болон мэдэгдэл хүлээн авахад"),
+    "真实姓名不能为空": ("Real name is required", "ھەقىقىي ئىسىم بوش بولمايدۇ", "Жинхэнэ нэр заавал шаардлагатай"),
+    "请输入有效的邮箱地址": ("Please enter a valid email address", "ئىناۋەتلىك ئېلخەت ئادرېسىنى كىرگۈزۈڭ", "Хүчинтэй имэйл хаяг оруулна уу"),
+    "邮箱已被其他用户注册": ("Email is already registered by another user", "ئېلخەت باشقا ئىشلەتكۈچىدە مەۋجۇت", "Имэйл өөр хэрэглэгчээр бүртгэгдсэн байна"),
+    "电话不能为空": ("Phone number is required", "تېلېفون بوش بولمايدۇ", "Утасны дугаар заавал шаардлагатай"),
+    "微信不能为空": ("WeChat is required", "ۋېيشىن بوش بولمايدۇ", "WeChat заавал шаардлагатай"),
+    "学号不能为空": ("Student ID is required", "ئوقۇغۇچى نومۇرى بوش بولمايدۇ", "Оюутны дугаар заавал шаардлагатай"),
+    "政治面貌不能为空": ("Political status is required", "سىياسىي قىياپەت بوش بولمايدۇ", "Намын гишүүншил заавал шаардлагатай"),
+    "学号已被其他用户使用": ("Student ID is already in use", "ئوقۇغۇچى نومۇرى باشقا ئىشلەتكۈچىدە مەۋجۇت", "Оюутны дугаар өөр хэрэглэгчид ашиглагдаж байна"),
+    "政治面貌无效": ("Invalid political status", "سىياسىي قىياپەت ئەمەلدىن قالغان", "Хүчингүй намын гишүүншил"),
+    "当前头像服务预览": ("Current Avatar Service Preview", "ھازىرقى باش رەسىم مۇلازىمەت كۆرۈنۈشى", "Одоогийн аватар үйлчилгээний урьдчилсан харах"),
+    "Cravatar 邮箱或 QQ号@qq.com": ("Cravatar email or QQ number@qq.com", "Cravatar ئېلخەت ياكى QQ نومۇر@qq.com", "Cravatar имэйл эсвэл QQ дугаар@qq.com"),
+    "当前头像": ("Current Avatar", "ھازىرقى باش رەسىم", "Одоогийн аватар"),
+    "用户头像": ("User Avatar", "ئىشلەتكۈچى باش رەسىمى", "Хэрэглэгчийн аватар"),
     "存储配置": ("Storage Config", "ساقلاش تەڭشەكلىرى", "Хадгалалтын тохиргоо"),
     "SMTP配置": ("SMTP Config", "SMTP تەڭشەكلىرى", "SMTP тохиргоо"),
     "SMTP邮箱配置": ("SMTP Email Settings", "SMTP ئېلخەت تەڭشەكلىرى", "SMTP имэйл тохиргоо"),
@@ -518,6 +575,7 @@ ADDITIONAL = {
     "站点名称（浏览器标题）": ("Site Name (Browser Title)", "توربەت ئاتى (كۆرگۈچ ماۋزۇسى)", "Сайтын нэр (Хөтчийн гарчиг)"),
     "首页主标题": ("Homepage Main Title", "باش بەت ئاساسلىق ماۋزۇسى", "Нүүр хуудасны гол гарчиг"),
     "首页副标题": ("Homepage Subtitle", "باش بەت تارماق ماۋزۇسى", "Нүүр хуудасны дэд гарчиг"),
+    "自动翻译": ("Automatic Translation", "ئاپتوماتىك تەرجىمە", "Автомат орчуулга"),
     "成员数量告警阈值": ("Member Count Alert Threshold", "ئەزا سانى ئاگاھلاندۇرۇش چېكى", "Гишүүдийн тооны анхааруулгын босго"),
     "开启错误页求助按钮": ("Enable Help Button on Error Pages", "خاتالىق بەتلىرىدە ياردەم كۇنۇپكىسىنى قوزغىتىش", "Алдааны хуудсанд тусламж товчийг идэвхжүүлэх"),
     "人数告警阈值": ("Member Alert Threshold", "ئەزا سانى ئاگاھلاندۇرۇش چېكى", "Гишүүдийн тооны анхааруулгын босго"),
@@ -687,15 +745,27 @@ def _parse_po(path):
     lines = text.splitlines(keepends=True)
     entries = []
     current = None
+    pending_comments = []
     for line in lines:
         if line.startswith("msgid "):
             if current is not None:
                 entries.append(current)
             current = {"raw": [], "msgid": None, "msgstr": None, "msgstr_line": None}
+            # 把位于 msgid 之前的注释（#, fuzzy / #| 旧 msgid 参考行等）
+            # 归入本条目，而不是挂在上一条目上。
+            if pending_comments:
+                current["raw"].extend(pending_comments)
+                pending_comments = []
         if current is None:
+            if line.startswith("#"):
+                pending_comments.append(line)
+            continue
+        stripped = line.strip()
+        if stripped.startswith("#") and current["msgstr_line"] is not None:
+            # msgstr 之后的注释属于下一条目
+            pending_comments.append(line)
             continue
         current["raw"].append(line)
-        stripped = line.strip()
         if stripped.startswith('msgid "'):
             current["msgid"] = stripped[len('msgid "'):-1].replace('\\"', '"')
         elif current["msgid"] is not None and stripped.startswith('"') and current["msgstr"] is None:
@@ -728,14 +798,22 @@ def fill_po(path, language_index):
             # of the header entry and make msgfmt fail.  They carry no
             # translatable content (empty verbose_name/help_text).
             continue
-        if entry["msgid"] is None or entry["msgstr"] or entry["msgstr_line"] is None:
+        if entry["msgid"] is None or entry["msgstr_line"] is None:
             kept.append(entry)
             continue
         translation = CATALOG.get(entry["msgid"])
         if not translation:
             kept.append(entry)
             continue
-        entry["raw"][entry["msgstr_line"]] = f'msgstr "{_escape(translation[language_index])}"\n'
+        # CATALOG 是权威翻译源：对已知词条始终覆盖 msgstr（包括 makemessages
+        # 生成的 fuzzy 占位译文和旧译文），并清除 fuzzy 标记与旧 msgid 参考行，
+        # 避免 msgfmt 把它们当未翻译处理。
+        entry["raw"] = [
+            line for line in entry["raw"][:entry["msgstr_line"]]
+            if not (line.strip().startswith('#,') and 'fuzzy' in line)
+            and not line.strip().startswith('#|')
+        ]
+        entry["raw"].append(f'msgstr "{_escape(translation[language_index])}"\n')
         filled += 1
         kept.append(entry)
     path.write_text("".join(raw for entry in kept for raw in entry["raw"]), encoding="utf-8")
