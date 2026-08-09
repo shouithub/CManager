@@ -132,28 +132,51 @@ def parse_options_translation(raw):
 def translate_text(source, target):
     """调用 UAPI 翻译服务（https://uapis.cn）翻译单段文本。
 
-    接口：POST /api/v1/translate/text?to_lang=<目标语言>，body 为
-    {"text": ...}，响应 {"translate": ..., "text": ...}。源语言自动检测。
-    失败抛异常，由调用方降级处理。
+    优先调用普通翻译接口：POST /api/v1/translate/text?to_lang=<目标语言>，
+    body 为 {"text": ...}，响应 {"translate": ..., "text": ...}。该接口对
+    部分语言（如蒙古语 mn、维吾尔语 ug）会返回 500，此时自动回退到 AI 智能
+    翻译接口：POST /api/v1/ai/translate，body 为 {"target_lang": ..., "text":
+    ...}，响应 {"data": {"translated_text": ...}}。源语言自动检测。两个接口
+    均失败时抛异常，由调用方静默降级处理。
     """
     import requests
 
     cfg = SiteSettings.get_settings()
     endpoint = (cfg.translation_api_base_url or 'https://uapis.cn').strip().rstrip('/')
-    url = f'{endpoint}/api/v1/translate/text'
     headers = {'Content-Type': 'application/json'}
     api_key = (cfg.translation_api_key or '').strip()
     if api_key:
         headers['Authorization'] = f'Bearer {api_key}'
+
+    # 1) 普通翻译接口
+    try:
+        response = requests.post(
+            f'{endpoint}/api/v1/translate/text',
+            params={'to_lang': target},
+            json={'text': source},
+            headers=headers,
+            timeout=15,
+        )
+        data = response.json()
+        if response.ok and isinstance(data, dict) and data.get('translate'):
+            return str(data['translate']).strip()
+    except (requests.RequestException, ValueError):
+        pass
+
+    # 2) AI 智能翻译接口（普通接口不支持的语言回退到这里）
     response = requests.post(
-        url,
-        params={'to_lang': target},
-        json={'text': source},
+        f'{endpoint}/api/v1/ai/translate',
+        json={'target_lang': target, 'text': source},
         headers=headers,
-        timeout=15,
+        timeout=30,
     )
     response.raise_for_status()
     data = response.json()
-    if not isinstance(data, dict) or not data.get('translate'):
+    translated = None
+    if isinstance(data, dict):
+        payload = data.get('data')
+        if isinstance(payload, dict):
+            translated = payload.get('translated_text')
+    if not translated:
         raise ValueError(f'翻译服务返回了无效响应: {data!r}')
-    return str(data['translate']).strip()
+    return str(translated).strip()
