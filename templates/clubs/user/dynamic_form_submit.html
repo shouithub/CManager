@@ -722,25 +722,27 @@
                         <div class="revision-file-entry">
                             {% if uploaded|is_image_file %}
                             {% if uploaded|file_exists %}
-                            <a class="revision-image-link" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
+                            <a class="revision-image-link" href="{% url 'clubs:download_submission_file' uploaded.id %}?inline=1" target="_blank" rel="noopener">
                                 <img src="{% url 'clubs:download_submission_file' uploaded.id %}?inline=1" alt="{{ uploaded.original_name|default:uploaded.file.name }}" loading="lazy">
                             </a>
                             {% else %}
                             <span class="revision-file-missing">{% trans '文件已丢失' %}</span>
                             {% endif %}
-                            {% else %}
+                            {% endif %}
+                            {% with office_url=uploaded|office_preview_url:request %}
+                            {% if office_url and not uploaded|is_image_file %}
+                            <button type="button" class="revision-preview-btn js-office-preview"
+                                    data-office-preview-url="{{ office_url }}"
+                                    data-office-file-name="{{ uploaded.original_name|default:uploaded.file.name }}">
+                                <span class="material-icons">visibility</span>{% trans '在线预览' %}</button>
+                            {% elif uploaded|is_browser_previewable and not uploaded|is_image_file %}
                             <a class="revision-view-btn" href="{% url 'clubs:download_submission_file' uploaded.id %}?inline=1" target="_blank" rel="noopener">
-                                <span class="material-icons">open_in_new</span>{% trans '查看' %}</a>
+                                <span class="material-icons">visibility</span>{% trans '预览' %}</a>
                             {% endif %}
                             <a class="revision-file-link" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
                                 <span class="material-icons">download</span>{{ uploaded.original_name|default:uploaded.file.name }}
                             </a>
-                            {% if not uploaded|is_image_file %}
-                            <button type="button" class="revision-preview-btn js-office-preview"
-                                    data-office-preview-url="{{ uploaded|office_preview_url:request }}"
-                                    data-office-file-name="{{ uploaded.original_name|default:uploaded.file.name }}">
-                                <span class="material-icons">visibility</span>{% trans '预览' %}</button>
-                            {% endif %}
+                            {% endwith %}
                             <span class="revision-status">{{ uploaded.get_review_status_display }}</span>
                             {% if uploaded.review_comment %}<span class="revision-comment">{% blocktrans with __i18n1=uploaded.review_comment %}打回原因：{{ __i18n1 }}{% endblocktrans %}</span>{% endif %}
                         </div>

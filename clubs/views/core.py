@@ -233,19 +233,21 @@ def download_submission_file(request, file_id):
     if not uploaded.file:
         raise Http404('文件不存在')
 
+    filename = uploaded.original_name or os.path.basename(uploaded.file.name)
+    inline = request.GET.get('inline') == '1'
     from ..models import StorageConfig
     if StorageConfig.is_s3_active():
         try:
             url = uploaded.file.storage.get_presigned_url(
                 uploaded.file.name,
                 StorageConfig.get_active_config().presigned_url_expiration,
+                inline=inline,
+                filename=filename,
             )
             return redirect(url)
         except Exception:
             pass
 
-    filename = uploaded.original_name or os.path.basename(uploaded.file.name)
-    inline = request.GET.get('inline') == '1'
     try:
         file_handle = uploaded.file.open('rb')
     except Exception:
@@ -4548,7 +4550,7 @@ def _office_preview_url(request, uploaded):
         return ''
     filename = uploaded.original_name or uploaded.file.name
     ext = os.path.splitext(filename)[1].lower()
-    if ext not in {'.doc', '.docx', '.ppt', '.pptx'}:
+    if ext not in {'.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'}:
         return ''
     # 本地存储走本站短时签名入口；S3 直接生成预签名 URL。Office Online
     # 因而可以在有效期内直接从 S3 拉取，本站不参与文件请求和内容传输。
@@ -4578,7 +4580,7 @@ def _office_preview_url(request, uploaded):
 def _office_preview_url_for_name(request, file_name, display_name):
     """按存储文件名与显示名生成 Office 在线预览 URL（非 Office 文档返回空）。"""
     ext = os.path.splitext(str(display_name or file_name))[1].lower()
-    if ext not in {'.doc', '.docx', '.ppt', '.pptx'}:
+    if ext not in {'.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'}:
         return ''
 
     from ..storage_backends import ClubStorage
@@ -4742,10 +4744,15 @@ def _submission_attempt_groups(submission, request=None):
                     or field.label
                 )
             for file_info in entry.get('files') or []:
+                display_name = file_info.get('file_name') or file_info.get('storage_name') or ''
+                file_info['is_browser_previewable'] = (
+                    os.path.splitext(display_name)[1].lower()
+                    in {'.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp'}
+                )
                 file_info['office_preview_url'] = _office_preview_url_for_name(
                     request,
                     file_info.get('storage_name') or '',
-                    file_info.get('file_name') or file_info.get('storage_name') or '',
+                    display_name,
                 )
         groups.append(entry)
     return groups
@@ -4906,18 +4913,20 @@ def history_submission_file(request, submission_key, attempt, index):
     storage = ClubStorage()
     if not storage.exists(storage_name):
         raise Http404('文件不存在')
+    filename = file_info.get('file_name') or os.path.basename(storage_name)
+    inline = request.GET.get('inline') == '1'
     if StorageConfig.is_s3_active():
         try:
             url = storage.get_presigned_url(
                 storage_name,
                 StorageConfig.get_active_config().presigned_url_expiration,
+                inline=inline,
+                filename=filename,
             )
             return redirect(url)
         except Exception:
             pass
 
-    filename = file_info.get('file_name') or os.path.basename(storage_name)
-    inline = request.GET.get('inline') == '1'
     try:
         file_handle = storage.open(storage_name, 'rb')
     except Exception:

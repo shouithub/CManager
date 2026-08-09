@@ -6,7 +6,7 @@ from hashlib import md5
 from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
 
 from django.conf import settings
@@ -1139,7 +1139,41 @@ class SecurityInfrastructureTests(TestCase):
         self.assertNotIn('/media-access/', preview)
         self.assertEqual(parse_qs(urlparse(preview).query)['src'][0], direct_url)
         self.assertEqual(presign.call_count, 2)
-        presign.assert_called_with('private/document.docx', 900)
+        presign.assert_called_with(
+            'private/document.docx',
+            900,
+            inline=True,
+            filename='document.docx',
+        )
+
+    def test_s3_presigned_url_overrides_content_disposition_for_preview_and_download(self):
+        from types import SimpleNamespace
+        from ..storage_backends import S3StorageBackend
+
+        backend = S3StorageBackend(SimpleNamespace(s3_bucket_name='private-bucket'))
+        client = MagicMock()
+        client.generate_presigned_url.return_value = 'https://s3.example.com/signed'
+        backend._client = client
+
+        backend.get_presigned_url(
+            'private/report.pdf',
+            900,
+            inline=True,
+            filename='年度报告.pdf',
+        )
+        preview_params = client.generate_presigned_url.call_args.kwargs['Params']
+        self.assertEqual(preview_params['ResponseContentType'], 'application/pdf')
+        self.assertTrue(preview_params['ResponseContentDisposition'].startswith('inline;'))
+        self.assertIn('%E5%B9%B4%E5%BA%A6%E6%8A%A5%E5%91%8A.pdf', preview_params['ResponseContentDisposition'])
+
+        backend.get_presigned_url(
+            'private/report.pdf',
+            900,
+            inline=False,
+            filename='年度报告.pdf',
+        )
+        download_params = client.generate_presigned_url.call_args.kwargs['Params']
+        self.assertTrue(download_params['ResponseContentDisposition'].startswith('attachment;'))
 
     def test_dynamic_number_rules_are_enforced_server_side(self):
         from ..views.core import _validate_dynamic_submission
@@ -2272,7 +2306,9 @@ class DynamicFormReReviewTests(TestCase):
         self.assertContains(detail, '旧附件.png')
         self.assertContains(detail, '旧附件.pdf')
         self.assertContains(detail, '原审核意见')
-        self.assertContains(detail, 'open_in_new')
+        self.assertContains(detail, 'visibility')
+        self.assertContains(detail, '预览</a>')
+        self.assertNotContains(detail, '查看</a>')
         self.assertContains(detail, '?inline=1')
 
         # 干事/管理员审核页同样展示历史内容

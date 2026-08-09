@@ -38,6 +38,7 @@ import tempfile
 import threading
 import uuid
 import logging
+import mimetypes
 from urllib.parse import urljoin, quote
 
 from django.conf import settings
@@ -267,7 +268,7 @@ class LocalStorageBackend:
         """
         return self.url(name)
 
-    def get_presigned_url(self, name, expiration=3600):
+    def get_presigned_url(self, name, expiration=3600, *, inline=None, filename=None):
         """本地模式没有预签名机制，直接返回 url。
 
         注意：本地模式下任何拿到 url 的用户都能下载，依赖部署层鉴权。
@@ -479,15 +480,25 @@ class S3StorageBackend:
         """返回后端原始 URL；业务页面应改用 ClubStorage 的签名入口。"""
         return self.url(name)
 
-    def get_presigned_url(self, name, expiration=3600):
+    def get_presigned_url(self, name, expiration=3600, *, inline=None, filename=None):
         """生成临时下载直链（默认 1 小时）。
 
         用于私密 bucket 的下载场景。
         """
         client = self._get_client()
+        params = {'Bucket': self.bucket, 'Key': _sanitize_storage_name(name)}
+        if inline is not None:
+            safe_filename = os.path.basename(str(filename or name)).replace('\r', '').replace('\n', '')
+            disposition = 'inline' if inline else 'attachment'
+            params['ResponseContentDisposition'] = (
+                f"{disposition}; filename*=UTF-8''{quote(safe_filename)}"
+            )
+            params['ResponseContentType'] = (
+                mimetypes.guess_type(safe_filename)[0] or 'application/octet-stream'
+            )
         return client.generate_presigned_url(
             'get_object',
-            Params={'Bucket': self.bucket, 'Key': _sanitize_storage_name(name)},
+            Params=params,
             ExpiresIn=expiration,
             HttpMethod='GET',
         )
@@ -818,7 +829,12 @@ class ClubStorage(Storage):
         if isinstance(backend, S3StorageBackend):
             configured_expiration = max(1, int(backend.config.presigned_url_expiration or 900))
             inline_expiration = max(1, int(getattr(settings, 'TEMPORARY_MEDIA_URL_MAX_AGE', 900)))
-            return backend.get_presigned_url(name, min(configured_expiration, inline_expiration))
+            return backend.get_presigned_url(
+                name,
+                min(configured_expiration, inline_expiration),
+                inline=True,
+                filename=os.path.basename(name),
+            )
         return build_temporary_media_url(name)
 
     def path(self, name):
@@ -834,7 +850,7 @@ class ClubStorage(Storage):
         """返回临时地址：本地走本站签名，S3 直接返回预签名 URL。"""
         return self.url(name)
 
-    def get_presigned_url(self, name, expiration=3600):
+    def get_presigned_url(self, name, expiration=3600, *, inline=None, filename=None):
         """生成下载用临时直链。
 
         S3 模式返回 STS 临时签名 URL（默认 1 小时）；
@@ -842,7 +858,12 @@ class ClubStorage(Storage):
         """
         backend = self._backend()
         if hasattr(backend, 'get_presigned_url'):
-            return backend.get_presigned_url(name, expiration)
+            return backend.get_presigned_url(
+                name,
+                expiration,
+                inline=inline,
+                filename=filename,
+            )
         return backend.url(name)
 
     def release_path(self, name):

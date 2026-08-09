@@ -148,6 +148,21 @@ def is_image_file(value):
 
 
 @register.filter
+def is_browser_previewable(value):
+    """判断文件能否由常见浏览器直接内联预览。"""
+    if isinstance(value, dict):
+        name = value.get('file_name') or value.get('storage_name') or ''
+    else:
+        name = (
+            getattr(value, 'original_name', '') or ''
+            or getattr(value, 'name', '') or ''
+            or getattr(getattr(value, 'file', None), 'name', '') or ''
+        )
+    ext = os.path.splitext(str(name))[1].lower()
+    return ext in {'.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp'}
+
+
+@register.filter
 def file_basename(value):
     """提取文件对象的基础文件名，隐藏 upload_to 目录前缀。"""
     name = (

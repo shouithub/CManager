@@ -603,11 +603,10 @@
                                 <div class="ah-file-actions">
                                     {% if file.office_preview_url and not file.is_image %}
                                     <button class="file-preview-button js-office-preview" type="button" data-office-preview-url="{{ file.office_preview_url }}" data-office-file-name="{{ file.file_name }}">
-                                        <span class="material-icons">visibility</span>{% trans '预览' %}</button>
-                                    {% endif %}
-                                    {% if not file.is_image %}
+                                        <span class="material-icons">visibility</span>{% trans '在线预览' %}</button>
+                                    {% elif file.is_browser_previewable and not file.is_image %}
                                     <a class="file-preview-button" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}?inline=1" target="_blank" rel="noopener">
-                                        <span class="material-icons">open_in_new</span>{% trans '查看' %}</a>
+                                        <span class="material-icons">visibility</span>{% trans '预览' %}</a>
                                     {% endif %}
                                     <a class="file-link" href="{% url 'clubs:history_submission_file' submission.public_id group.attempt forloop.counter0 %}" target="_blank" rel="noopener">
                                         <span class="material-icons">download</span>{% trans '下载' %}</a>
