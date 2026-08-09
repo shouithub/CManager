@@ -12,7 +12,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 import urllib.parse
 
-from ..models import RoomBooking, Room, TimeSlot, FormSubmission, PublishedActivity
+from ..models import RoomBooking, Room, TimeSlot, FormSubmission, FormChannel, PublishedActivity
 from ..permissions import has_any_role
 from django.utils.translation import gettext as _
 
@@ -271,9 +271,17 @@ def export_audit_center_data(request, tab):
         return redirect('clubs:index')
 
     slug = tab.replace('_', '-')
-    submissions = FormSubmission.objects.filter(channel__slug=slug).select_related('channel', 'club', 'submitter', 'reviewer').order_by('-submitted_at')
+    channel = FormChannel.objects.filter(slug=tab).first()
+    if channel is None:
+        channel = FormChannel.objects.filter(slug=slug).first()
+    submissions = (
+        FormSubmission.objects.filter(channel=channel)
+        .select_related('channel', 'club', 'submitter', 'reviewer')
+        .order_by('-submitted_at')
+    ) if channel else FormSubmission.objects.none()
     response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
-    response['Content-Disposition'] = f'attachment; filename=\"{slug}-submissions.csv\"'
+    export_slug = channel.slug if channel else slug
+    response['Content-Disposition'] = f'attachment; filename=\"{export_slug}-submissions.csv\"'
     writer = csv.writer(response)
     writer.writerow(['通道', '社团', '标题', '提交人', '状态', '提交时间', '审核人', '审核时间', '审核意见'])
     for item in submissions:

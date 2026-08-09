@@ -9,6 +9,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 from urllib.parse import urlparse
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -36,6 +37,7 @@ from ..models import (
     FormFieldValue,
     FormSubmission,
     FormSubmissionReview,
+    ObjectTranslation,
     Officer,
     RegistrationToken,
     Room,
@@ -1272,6 +1274,44 @@ class StaticPageSmokeTests(TestCase):
         self.assertIn('通道名称已存在，请换一个名称', debug_msgs)
         target.refresh_from_db()
         self.assertEqual(target.name, '可修改名称')
+
+    def test_audit_center_prefers_exact_underscore_slug_channel(self):
+        """审核中心应按 URL 中的下划线 slug 精确匹配通道，而不是强制转成连字符。
+
+        历史数据里曾存在同名双通道（一个连字符 slug、一个下划线 slug），
+        转成连字符会匹配到没有译文的旧通道，导致英文界面仍显示中文名称。
+        """
+        FormChannel.objects.create(
+            name='活动申请',
+            slug='legacy-app',
+            publish_status='published',
+            is_active=True,
+        )
+        translated_channel = FormChannel.objects.create(
+            name='活动申请',
+            slug='legacy_app',
+            publish_status='published',
+            is_active=True,
+        )
+        ObjectTranslation.objects.create(
+            object_type='formchannel',
+            object_id=translated_channel.pk,
+            field_name='name',
+            language='en',
+            text='Activity Application',
+        )
+        self.client.force_login(self.admin)
+        self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = 'en'
+
+        response = self.client.get(
+            reverse('clubs:staff_audit_center', args=['legacy_app']),
+            secure=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Current category: Activity Application')
+        self.assertEqual(response.context['current_channel'], translated_channel)
+        self.assertEqual(response.context['current_tab'], 'legacy_app')
 
     def test_new_form_channel_page_exposes_material_icon_preview_and_reference(self):
         self.client.force_login(self.admin)

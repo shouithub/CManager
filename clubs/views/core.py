@@ -5007,8 +5007,13 @@ def approval_center_tabs(request, tab='all'):
         .prefetch_related('values__field')
         .order_by('-submitted_at')
     )
+    normalized_slug = tab.replace('_', '-')
+    current_channel = None
     if tab and tab != 'all':
-        items = items.filter(channel__slug=tab.replace('_', '-'))
+        current_channel = FormChannel.objects.filter(slug=tab).first()
+        if current_channel is None:
+            current_channel = FormChannel.objects.filter(slug=normalized_slug).first()
+        items = items.filter(channel=current_channel) if current_channel else items.none()
     active_items = Paginator(items.filter(status__in=['pending', 'rejected']), 50).get_page(request.GET.get('active_page'))
     completed_items = Paginator(items.exclude(status__in=['pending', 'rejected']), 50).get_page(request.GET.get('completed_page'))
     channels = list(_active_channels())
@@ -5048,7 +5053,7 @@ def approval_center_tabs(request, tab='all'):
         'completed_items': completed_items,
         'channels': channels,
         'grouped_channels': grouped_channels,
-        'current_tab': tab.replace('_', '-'),
+        'current_tab': current_channel.slug if current_channel else normalized_slug,
     })
 
 
@@ -5092,7 +5097,9 @@ def staff_audit_center(request, tab='all'):
     channels = list(_active_channels())
     current_channel = None
     if slug != 'all':
-        current_channel = FormChannel.objects.filter(slug=slug).first()
+        current_channel = FormChannel.objects.filter(slug=tab).first()
+        if current_channel is None:
+            current_channel = FormChannel.objects.filter(slug=slug).first()
     qs = (
         FormSubmission.objects.select_related('channel', 'club', 'submitter', 'reviewer')
         .prefetch_related('reviews', 'values__field')
@@ -5105,7 +5112,7 @@ def staff_audit_center(request, tab='all'):
     return render(request, 'clubs/staff/dynamic_audit_center.html', {
         'channels': channels,
         'current_channel': current_channel,
-        'current_tab': slug,
+        'current_tab': current_channel.slug if current_channel else slug,
         'pending_items': pending_items,
         'completed_items': completed_items,
         'is_admin': _is_admin(request.user),
