@@ -9,7 +9,9 @@
  */
 
 const FONT_CACHE = 'cmanager-fonts-v1';
-const LOCAL_AVATAR_CACHE = 'cmanager-local-avatars-v1';
+const LOCAL_AVATAR_CACHE = 'cmanager-local-avatars-v2';
+// 旧版本遗留的头像缓存，激活时统一清理，避免历史坏响应长期滞留。
+const LEGACY_AVATAR_CACHES = ['cmanager-local-avatars-v1'];
 const CONFIG_CACHE = 'cmanager-sw-config-v1';
 
 // 默认字体来源（管理员未配置时的回退）
@@ -25,6 +27,7 @@ self.addEventListener('install', () => {
 self.addEventListener('activate', event => {
     event.waitUntil((async () => {
         await self.clients.claim();
+        await Promise.all(LEGACY_AVATAR_CACHES.map(name => caches.delete(name)));
         // 从 Cache API 恢复管理员配置的字体来源，失败时继续使用默认值。
         try {
             const cache = await caches.open(CONFIG_CACHE);
@@ -50,9 +53,15 @@ function isCachedAvatarRequest(request) {
 async function getCachedLocalAvatar(request) {
     const cache = await caches.open(LOCAL_AVATAR_CACHE);
     const cached = await cache.match(request);
-    if (cached) return cached;
+    if (cached) {
+        // 只放行可用的成功响应；异常响应即使残留也不返回。
+        if (cached.ok) return cached;
+        try {
+            await cache.delete(request);
+        } catch (error) {}
+    }
 
-    const response = await fetch(request);
+    const response = await fetchAvatarWithRetry(request);
     if (response.ok) {
         // 头像上传后会使用新文件名，因此可以安全地按 URL 长期复用。
         try {
@@ -62,6 +71,13 @@ async function getCachedLocalAvatar(request) {
         }
     }
     return response;
+}
+
+async function fetchAvatarWithRetry(request) {
+    const response = await fetch(request);
+    // 5xx（含 Cloudflare 520 这类间歇性回源失败）重试一次，命中成功响应即返回。
+    if (response.ok || response.status < 500) return response;
+    return fetch(request);
 }
 
 function isFontRequest(url) {

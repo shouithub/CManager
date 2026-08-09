@@ -88,6 +88,49 @@
             document.head.appendChild(themeColor);
         })();
     </script>
+    <!-- 本地资源失败自动重试：首次打开偶发 Cloudflare 520 时，无需手动刷新即可恢复 -->
+    <script data-cfasync="false">
+        (function () {
+            // 头像加载失败时自动重试一次：追加时间戳查询参数，绕过缓存重新请求。
+            // 仅针对本站头像（/media/avatars/ 与 /cravatar/），外部图片不干预。
+            document.addEventListener('error', function (event) {
+                var target = event.target;
+                if (!target || target.tagName !== 'IMG' || !target.src || target.dataset.cmAvatarRetried) return;
+                var url;
+                try {
+                    url = new URL(target.src, window.location.href);
+                } catch (err) {
+                    return;
+                }
+                if (url.origin !== window.location.origin) return;
+                if (url.pathname.indexOf('/media/avatars/') !== 0 && url.pathname.indexOf('/cravatar/') !== 0) return;
+                target.dataset.cmAvatarRetried = '1';
+                url.searchParams.set('retry', String(Date.now()));
+                target.src = url.href;
+            }, true);
+
+            // 本站样式表加载失败时自动重试一次；外部字体样式表不做干预。
+            document.addEventListener('error', function (event) {
+                var target = event.target;
+                if (!target || target.tagName !== 'LINK' || target.rel !== 'stylesheet' || target.dataset.cmSheetRetried) return;
+                var url;
+                try {
+                    url = new URL(target.href, window.location.href);
+                } catch (err) {
+                    return;
+                }
+                if (url.origin !== window.location.origin) return;
+                target.dataset.cmSheetRetried = '1';
+                url.searchParams.set('retry', String(Date.now()));
+                var retryLink = document.createElement('link');
+                retryLink.rel = 'stylesheet';
+                retryLink.href = url.href;
+                if (target.media) retryLink.media = target.media;
+                retryLink.dataset.cmSheetRetried = '1';
+                target.parentNode.replaceChild(retryLink, target);
+            }, true);
+        })();
+    </script>
     <!-- 字体导入 -->
     <link rel="preload" href="{{ font_icon_url }}" as="style">
     <link href="{{ font_icon_url }}" rel="stylesheet">
