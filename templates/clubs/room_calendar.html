@@ -985,7 +985,7 @@
         {% for booking_data in bookings %}
         {{ booking_data.booking.id }}: {
             id: {{ booking_data.booking.id }},
-            date: '{{ booking_data.booking.booking_date|date:"Y年m月d日" }}',
+            date: '{{ booking_data.booking.booking_date|date:"Y-m-d" }}',
             startTime: '{{ booking_data.booking.start_time|time:"H:i" }}',
             endTime: '{{ booking_data.booking.end_time|time:"H:i" }}',
             club: {% if booking_data.booking.club %}'{{ booking_data.booking.club.name|escapejs }}'{% else %}null{% endif %},
@@ -996,47 +996,56 @@
             purpose: '{{ booking_data.booking.purpose|default:""|escapejs }}',
             participantCount: {{ booking_data.booking.participant_count }},
             contactPhone: '{{ booking_data.booking.contact_phone|default:""|escapejs }}',
-            specialRequirements: '{{ booking_data.booking.special_requirements|default:"无"|escapejs }}',
+            specialRequirements: '{{ booking_data.booking.special_requirements|default:""|escapejs }}',
             canEdit: {{ booking_data.can_edit|yesno:"true,false" }},
             canDelete: {{ booking_data.can_delete|yesno:"true,false" }}
         },
         {% endfor %}
     };
 
+    function escapeHtml(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function showEventDetails(bookingId) {
         const booking = bookingsData[bookingId];
         if (!booking) return;
 
-        document.getElementById('modalTitle').textContent = '预约详情';
+        document.getElementById('modalTitle').textContent = gettext('预约详情');
         const userDetailUrl = "{% url 'clubs:user_detail' 0 %}".replace('0', booking.userId);
         
         let html = `
             <div class="modal-detail">
                 <span class="material-icons">event</span>
                 <div>
-                    <div class="detail-label">预约日期</div>
-                    <div class="detail-value">${booking.date}</div>
+                    <div class="detail-label">${escapeHtml(gettext('预约日期'))}</div>
+                    <div class="detail-value">${escapeHtml(booking.date)}</div>
                 </div>
             </div>
             <div class="modal-detail">
                 <span class="material-icons">schedule</span>
                 <div>
-                    <div class="detail-label">时间段</div>
-                    <div class="detail-value">${booking.startTime} - ${booking.endTime}</div>
+                    <div class="detail-label">${escapeHtml(gettext('时间段'))}</div>
+                    <div class="detail-value">${escapeHtml(booking.startTime)} - ${escapeHtml(booking.endTime)}</div>
                 </div>
             </div>
             <div class="modal-detail">
                 <span class="material-icons">person</span>
                 <div>
-                    <div class="detail-label">预约人</div>
+                    <div class="detail-label">${escapeHtml(gettext('预约人'))}</div>
                     <a href="${userDetailUrl}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
                         <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                             ${booking.userAvatarUrl ? 
-                                `<img src="${booking.userAvatarUrl}" alt="${booking.user}" style="width: 100%; height: 100%; object-fit: cover;">` :
-                                `<div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${booking.userInitial}</div>`
+                                `<img src="${escapeHtml(booking.userAvatarUrl)}" alt="${escapeHtml(booking.user)}" style="width: 100%; height: 100%; object-fit: cover;">` :
+                                `<div style="width: 100%; height: 100%; background: var(--md3-primary-container); color: var(--md3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${escapeHtml(booking.userInitial)}</div>`
                             }
                         </div>
-                        <div class="detail-value">${booking.user}</div>
+                        <div class="detail-value">${escapeHtml(booking.user)}</div>
                     </a>
                 </div>
             </div>
@@ -1047,8 +1056,8 @@
                 <div class="modal-detail">
                     <span class="material-icons">groups</span>
                     <div>
-                        <div class="detail-label">申请社团</div>
-                        <div class="detail-value">${booking.club}</div>
+                        <div class="detail-label">${escapeHtml(gettext('申请社团'))}</div>
+                        <div class="detail-value">${escapeHtml(booking.club)}</div>
                     </div>
                 </div>
             `;
@@ -1058,33 +1067,33 @@
             <div class="modal-detail">
                 <span class="material-icons">phone</span>
                 <div>
-                    <div class="detail-label">联系电话</div>
-                    <div class="detail-value">${booking.contactPhone || '—'}</div>
+                    <div class="detail-label">${escapeHtml(gettext('联系电话'))}</div>
+                    <div class="detail-value">${escapeHtml(booking.contactPhone || '—')}</div>
                 </div>
             </div>
             <div class="modal-detail">
                 <span class="material-icons">description</span>
                 <div>
-                    <div class="detail-label">使用目的</div>
-                    <div class="detail-value">${booking.purpose || '—'}</div>
+                    <div class="detail-label">${escapeHtml(gettext('使用目的'))}</div>
+                    <div class="detail-value">${escapeHtml(booking.purpose || '—')}</div>
                 </div>
             </div>
             <div class="modal-detail">
                 <span class="material-icons">group</span>
                 <div>
-                    <div class="detail-label">参与人数</div>
-                    <div class="detail-value">${booking.participantCount}人</div>
+                    <div class="detail-label">${escapeHtml(gettext('参与人数'))}</div>
+                    <div class="detail-value">${escapeHtml(interpolate(gettext('%s 人'), [booking.participantCount]))}</div>
                 </div>
             </div>
         `;
         
-        if (booking.specialRequirements && booking.specialRequirements !== '无') {
+        if (booking.specialRequirements) {
              html += `
                 <div class="modal-detail">
                     <span class="material-icons">assignment</span>
                     <div>
-                        <div class="detail-label">特殊需求</div>
-                        <div class="detail-value">${booking.specialRequirements}</div>
+                        <div class="detail-label">${escapeHtml(gettext('特殊需求'))}</div>
+                        <div class="detail-value">${escapeHtml(booking.specialRequirements)}</div>
                     </div>
                 </div>
             `;
@@ -1094,17 +1103,19 @@
 
         let footerHtml = '';
         if (booking.canEdit) {
-            footerHtml += `<a href="{% url 'clubs:edit_room_booking' 0 %}`.replace('0', booking.id) + gettext('" class="modal-btn primary">
-                <span class="material-icons" style="font-size: 18px;">edit</span> 编辑
-            </a>');
+            const editUrl = "{% url 'clubs:edit_room_booking' 0 %}".replace('0', booking.id);
+            footerHtml += `<a href="${escapeHtml(editUrl)}" class="modal-btn primary">
+                <span class="material-icons" style="font-size: 18px;">edit</span> ${escapeHtml(gettext('编辑'))}
+            </a>`;
         }
         if (booking.canDelete) {
-            footerHtml += `<a href="{% url 'clubs:delete_room_booking' 0 %}`.replace('0', booking.id) + gettext('" class="modal-btn error">
-                <span class="material-icons" style="font-size: 18px;">delete</span> 删除
-            </a>');
+            const deleteUrl = "{% url 'clubs:delete_room_booking' 0 %}".replace('0', booking.id);
+            footerHtml += `<a href="${escapeHtml(deleteUrl)}" class="modal-btn error">
+                <span class="material-icons" style="font-size: 18px;">delete</span> ${escapeHtml(gettext('删除'))}
+            </a>`;
         }
         if (!footerHtml) {
-            footerHtml = `<button class="modal-btn" onclick="closeEventModal()">关闭</button>`;
+            footerHtml = `<button class="modal-btn" onclick="closeEventModal()">${escapeHtml(gettext('关闭'))}</button>`;
         }
         
         document.getElementById('modalFooter').innerHTML = footerHtml;

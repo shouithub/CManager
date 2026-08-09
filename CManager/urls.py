@@ -61,6 +61,7 @@ urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 #   完全绕过本站代理。/media/ 路由仅在用户误访问旧 URL 时提供 404 兜底
 # * Office Online 预览链接在 S3 模式下也是直链，避免代理消耗本站带宽
 from django.views.static import serve
+from django.http import Http404
 from django.urls import re_path
 
 
@@ -71,11 +72,19 @@ def avatar_media_view(request, path):
     return response
 
 
+def public_media_view(request, path):
+    """Only permanently public presentation assets may bypass signed access."""
+    normalized = str(path or '').replace('\\', '/').lstrip('/')
+    if '..' in normalized.split('/') or not normalized.startswith(('site/', 'carousel/')):
+        raise Http404('文件不存在')
+    response = serve(request, normalized, document_root=settings.MEDIA_ROOT)
+    response['Cache-Control'] = 'public, max-age=2592000'
+    return response
+
+
 # 使用re_path而不是static函数，以确保正确处理中文文件名
 # 将媒体文件路由放在应用路由之后，避免冲突
 urlpatterns += [
     re_path(r'^media/avatars/(?P<path>.*)$', avatar_media_view),
-    re_path(r'^media/(?P<path>.*)$', serve, {
-        'document_root': settings.MEDIA_ROOT,
-    }),
+    re_path(r'^media/(?P<path>.*)$', public_media_view),
 ]

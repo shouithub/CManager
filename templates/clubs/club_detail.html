@@ -547,7 +547,7 @@
             throw new Error(gettext('登录状态已失效，请刷新页面后重试'));
         }
         if (!res.ok) {
-            throw new Error((data && data.message) ? data.message : gettext('请求失败（HTTP ') + (res.status) + gettext('），请稍后重试或联系管理员'));
+            throw new Error((data && data.message) ? data.message : interpolate(gettext('请求失败（HTTP %s），请稍后重试或联系管理员'), [res.status]));
         }
         if (!data) {
             throw new Error(gettext('服务器返回了无法解析的数据，请稍后重试或联系管理员'));
@@ -587,8 +587,8 @@
 
             panel.style.display = 'block';
             urlEl.textContent = correctedUrl;
-            expEl.textContent = `过期时间：${data.expires_at}`;
-            usesEl.textContent = `使用次数：${data.uses_info}`;
+            expEl.textContent = interpolate(gettext('过期时间：%s'), [data.expires_at]);
+            usesEl.textContent = interpolate(gettext('使用次数：%s'), [data.uses_info]);
 
             // 统一仅使用 member-token 接口返回的二维码
             if (data.qr_data_uri) {
@@ -611,7 +611,7 @@
         const errorEl = document.getElementById('qrConfigError');
         
         if (maxUses === 'unlimited' && minutes > 1440) {
-            errorEl.textContent = '⚠️ 不限次数的令牌有效期不得超过1天（1440分钟）';
+            errorEl.textContent = gettext('⚠️ 不限次数的令牌有效期不得超过1天（1440分钟）');
             errorEl.style.display = 'block';
             return false;
         } else {

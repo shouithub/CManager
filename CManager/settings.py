@@ -397,6 +397,8 @@ STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 SECURE_RANDOMIZE_UPLOAD_NAMES = _env_bool('SECURE_RANDOMIZE_UPLOAD_NAMES', True)
+# 普通业务文件通过带时间戳的签名地址访问；Office Online 也使用该地址。
+TEMPORARY_MEDIA_URL_MAX_AGE = 15 * 60
 
 # 存储：通过抽象层 ClubStorage 实现 Local / S3 后端动态切换
 # 业务代码所有 FileField 自动走该 storage；切换后端时只需修改 StorageConfig 表

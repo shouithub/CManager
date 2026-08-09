@@ -153,17 +153,6 @@ def _skip_django_block(s, i):
     return i
 
 
-def _skip_django_block(s, i):
-    n = len(s)
-    if s.startswith("{%", i):
-        j = s.find("%}", i)
-        return j + 2 if j != -1 else n
-    if s.startswith("{{", i):
-        j = s.find("}}", i)
-        return j + 2 if j != -1 else n
-    return i
-
-
 def extract_attrs(tag):
     m = re.match(r"<([a-zA-Z][\w\-]*)\s*(.*)", tag, re.DOTALL)
     if not m:
@@ -226,13 +215,22 @@ def extract_attrs(tag):
 def apply_tdefault(dvar_text, collected):
     def repl(m):
         s = m.group(1)
-        if has_chinese(s):
-            collected.add(s)
+        if not has_chinese(s):
+            return m.group(0)
+        collected.add(s)
         return f'|tdefault:"{s}"'
     return RE_DVAR_DEFAULT.sub(repl, dvar_text)
 
 
 def wrap_js(js_text, source_hint):
+    # JavaScript template literals can contain nested HTML, expressions, and
+    # even other template literals.  Rewriting them with this lightweight
+    # scanner is unsafe (it previously corrupted valid markup and closing
+    # script tags), so leave such blocks untouched and audit their visible
+    # strings separately.
+    if "`" in js_text:
+        return js_text
+
     result = []
     i = 0
     n = len(js_text)
@@ -296,6 +294,8 @@ def should_skip_js_string(text, start):
         if k < len(text) and text[k] == ":":
             return True
     before = text[max(0, start - 50):start]
+    if re.search(r"\b(?:gettext|ngettext|pgettext)\s*\(\s*$", before):
+        return True
     if re.search(r"\bcase\s+$", before):
         return True
     if re.search(r"==?\s+$", before):
@@ -457,9 +457,26 @@ def process_file(path, dry_run=False):
     needs_common_tags = False
     i = 0
     n = len(tokens)
+    blocktrans_depth = 0
     while i < n:
         kind, val = tokens[i]
-        if kind in ("comment", "dtag"):
+        if kind == "dtag":
+            tag_inner = val[2:-2].strip()
+            tag_name = tag_inner.split(None, 1)[0].lower() if tag_inner else ""
+            if tag_name in ("endblocktrans", "endblocktranslate"):
+                blocktrans_depth = max(0, blocktrans_depth - 1)
+                new_tokens.append((kind, val))
+                i += 1
+                continue
+            if blocktrans_depth:
+                new_tokens.append((kind, val))
+                i += 1
+                continue
+            if tag_name in ("blocktrans", "blocktranslate"):
+                blocktrans_depth += 1
+                new_tokens.append((kind, val))
+                i += 1
+                continue
             new_val = apply_tdefault(val, default_strings)
             if new_val != val:
                 new_tokens.append((kind, new_val))
@@ -467,6 +484,14 @@ def process_file(path, dry_run=False):
                 needs_common_tags = True
             else:
                 new_tokens.append((kind, val))
+            i += 1
+            continue
+        if blocktrans_depth:
+            new_tokens.append((kind, val))
+            i += 1
+            continue
+        if kind == "comment":
+            new_tokens.append((kind, val))
             i += 1
             continue
         if kind == "htag":
@@ -523,9 +548,11 @@ def process_file(path, dry_run=False):
     if changed:
         new_content = "".join(t[1] for t in new_tokens)
         new_content = ensure_load(new_content, needs_i18n, needs_common_tags)
-        if not dry_run:
+        actual_changed = new_content != content
+        if actual_changed and not dry_run:
             path.write_text(new_content, encoding="utf-8")
-    return changed, default_strings
+        return actual_changed, default_strings
+    return False, default_strings
 
 
 def write_i18n_extra(strings):

@@ -306,7 +306,7 @@ async function parseMemberTokenResponse(res) {
         throw new Error(gettext('登录状态已失效，请刷新页面后重试'));
     }
     if (!res.ok) {
-        throw new Error((data && data.message) ? data.message : gettext('请求失败（HTTP ') + (res.status) + gettext('），请稍后重试或联系管理员'));
+        throw new Error((data && data.message) ? data.message : interpolate(gettext('请求失败（HTTP %s），请稍后重试或联系管理员'), [res.status]));
     }
     if (!data) {
         throw new Error(gettext('服务器返回了无法解析的数据，请稍后重试或联系管理员'));
@@ -347,8 +347,8 @@ async function generateMemberJoinQRCode(clubId) {
 
         panel.style.display = 'block';
         urlEl.textContent = correctedUrl;
-        expEl.textContent = `过期时间：${data.expires_at}`;
-        usesEl.textContent = `使用次数：${data.uses_info}`;
+        expEl.textContent = interpolate(gettext('过期时间：%s'), [data.expires_at]);
+        usesEl.textContent = interpolate(gettext('使用次数：%s'), [data.uses_info]);
         openEl.href = correctedUrl;
         if (data.qr_data_uri) {
             imgEl.src = data.qr_data_uri;
@@ -370,7 +370,7 @@ function validateQrConfig() {
     const errorEl = document.getElementById('qrConfigError');
     
     if (maxUses === 'unlimited' && minutes > 1440) {
-        errorEl.textContent = '⚠️ 不限次数的令牌有效期不得超过1天（1440分钟）';
+        errorEl.textContent = gettext('⚠️ 不限次数的令牌有效期不得超过1天（1440分钟）');
         errorEl.style.display = 'block';
         return false;
     } else {
@@ -400,7 +400,7 @@ function getCookie(name) {
 
 // 编辑资料弹窗
 function openEditModal(btn) {
-    document.getElementById('editModalTitle').textContent = '编辑成员资料 — ' + (btn.dataset.username || '');
+    document.getElementById('editModalTitle').textContent = gettext('编辑成员资料 — ') + (btn.dataset.username || '');
     document.getElementById('editClubId').value = btn.dataset.club;
     document.getElementById('editMembershipId').value = btn.dataset.membership;
     document.getElementById('removeClubId').value = btn.dataset.club;
@@ -426,7 +426,7 @@ function closeEditModalOnBg(e) {
 }
 function confirmRemove() {
     const name = document.getElementById('editModalTitle').textContent.split('—').slice(1).join('—').trim();
-    if (confirm(gettext('确认移除成员 ') + (name || gettext('该成员')) + gettext('？此操作不可恢复。'))) {
+    if (confirm(interpolate(gettext('确认移除成员 %s？此操作不可恢复。'), [name || gettext('该成员')]))) {
         document.getElementById('removeForm').submit();
     }
 }
@@ -448,7 +448,7 @@ function closeTokenManagerModal() {
 }
 async function loadTokenList(clubId) {
     const list = document.getElementById('tokenList');
-    list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">加载中…</div>';
+    list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">' + gettext('加载中…') + '</div>';
     try {
         const res = await fetch(`/club/${clubId}/member-tokens/`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -456,7 +456,7 @@ async function loadTokenList(clubId) {
         const data = await res.json();
         if (!data.success) throw new Error(data.message);
         if (data.tokens.length === 0) {
-            list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">暂无有效的二维码链接</div>';
+            list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">' + gettext('暂无有效的二维码链接') + '</div>';
             return;
         }
         list.innerHTML = '';
@@ -472,7 +472,7 @@ async function loadTokenList(clubId) {
             urlEl.textContent = t.join_url;
             const metaEl = document.createElement('div');
             metaEl.style.cssText = 'font-size:0.78rem;margin-top:3px;color:var(--md3-on-surface-variant);';
-            metaEl.textContent = `过期：${t.expires_at}  |  使用：${t.uses_info}  |  创建：${t.created_at}`;
+            metaEl.textContent = interpolate(gettext('过期：%s  |  使用：%s  |  创建：%s'), [t.expires_at, t.uses_info, t.created_at]);
             info.append(urlEl, metaEl);
 
             const actions = document.createElement('div');
@@ -480,12 +480,12 @@ async function loadTokenList(clubId) {
             const copyBtn = document.createElement('button');
             copyBtn.className = 'mini-btn';
             copyBtn.type = 'button';
-            copyBtn.textContent = '复制';
+            copyBtn.textContent = gettext('复制');
             copyBtn.addEventListener('click', () => copyText(t.join_url));
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'mini-btn danger';
             deleteBtn.type = 'button';
-            deleteBtn.textContent = '删除';
+            deleteBtn.textContent = gettext('删除');
             deleteBtn.addEventListener('click', () => deleteToken(clubId, t.id));
             actions.append(copyBtn, deleteBtn);
 
@@ -496,7 +496,7 @@ async function loadTokenList(clubId) {
         list.innerHTML = '';
         const errEl = document.createElement('div');
         errEl.style.cssText = 'padding:16px;color:var(--md3-error);';
-        errEl.textContent = `加载失败：${e.message}`;
+        errEl.textContent = gettext('加载失败：') + e.message;
         list.appendChild(errEl);
     }
 }
@@ -513,7 +513,7 @@ async function deleteToken(clubId, tokenId) {
             if (el) el.remove();
             const list = document.getElementById('tokenList');
             if (!list.querySelector('.token-item')) {
-                list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">暂无有效的二维码链接</div>';
+                list.innerHTML = '<div style="padding:16px;color:var(--md3-on-surface-variant);">' + gettext('暂无有效的二维码链接') + '</div>';
             }
         } else {
             alert(data.message || gettext('删除失败'));

@@ -1254,11 +1254,11 @@ document.querySelectorAll('.js-open-staff-attr').forEach(function(button) {
 });
 
 function confirmDeleteUser(username) {
-    if (!confirm(gettext('确定删除账号 ') + (username) + gettext(' 吗？此操作不可恢复。'))) {
+    if (!confirm(interpolate(gettext('确定删除账号 %s 吗？此操作不可恢复。'), [username]))) {
         return false;
     }
 
-    const typed = prompt(gettext('二次确认：请输入用户名 ') + (username) + gettext(' 以继续删除'));
+    const typed = prompt(interpolate(gettext('二次确认：请输入用户名 %s 以继续删除'), [username]));
     if (typed === null) {
         return false;
     }
@@ -1286,7 +1286,7 @@ function confirmDeleteUser(username) {
         cards.forEach(function (card) {
             card.classList.toggle('is-selected', selected.has(card.dataset.userId));
         });
-        if (countEl) countEl.textContent = '已选 ' + selected.size + gettext(' 人');
+        if (countEl) countEl.textContent = interpolate(gettext('已选 %s 人'), [selected.size]);
         selectAll.checked = selected.size === cards.length;
     }
 

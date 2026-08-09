@@ -510,13 +510,13 @@ function copyAlert(key, scope) {
     const lines = [alertTitle(alert, scope), '=========================='];
     items.forEach(function (club) {
         let line = club.name;
-        if (alert.show_members) line += ' - 成员数: ' + club.members + gettext(' 人');
-        line += ' (社长: ' + club.president + ')';
-        line += ' - 负责干事: ' + club.staff.join(', ');
+        if (alert.show_members) line += ' - ' + interpolate(gettext('成员数: %s 人'), [club.members]);
+        line += ' (' + interpolate(gettext('社长: %s'), [club.president]) + ')';
+        line += ' - ' + interpolate(gettext('负责干事: %s'), [club.staff.join(', ')]);
         lines.push(line);
     });
     lines.push('==========================');
-    lines.push(gettext('总计: ') + (scope === 'my' ? alert.my_count : alert.count) + gettext(' 个社团'));
+    lines.push(interpolate(gettext('总计: %s 个社团'), [scope === 'my' ? alert.my_count : alert.count]));
     navigator.clipboard.writeText(lines.join('\n')).then(showToast).catch(err => console.error(gettext('复制失败:'), err));
 }
 

@@ -5,6 +5,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
+from django.db.models import Q
 from django.utils import timezone
 from datetime import datetime, timedelta, time
 from openpyxl import Workbook
@@ -12,8 +13,9 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 import urllib.parse
 
-from ..models import RoomBooking, Room, TimeSlot, FormSubmission, FormChannel, PublishedActivity
-from ..permissions import has_any_role
+from ..models import RoomBooking, Room, TimeSlot, FormSubmission, FormChannel, PublishedActivity, ClubMember
+from ..permissions import has_any_role, president_club_ids, roles_required, user_role
+from ..identity import is_president_mode
 from django.utils.translation import gettext as _
 
 
@@ -238,10 +240,22 @@ def export_room_bookings_weekly(request):
 
 # ---- Dynamic form exports ------------------------------------------------------
 
+@roles_required('staff', 'admin', 'president', 'member')
 def export_activities(request):
     import csv
     from django.http import HttpResponse
     activities = PublishedActivity.objects.select_related('club')
+    role = user_role(request.user)
+    if is_president_mode(request):
+        activities = activities.filter(club_id__in=president_club_ids(request.user))
+    elif role == 'member':
+        member_club_ids = ClubMember.objects.filter(
+            user_profile__user=request.user,
+            status='active',
+        ).values_list('club_id', flat=True)
+        activities = activities.filter(
+            Q(club_id__in=member_club_ids) | Q(is_public=True)
+        ).distinct()
     response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
     response['Content-Disposition'] = 'attachment; filename=\"activities.csv\"'
     writer = csv.writer(response)

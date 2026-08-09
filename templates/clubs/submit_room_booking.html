@@ -267,7 +267,7 @@
                     <select name="room_id" id="room_id" required>
                         <option value="">{% trans '请选择房间...' %}</option>
                         {% for room in rooms %}
-                        <option value="{{ room.id }}" {% if selected_room_id == room.id %}selected{% endif %}>{{ room.name }}{% blocktrans with __i18n1=room.capacity %} (容量: {{ __i18n1 }}){% endblocktrans %}</option>
+                        <option value="{{ room.id }}" data-capacity="{{ room.capacity }}" {% if selected_room_id == room.id %}selected{% endif %}>{{ room.name }}{% blocktrans with __i18n1=room.capacity %} (容量: {{ __i18n1 }}){% endblocktrans %}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -290,7 +290,7 @@
                     <label for="participant_count">
                         <span class="material-icons">group</span>{% trans '参与人数' %}<span class="required">*</span>
                     </label>
-                    <input type="number" name="participant_count" id="participant_count" min="1" max="50" placeholder="{% trans '例如：20' %}" required=>
+                    <input type="number" name="participant_count" id="participant_count" min="1" placeholder="{% trans '例如：20' %}" required>
                 </div>
             </div>
             
@@ -365,6 +365,15 @@
         // 简单的客户端时间检查（可选）
         const startTimeInput = document.getElementById('start_time');
         const endTimeInput = document.getElementById('end_time');
+        const roomInput = document.getElementById('room_id');
+        const participantInput = document.getElementById('participant_count');
+
+        function syncRoomCapacity() {
+            const option = roomInput.options[roomInput.selectedIndex];
+            const capacity = option ? option.dataset.capacity : '';
+            if (capacity) participantInput.max = capacity;
+            else participantInput.removeAttribute('max');
+        }
         
         function validateTime() {
             if(startTimeInput.value && endTimeInput.value) {
@@ -378,6 +387,8 @@
         
         startTimeInput.addEventListener('change', validateTime);
         endTimeInput.addEventListener('change', validateTime);
+        roomInput.addEventListener('change', syncRoomCapacity);
+        syncRoomCapacity();
     });
 </script>
 {% endblock %}

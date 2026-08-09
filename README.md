@@ -191,9 +191,14 @@
         add_header Cache-Control "public, max-age=31536000, immutable" always;
         add_header X-Content-Type-Options nosniff always;
     }
+    location ^~ /media/site/ {
+        alias /path/to/CManager/media/site/;
+    }
+    location ^~ /media/carousel/ {
+        alias /path/to/CManager/media/carousel/;
+    }
     location /media/ {
-        alias /path/to/CManager/media/;
-        add_header X-Content-Type-Options nosniff always;
+        return 404;
     }
     ```
     同时请在部署时执行：
@@ -201,7 +206,8 @@
     python manage.py collectstatic --noinput
     python manage.py check --deploy
     ```
-    用户提交附件应通过应用的鉴权下载接口提供。媒体目录的完整脚本执行阻断规则见
+    本地业务文件使用本站短时签名地址；S3 文件则直接生成 S3 预签名 URL，文件流量
+    不经过本站。不要让 Nginx 直接映射整个 `media/`，S3 Bucket 也应保持私有。完整媒体规则见
     `docs/deployment/nginx-media-security.conf`，部署时请合并到站点配置。
 
     > **HTTPS 说明**：Django 本身不提供 HTTPS。若站点需要 HTTPS，请使用 Nginx

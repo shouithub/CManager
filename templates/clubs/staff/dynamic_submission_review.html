@@ -659,7 +659,7 @@
                             {% if uploaded|is_image_file %}
                             {% if uploaded|file_exists %}
                             <a class="file-entry-image" href="{% url 'clubs:download_submission_file' uploaded.id %}" target="_blank" rel="noopener">
-                                <img src="{{ uploaded.file.url }}" alt="{{ uploaded.original_name|default:uploaded.file.name }}" loading="lazy">
+                                <img src="{% url 'clubs:download_submission_file' uploaded.id %}?inline=1" alt="{{ uploaded.original_name|default:uploaded.file.name }}" loading="lazy">
                             </a>
                             {% else %}
                             <span class="file-missing">{% trans '文件已丢失' %}</span>

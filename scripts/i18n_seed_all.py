@@ -136,7 +136,6 @@ CATALOG = {
     "字段标识": ("Field Key", "خەت بۆلەك بەلگىسى", "Талбарын түлхүүр"),
     "字段类型": ("Field Type", "خەت بۆلەك تۈرى", "Талбарын төрөл"),
     "必填": ("Required", "تولۇقلاش مەجبۇرىي", "Шаардлагатай"),
-    "提示": ("Hint", "ئىشارەت", "Зөвлөмж"),
     "占位提示": ("Placeholder", "ئورۇن تۇتقۇچ", "Жишээ текст"),
     "选项": ("Options", "تاللاشلار", "Сонголтууд"),
     "校验规则": ("Validation Rules", "تەكشۈرۈش قائىدىلىرى", "Шалгах дүрэм"),
@@ -190,7 +189,6 @@ CATALOG = {
     "已取消": ("Cancelled", "بىكار قىلىنغان", "Цуцалсан"),
     "可用": ("Available", "ئىشلىتىشكە بولىدۇ", "Боломжтой"),
     "维护中": ("Under Maintenance", "ئاسراش جەريانىدا", "Засвар хийгдэж байна"),
-    "关闭": ("Closed", "تاقاقلانغان", "Хаалттай"),
     "未知": ("Unknown", "نامەلۇم", "Тодорхойгүй"),
     "已读": ("Read", "ئوقۇلغان", "Уншсан"),
     "未读": ("Unread", "ئوقۇلمىغان", "Уншаагүй"),
@@ -734,9 +732,96 @@ ADDITIONAL = {
     "编辑时间段": ("Edit Time Slot", "ۋاقىت بۆلەكنى تەھرىرلەش", "Цагийн хэсэг засах"),
     "启用此时间段": ("Enable Time Slot", "بۇ ۋاقىت بۆلەكنى قوزغىتىش", "Энэ цагийн хэсгийг идэвхжүүлэх"),
     "创建新的可选时间段": ("Create new time slot", "يېڭى ۋاقىت بۆلەك قۇرۇش", "Шинэ цагийн хэсэг үүсгэх"),
+
+    # ----- edit profile / account security / auth messages -----
+    "基本信息": ("Basic Information", "ئاساسىي ئۇچۇرلار", "Үндсэн мэдээлэл"),
+    "请选择": ("Please select", "تاللاڭ", "Сонгоно уу"),
+    "学号": ("Student ID", "ئوقۇغۇچى نومۇرى", "Оюутны дугаар"),
+    "用户头像": ("User Avatar", "ئىشلەتكۈچى باش رەسىمى", "Хэрэглэгчийн аватар"),
+    "向其他用户公开我的联系方式": ("Share my contact information with other users", "مېنىڭ ئالاقىلىشىش ئۇچۇرلىرىمنى باشقا ئىشلەتكۈچىلەرگە كۆرسىتىش", "Холбогдох мэдээллээ бусад хэрэглэгчдэд нээлттэй харуулах"),
+    "已有 QQ 头像？输入": ("Already have a QQ avatar? Enter", "QQ باش رەسىمىڭىز بارمۇ؟ كىرگۈزۈڭ", "QQ аватартай юу? Оруулна уу"),
+    "QQ号@qq.com": ("QQ number@qq.com", "QQ نومۇر@qq.com", "QQ дугаар@qq.com"),
+    "（例如 123456@qq.com）即可尝试自动获取。提交后会先检测头像，成功后才会切换；请求地址不包含邮箱明文。": ("(e.g. 123456@qq.com) to try automatic retrieval. The avatar is checked before switching; the request URL does not contain your email.", "(مەسىلەن 123456@qq.com) بولسا ئاپتوماتىك ئېلىش سىنىغىلى بولىدۇ. تاپشۇرغاندىن كېيىن ئاۋۋال باش رەسىم تەكشۈرۈلىدۇ، مۇۋەپپەقىيەتلىك بولغاندىلا ئالمىشىدۇ؛ تەلەپ ئادرېسىدا ئېلخەت ئېنىق كۆرسىتىلمەيدۇ.", "(жишээ нь 123456@qq.com) гэж оруулбал автоматаар авахыг оролдоно. Илгээсний дараа эхлээд аватарыг шалгаж, амжилттай болсон тохиолдолд л шилжинэ; хүсэлтийн URL-д имэйл ороогүй."),
+    "支持 JPG、PNG、WebP，上传前会自动裁剪并压缩": ("Supports JPG, PNG, WebP. Images are automatically cropped and compressed before upload.", "JPG، PNG، WebP نى قوللايدۇ، يۈكلەشتىن ئىلگىرى ئاپتوماتىك كېسىلىدۇ ۋە سىقىلىدۇ", "JPG, PNG, WebP форматыг дэмждэг. Хуулахын өмнө автоматаар зүсэж, шахагдана."),
+    "上传成功后会自动切换到本站头像。": ("The avatar will automatically switch to the local avatar after upload.", "يۈكلەش مۇۋەپپەقىيەتلىك بولغاندىن كېيىن ئاپتوماتىك بۇ توربەتنىڭ باش رەسىمىگە ئالمىشىدۇ.", "Хуулсны дараа аватар автоматаар орон нутгийн аватар руу шилжинэ."),
+    "图片不能超过 20 MB，请选择较小的文件。": ("Image cannot exceed 20 MB. Please choose a smaller file.", "رەسىم 20 MB تىن ئېشىپ كەتمەسلىكى كېرەك، كىچىكرەك ھۆججەت تاللاڭ.", "Зураг 20 MB-аас ихгүй байх ёстой. Жижиг файл сонгоно уу."),
+    "图片处理失败，请重新选择。": ("Image processing failed. Please choose again.", "رەسىم بىر تەرەپ قىلىش مەغلۇب بولدى، قايتا تاللاڭ.", "Зургийн боловсруулалт амжилтгүй боллоо. Дахин сонгоно уу."),
+    "头像上传失败": ("Avatar upload failed", "باش رەسىم يۈكلەش مەغلۇب بولدى", "Аватар хуулалт амжилтгүй боллоо"),
+    "头像上传失败，请重试。": ("Avatar upload failed. Please try again.", "باش رەسىم يۈكلەش مەغلۇب بولدى، قايتا سىناڭ.", "Аватар хуулалт амжилтгүй боллоо. Дахин оролдоно уу."),
+    "头像上传完成，页面即将刷新…": ("Avatar uploaded. The page will refresh...", "باش رەسىم يۈكلەش تاماملاندى، بەت يېڭىلانماقچى…", "Аватар хуулагдлаа. Хуудас шинэчлэгдэж байна..."),
+    "正在上传头像…": ("Uploading avatar...", "باش رەسىم يۈكلەنمەكتە…", "Аватар хуулагдаж байна..."),
+    "服务器未返回头像上传结果，请刷新页面后重试。": ("The server did not return the avatar upload result. Refresh the page and try again.", "مۇلازىمېتىر باش رەسىم يۈكلەش نەتىجىسىنى قايتۇرمىدى، بەتنى يېڭىلاپ قايتا سىناڭ.", "Сервер аватар хуулалтын үр дүнг буцаалгүй. Хуудсыг сэргээгээд дахин оролдоно уу."),
+    "裁剪组件未加载，请刷新页面重试。": ("The cropping component failed to load. Refresh the page and try again.", "كېسىش تەركىبى يۈكلەنمىدى، بەتنى يېڭىلاپ قايتا سىناڭ.", "Зүсэх бүрэлдэхүүн ачааллаагүй. Хуудсыг сэргээгээд дахин оролдоно уу."),
+    "请先选择图片并完成裁剪。": ("Please choose an image and finish cropping first.", "ئاۋۋال رەسىم تاللاپ كېسىشنى تاماملاڭ.", "Эхлээд зураг сонгоод зүсэлтийг дуусгана уу."),
+    "管理员暂未开放 Cravatar，仍可在下方上传本站头像。": ("Cravatar is not enabled by the admin. You can still upload a local avatar below.", "باشقۇرغۇچى Cravatar نى ھازىرچە ئاچمىدى، تۆۋەندە يەنىلا بۇ توربەتكە باش رەسىم يۈكلىيەلەيسىز.", "Cravatar-ийг админ идэвхжүүлээгүй байна. Доор орон нутгийн аватар хуулж болно."),
+    "管理员暂未开放 Cravatar": ("Cravatar is not enabled by the admin", "باشقۇرغۇچى Cravatar نى ھازىرچە ئاچمىدى", "Cravatar-ийг админ идэвхжүүлээгүй байна"),
+    "请输入有效的 Cravatar 邮箱": ("Please enter a valid Cravatar email", "ئىناۋەتلىك Cravatar ئېلخەتنى كىرگۈزۈڭ", "Хүчинтэй Cravatar имэйл оруулна уу"),
+    "请输入已绑定 Cravatar 头像的邮箱": ("Please enter the email bound to a Cravatar avatar", "Cravatar باش رەسىمى باغلانغان ئېلخەتنى كىرگۈزۈڭ", "Cravatar аватартай холбогдсон имэйлээ оруулна уу"),
+    "该邮箱没有可用的 Cravatar 头像，请先在 Cravatar 绑定头像或继续使用本站上传": ("No Cravatar avatar is available for this email. Bind an avatar on Cravatar first or continue using the local upload.", "بۇ ئېلخەتتە ئىشلىتىشكە بولىدىغان Cravatar باش رەسىمى يوق، ئاۋۋال Cravatar دا باش رەسىم باغلاڭ ياكى بۇ توربەتكە يۈكلەشنى داۋاملاشتۇرۇڭ", "Энэ имэйлд Cravatar аватар байхгүй. Эхлээд Cravatar-т аватар холбоно уу эсвэл орон нутгийн хуулалтыг үргэлжлүүлнэ үү."),
+    "已检测到 Cravatar 头像并启用": ("Cravatar avatar detected and enabled", "Cravatar باش رەسىمى بايقالدى ۋە قوزغىتىلدى", "Cravatar аватар илэрч, идэвхжүүллээ"),
+    "暂时无法连接 Cravatar，请稍后重试；当前头像未更改": ("Cannot connect to Cravatar right now. Please try again later; your avatar is unchanged.", "ھازىر Cravatar غا ئۇلىنالمىدى، بىر ئاز ساقلاپ قايتا سىناڭ؛ ھازىرقى باش رەسىم ئۆزگەرمىدى.", "Cravatar-т одоогоор холбогдохгүй байна. Дараа дахин оролдоно уу; аватар өөрчлөгдөөгүй."),
+    "当前用户名:": ("Current username:", "نۆۋەتتىكى ئىشلەتكۈچى ئاتى:", "Одоогийн хэрэглэгчийн нэр:"),
+    "当前用户名: %(__i18n1)s": ("Current username: %(__i18n1)s", "نۆۋەتتىكى ئىشلەتكۈچى ئاتى: %(__i18n1)s", "Одоогийн хэрэглэгчийн нэр: %(__i18n1)s"),
+    "验证身份以修改用户名": ("Verify identity to change username", "ئىشلەتكۈچى ئاتىنى ئۆزگەرتىش ئۈچۈن سالاھىيەتنى دەلىللەڭ", "Хэрэглэгчийн нэр солихын тулд хэн болохоо баталгаажуулна уу"),
+    "账号安全设置": ("Account Security Settings", "ھېسابات بىخەتەرلىك تەڭشەكلىرى", "Бүртгэлийн аюулгүй байдлын тохиргоо"),
+    "密码长度至少需6位": ("Password must be at least 6 characters", "پارول ئەڭ ئاز 6 ھەرپتىن تەركىب تېپىشى كېرەك", "Нууц үг хамгийн багадаа 6 тэмдэгттэй байх ёстой"),
+    "删除账户是不可逆的操作。所有相关数据将被永久删除。": ("Deleting your account is irreversible. All related data will be permanently removed.", "ھېساباتنى ئۆچۈرۈش ئەسلىگە كەلتۈرگىلى بولمايدىغان مەشغۇلات. بارلىق مۇناسىۋەتلىك سانلىق مەلۇماتلار مەڭگۈلۈك ئۆچۈرۈلىدۇ.", "Бүртгэл устгах нь эргэлт буцалтгүй үйлдэл юм. Холбогдох бүх өгөгдөл бүрмөсөн устгагдана."),
+    "确认删除账户？": ("Delete account?", "ھېساباتنى ئۆچۈرەمدىسىز؟", "Бүртгэл устгах уу?"),
+    "此操作无法撤销。请输入您的用户名": ("This action cannot be undone. Enter your username", "بۇ مەشغۇلاتنى ئەسلىگە كەلتۈرگىلى بولمايدۇ. ئىشلەتكۈچى ئاتىڭىزنى كىرگۈزۈڭ", "Энэ үйлдлийг буцаах боломжгүй. Хэрэглэгчийн нэрээ оруулна уу"),
+    "以确认删除。": ("to confirm deletion.", "ئۆچۈرۈشنى جەزملەش ئۈچۈن.", "устгахыг баталгаажуулах."),
+    "原密码错误": ("Current password is incorrect", "ئەسلى پارول خاتا", "Одоогийн нууц үг буруу байна"),
+    "密码错误": ("Incorrect password", "پارول خاتا", "Нууц үг буруу"),
+    "密码不能为空": ("Password cannot be empty", "پارول بوش بولمايدۇ", "Нууц үг хоосон байж болохгүй"),
+    "两次输入的新密码不一致": ("The two new passwords do not match", "ئىككى قېتىم كىرگۈزۈلگەن يېڭى پارول ئوخشاش ئەمەس", "Хоёр удаа оруулсан шинэ нууц үг таарахгүй байна"),
+    "新密码长度至少为6位": ("New password must be at least 6 characters", "يېڭى پارول ئەڭ ئاز 6 ھەرپتىن تەركىب تېپىشى كېرەك", "Шинэ нууц үг хамгийн багадаа 6 тэмдэгттэй байх ёстой"),
+    "密码已修改": ("Password changed", "پارول ئۆزگەرتىلدى", "Нууц үг солигдлоо"),
+    "新用户名不能为空": ("New username cannot be empty", "يېڭى ئىشلەتكۈچى ئاتى بوش بولمايدۇ", "Шинэ хэрэглэгчийн нэр хоосон байж болохгүй"),
+    "用户名不能超过30个字符": ("Username cannot exceed 30 characters", "ئىشلەتكۈچى ئاتى 30 ھەرپتىن ئېشىپ كەتمەسلىكى كېرەك", "Хэрэглэгчийн нэр 30 тэмдэгтээс хэтэрч болохгүй"),
+    "用户名至少3个字符": ("Username must be at least 3 characters", "ئىشلەتكۈچى ئاتى ئەڭ ئاز 3 ھەرپتىن تەركىب تېپىشى كېرەك", "Хэрэглэгчийн нэр хамгийн багадаа 3 тэмдэгттэй байх ёстой"),
+    "用户名已被使用": ("Username is already taken", "ئىشلەتكۈچى ئاتى ئىشلىتىلىپ بولۇندى", "Хэрэглэгчийн нэр аль хэдийн ашиглагдаж байна"),
+    "用户名输入错误，账户删除失败。": ("Incorrect username entered. Account deletion failed.", "ئىشلەتكۈچى ئاتى خاتا كىرگۈزۈلدى، ھېسابات ئۆچۈرۈش مەغلۇب بولدى.", "Хэрэглэгчийн нэр буруу оруулсан. Бүртгэл устгалт амжилтгүй боллоо."),
+    "个人信息已成功更新": ("Personal information updated successfully", "شەخسىي ئۇچۇرلار مۇۋەپپەقىيەتلىك يېڭىلاندى", "Хувийн мэдээлэл амжилттай шинэчлэгдлээ"),
+    "为了账户安全，请先修改密码后再继续使用系统。": ("For account security, please change your password before continuing.", "ھېسابات بىخەتەرلىكى ئۈچۈن، سىستېمىنى داۋاملىق ئىشلىتىشتىن بۇرۇن پارولنى ئۆزگەرتىڭ.", "Бүртгэлийн аюулгүй байдлын тулд системийг үргэлжлүүлэн ашиглахын өмнө нууц үгээ солино уу."),
+    "发送过于频繁，请稍后再试": ("Too many requests. Please try again later.", "ئەۋەتىش بەك كۆپ بولدى، بىر ئاز ساقلاپ قايتا سىناڭ", "Хэт олон илгээлт хийлээ. Дараа дахин оролдоно уу."),
+    "邮箱已验证，无需重新发送": ("Email already verified, no need to resend", "ئېلخەت دەلىللەنگەن، قايتا ئەۋەتىشنىڭ ھاجىتى يوق", "Имэйл аль хэдийн баталгаажсан, дахин илгээх шаардлагагүй"),
+    "邮箱验证记录不存在": ("Email verification record not found", "ئېلخەت دەلىللەش خاتىرىسى مەۋجۇت ئەمەس", "Имэйл баталгаажуулалтын бүртгэл олдсонгүй"),
+    "已切换为本站上传头像": ("Switched to local avatar", "بۇ توربەتنىڭ باش رەسىمىگە ئالماشتۇرۇلدى", "Орон нутгийн аватар руу шилжив"),
+    "已切换到社长身份": ("Switched to president identity", "شۇجى سالاھىيىتىگە ئالماشتۇرۇلدى", "Ерөнхийлөгчийн эрхэд шилжив"),
+    "已切换回主身份": ("Switched back to main identity", "ئاساسلىق سالاھىيەتكە قايتۇرۇلدى", "Үндсэн эрхэд буцаж шилжив"),
+    "负责社团设置成功": ("Assigned clubs updated successfully", "مەسئۇل بىرلەشمە تەڭشىكى مۇۋەپپەقىيەتلىك بولدى", "Хариуцсан клубууд амжилттай шинэчлэгдлээ"),
+    "您当前没有可管理的社团": ("You currently have no clubs to manage", "نۆۋەتتە باشقۇرىدىغان بىرلەشمىڭىز يوق", "Танд одоогоор удирдах клуб байхгүй"),
+    "您没有权限访问此页面，仅部长可以管理本部门人员": ("You do not have permission to access this page. Only department heads can manage department members.", "بۇ بەتكە زىيارەت قىلىش ھوقۇقىڭىز يوق، پەقەت بۆلۈم باشلىقىلا بۆلۈم خادىملىرىنى باشقۇرالايدۇ.", "Энэ хуудсанд хандах зөвшөөрөлгүй байна. Зөвхөн газрын дарга гишүүдийг удирдах боломжтой."),
+    "您的部门信息未配置，无法管理部门人员": ("Your department information is not configured, cannot manage department members", "بۆلۈم ئۇچۇرىڭىز تەڭشەلمىگەن، بۆلۈم خادىملىرىنى باشقۇرغىلى بولمايدۇ", "Таны газрын мэдээлэл тохируулаагүй тул гишүүдийг удирдах боломжгүй"),
+    "仅管理员可以分配干事负责的社团": ("Only admins can assign clubs to officers", "پەقەت باشقۇرغۇچىلار كادىرلارغا بىرلەشمە تەقسىملەيدۇ", "Зөвхөн админ ажилтнуудад клуб хуваарилах боломжтой"),
+    "仅管理员可以修改人数告警阈值": ("Only admins can modify the member count alert threshold", "پەقەت باشقۇرغۇچىلار ئەزا سانى ئاگاھلاندۇرۇش چېكىنى ئۆزگەرتەلەيدۇ", "Зөвхөн админ гишүүдийн тооны анхааруулгын босгыг өөрчлөх боломжтой"),
+    "人数告警阈值需为 1-999 之间的整数": ("Member count alert threshold must be an integer between 1-999", "ئەزا سانى ئاگاھلاندۇرۇش چېكى 1-999 ئارىسىدىكى پۈتۈن سان بولۇشى كېرەك", "Гишүүдийн тооны анхааруулгын босго нь 1-999 хоорондын бүхэл тоо байх ёстой"),
+    "当前账号不是不活跃状态，无需延期": ("Your account is not inactive, no extension needed", "نۆۋەتتىكى ھېسابات غەيرىي ئاكتىپ ھالەتتە ئەمەس، مۇددەت ئۇزارتىشنىڭ ھاجىتى يوق", "Таны бүртгэл идэвхгүй биш тул сунгах шаардлагагүй"),
+    "当前账号没有现任社长身份，无法切换": ("Your account has no current president identity, cannot switch", "نۆۋەتتىكى ھېساباتتا ھازىرقى شۇجى سالاھىيىتى يوق، ئالماشتۇرغىلى بولمايدۇ", "Таны бүртгэлд ерөнхийлөгчийн эрх байхгүй тул шилжих боломжгүй"),
+    "管理员账号不受自动注销策略影响，无需延期": ("Admin accounts are not affected by automatic deactivation and need no extension", "باشقۇرغۇچى ھېساباتى ئاپتوماتىك ئۆچۈرۈش سىياسىتىنىڭ تەسىرىگە ئۇچرىمايدۇ، مۇددەت ئۇزارتىشنىڭ ھاجىتى يوق", "Админы бүртгэл автомат устгалтын бодлогод өртөхгүй тул сунгах шаардлагагүй"),
+    "您的账号当前为不活跃状态。您可以在“账户设置”中选择延期注销，延期后可继续保持1年活跃（支持多次延期）。": ("Your account is currently inactive. You can choose delayed deactivation in account settings to remain active for another year (extendable multiple times).", "ھېساباتىڭىز ھازىر غەيرىي ئاكتىپ ھالەتتە. «ھېسابات تەڭشەكلىرى» دىن مۇددەتلىك ئۆچۈرۈشنى تاللاپ، يەنە 1 يىل ئاكتىپ تۇرالايسىز (كۆپ قېتىم ئۇزارتقىلى بولىدۇ).", "Таны бүртгэл одоогоор идэвхгүй байна. Та бүртгэлийн тохиргооноос хойшлуулсан устгалтыг сонгож, дахин 1 жил идэвхтэй байх боломжтой (олон удаа сунгах боломжтой)."),
+    "您的账号正在审核中，请等待管理员批准！": ("Your account is under review. Please wait for admin approval!", "ھېساباتىڭىز تەكشۈرۈلۈۋاتىدۇ، باشقۇرغۇچىنىڭ جەزملەشىنى ساقلاڭ!", "Таны бүртгэл шалгалтанд орж байна. Админы баталгаажуулалтыг хүлээнэ үү!"),
+    "用户档案不存在，无法延期": ("User profile not found, cannot extend", "ئىشلەتكۈچى خاتىرىسى مەۋجۇت ئەمەس، مۇددەت ئۇزارتغىلى بولمايدۇ", "Хэрэглэгчийн мэдээлэл олдсонгүй, сунгах боломжгүй"),
+    "用户档案不存在，无法注销账号": ("User profile not found, cannot deactivate account", "ئىشلەتكۈچى خاتىرىسى مەۋجۇت ئەمەس، ھېساباتنى ئۆچۈرگىلى بولمايدۇ", "Хэрэглэгчийн мэдээлэл олдсонгүй, бүртгэл устгах боломжгүй"),
+    "用户档案不存在，请先联系管理员完善资料": ("User profile not found. Please contact an admin to complete your profile.", "ئىشلەتكۈچى خاتىرىسى مەۋجۇت ئەمەس، ئاۋۋال باشقۇرغۇچى بىلەن ئالاقىلىشىپ ئۇچۇرلىرىڭىزنى تولۇقلاڭ.", "Хэрэглэгчийн мэдээлэл олдсонгүй. Админтай холбогдож мэдээллээ бөглөнө үү."),
+    "用户角色未配置": ("User role is not configured", "ئىشلەتكۈچى رولى تەڭشەلمىگەن", "Хэрэглэгчийн үүрэг тохируулаагүй"),
+    "登录状态已失效或请求被拒绝，请刷新页面后重新登录。": ("Your session has expired or the request was rejected. Refresh the page and sign in again.", "كىرىش ھالەتى ئۈنۈمسىز بولۇپ قالدى ياكى تەلەپ رەت قىلىندى، بەتنى يېڭىلاپ قايتا كىرىڭ.", "Нэвтрэлтийн байдал хугацаа дууссан эсвэл хүсэлт татгалзсан. Хуудсыг сэргээгээд дахин нэвтэрнэ үү."),
 }
 
 CATALOG.update(ADDITIONAL)
+
+# 扩展翻译目录（可选）：由 scripts/i18n_catalog_generated.py 提供，
+# 当前采用离线人工维护，缺失时不影响主目录中的权威译文。
+try:
+    from i18n_catalog_generated import GENERATED_CATALOG
+except ImportError:
+    GENERATED_CATALOG = {}
+CATALOG.update(GENERATED_CATALOG)
+
+# Common required-field variants use the same translation plus the visual
+# marker.  Keeping these derived forms here avoids duplicating terminology.
+for _source, _values in list(CATALOG.items()):
+    CATALOG.setdefault(f"{_source} *", tuple(f"{value} *" for value in _values))
+    CATALOG.setdefault(f"{_source}*", tuple(f"{value}*" for value in _values))
 
 
 def _parse_po(path):
@@ -781,7 +866,13 @@ def _parse_po(path):
 
 
 def _escape(s):
-    return s.replace('\\', '\\\\').replace('"', '\\"')
+    return (
+        s.replace('\\', '\\\\')
+        .replace('"', '\\"')
+        .replace('\r', r'\r')
+        .replace('\n', r'\n')
+        .replace('\t', r'\t')
+    )
 
 
 def fill_po(path, language_index):
@@ -801,7 +892,15 @@ def fill_po(path, language_index):
         if entry["msgid"] is None or entry["msgstr_line"] is None:
             kept.append(entry)
             continue
+        # blocktrans often preserves indentation/newlines around an otherwise
+        # identical message.  Reuse the canonical stripped key so these
+        # presentation-only whitespace differences do not require duplicate
+        # catalog entries.
         translation = CATALOG.get(entry["msgid"])
+        if not translation:
+            translation = CATALOG.get(entry["msgid"].strip())
+        if not translation:
+            translation = CATALOG.get(entry["msgid"].replace(r"\n", "\n").strip())
         if not translation:
             kept.append(entry)
             continue
@@ -813,7 +912,13 @@ def fill_po(path, language_index):
             if not (line.strip().startswith('#,') and 'fuzzy' in line)
             and not line.strip().startswith('#|')
         ]
-        entry["raw"].append(f'msgstr "{_escape(translation[language_index])}"\n')
+        translated_text = translation[language_index]
+        # GNU gettext requires msgid/msgstr to agree on leading newlines.
+        # blocktrans entries frequently include formatting newlines around the
+        # visible text, so preserve that framing while discarding indentation.
+        if entry["msgid"].startswith(r"\n") and not translated_text.startswith("\n"):
+            translated_text = "\n" + translated_text
+        entry["raw"].append(f'msgstr "{_escape(translated_text)}"\n')
         filled += 1
         kept.append(entry)
     path.write_text("".join(raw for entry in kept for raw in entry["raw"]), encoding="utf-8")

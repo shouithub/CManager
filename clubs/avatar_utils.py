@@ -44,7 +44,9 @@ def get_cravatar_url(email, size=160, default='mp'):
 
 def cravatar_exists(email, timeout=4):
     """Return True/False for existence, or None when the service is unavailable."""
-    url = get_cravatar_url(email, size=32, default='404')
+    digest = md5(normalize_avatar_email(email).encode('utf-8')).hexdigest()
+    query = urlencode({'s': 32, 'd': '404', 'r': 'g'})
+    url = f'{CRAVATAR_BASE_URL}{digest}?{query}'
     request = Request(url, headers={'User-Agent': 'CManager/1.0'}, method='GET')
     try:
         with urlopen(request, timeout=timeout) as response:

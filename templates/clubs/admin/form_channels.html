@@ -2029,11 +2029,11 @@
                 control.classList.toggle('is-invalid', Boolean(iconName) && !isValid);
                 if (!status) return;
                 if (!iconName) {
-                    status.textContent = '请输入图标名称，例如 description';
+                    status.textContent = gettext('请输入图标名称，例如 description');
                 } else if (!isValid) {
-                    status.textContent = '名称只能包含小写字母、数字和下划线';
+                    status.textContent = gettext('名称只能包含小写字母、数字和下划线');
                 } else {
-                    status.textContent = '正在预览：' + iconName;
+                    status.textContent = gettext('正在预览：') + iconName;
                 }
             }
 

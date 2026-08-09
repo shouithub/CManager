@@ -1029,8 +1029,7 @@
         <div class="swiper carousel-container">
             <div class="swiper-wrapper">
             {% for image in carousel_images %}
-            <div class="swiper-slide carousel-slide"
-                 {% if image.link %}onclick="window.location.href='{{ image.link }}'"{% endif %}>
+            <div class="swiper-slide carousel-slide"{% if image.link %} data-carousel-link="{{ image.link }}"{% endif %}>
                 <img src="{{ image.image.url }}" alt="{{ image.title }}">
                 {% if image.title or image.description %}
                 <div class="carousel-caption">
@@ -1305,7 +1304,16 @@
 .role-member { background: var(--md3-secondary-container); color: var(--md3-on-secondary-container); }
 </style>
 
+{% trans '部长' as dept_director_label %}
+{% trans '部员' as dept_member_label %}
+{% trans '暂无成员' as no_dept_members_label %}
+{% trans '加载失败，请稍后重试' as dept_members_load_failed %}
 <script>
+const DEPT_DIRECTOR_LABEL = "{{ dept_director_label|escapejs }}";
+const DEPT_MEMBER_LABEL = "{{ dept_member_label|escapejs }}";
+const NO_DEPT_MEMBERS_LABEL = "{{ no_dept_members_label|escapejs }}";
+const DEPT_MEMBERS_LOAD_FAILED = "{{ dept_members_load_failed|escapejs }}";
+
 function escHtml(value) {
     return String(value == null ? '' : value)
         .replace(/&/g, '&amp;')
@@ -1337,10 +1345,10 @@ function showDepartmentMembers(deptId) {
             
             // Directors
             if (data.directors.length > 0) {
-                html += '<h4 style="margin: 16px 0 8px; color: var(--md3-primary);gettext('>部长</h4>\';
+                html += `<h4 style="margin: 16px 0 8px; color: var(--md3-primary);">${escHtml(DEPT_DIRECTOR_LABEL)}</h4>`;
                 data.directors.forEach(d => {
                     html += `
-                        <div class=')member-item">
+                        <div class="member-item">
                             <a href="/user/${d.id}/" class="member-link">
                                 <div class="member-avatar">
                                     ${d.avatar ? `<img src="${escHtml(d.avatar)}" alt="${escHtml(d.name)}">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--md3-primary-container); color: var(--md3-on-primary-container); font-weight: bold;">${escHtml(d.initial || (d.name && d.name.length > 0 ? d.name.charAt(0) : '?'))}</div>`}
@@ -1349,7 +1357,7 @@ function showDepartmentMembers(deptId) {
                                     <div class="member-name">${escHtml(d.name)}</div>
                                 </div>
                             </a>
-                            <span class="role-badge role-directorgettext('>部长</span>
+                            <span class="role-badge role-director">${escHtml(DEPT_DIRECTOR_LABEL)}</span>
                         </div>
                     `;
                 });
@@ -1357,10 +1365,10 @@ function showDepartmentMembers(deptId) {
             
             // Members
             if (data.members.length > 0) {
-                html += \'<h4 style=')margin: 16px 0 8px; color: var(--md3-secondary);gettext('>部员</h4>\';
+                html += `<h4 style="margin: 16px 0 8px; color: var(--md3-secondary);">${escHtml(DEPT_MEMBER_LABEL)}</h4>`;
                 data.members.forEach(m => {
                     html += `
-                        <div class=')member-item">
+                        <div class="member-item">
                             <a href="/user/${m.id}/" class="member-link">
                                 <div class="member-avatar">
                                     ${m.avatar ? `<img src="${escHtml(m.avatar)}" alt="${escHtml(m.name)}">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: var(--md3-secondary-container); color: var(--md3-on-secondary-container); font-weight: bold;">${escHtml(m.initial || (m.name && m.name.length > 0 ? m.name.charAt(0) : '?'))}</div>`}
@@ -1369,34 +1377,34 @@ function showDepartmentMembers(deptId) {
                                     <div class="member-name">${escHtml(m.name)}</div>
                                 </div>
                             </a>
-                            <span class="role-badge role-membergettext('>部员</span>
+                            <span class="role-badge role-member">${escHtml(DEPT_MEMBER_LABEL)}</span>
                         </div>
                     `;
                 });
             } else if (data.directors.length === 0) {
-                html += \'<p style=')text-align: center; color: var(--md3-on-surface-variant);gettext('>暂无成员</p>\';
+                html += `<p style="text-align: center; color: var(--md3-on-surface-variant);">${escHtml(NO_DEPT_MEMBERS_LABEL)}</p>`;
             }
             
-            html += \'</div>\';
+            html += '</div>';
             content.innerHTML = html;
         })
         .catch(err => {
             console.error(err);
-            content.innerHTML = \'<p style=')color: var(--md3-error); text-align: center;gettext('>加载失败，请稍后重试</p>\';
+            content.innerHTML = `<p style="color: var(--md3-error); text-align: center;">${escHtml(DEPT_MEMBERS_LOAD_FAILED)}</p>`;
         });
 }
 
 function closeDeptModal() {
-    document.getElementById(\'deptMembersModal\').style.display = \'none\';
+    document.getElementById('deptMembersModal').style.display = 'none';
 }
 
 // Close modal when clicking outside
-document.getElementById(\'deptMembersModal\').addEventListener(\'click\', function(e) {
+document.getElementById('deptMembersModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeDeptModal();
     }
 });
-')</script>
+</script>
 
 {% if carousel_images and carousel_images|length > 1 %}
 {% include 'clubs/components/_swiper_script.html' %}
@@ -1422,6 +1430,13 @@ if (window.Swiper) new Swiper('.carousel-container', {
 });
 </script>
 {% endif %}
+<script>
+document.querySelectorAll('[data-carousel-link]').forEach(function (slide) {
+    slide.addEventListener('click', function () {
+        window.location.assign(slide.dataset.carouselLink);
+    });
+});
+</script>
 <script>
 (function () {
     var list = document.getElementById('announcementsList');

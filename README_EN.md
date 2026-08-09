@@ -178,7 +178,7 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
     Visit [http://127.0.0.1:8000](http://127.0.0.1:8000) to start using the system.
 
 8.  **Public Deployment (Nginx Static/Media Serving)**
-    In production, it is recommended to let Nginx serve static and media files directly:
+    In production, let Nginx serve static files and only permanently public media assets directly:
     ```nginx
     location /static/ {
         alias /path/to/CManager/staticfiles/;
@@ -188,15 +188,23 @@ The system adopts the **Material Design 3 (MD3)** design language, providing a b
         add_header Cache-Control "public, max-age=31536000, immutable" always;
         add_header X-Content-Type-Options nosniff always;
     }
+    location ^~ /media/site/ {
+        alias /path/to/CManager/media/site/;
+    }
+    location ^~ /media/carousel/ {
+        alias /path/to/CManager/media/carousel/;
+    }
     location /media/ {
-        alias /path/to/CManager/media/;
-        add_header X-Content-Type-Options nosniff always;
+        return 404;
     }
     ```
     Also run the following during deployment:
     ```bash
     python manage.py collectstatic --noinput
     ```
+    Local business files use short-lived application-signed URLs. S3 files use
+    S3 presigned URLs directly, so file traffic does not pass through this site.
+    Do not expose the whole media directory through Nginx, and keep S3 buckets private.
 
 ## 📖 Role Guide
 

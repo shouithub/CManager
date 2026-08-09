@@ -848,7 +848,7 @@ function updateSelectedCount() {
     const exportBtn = document.getElementById('export-btn');
     
     if (countElement) {
-        countElement.textContent = `已选择 ${count} 个活动`;
+        countElement.textContent = interpolate(gettext('已选择 %s 个活动'), [count]);
     }
     
     if (exportBtn) {
@@ -923,12 +923,12 @@ function toggleRegistration(activityId, isRegistered, btn) {
     .then(data => {
         if (data.success) {
             if (data.registered) {
-                btn.innerHTML = '<span class="material-icons" style="font-size:1rem;">check_circle</span> 已报名 / 取消';
+                btn.innerHTML = '<span class="material-icons" style="font-size:1rem;">check_circle</span> ' + gettext('已报名 / 取消');
                 btn.style.background = 'var(--md3-secondary-container)';
                 btn.style.color = 'var(--md3-on-secondary-container)';
                 btn.onclick = () => toggleRegistration(activityId, true, btn);
             } else {
-                btn.innerHTML = '<span class="material-icons" style="font-size:1rem;">how_to_reg</span> 报名参加';
+                btn.innerHTML = '<span class="material-icons" style="font-size:1rem;">how_to_reg</span> ' + gettext('报名参加');
                 btn.style.background = '';
                 btn.style.color = '';
                 btn.onclick = () => toggleRegistration(activityId, false, btn);

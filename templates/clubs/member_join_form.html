@@ -225,13 +225,13 @@
         if (existing) {
             profileBlock.style.display = 'none';
             profileFields.forEach(function(el) { el.required = false; });
-            username.placeholder = '已有账户用户名';
-            password.placeholder = '已有账户密码';
+            username.placeholder = gettext('已有账户用户名');
+            password.placeholder = gettext('已有账户密码');
         } else {
             profileBlock.style.display = 'block';
             profileFields.forEach(function(el) { el.required = true; });
-            username.placeholder = '设置新账户用户名';
-            password.placeholder = '设置新账户密码';
+            username.placeholder = gettext('设置新账户用户名');
+            password.placeholder = gettext('设置新账户密码');
         }
     }
 

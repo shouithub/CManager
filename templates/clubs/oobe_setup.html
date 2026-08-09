@@ -1020,7 +1020,7 @@
                         const dt = new DataTransfer();
                         dt.items.add(new File([blob], 'site_logo.png', { type: 'image/png' }));
                         logoInput.files = dt.files;
-                        fileName.textContent = 'site_logo.png（已裁剪）';
+                        fileName.textContent = gettext('site_logo.png（已裁剪）');
                         fileName.style.display = 'block';
                     }
                 });
@@ -1076,12 +1076,12 @@
                 const testToEmail = section.querySelector('#test_to_email').value.trim();
                 if (!testToEmail) {
                     result.className = 'oobe-mail-test err';
-                    result.innerHTML = '<span class="material-icons">error</span><span>请先填写测试收件邮箱</span>';
+                    result.innerHTML = '<span class="material-icons">error</span><span>' + gettext('请先填写测试收件邮箱') + '</span>';
                     return;
                 }
                 if (enableEmail.value !== 'yes') {
                     result.className = 'oobe-mail-test err';
-                    result.innerHTML = '<span class="material-icons">error</span><span>请先启用 SMTP 邮箱</span>';
+                    result.innerHTML = '<span class="material-icons">error</span><span>' + gettext('请先启用 SMTP 邮箱') + '</span>';
                     return;
                 }
 
@@ -1099,7 +1099,7 @@
                 testBtn.disabled = true;
                 result.className = 'oobe-mail-test';
                 result.style.display = 'flex';
-                result.innerHTML = '<span class="material-icons">hourglass_top</span><span>正在发送测试邮件...</span>';
+                result.innerHTML = '<span class="material-icons">hourglass_top</span><span>' + gettext('正在发送测试邮件...') + '</span>';
                 const setMailResult = (icon, text) => {
                     result.innerHTML = '';
                     const iconEl = document.createElement('span');

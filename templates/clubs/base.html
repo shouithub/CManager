@@ -621,15 +621,18 @@
             // Restore collapsed state immediately to prevent flicker
             function initMenuSections() {
                 const collapsibleTitles = document.querySelectorAll('.sidebar-menu-title.collapsible');
+                const expandedByDefault = new Set([
+                    gettext('房间管理'),
+                    gettext('审批中心'),
+                    gettext('审核中心'),
+                    gettext('主要功能'),
+                ]);
                 collapsibleTitles.forEach(title => {
                     const sectionName = title.textContent.trim().split('\n')[0].trim();
                     let shouldCollapse = localStorage.getItem(`sidebar-${sectionName}-collapsed`);
                     
                     // 默认折叠逻辑 (Default collapse logic)
-                    if (sectionName === '房间管理' && shouldCollapse === null) shouldCollapse = 'false';
-                    if (sectionName === '审批中心' && shouldCollapse === null) shouldCollapse = 'false';
-                    if (sectionName === '审核中心' && shouldCollapse === null) shouldCollapse = 'false';
-                    if (sectionName === '主要功能' && shouldCollapse === null) shouldCollapse = 'false';
+                    if (expandedByDefault.has(sectionName) && shouldCollapse === null) shouldCollapse = 'false';
                     
                     if (shouldCollapse === 'true') {
                         title.classList.add('collapsed');

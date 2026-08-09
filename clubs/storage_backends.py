@@ -19,7 +19,7 @@
     * 切换后端无需重启服务（每次调用都重新读取配置）
     * 兼容 Django FileField：所有 ``file.url`` / ``file.path`` / ``file.open()``
       调用自动走抽象层
-    * 提供 ``get_public_url(name)`` 用于给 Office Online embedding 生成直链
+    * 提供 ``get_public_url(name)`` 兼容入口，实际返回短时签名地址
     * 提供 ``get_presigned_url(name)`` 用于生成临时下载直链
     * S3 模式下 ``file.path`` 会下载到临时文件（供 docx/PIL/fitz 等需要本地
       路径的库使用），调用方应在 ``finally`` 中调用 ``cleanup_temp_files``
@@ -46,6 +46,8 @@ from django.db.models import F
 from django.db.utils import DatabaseError, IntegrityError
 from django.core.files.storage import Storage
 from django.core.exceptions import SuspiciousFileOperation
+from django.core import signing
+from django.urls import reverse
 from django.utils.deconstruct import deconstructible
 
 logger = logging.getLogger(__name__)
@@ -78,6 +80,31 @@ _MD5_RE = re.compile(r'^[0-9a-f]{32}$')
 # - avatars/：头像走 /media/avatars/ 的 immutable 缓存，必须保留原目录
 # - carousel/：首页轮播图走 /media/carousel/ 的 30d 缓存，同样保留原目录
 _NO_DEDUP_PREFIXES = ('site/', 'avatars/', 'carousel/')
+_PUBLIC_MEDIA_PREFIXES = ('site/', 'avatars/', 'carousel/')
+_MEDIA_SIGNING_SALT = 'cmanager.temporary-media.v1'
+
+
+def build_temporary_media_url(name):
+    """Return a short-lived capability URL for a stored object.
+
+    The URL contains only a signed storage key.  The serving endpoint validates
+    its timestamp before reading local storage or issuing an S3 presigned URL.
+    """
+    safe_name = _sanitize_storage_name(name)
+    token = signing.dumps({'name': safe_name}, salt=_MEDIA_SIGNING_SALT, compress=True)
+    return reverse('clubs:temporary_media_file', kwargs={'token': token})
+
+
+def load_temporary_media_name(token, max_age=None):
+    """Validate a temporary-media token and return its normalized storage key."""
+    if max_age is None:
+        max_age = getattr(settings, 'TEMPORARY_MEDIA_URL_MAX_AGE', 900)
+    payload = signing.loads(token, salt=_MEDIA_SIGNING_SALT, max_age=max_age)
+    name = payload.get('name', '') if isinstance(payload, dict) else ''
+    safe_name = _sanitize_storage_name(name)
+    if not name or safe_name != name:
+        raise signing.BadSignature('invalid storage name')
+    return safe_name
 
 
 def bind_client_md5_from_post(post, files):
@@ -449,15 +476,7 @@ class S3StorageBackend:
 
     # ---------- 直链/预签名 ----------
     def get_public_url(self, name):
-        """给 Office Online embedding 用的直链。
-
-        * 若配置了 custom_domain，返回 ``<custom_domain>/<key>``
-        * 若 bucket 是 public-read，直接返回 ``url()``
-        * 否则推荐生成 presigned URL（但 Office Online 不接受短期链接的
-          部分场景，因此建议管理员在 S3 后端配置 public-read bucket 或 CDN）
-
-        本方法返回 ``url()``，由调用方决定是否改用 ``get_presigned_url``。
-        """
+        """返回后端原始 URL；业务页面应改用 ClubStorage 的签名入口。"""
         return self.url(name)
 
     def get_presigned_url(self, name, expiration=3600):
@@ -792,7 +811,15 @@ class ClubStorage(Storage):
         return self._backend().size(name)
 
     def url(self, name):
-        return self._backend().url(name)
+        name = _sanitize_storage_name(name)
+        backend = self._backend()
+        if name.startswith(_PUBLIC_MEDIA_PREFIXES):
+            return backend.url(name)
+        if isinstance(backend, S3StorageBackend):
+            configured_expiration = max(1, int(backend.config.presigned_url_expiration or 900))
+            inline_expiration = max(1, int(getattr(settings, 'TEMPORARY_MEDIA_URL_MAX_AGE', 900)))
+            return backend.get_presigned_url(name, min(configured_expiration, inline_expiration))
+        return build_temporary_media_url(name)
 
     def path(self, name):
         return self._backend().path(name)
@@ -804,15 +831,8 @@ class ClubStorage(Storage):
     # ============ 扩展接口（业务代码专用）============
 
     def get_public_url(self, name):
-        """给 Office Online embedding 使用的直链。
-
-        S3 模式下返回 S3/CDN 直链（不经过本站代理），
-        本地模式下返回 ``MEDIA_URL + name``。
-        """
-        backend = self._backend()
-        if hasattr(backend, 'get_public_url'):
-            return backend.get_public_url(name)
-        return backend.url(name)
+        """返回临时地址：本地走本站签名，S3 直接返回预签名 URL。"""
+        return self.url(name)
 
     def get_presigned_url(self, name, expiration=3600):
         """生成下载用临时直链。

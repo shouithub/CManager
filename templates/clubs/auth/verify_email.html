@@ -42,7 +42,8 @@
                     <hr>
 
                     <p class="text-center text-muted mb-2">{% trans '没有收到验证码？' %}</p>
-                    <form method="get" action="{% url 'clubs:resend_verification_code' %}" class="text-center">
+                    <form method="post" action="{% url 'clubs:resend_verification_code' %}" class="text-center">
+                        {% csrf_token %}
                         <button type="submit" class="btn btn-link">{% trans '重新发送验证码' %}</button>
                     </form>
                 </div>

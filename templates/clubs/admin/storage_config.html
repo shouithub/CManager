@@ -351,7 +351,7 @@
             <input type="text" class="sc-input" name="s3_custom_domain"
                    value="{{ test_form.s3_custom_domain|default:config.s3_custom_domain }}"
                    placeholder="https://cdn.example.com">
-            <p style="margin: 6px 0 0; font-size: 0.78rem; color: var(--md3-on-surface-variant);">{% trans 'Office Online 预览必须能公网匿名访问该域名；建议通过 CDN 加速，否则直链仍走 S3 默认 URL。' %}</p>
+            <p style="margin: 6px 0 0; font-size: 0.78rem; color: var(--md3-on-surface-variant);">{% trans '可选的下载加速域名；Office 预览默认通过本站签名入口与 S3 预签名地址访问。' %}</p>
         </div>
 
         <div class="sc-grid-2">
@@ -392,13 +392,13 @@
         <span class="material-icons">help_outline</span>{% trans '说明与注意事项' %}</h3>
     <div style="font-size: 0.88rem; line-height: 1.7; color: var(--md3-on-surface-variant);">
         <p><strong>{% trans '1. 切换后端不会自动迁移历史文件。' %}</strong>{% trans '切换到 S3 前，建议先停止写入新文件，手动迁移后再启用。' %}</p>
-        <p><strong>{% trans '2. Office Online 预览依赖直链。' %}</strong>{% trans 'S3 模式下，传给 Office Online embedding 的 URL 必须能被微软服务器公网匿名访问，因此：' %}</p>
+        <p><strong>{% trans '2. Office Online 预览使用临时链接。' %}</strong>{% trans '本地文件使用本站短时签名；S3 文件在页面鉴权后直接生成预签名地址，因此：' %}</p>
         <ul style="margin: 4px 0 12px 24px;">
-            <li>{% trans 'Bucket ACL 必须允许匿名读取（或为对应文件设置公开读取）；' %}</li>
-            <li>{% trans '建议配置' %}<strong>{% trans '自定义域名 / CDN' %}</strong>{% trans '加速预览，避免 S3 跨地域拉取慢；' %}</li>
-            <li>{% trans '未配置 CDN 时使用 S3 默认 URL，需保证 endpoint 域名可公网解析。' %}</li>
+            <li>{% trans 'Bucket 应保持私有，禁止匿名读取；' %}</li>
+            <li>{% trans '本地模式需保证本站域名可公网访问；S3 模式只需 endpoint 可被 Office Online 访问；' %}</li>
+            <li>{% trans '临时链接默认 15 分钟过期，重新打开页面即可刷新。' %}</li>
         </ul>
-        <p><strong>{% trans '3. Secret Access Key 明文存储。' %}</strong>{% trans '请确保数据库访问权限严格受控；建议在 S3 后端为该 AK/SK 配置最小权限策略（仅 bucket 读写）。' %}</p>
+        <p><strong>{% trans '3. Secret Access Key 加密存储。' %}</strong>{% trans '仍应严格控制数据库与加密密钥权限，并为 AK/SK 配置最小权限策略（仅 bucket 读写）。' %}</p>
         <p><strong>{% trans '4. 切换后端立即生效，无需重启服务。' %}</strong>{% trans '所有 FileField 自动走新后端，但已存文件链接（如' %}<code>/media/form_submissions/...</code>{% trans '）不会自动重写为 S3 直链。' %}</p>
         <p><strong>{% trans '5. 使用 S3 的核心收益：' %}</strong>{% trans '本站带宽仅 3 Mbps，大文件（合并 Word、PDF、图片）通过 S3 直链可以绕开本站带宽瓶颈，显著提升用户上传/下载/预览速度。' %}</p>
     </div>

@@ -1220,14 +1220,14 @@
                             const i = ctx[0].dataIndex;
                             const decided = typeApproved[i] + typeRejected[i];
                             const pending = typePending[i];
-                            if (decided === 0) return [gettext('历史决策：暂无'), gettext('待处理：') + pending];
+                            if (decided === 0) return [gettext('历史决策：暂无'), interpolate(gettext('待处理：%s'), [pending])];
                             const apr = (typeApproved[i] / decided * 100).toFixed(1);
                             const rej = (typeRejected[i] / decided * 100).toFixed(1);
                             return [
-                                gettext('历史决策：') + decided + gettext(' 次'),
-                                gettext('  通过 ') + typeApproved[i] + ' (' + apr + '%)',
-                                gettext('  拒绝 ') + typeRejected[i] + ' (' + rej + '%)',
-                                gettext('当前待处理：') + pending,
+                                interpolate(gettext('历史决策：%s 次'), [decided]),
+                                interpolate(gettext('通过 %s（%s%%）'), [typeApproved[i], apr]),
+                                interpolate(gettext('拒绝 %s（%s%%）'), [typeRejected[i], rej]),
+                                interpolate(gettext('当前待处理：%s'), [pending]),
                             ];
                         }
                     }

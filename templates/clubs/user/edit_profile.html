@@ -671,6 +671,18 @@
 
     // 头像裁剪逻辑（统一走共享 CManagerCropper 组件）
     (function () {
+        var MSG_IMAGE_TOO_LARGE = "{% trans '图片不能超过 20 MB，请选择较小的文件。' %}";
+        var MSG_CROPPER_NOT_LOADED = "{% trans '裁剪组件未加载，请刷新页面重试。' %}";
+        var MSG_IMAGE_PROCESS_FAILED = "{% trans '图片处理失败，请重新选择。' %}";
+        var MSG_UPLOADING_AVATAR = "{% trans '正在上传头像…' %}";
+        var MSG_SESSION_EXPIRED = "{% trans '登录状态已失效或请求被拒绝，请刷新页面后重新登录。' %}";
+        var MSG_UPLOAD_NO_RESULT = "{% trans '服务器未返回头像上传结果，请刷新页面后重试。' %}";
+        var MSG_UPLOAD_FAILED = "{% trans '头像上传失败' %}";
+        var MSG_USER_AVATAR = "{% trans '用户头像' %}";
+        var MSG_UPLOAD_DONE = "{% trans '头像上传完成，页面即将刷新…' %}";
+        var MSG_UPLOAD_FAILED_RETRY = "{% trans '头像上传失败，请重试。' %}";
+        var MSG_CHOOSE_IMAGE_FIRST = "{% trans '请先选择图片并完成裁剪。' %}";
+
         var input = document.getElementById('avatar-input');
         var currentView = document.getElementById('current-avatar-view');
         var currentAvatarImage = currentView ? currentView.querySelector('img') : null;
@@ -689,11 +701,11 @@
             if (!file) return;
             if (file.size > 20 * 1024 * 1024) {
                 input.value = '';
-                setUploadStatus(gettext('图片不能超过 20 MB，请选择较小的文件。'), true);
+                setUploadStatus(MSG_IMAGE_TOO_LARGE, true);
                 return;
             }
             if (!window.CManagerCropper) {
-                setUploadStatus(gettext('裁剪组件未加载，请刷新页面重试。'), true);
+                setUploadStatus(MSG_CROPPER_NOT_LOADED, true);
                 return;
             }
             CManagerCropper.open({
@@ -705,7 +717,7 @@
                 quality: 0.82,
                 onDone: uploadAvatar,
                 onError: function (message) {
-                    setUploadStatus(message || gettext('图片处理失败，请重新选择。'), true);
+                    setUploadStatus(message || MSG_IMAGE_PROCESS_FAILED, true);
                 }
             });
         });
@@ -713,7 +725,7 @@
         function uploadAvatar(blob, dataUrl) {
             if (isSubmitting) return;
             isSubmitting = true;
-            setUploadStatus(gettext('正在上传头像…'), false);
+            setUploadStatus(MSG_UPLOADING_AVATAR, false);
             var form = document.getElementById('avatar-form');
             var csrf = form ? form.querySelector('input[name="csrfmiddlewaretoken"]') : null;
             var data = new FormData();
@@ -730,12 +742,12 @@
                 var contentType = response.headers.get('content-type') || '';
                 if (!contentType.includes('application/json')) {
                     if (response.redirected || response.status === 401 || response.status === 403) {
-                        throw new Error(gettext('登录状态已失效或请求被拒绝，请刷新页面后重新登录。'));
+                        throw new Error(MSG_SESSION_EXPIRED);
                     }
-                    throw new Error(gettext('服务器未返回头像上传结果，请刷新页面后重试。'));
+                    throw new Error(MSG_UPLOAD_NO_RESULT);
                 }
                 return response.json().then(function (payload) {
-                    if (!response.ok || !payload.ok) throw new Error(payload.message || gettext('头像上传失败'));
+                    if (!response.ok || !payload.ok) throw new Error(payload.message || MSG_UPLOAD_FAILED);
                     return payload;
                 });
             }).then(function (payload) {
@@ -745,7 +757,7 @@
                         var sidebarImage = container.querySelector('img');
                         if (!sidebarImage) {
                             sidebarImage = document.createElement('img');
-                            sidebarImage.alt = gettext('用户头像');
+                            sidebarImage.alt = MSG_USER_AVATAR;
                             sidebarImage.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
                             container.replaceChildren(sidebarImage);
                         }
@@ -754,10 +766,10 @@
                 }
                 if (currentView) currentView.style.display = 'block';
                 if (placeholder) placeholder.style.display = 'none';
-                setUploadStatus(payload.message || gettext('头像上传完成，页面即将刷新…'), false);
+                setUploadStatus(payload.message || MSG_UPLOAD_DONE, false);
                 window.setTimeout(function () { window.location.reload(); }, 500);
             }).catch(function (error) {
-                setUploadStatus(error.message || gettext('头像上传失败，请重试。'), true);
+                setUploadStatus(error.message || MSG_UPLOAD_FAILED_RETRY, true);
             }).finally(function () {
                 isSubmitting = false;
             });
@@ -767,7 +779,7 @@
         if (form) {
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
-                setUploadStatus(gettext('请先选择图片并完成裁剪。'), true);
+                setUploadStatus(MSG_CHOOSE_IMAGE_FIRST, true);
             });
         }
     })();

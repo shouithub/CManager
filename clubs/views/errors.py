@@ -6,6 +6,8 @@ import traceback
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core import signing
+from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
@@ -15,6 +17,16 @@ from ..email_utils import send_email_with_config
 from ..models import ErrorLog, SMTPConfig, SiteSettings
 
 logger = logging.getLogger(__name__)
+ERROR_HELP_SIGNING_SALT = 'cmanager.error-help.v1'
+ERROR_HELP_TOKEN_MAX_AGE = 60 * 60
+
+
+def _error_help_token(status_code, path, log_id=None):
+    return signing.dumps(
+        {'status_code': int(status_code), 'path': str(path or '/')[:500], 'log_id': log_id},
+        salt=ERROR_HELP_SIGNING_SALT,
+        compress=True,
+    )
 
 
 def _client_ip(request):
@@ -72,11 +84,14 @@ def error_help_enabled():
 
 
 def _error_context(request, status_code, error_log_id=None):
+    path = request.path or '/'
+    token = _error_help_token(status_code, path, error_log_id)
     return {
         'error_help_enabled': error_help_enabled(),
         'error_log_id': error_log_id,
         'error_status_code': status_code,
-        'error_path': request.path or '/',
+        'error_path': path,
+        'error_help_token': token,
     }
 
 
@@ -155,14 +170,38 @@ def error_help_request(request):
     if not error_help_enabled():
         return JsonResponse({'success': False, 'message': '求助功能未开启'}, status=403)
 
-    log_id = (request.POST.get('error_log_id') or '').strip()
+    token = (request.POST.get('error_help_token') or '').strip()
+    try:
+        payload = signing.loads(
+            token,
+            salt=ERROR_HELP_SIGNING_SALT,
+            max_age=ERROR_HELP_TOKEN_MAX_AGE,
+        )
+    except (signing.BadSignature, signing.SignatureExpired):
+        return JsonResponse(
+            {'success': False, 'message': '求助凭证无效或已过期，请刷新错误页后重试'},
+            status=403,
+        )
+
+    rate_key = f"error-help:{_client_ip(request) or 'unknown'}"
+    try:
+        attempts = cache.get(rate_key, 0)
+        if attempts >= 5:
+            return JsonResponse({'success': False, 'message': '提交过于频繁，请稍后重试'}, status=429)
+        cache.set(rate_key, attempts + 1, timeout=10 * 60)
+    except Exception:
+        logger.debug('错误求助限速缓存不可用', exc_info=True)
+
+    log_id = payload.get('log_id') if isinstance(payload, dict) else None
     contact = (request.POST.get('contact_email') or '').strip()
     note = (request.POST.get('note') or '').strip()[:2000]
-    error_type = (request.POST.get('error_type') or '500').strip()
-    error_path = (request.POST.get('error_path') or request.path or '/').strip()[:500]
+    error_type = str(payload.get('status_code', 500))
+    error_path = str(payload.get('path') or '/')[:500]
 
-    if log_id.isdigit():
+    if str(log_id or '').isdigit():
         log = ErrorLog.objects.filter(pk=log_id).first()
+        if log is None:
+            return JsonResponse({'success': False, 'message': '错误记录不存在'}, status=404)
     else:
         log = None
 

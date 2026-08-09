@@ -1,7 +1,7 @@
 import base64
 import json
 import zipfile
-from datetime import date, time
+from datetime import date, time, timedelta
 from hashlib import md5
 from io import BytesIO
 from pathlib import Path
@@ -362,7 +362,7 @@ class AvatarServiceTests(TestCase):
         preview_url = _office_preview_url(request, uploaded)
         self.assertTrue(preview_url.startswith('https://view.officeapps.live.com/op/embed.aspx?'))
         self.assertNotIn('file://', preview_url)
-        self.assertIn('%2Fmedia%2Fetc%2Fpasswd.docx', preview_url)
+        self.assertIn('%2Fmedia-access%2F', preview_url)
 
     def test_storage_name_sanitization(self):
         from ..storage_backends import _sanitize_storage_name
@@ -422,7 +422,7 @@ class AvatarServiceTests(TestCase):
 
         avatar_url = get_profile_avatar_url(profile)
         self.assertNotIn('file://', avatar_url)
-        self.assertTrue(avatar_url.startswith('/media/'))
+        self.assertTrue(avatar_url.startswith('/media-access/'))
 
     def test_admin_can_change_third_party_cdn(self):
         response = self.client.post(
@@ -842,6 +842,34 @@ class BookingServiceTests(TestCase):
                 contact_phone='13800000000',
             )
 
+    def test_booking_rejects_past_date_and_capacity_overflow(self):
+        from ..services.booking_service import BookingValidationError
+
+        with self.assertRaisesRegex(BookingValidationError, '过去'):
+            create_room_booking(
+                room_id=self.room.pk,
+                user=self.user,
+                club=None,
+                booking_date=date.today() - timedelta(days=1),
+                start_time=time(9),
+                end_time=time(10),
+                purpose='过去预约',
+                participant_count=5,
+                contact_phone='13800000000',
+            )
+        with self.assertRaisesRegex(BookingValidationError, '容量'):
+            create_room_booking(
+                room_id=self.room.pk,
+                user=self.user,
+                club=None,
+                booking_date=date.today(),
+                start_time=time(9),
+                end_time=time(10),
+                purpose='超员预约',
+                participant_count=self.room.capacity + 1,
+                contact_phone='13800000000',
+            )
+
     def test_booking_cancellation_requires_confirmed_post(self):
         booking = self.create_booking()
         self.client.force_login(self.user)
@@ -1001,6 +1029,13 @@ class MemberTokenEndpointTests(TestCase):
 
 
 class SecurityInfrastructureTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username='security-infra-admin',
+            email='',
+            password='test-password',
+        )
+
     def test_service_credentials_are_encrypted_at_rest(self):
         config = SMTPConfig.objects.create(
             provider='custom',
@@ -1034,6 +1069,132 @@ class SecurityInfrastructureTests(TestCase):
         error = validate_upload(upload, field_name='压缩包', allowed_extensions={'.zip'})
 
         self.assertIn('不安全的路径', error)
+
+    def test_activity_export_requires_login(self):
+        response = self.client.get(reverse('clubs:export_activities'), secure=True)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('clubs:login'), response.url)
+
+    def test_business_media_uses_expiring_capability_and_direct_media_is_blocked(self):
+        from django.core.files.base import ContentFile
+        from ..models import FormUploadedFile
+
+        with TemporaryDirectory() as media_root, self.settings(MEDIA_ROOT=media_root):
+            channel = FormChannel.objects.create(name='私密附件', slug='private-media')
+            club = Club.objects.create(name='私密附件社团', founded_date=date.today())
+            submission = FormSubmission.objects.create(
+                channel=channel,
+                club=club,
+                submitter=self.admin,
+            )
+            field = FormField.objects.create(
+                channel=channel,
+                label='附件',
+                field_key='attachment',
+                field_type='file',
+            )
+            uploaded = FormUploadedFile.objects.create(
+                submission=submission,
+                field=field,
+                file=ContentFile(b'secret-content', name='secret.pdf'),
+                original_name='secret.pdf',
+            )
+            capability_url = uploaded.file.url
+            self.assertTrue(capability_url.startswith('/media-access/'))
+
+            response = self.client.get(capability_url, secure=True)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(b''.join(response.streaming_content), b'secret-content')
+
+            direct = self.client.get(f'/media/{uploaded.file.name}', secure=True)
+            self.assertEqual(direct.status_code, 404)
+
+            with self.settings(TEMPORARY_MEDIA_URL_MAX_AGE=-1):
+                expired = self.client.get(capability_url, secure=True)
+            self.assertEqual(expired.status_code, 404)
+
+    def test_s3_media_and_office_preview_use_direct_presigned_url(self):
+        from types import SimpleNamespace
+        from urllib.parse import parse_qs
+
+        from django.test import RequestFactory
+        from ..storage_backends import ClubStorage, S3StorageBackend
+        from ..views.core import _office_preview_url
+
+        config = SimpleNamespace(presigned_url_expiration=3600)
+        backend = S3StorageBackend(config)
+        direct_url = 'https://s3.example.com/private/document.docx?signature=short-lived'
+        uploaded = SimpleNamespace(
+            file=SimpleNamespace(name='private/document.docx'),
+            original_name='document.docx',
+        )
+
+        with (
+            patch.object(ClubStorage, '_backend', return_value=backend),
+            patch.object(backend, 'get_presigned_url', return_value=direct_url) as presign,
+        ):
+            self.assertEqual(ClubStorage().url(uploaded.file.name), direct_url)
+            preview = _office_preview_url(RequestFactory().get('/'), uploaded)
+
+        self.assertNotIn('/media-access/', preview)
+        self.assertEqual(parse_qs(urlparse(preview).query)['src'][0], direct_url)
+        self.assertEqual(presign.call_count, 2)
+        presign.assert_called_with('private/document.docx', 900)
+
+    def test_dynamic_number_rules_are_enforced_server_side(self):
+        from ..views.core import _validate_dynamic_submission
+
+        channel = FormChannel.objects.create(name='数字校验', slug='number-validation')
+        field = FormField.objects.create(
+            channel=channel,
+            label='金额',
+            field_key='amount',
+            field_type='number',
+            validation={'min': '10', 'max': '20', 'step': '2'},
+        )
+        for value, expected in [('8', '不能小于'), ('22', '不能大于'), ('11', '必须按')]:
+            post = QueryDict('', mutable=True)
+            post[f'field_{field.id}'] = value
+            _fields, _cleaned, _uploads, errors = _validate_dynamic_submission(
+                channel, post, MultiValueDict(), fields=[field]
+            )
+            self.assertTrue(any(expected in error for error in errors), errors)
+
+        valid_post = QueryDict('', mutable=True)
+        valid_post[f'field_{field.id}'] = '12'
+        _fields, _cleaned, _uploads, errors = _validate_dynamic_submission(
+            channel, valid_post, MultiValueDict(), fields=[field]
+        )
+        self.assertEqual(errors, [])
+
+    def test_carousel_rejects_script_link(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            reverse('clubs:add_carousel'),
+            {'link': 'javascript:alert(1)'},
+            secure=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'http(s)')
+
+    def test_resend_verification_rejects_get(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse('clubs:resend_verification_code'), secure=True)
+        self.assertEqual(response.status_code, 405)
+
+    def test_oobe_rejects_public_client_even_with_localhost_host(self):
+        from django.http import HttpResponse
+        from django.test import RequestFactory
+        from CManager.middleware import InitialSetupMiddleware
+
+        middleware = InitialSetupMiddleware(lambda request: HttpResponse('ok'))
+        request = RequestFactory().get(
+            '/oobe/',
+            HTTP_HOST='localhost',
+            REMOTE_ADDR='8.8.8.8',
+        )
+        response = middleware(request)
+        self.assertEqual(response.status_code, 403)
 
 class AccountSecurityAndHistoryTests(TestCase):
     def setUp(self):
@@ -1835,11 +1996,11 @@ class DynamicFormReReviewTests(TestCase):
 
         self.assertRedirects(
             response,
-            reverse('clubs:staff_review_form_submission', args=[submission.public_id]),
+            reverse('clubs:staff_audit_center', args=[self.channel.slug]),
             fetch_redirect_response=False,
         )
         submission.refresh_from_db()
-        self.assertEqual(submission.status, 'approved')
+        self.assertEqual(submission.status, 'rejected')
         self.assertEqual(
             submission.reviews.get(reviewer=self.reviewer).status,
             'approved',
@@ -1951,6 +2112,8 @@ class DynamicFormReReviewTests(TestCase):
             is_active=True,
         )
         submission = self.make_rejected_submission()
+        self.channel.required_approval_count = 1
+        self.channel.save(update_fields=['required_approval_count'])
         value = FormFieldValue.objects.create(
             submission=submission,
             field=field,

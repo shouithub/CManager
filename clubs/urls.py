@@ -153,6 +153,7 @@ urlpatterns = [
 
     # 自定义文件下载路由
     path('download/submission-file/<int:file_id>/', views.download_submission_file, name='download_submission_file'),
+    path('media-access/<str:token>/', views.temporary_media_file, name='temporary_media_file'),
     path(
         'download/history-submission-file/<str:submission_key>/<int:attempt>/<int:index>/',
         views.history_submission_file,

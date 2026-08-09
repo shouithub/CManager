@@ -67,6 +67,12 @@ def detect_context(tokens, idx):
 
     strings = [t.string for t in meaningful]
 
+    # Already translated: never wrap gettext/gettext_lazy calls again.
+    if len(strings) >= 2 and strings[-1] == "(" and strings[-2] in {
+        "_", "gettext", "gettext_lazy", "gettext_noop", "ngettext", "pgettext",
+    }:
+        return None
+
     if (_contains_sequence(strings, ("messages", ".", "success", "(")) or
         _contains_sequence(strings, ("messages", ".", "error", "(")) or
         _contains_sequence(strings, ("messages", ".", "warning", "(")) or

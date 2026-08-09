@@ -1,10 +1,14 @@
 from django.conf import settings
+from django.http import HttpResponseForbidden
+from django.http.request import validate_host
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.db.utils import OperationalError, ProgrammingError
 from django.utils import translation
 from django.middleware.locale import LocaleMiddleware
 import logging
+import ipaddress
+import urllib.parse
 
 
 logger = logging.getLogger(__name__)
@@ -149,15 +153,47 @@ class InitialSetupMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
-    def _ensure_bootstrap_host_and_origin_trusted(self, request):
-        """During first-run OOBE, trust current host/origin to avoid CSRF bootstrap deadlock."""
-        raw_host = (request.META.get('HTTP_HOST') or '').strip()
-        host = raw_host.split(':', 1)[0].strip().lower()
-        if not host:
-            return
+    def _bootstrap_request_is_trusted(self, request):
+        """Allow first-run setup only from a local/private client and a safe host."""
+        remote_addr = (request.META.get('REMOTE_ADDR') or '').strip()
+        if getattr(settings, 'USE_X_FORWARDED_FOR', False):
+            forwarded = (request.META.get('HTTP_X_FORWARDED_FOR') or '').split(',')[0].strip()
+            if forwarded:
+                remote_addr = forwarded
+        try:
+            client_ip = ipaddress.ip_address(remote_addr)
+        except ValueError:
+            return False
+        if not (client_ip.is_loopback or client_ip.is_private or client_ip.is_link_local):
+            return False
 
+        raw_host = (request.META.get('HTTP_HOST') or '').strip()
+        try:
+            host = (urllib.parse.urlsplit(f'//{raw_host}').hostname or '').lower()
+        except ValueError:
+            return False
+        if not host:
+            return False
+
+        allowed_patterns = [
+            item for item in getattr(settings, 'ALLOWED_HOSTS', [])
+            if item and item != '*'
+        ]
+        host_is_configured = validate_host(host, allowed_patterns)
+
+        try:
+            host_ip = ipaddress.ip_address(host)
+            host_is_private = host_ip.is_loopback or host_ip.is_private or host_ip.is_link_local
+        except ValueError:
+            host_is_private = host == 'localhost'
+
+        if not (host_is_configured or host_is_private):
+            return False
+
+        # Private literal hosts are safe to trust during bootstrap so a LAN-only
+        # installation can complete OOBE without pre-editing the environment.
         allowed_hosts = list(getattr(settings, 'ALLOWED_HOSTS', []))
-        if host not in allowed_hosts:
+        if host_is_private and host not in allowed_hosts:
             allowed_hosts.append(host)
             settings.ALLOWED_HOSTS = allowed_hosts
 
@@ -171,13 +207,17 @@ class InitialSetupMiddleware:
         if scheme != 'https':
             candidates.append(f'https://{host}')
 
+        if not host_is_private and not any(origin in trusted_origins for origin in candidates):
+            return False
+
         changed = False
         for origin in candidates:
-            if origin not in trusted_origins:
+            if host_is_private and origin not in trusted_origins:
                 trusted_origins.append(origin)
                 changed = True
         if changed:
             settings.CSRF_TRUSTED_ORIGINS = trusted_origins
+        return True
 
     def __call__(self, request):
         path = request.path or ''
@@ -194,7 +234,8 @@ class InitialSetupMiddleware:
 
         if path.startswith(exempt_prefixes):
             if path.startswith('/oobe/'):
-                self._ensure_bootstrap_host_and_origin_trusted(request)
+                if not self._bootstrap_request_is_trusted(request):
+                    return HttpResponseForbidden('首次初始化仅允许从可信本地网络访问')
             return self.get_response(request)
 
         if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.dummy':
@@ -221,7 +262,8 @@ class InitialSetupMiddleware:
             has_admin = False
 
         if not has_admin:
-            self._ensure_bootstrap_host_and_origin_trusted(request)
+            if not self._bootstrap_request_is_trusted(request):
+                return HttpResponseForbidden('首次初始化仅允许从可信本地网络访问')
             if path != oobe_url:
                 return redirect(oobe_url)
 

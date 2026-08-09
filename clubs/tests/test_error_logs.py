@@ -7,7 +7,7 @@ from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from ..models import ErrorLog, SMTPConfig, SiteSettings
-from ..views.errors import handler404, handler500
+from ..views.errors import _error_help_token, handler404, handler500
 
 
 def make_smtp_config(**kwargs):
@@ -35,6 +35,8 @@ def enable_site_error_help(enabled=True):
 
 class ErrorHandlerTests(TestCase):
     def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
         self.factory = RequestFactory()
         # 创建管理员以避免 InitialSetupMiddleware 将请求重定向到 OOBE。
         self.admin = User.objects.create_superuser(
@@ -122,6 +124,7 @@ class ErrorHandlerTests(TestCase):
             response = self.client.post(
                 reverse('clubs:error_help_request'),
                 {
+                    'error_help_token': _error_help_token(500, '/broken/page/'),
                     'error_type': '500',
                     'error_path': '/broken/page/',
                     'contact_email': 'user@example.com',
@@ -144,6 +147,7 @@ class ErrorHandlerTests(TestCase):
             response = self.client.post(
                 reverse('clubs:error_help_request'),
                 {
+                    'error_help_token': _error_help_token(500, '/broken/page/', log.pk),
                     'error_log_id': log.pk,
                     'error_type': '500',
                     'error_path': '/broken/page/',
@@ -163,6 +167,25 @@ class ErrorHandlerTests(TestCase):
         self.assertEqual(send_mock.call_args.kwargs['to_email'], 'ops@example.com')
         self.assertIn('用户请求帮助', send_mock.call_args.kwargs['subject'])
 
+    def test_help_request_cannot_modify_log_without_its_signed_token(self):
+        enable_site_error_help(True)
+        log = ErrorLog.objects.create(status_code=500, path='/victim/')
+
+        response = self.client.post(
+            reverse('clubs:error_help_request'),
+            {
+                'error_log_id': log.pk,
+                'contact_email': 'attacker@example.com',
+                'note': 'overwrite',
+            },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+
+        self.assertEqual(response.status_code, 403)
+        log.refresh_from_db()
+        self.assertFalse(log.help_requested)
+        self.assertEqual(log.help_email, '')
+
     def test_help_request_without_log_creates_record_for_404(self):
         make_smtp_config()
         enable_site_error_help(True)
@@ -170,6 +193,7 @@ class ErrorHandlerTests(TestCase):
             response = self.client.post(
                 reverse('clubs:error_help_request'),
                 {
+                    'error_help_token': _error_help_token(404, '/lost/page/'),
                     'error_type': '404',
                     'error_path': '/lost/page/',
                     'contact_email': 'helper@example.com',
@@ -191,6 +215,7 @@ class ErrorHandlerTests(TestCase):
             response = self.client.post(
                 reverse('clubs:error_help_request'),
                 {
+                    'error_help_token': _error_help_token(500, '/broken/page/'),
                     'error_type': '500',
                     'error_path': '/broken/page/',
                     'contact_email': 'user@example.com',

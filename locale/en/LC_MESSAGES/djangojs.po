@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-09 00:49+0800\n"
+"POT-Creation-Date: 2026-08-10 00:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -11,88 +11,416 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: static/js/cropper-upload.js:28
 msgid "裁剪组件不可用"
-msgstr ""
-
+msgstr "Cropping component unavailable"
 #: static/js/cropper-upload.js:77
 msgid "无法生成裁剪图片"
-msgstr ""
-
+msgstr "Could not generate cropped image"
 #: static/js/csv-import.js:55
 msgid "未选择文件"
 msgstr "No file selected"
 #: static/js/csv-import.js:101
 msgid "导入成功"
-msgstr ""
-
+msgstr "Import successful"
 #: static/js/csv-import.js:106
 msgid "导入失败，请稍后重试。"
-msgstr ""
-
+msgstr "Import failed. Please try again later."
 #: static/js/file-upload.js:484
 msgid "正在上传文件"
-msgstr ""
-
+msgstr "Uploading file"
 #: static/js/file-upload.js:526
 msgid "网络错误，上传失败，请重试。"
-msgstr ""
-
+msgstr "Network error. Upload failed; please try again."
 #: static/js/file-upload.js:529
 msgid "上传已取消，请重试。"
-msgstr ""
-
+msgstr "Upload cancelled. Please try again."
 #: static/js/file-upload.js:532
 msgid "上传超时，请重试。"
-msgstr ""
-
+msgstr "Upload timed out. Please try again."
 #: static/js/file-upload.js:548
 msgid "正在计算文件校验值，请稍候再提交。"
-msgstr ""
-
+msgstr "Calculating the file checksum. Please wait before submitting."
 #: static/js/md5.js:168
 msgid "无法读取文件内容"
-msgstr ""
-
+msgstr "Could not read file contents"
 #: static/js/md5.js:185
 msgid "读取文件失败"
-msgstr ""
-
+msgstr "Failed to read file"
 #: static/js/md5.js:196
 msgid "读取文件失败，请重试"
-msgstr ""
-
+msgstr "Failed to read file. Please try again"
 #: static/js/md5.js:220
 msgid "[CManager] MD5 自检失败，文件去重将不可用"
-msgstr ""
-
+msgstr "[CManager] MD5 self-test failed; file deduplication is unavailable"
 #: static/js/office-preview.js:13
 msgid "在线预览"
 msgstr "Online Preview"
 #: static/js/theme-toggle.js:129
 msgid "深色"
-msgstr ""
-
+msgstr "Dark"
 #: static/js/theme-toggle.js:129
 msgid "浅色"
-msgstr ""
-
+msgstr "Light"
 #: static/js/theme-toggle.js:129
 msgid "），点击切换"
-msgstr ""
-
+msgstr "); click to switch"
 #: static/js/theme-toggle.js:151
 msgid "跟随系统"
-msgstr ""
-
+msgstr "Follow System"
 #: static/js/theme-toggle.js:151
 msgid "深色模式"
-msgstr ""
-
+msgstr "Dark Mode"
 #: static/js/theme-toggle.js:151
 msgid "浅色模式"
-msgstr ""
-
-#: templates/clubs/staff/dynamic_audit_center.html:546
-msgid "确定删除这条请求吗？"
-msgstr "Delete this request?"
+msgstr "Light Mode"
+#: templates/clubs/admin/admin_edit_user_account.html:470
+msgid "隐藏"
+msgstr "Hide"
+#: templates/clubs/admin/admin_edit_user_account.html:470
+msgid "显示"
+msgstr "Show"
+#: templates/clubs/admin/admin_edit_user_account.html:475
+msgid "新密码至少需要 6 个字符"
+msgstr "The new password must be at least 6 characters"
+#: templates/clubs/admin/admin_edit_user_account.html:476
+msgid "两次输入的密码不一致，请检查"
+msgstr "The passwords do not match. Please check them."
+#: templates/clubs/admin/carousel_form.html:607
+msgid "轮播标题预览"
+msgstr "Carousel Title Preview"
+#: templates/clubs/admin/carousel_form.html:608
+msgid "描述内容会显示在这里"
+msgstr "The description appears here"
+#: templates/clubs/admin/dashboard.html:1139
+msgid "每日访问量"
+msgstr "Daily Visits"
+#: templates/clubs/admin/dashboard.html:1157
+msgid "日期："
+msgstr "Date: "
+#: templates/clubs/admin/dashboard.html:1158
+msgid "访问量："
+msgstr "Visits: "
+#: templates/clubs/admin/dashboard.html:1181
+msgid "历史已通过"
+msgstr "Historically Approved"
+#: templates/clubs/admin/dashboard.html:1190
+msgid "历史已拒绝"
+msgstr "Historically Rejected"
+#: templates/clubs/admin/dashboard.html:1199
+msgid "待处理"
+msgstr "Pending"
+#: templates/clubs/admin/dashboard.html:1223
+msgid "历史决策：暂无"
+msgstr "Historical decisions: None"
+#: templates/clubs/admin/dashboard.html:1223
+#, javascript-format
+msgid "待处理：%s"
+msgstr "Pending: %s"
+#: templates/clubs/admin/dashboard.html:1227
+#, javascript-format
+msgid "历史决策：%s 次"
+msgstr "Historical decisions: %s"
+#: templates/clubs/admin/dashboard.html:1228
+#, javascript-format
+msgid "通过 %s（%s%%）"
+msgstr "Approved %s (%s%%)"
+#: templates/clubs/admin/dashboard.html:1229
+#, javascript-format
+msgid "拒绝 %s（%s%%）"
+msgstr "Rejected %s (%s%%)"
+#: templates/clubs/admin/dashboard.html:1230
+#, javascript-format
+msgid "当前待处理：%s"
+msgstr "Currently pending: %s"
+#: templates/clubs/admin/form_channels.html:1894
+msgid "收起"
+msgstr "Collapse"
+#: templates/clubs/admin/form_channels.html:1894
+msgid "展开"
+msgstr "Expand"
+#: templates/clubs/admin/form_channels.html:1931
+msgid "删除选项"
+msgstr "Delete Option"
+#: templates/clubs/admin/form_channels.html:2032
+msgid "请输入图标名称，例如 description"
+msgstr "Enter an icon name, such as description"
+#: templates/clubs/admin/form_channels.html:2034
+msgid "名称只能包含小写字母、数字和下划线"
+msgstr "The name may contain only lowercase letters, numbers, and underscores"
+#: templates/clubs/admin/form_channels.html:2036
+msgid "正在预览："
+msgstr "Previewing: "
+#: templates/clubs/admin/form_channels.html:2091
+msgid "翻译失败"
+msgstr "Translation failed"
+#: templates/clubs/admin/manage_users.html:1257
+#, javascript-format
+msgid "确定删除账号 %s 吗？此操作不可恢复。"
+msgstr "Delete account %s? This action cannot be undone."
+#: templates/clubs/admin/manage_users.html:1261
+#, javascript-format
+msgid "二次确认：请输入用户名 %s 以继续删除"
+msgstr "Confirm again: enter username %s to continue deleting"
+#: templates/clubs/admin/manage_users.html:1267
+msgid "用户名不匹配，已取消删除。"
+msgstr "The username does not match. Deletion cancelled."
+#: templates/clubs/admin/manage_users.html:1289
+#, javascript-format
+msgid "已选 %s 人"
+msgstr "%s selected"
+#: templates/clubs/admin/manage_users.html:1320
+msgid "请先选择用户"
+msgstr "Select users first"
+#: templates/clubs/admin/manage_users.html:1335
+msgid "确定要禁用选中的 {n} 个用户吗？"
+msgstr "Disable the selected {n} users?"
+#: templates/clubs/admin/manage_users.html:1336
+msgid "确定要删除选中的 {n} 个用户吗？此操作不可恢复！"
+msgstr "Delete the selected {n} users? This action cannot be undone!"
+#: templates/clubs/admin/site_settings.html:1638
+msgid "当前浏览器不支持自动 SRI 校验，请使用支持 Web Crypto 的现代浏览器。"
+msgstr "This browser does not support automatic SRI verification. Use a modern browser with Web Crypto support."
+#: templates/clubs/admin/site_settings.html:1646
+msgid "正在验证 CDN 资源并生成 SRI 校验值…"
+msgstr "Verifying CDN resources and generating the SRI value..."
+#: templates/clubs/admin/site_settings.html:1657
+msgid "无法读取或校验该 CDN 的资源；未保存设置。请检查地址、网络和镜像的 CORS 支持。"
+msgstr "The CDN resource could not be read or verified; settings were not saved. Check the URL, network, and the mirror's CORS support."
+#: templates/clubs/base.html:625
+msgid "房间管理"
+msgstr "Room Management"
+#: templates/clubs/base.html:626
+msgid "审批中心"
+msgstr "Approval Center"
+#: templates/clubs/base.html:627
+msgid "审核中心"
+msgstr "Review Center"
+#: templates/clubs/base.html:628
+msgid "主要功能"
+msgstr "Main Features"
+#: templates/clubs/club_detail.html:547
+#: templates/clubs/user/member_management.html:306
+msgid "登录状态已失效，请刷新页面后重试"
+msgstr "Your session has expired. Refresh the page and try again."
+#: templates/clubs/club_detail.html:550
+#: templates/clubs/user/member_management.html:309
+#, javascript-format
+msgid "请求失败（HTTP %s），请稍后重试或联系管理员"
+msgstr "Request failed (HTTP %s). Try again later or contact an administrator."
+#: templates/clubs/club_detail.html:553
+#: templates/clubs/user/member_management.html:312
+msgid "服务器返回了无法解析的数据，请稍后重试或联系管理员"
+msgstr "The server returned data that could not be parsed. Try again later or contact an administrator."
+#: templates/clubs/club_detail.html:581
+#: templates/clubs/user/member_management.html:341
+msgid "生成失败"
+msgstr "Generation failed"
+#: templates/clubs/club_detail.html:590
+#: templates/clubs/user/member_management.html:350
+#, javascript-format
+msgid "过期时间：%s"
+msgstr "Expires: %s"
+#: templates/clubs/club_detail.html:591
+#: templates/clubs/user/member_management.html:351
+#, javascript-format
+msgid "使用次数：%s"
+msgstr "Uses: %s"
+#: templates/clubs/club_detail.html:600
+#: templates/clubs/user/member_management.html:359
+msgid "二维码图片生成失败，请复制链接使用"
+msgstr "Could not generate the QR code image. Copy and use the link instead."
+#: templates/clubs/club_detail.html:604
+#: templates/clubs/user/member_management.html:363
+msgid "二维码生成失败"
+msgstr "QR code generation failed"
+#: templates/clubs/club_detail.html:614
+#: templates/clubs/user/member_management.html:373
+msgid "⚠️ 不限次数的令牌有效期不得超过1天（1440分钟）"
+msgstr "⚠️ An unlimited-use token cannot be valid for more than 1 day (1,440 minutes)"
+#: templates/clubs/club_detail.html:629
+#: templates/clubs/user/member_management.html:388
+#: templates/clubs/user/member_management.html:526
+msgid "链接已复制"
+msgstr "Link copied"
+#: templates/clubs/club_detail.html:631
+#: templates/clubs/user/member_management.html:390
+#: templates/clubs/user/member_management.html:526
+msgid "复制失败，请手动复制"
+msgstr "Copy failed. Please copy manually."
+#: templates/clubs/components/_file_upload.html:9
+msgid "上传附件"
+msgstr "Upload Attachment"
+#: templates/clubs/components/_file_upload.html:14
+msgid "帮助文本"
+msgstr "Help Text"
+#: templates/clubs/edit_room_booking.html:314
+msgid "结束时间必须晚于开始时间！"
+msgstr "The end time must be later than the start time!"
+#: templates/clubs/error_page.html:297
+msgid "已提交求助"
+msgstr "Help request submitted"
+#: templates/clubs/error_page.html:297
+msgid "提交失败，请稍后重试"
+msgstr "Submission failed. Please try again later."
+#: templates/clubs/error_page.html:305
+msgid "网络异常，请稍后重试"
+msgstr "Network error. Please try again later."
+#: templates/clubs/member_join_form.html:228
+msgid "已有账户用户名"
+msgstr "Existing account username"
+#: templates/clubs/member_join_form.html:229
+msgid "已有账户密码"
+msgstr "Existing account password"
+#: templates/clubs/member_join_form.html:233
+msgid "设置新账户用户名"
+msgstr "Set a username for the new account"
+#: templates/clubs/member_join_form.html:234
+msgid "设置新账户密码"
+msgstr "Set a password for the new account"
+#: templates/clubs/oobe_setup.html:927
+msgid "两次密码不一致"
+msgstr "The passwords do not match"
+#: templates/clubs/oobe_setup.html:1023
+msgid "site_logo.png（已裁剪）"
+msgstr "site_logo.png (cropped)"
+#: templates/clubs/oobe_setup.html:1079
+msgid "请先填写测试收件邮箱"
+msgstr "Enter the test recipient email first"
+#: templates/clubs/oobe_setup.html:1084
+msgid "请先启用 SMTP 邮箱"
+msgstr "Enable SMTP email first"
+#: templates/clubs/oobe_setup.html:1102
+msgid "正在发送测试邮件..."
+msgstr "Sending test email..."
+#: templates/clubs/oobe_setup.html:1122
+msgid "测试邮件发送成功"
+msgstr "Test email sent successfully"
+#: templates/clubs/oobe_setup.html:1125
+msgid "测试邮件发送失败"
+msgstr "Failed to send test email"
+#: templates/clubs/oobe_setup.html:1129
+msgid "网络异常，测试邮件发送失败"
+msgstr "Network error. The test email could not be sent."
+#: templates/clubs/public_activities.html:851
+#, javascript-format
+msgid "已选择 %s 个活动"
+msgstr "%s activities selected"
+#: templates/clubs/public_activities.html:880
+msgid "请至少选择一个活动"
+msgstr "Select at least one activity"
+#: templates/clubs/public_activities.html:926
+msgid "已报名 / 取消"
+msgstr "Signed up / Cancel"
+#: templates/clubs/public_activities.html:931
+msgid "报名参加"
+msgstr "Sign Up"
+#: templates/clubs/public_activities.html:937
+msgid "操作失败，请重试"
+msgstr "Operation failed. Please try again."
+#: templates/clubs/public_activities.html:940
+msgid "网络错误，请刷新页面重试"
+msgstr "Network error. Refresh the page and try again."
+#: templates/clubs/room_calendar.html:1019
+msgid "预约详情"
+msgstr "Booking Details"
+#: templates/clubs/room_calendar.html:1026
+msgid "预约日期"
+msgstr "Booking Date"
+#: templates/clubs/room_calendar.html:1033
+msgid "时间段"
+msgstr "Time Slots"
+#: templates/clubs/room_calendar.html:1040
+msgid "预约人"
+msgstr "Booked By"
+#: templates/clubs/room_calendar.html:1059
+msgid "申请社团"
+msgstr "Applying Club"
+#: templates/clubs/room_calendar.html:1070
+msgid "联系电话"
+msgstr "Contact Phone"
+#: templates/clubs/room_calendar.html:1077
+msgid "使用目的"
+msgstr "Purpose"
+#: templates/clubs/room_calendar.html:1084
+msgid "参与人数"
+msgstr "Participants"
+#: templates/clubs/room_calendar.html:1085
+#, javascript-format
+msgid "%s 人"
+msgstr "%s people"
+#: templates/clubs/room_calendar.html:1095
+msgid "特殊需求"
+msgstr "Special Needs"
+#: templates/clubs/room_calendar.html:1108
+msgid "编辑"
+msgstr "Edit"
+#: templates/clubs/room_calendar.html:1114
+#: templates/clubs/user/member_management.html:488
+msgid "删除"
+msgstr "Delete"
+#: templates/clubs/room_calendar.html:1118
+msgid "关闭"
+msgstr "Close"
+#: templates/clubs/staff/management.html:503
+msgid " - 我负责的"
+msgstr " - Assigned to Me"
+#: templates/clubs/staff/management.html:513
+#, javascript-format
+msgid "成员数: %s 人"
+msgstr "Members: %s"
+#: templates/clubs/staff/management.html:514
+#, javascript-format
+msgid "社长: %s"
+msgstr "President: %s"
+#: templates/clubs/staff/management.html:515
+#, javascript-format
+msgid "负责干事: %s"
+msgstr "Assigned Staff: %s"
+#: templates/clubs/staff/management.html:519
+#, javascript-format
+msgid "总计: %s 个社团"
+msgstr "Total: %s clubs"
+#: templates/clubs/staff/management.html:520
+msgid "复制失败:"
+msgstr "Copy failed:"
+#: templates/clubs/submit_room_booking.html:372
+msgid "结束时间必须晚于开始时间"
+msgstr "End time must be later than start time"
+#: templates/clubs/user/member_management.html:403
+msgid "编辑成员资料 — "
+msgstr "Edit Member — "
+#: templates/clubs/user/member_management.html:429
+#, javascript-format
+msgid "确认移除成员 %s？此操作不可恢复。"
+msgstr "Remove member %s? This action cannot be undone."
+#: templates/clubs/user/member_management.html:429
+msgid "该成员"
+msgstr "this member"
+#: templates/clubs/user/member_management.html:451
+msgid "加载中…"
+msgstr "Loading..."
+#: templates/clubs/user/member_management.html:459
+#: templates/clubs/user/member_management.html:516
+msgid "暂无有效的二维码链接"
+msgstr "No valid QR code links"
+#: templates/clubs/user/member_management.html:475
+#, javascript-format
+msgid "过期：%s  |  使用：%s  |  创建：%s"
+msgstr "Expires: %s  |  Uses: %s  |  Created: %s"
+#: templates/clubs/user/member_management.html:483
+msgid "复制"
+msgstr "Copy"
+#: templates/clubs/user/member_management.html:499
+msgid "加载失败："
+msgstr "Loading failed: "
+#: templates/clubs/user/member_management.html:504
+msgid "确认删除此二维码链接？删除后该链接立即失效。"
+msgstr "Delete this QR code link? It will become invalid immediately."
+#: templates/clubs/user/member_management.html:519
+msgid "删除失败"
+msgstr "Deletion failed"
+#: templates/clubs/user/member_management.html:522
+msgid "网络错误，请重试"
+msgstr "Network error. Please try again."

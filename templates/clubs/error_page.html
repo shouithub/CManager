@@ -255,6 +255,7 @@
                 <span class="material-icons">support_agent</span>{% trans '请求帮助' %}</button>
             <form class="help-form" id="errorHelpForm">
                 {% csrf_token %}
+                <input type="hidden" name="error_help_token" value="{{ error_help_token }}">
                 <input type="hidden" name="error_log_id" value="{{ error_log_id|default_if_none:'' }}">
                 <input type="hidden" name="error_type" value="{{ error_status_code|default:500 }}">
                 <input type="hidden" name="error_path" value="{{ error_path }}">
@@ -302,7 +303,7 @@
                             helpBtn.style.display = 'none';
                         }
                     } catch (error) {
-                        helpResult.textContent = '网络异常，请稍后重试';
+                        helpResult.textContent = gettext('网络异常，请稍后重试');
                         helpResult.classList.add('error');
                     } finally {
                         submitBtn.disabled = false;

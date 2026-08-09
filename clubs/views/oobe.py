@@ -1,5 +1,7 @@
 import os
 import secrets
+import ipaddress
+import socket
 from pathlib import Path
 
 from django.conf import settings
@@ -54,6 +56,26 @@ def _parse_int(raw_value, default=0):
         return int(str(raw_value).strip())
     except (TypeError, ValueError):
         return default
+
+
+def _validate_public_smtp_host(host):
+    """Reject OOBE SMTP targets that resolve to local or special-use networks."""
+    normalized = (host or '').strip().strip('[]')
+    if not normalized:
+        return 'SMTP 主机不能为空'
+    try:
+        addresses = {item[4][0] for item in socket.getaddrinfo(normalized, None)}
+    except (socket.gaierror, OSError):
+        return 'SMTP 主机无法解析'
+    if not addresses:
+        return 'SMTP 主机无法解析'
+    for address in addresses:
+        try:
+            if not ipaddress.ip_address(address).is_global:
+                return 'SMTP 主机不能指向本机、内网或保留地址'
+        except ValueError:
+            return 'SMTP 主机解析结果无效'
+    return None
 
 
 def _default_form_data(request=None):
@@ -283,13 +305,17 @@ def oobe_setup(request):
 
             if not smtp_host:
                 errors.append('启用邮箱时必须填写SMTP服务器地址')
+            else:
+                host_error = _validate_public_smtp_host(smtp_host)
+                if host_error:
+                    errors.append(host_error)
 
             try:
                 smtp_port = int(smtp_port_raw)
-                if smtp_port <= 0:
+                if smtp_port <= 0 or smtp_port > 65535:
                     raise ValueError('invalid')
             except Exception:
-                errors.append('SMTP端口必须为正整数')
+                errors.append('SMTP端口必须是 1-65535 的整数')
 
             if not sender_email:
                 errors.append('启用邮箱时必须填写发送邮箱')
@@ -461,10 +487,14 @@ def oobe_test_email(request):
 
     try:
         smtp_port = int(smtp_port_raw)
-        if smtp_port <= 0:
+        if smtp_port <= 0 or smtp_port > 65535:
             raise ValueError('port')
     except Exception:
-        return JsonResponse({'ok': False, 'message': 'SMTP端口必须为正整数'}, status=400)
+        return JsonResponse({'ok': False, 'message': 'SMTP端口必须是 1-65535 的整数'}, status=400)
+
+    host_error = _validate_public_smtp_host(smtp_host)
+    if host_error:
+        return JsonResponse({'ok': False, 'message': host_error}, status=400)
 
     temp_config = SMTPConfig(
         provider=provider if provider in provider_choices else 'custom',

@@ -8,7 +8,7 @@ Django 社团管理系统视图模块
 """
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.views.decorators.http import require_http_methods, require_GET, require_POST
+from django.views.decorators.http import require_http_methods, require_GET, require_POST, require_safe
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -33,6 +33,7 @@ import csv
 import io
 import json
 import logging
+from decimal import Decimal, InvalidOperation
 from django.utils.translation import gettext as _
 from ..models import (
     Announcement,
@@ -78,6 +79,7 @@ from ..lifecycle_utils import mark_profile_inactive
 from ..identity import is_president_mode
 from ..services.booking_service import (
     BookingConflictError,
+    BookingValidationError,
     create_room_booking,
     update_room_booking,
 )
@@ -113,6 +115,11 @@ def _validate_announcement_link(link_url):
         return link_url, None
 
     return link_url, '跳转链接需填写站内路径（如 /clubs/）或 http(s) 完整地址'
+
+
+def _validate_carousel_link(link_url):
+    """轮播跳转只允许站内绝对路径或 http(s)，禁止脚本协议。"""
+    return _validate_announcement_link(link_url)
 
 
 def _clear_announcement_cache():
@@ -244,6 +251,48 @@ def download_submission_file(request, file_id):
     except Exception:
         raise Http404('文件不存在')
     response = FileResponse(file_handle, as_attachment=not inline, filename=filename)
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
+
+
+@require_safe
+def temporary_media_file(request, token):
+    """Serve a capability URL after validating its short-lived signature.
+
+    Authentication is intentionally not required: Office Online fetches the
+    document server-to-server.  Access is granted by the unforgeable,
+    timestamped token generated only while rendering an authorized page.
+    """
+    from django.core import signing
+    from ..models import StorageConfig
+    from ..storage_backends import ClubStorage, load_temporary_media_name
+
+    try:
+        name = load_temporary_media_name(token)
+    except (signing.BadSignature, signing.SignatureExpired):
+        raise Http404('临时文件链接无效或已过期')
+
+    storage = ClubStorage()
+    if not storage.exists(name):
+        raise Http404('文件不存在')
+
+    if StorageConfig.is_s3_active():
+        try:
+            expiration = min(
+                int(getattr(settings, 'TEMPORARY_MEDIA_URL_MAX_AGE', 900)),
+                int(StorageConfig.get_active_config().presigned_url_expiration),
+            )
+            return redirect(storage.get_presigned_url(name, max(1, expiration)))
+        except Exception:
+            logger.exception('生成临时 S3 文件链接失败: %s', name)
+            raise Http404('文件暂时不可用')
+
+    try:
+        file_handle = storage.open(name, 'rb')
+    except Exception:
+        raise Http404('文件不存在')
+    response = FileResponse(file_handle, as_attachment=False, filename=os.path.basename(name))
+    response['Cache-Control'] = 'private, no-store, max-age=0'
     response['X-Content-Type-Options'] = 'nosniff'
     return response
 
@@ -932,7 +981,7 @@ def add_carousel(request):
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         description = request.POST.get('description', '').strip()
-        link = request.POST.get('link', '').strip()
+        link, link_error = _validate_carousel_link(request.POST.get('link', ''))
         try:
             order = max(0, int(request.POST.get('order', 0)))
         except (TypeError, ValueError):
@@ -942,6 +991,12 @@ def add_carousel(request):
             })
         is_active = request.POST.get('is_active') == 'on'
         image = request.FILES.get('image')
+
+        if link_error:
+            return render(request, 'clubs/admin/carousel_form.html', {
+                'form_data': request.POST,
+                'form_error': link_error,
+            })
 
         if not image:
             return render(request, 'clubs/admin/carousel_form.html', {
@@ -994,9 +1049,17 @@ def edit_carousel(request, carousel_id):
                 'form_error': '排序顺序必须是大于或等于 0 的整数。',
             })
 
+        link, link_error = _validate_carousel_link(request.POST.get('link', ''))
+        if link_error:
+            return render(request, 'clubs/admin/carousel_form.html', {
+                'carousel': carousel,
+                'form_data': request.POST,
+                'form_error': link_error,
+            })
+
         carousel.title = request.POST.get('title', '').strip()
         carousel.description = request.POST.get('description', '').strip()
-        carousel.link = request.POST.get('link', '').strip()
+        carousel.link = link
         carousel.order = order
         carousel.is_active = request.POST.get('is_active') == 'on'
 
@@ -3369,7 +3432,7 @@ def submit_room_booking(request):
             participant_count=participant_count_int,
         )
         messages.success(request, _('预约提交成功'))
-    except BookingConflictError as exc:
+    except (BookingConflictError, BookingValidationError) as exc:
         messages.error(request, str(exc))
         return redirect('clubs:room_calendar')
     except Exception:
@@ -3473,7 +3536,7 @@ def edit_room_booking(request, booking_id):
             )
             messages.success(request, _('预约已更新'))
             return redirect('clubs:my_room_bookings')
-        except BookingConflictError as exc:
+        except (BookingConflictError, BookingValidationError) as exc:
             messages.error(request, str(exc))
         except ValueError:
             pass
@@ -4244,8 +4307,24 @@ def _validate_dynamic_submission(channel, post, files, fields=None, force_requir
 
         if field.field_type == 'number' and value != '':
             try:
-                float(value)
-            except ValueError:
+                number = Decimal(value)
+                if not number.is_finite():
+                    raise InvalidOperation
+                minimum = field.validation.get('min')
+                maximum = field.validation.get('max')
+                step = field.validation.get('step')
+                if minimum not in (None, '') and number < Decimal(str(minimum)):
+                    errors.append(f'{field.label} 不能小于 {minimum}')
+                if maximum not in (None, '') and number > Decimal(str(maximum)):
+                    errors.append(f'{field.label} 不能大于 {maximum}')
+                if step not in (None, ''):
+                    step_value = Decimal(str(step))
+                    if step_value <= 0:
+                        raise InvalidOperation
+                    step_base = Decimal(str(minimum)) if minimum not in (None, '') else Decimal()
+                    if (number - step_base) % step_value != 0:
+                        errors.append(f'{field.label} 必须按 {step} 递增')
+            except (InvalidOperation, ValueError, TypeError):
                 errors.append(f'{field.label} 必须是数字')
         max_length = field.validation.get('max_length')
         if max_length and isinstance(value, str) and len(value) > int(max_length):
@@ -4471,12 +4550,12 @@ def _office_preview_url(request, uploaded):
     ext = os.path.splitext(filename)[1].lower()
     if ext not in {'.doc', '.docx', '.ppt', '.pptx'}:
         return ''
-    # 走存储抽象层：S3 模式返回 S3/CDN 直链（不经本站代理），
-    # 本地模式返回相对 MEDIA_URL，再由 build_absolute_uri 补全为绝对 URL。
+    # 本地存储走本站短时签名入口；S3 直接生成预签名 URL。Office Online
+    # 因而可以在有效期内直接从 S3 拉取，本站不参与文件请求和内容传输。
     from ..storage_backends import ClubStorage
     storage = ClubStorage()
     try:
-        direct_url = storage.get_public_url(uploaded.file.name)
+        direct_url = storage.url(uploaded.file.name)
     except Exception:
         # 兜底：用 Django 默认 storage.url
         direct_url = uploaded.file.url
@@ -4505,7 +4584,7 @@ def _office_preview_url_for_name(request, file_name, display_name):
     from ..storage_backends import ClubStorage
     storage = ClubStorage()
     try:
-        direct_url = storage.get_public_url(file_name)
+        direct_url = storage.url(file_name)
     except Exception:
         return ''
 
@@ -5337,18 +5416,25 @@ def _prepare_override_review(submission, reviewer, comment, decision, post, mode
 
 
 def _override_review_direct(submission, reviewer, comment, decision, post):
-    """方式一：直接替换审核结果。原地更新审核记录，提交直接切换为新的终态。"""
+    """修改自己的审核票，并按当前轮次全部审核票重新计算终态。"""
     _prepare_override_review(submission, reviewer, comment, decision, post, mode='direct')
-    if decision == 'approved':
+    approved_count = submission.approved_review_count()
+    rejected_count = submission.reviews.filter(
+        submission_attempt=submission.resubmission_count,
+        status='rejected',
+    ).count()
+    if approved_count >= submission.required_approval_count:
         # 直接改为通过时同样保留历史单项意见，只推进审核状态
         submission.values.update(review_status='approved')
         submission.uploaded_files.update(review_status='approved')
         _apply_approval_item_comments(submission, post)
         submission.status = 'approved'
         _refresh_submission_merge_files(submission)
-    else:
+    elif rejected_count:
         _apply_rejected_fields(submission, comment, post)
         submission.status = 'rejected'
+    else:
+        submission.status = 'pending'
     submission.save()
     return submission.status
 

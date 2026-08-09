@@ -1397,7 +1397,7 @@ class StorageConfig(models.Model):
     s3_bucket_name = models.CharField(
         max_length=255, blank=True, default='',
         verbose_name=gettext_lazy('Bucket 名称'),
-        help_text=gettext_lazy('需提前在 S3 控制台创建；Office Online 预览要求 bucket 可公网匿名访问'),
+        help_text=gettext_lazy('需提前在 S3 控制台创建；建议保持私有，系统通过短时预签名地址提供访问'),
     )
     s3_access_key_id = models.CharField(
         max_length=255, blank=True, default='',

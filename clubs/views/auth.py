@@ -1062,6 +1062,7 @@ def verify_email(request):
 
 
 @login_required(login_url=settings.LOGIN_URL)
+@require_POST
 def resend_verification_code(request):
     """重新发送验证码"""
     from django.core.cache import cache
@@ -1082,25 +1083,25 @@ def resend_verification_code(request):
         return redirect('clubs:user_dashboard')
 
     cooldown_key = f'email_code_resend:{user.id}'
-    if cache.get(cooldown_key):
+    if not cache.add(cooldown_key, 1, 60):
         messages.error(request, _('发送过于频繁，请稍后再试'))
         return redirect('clubs:verify_email')
     
     # 生成新的验证码
     new_code = EmailVerificationCode.generate_code()
-    verification.code = new_code
-    verification.created_at = timezone.now()
-    verification.expires_at = timezone.now() + timezone.timedelta(minutes=15)
-    verification.failed_attempts = 0
-    verification.save()
-    
     # 发送邮件
     success, msg = send_verification_email(verification.email, new_code, user.username)
     
     if success:
+        verification.code = new_code
+        verification.created_at = timezone.now()
+        verification.expires_at = timezone.now() + timezone.timedelta(minutes=15)
+        verification.failed_attempts = 0
+        verification.save()
         messages.success(request, msg)
-        cache.set(cooldown_key, 1, 60)
     else:
+        # 发送失败时保留旧验证码，并释放限速锁供用户稍后重试。
+        cache.delete(cooldown_key)
         messages.error(request, msg)
     
     return redirect('clubs:verify_email')
