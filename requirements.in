@@ -1,4 +1,4 @@
-Django>=6.1,<6.2
+Django>=6.1.1,<6.2
 openpyxl>=3.1,<4
 Pillow>=12.3,<13
 django-redis>=7.0,<8
@@ -6,5 +6,5 @@ PyMySQL>=1.1,<2
 qrcode[pil]>=8,<9
 python-docx>=1.1,<2
 PyMuPDF>=1.28.2,<2
-boto3>=1.43.78,<2
-cryptography>=50.0.0,<51
+boto3>=1.43.89,<2
+cryptography>=50.0.1,<51
