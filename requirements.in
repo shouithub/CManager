@@ -6,5 +6,5 @@ PyMySQL>=1.1,<2
 qrcode[pil]>=8,<9
 python-docx>=1.1,<2
 PyMuPDF>=1.28.2,<2
-boto3>=1.43.89,<2
+boto3>=1.43.93,<2
 cryptography>=50.0.1,<51
